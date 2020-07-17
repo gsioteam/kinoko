@@ -1,0 +1,60 @@
+group 'com.qlp.glib'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 28
+
+    defaultConfig {
+        minSdkVersion 16
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++11"
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+        ndk {
+            stl = 'c++_shared'
+            abiFilters = [
+                    'arm64-v8a',
+//                    'x86_64',
+                    'armeabi-v7a',
+//                    'x86'
+            ]
+        }
+    }
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+    externalNativeBuild {
+        cmake {
+            path '../CMakeLists.txt'
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ["../thirdparties/v8"]
+        }
+    }
+}
