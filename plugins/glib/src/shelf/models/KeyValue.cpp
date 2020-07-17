@@ -12,7 +12,7 @@ std::string KeyValue::get(const std::string &key) {
     Array res = query->equal("key", key)->results();
     if (res.size() > 0) {
         Ref<KeyValue> kv = res->get(0);
-        return kv->getKey();
+        return kv->getValue();
     }
     return std::string();
 }

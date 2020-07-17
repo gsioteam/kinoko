@@ -55,6 +55,8 @@ namespace gs {
             ADD_METHOD(cls, Context, isReady);
             ADD_METHOD(cls, Context, reload);
             ADD_METHOD(cls, Context, loadMore);
+            ADD_METHOD(cls, Context, enterView);
+            ADD_METHOD(cls, Context, exitView);
             ADD_METHOD(cls, Context, create);
             ADD_PROPERTY(cls, "on_data_changed", NULL, ADD_METHOD(cls, Context, setOnDataChanged));
             ADD_PROPERTY(cls, "on_loading_status", NULL, ADD_METHOD(cls, Context, setOnLoadingStatus));

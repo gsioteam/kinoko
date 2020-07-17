@@ -35,7 +35,26 @@ std::string DataItem::toJSON(const gc::Array &arr) {
         item_json["link"] = item->getLink();
         item_json["type"] = item->getType();
         item_json["data"] = JSON::serialize(item->data);
-        json.push_back(json);
+        json.push_back(item_json);
     }
-    return json;
+    return json.dump();
+}
+
+gc::Array DataItem::fromJSON(const std::string &json) {
+    nlohmann::json jarr = nlohmann::json::parse(json);
+    Array arr;
+    if (!jarr.is_array()) return arr;
+    for (auto it = jarr.begin(), _e = jarr.end(); it != _e; ++it) {
+        auto &val = it.value();
+        Ref<DataItem> item(new DataItem());
+        item->setTitle(val["title"]);
+        item->setSummary(val["summary"]);
+        item->setPicture(val["picture"]);
+        item->setSubtitle(val["subtitle"]);
+        item->setLink(val["link"]);
+        item->setType(val["type"]);
+        item->setData(JSON::parse(val["data"]));
+        arr.push_back(item);
+    }
+    return arr;
 }

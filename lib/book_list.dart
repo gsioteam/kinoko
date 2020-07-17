@@ -28,11 +28,9 @@ class _RefreshIndicatorController {
   void startLoading() {
     if (!loading) {
       loading = true;
-      if (target == null && target.state == null) {
-        print("show ref");
+      if (target != null && target.state != null) {
         target.state.show();
       } else {
-        print("Fatal error! ${target == null ? "target" : "state"}");
       }
     } else {
       print("already loading!");
@@ -44,6 +42,14 @@ class _RefreshIndicatorController {
       loading = false;
       completer.complete();
       completer = Completer<void>();
+    }
+  }
+
+  void initializer() {
+    if (loading) {
+      if (target != null && target.state != null) {
+        target.state.show();
+      }
     }
   }
 }
@@ -85,7 +91,14 @@ class _RefreshIndicator extends RefreshIndicator {
 
   @override
   RefreshIndicatorState createState() {
-    return state = super.createState();
+    state = super.createState();
+    _sendInit();
+    return state;
+  }
+
+  _sendInit() async {
+    await Future.delayed(Duration(seconds: 0));
+    controller.initializer();
   }
 }
 
@@ -138,7 +151,6 @@ class _BookListPageState extends State<BookListPage> {
     widget.context.on_error = Callback.fromFunction(onError).release();
     widget.context.enterView();
     books = widget.context.data.control();
-    print("Setup! ${widget.index}");
     super.initState();
   }
 
