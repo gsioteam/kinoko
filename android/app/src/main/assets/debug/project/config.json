@@ -1,0 +1,19 @@
+{
+    "name": "test",
+    "subtitle": "subtitle",
+    "url": "https://wap.kukudm.com/",
+    "index": "index.js",
+    "book": "book.js",
+    "categories": [
+        {
+            "title": "推薦",
+            "url": "https://wap.kukudm.com/",
+            "data": {}
+        },
+        {
+            "title": "更新",
+            "url": "https://wap.kukudm.com/top100.htm",
+            "data": {}
+        }
+    ]
+}
