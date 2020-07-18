@@ -12,6 +12,7 @@ import 'package:glib/main/context.dart';
 import 'package:glib/core/callback.dart';
 import 'package:glib/main/error.dart' as glib;
 import 'utils/children_delegate.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class _RefreshIndicatorController {
   _RefreshIndicator target;
@@ -127,8 +128,10 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   void onDataChanged(Array data, int type) {
-    print("onDataChanged ${data.length}");
-    setState(() {});
+    if (data != null) {
+      print("onDataChanged ${data.length}");
+      setState(() {});
+    }
   }
 
   void onLoadingStatus(bool isLoading) {
@@ -141,7 +144,10 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   void onError(glib.Error error) {
-
+    Fluttertoast.showToast(
+      msg: error.msg,
+      toastLength: Toast.LENGTH_SHORT,
+    );
   }
 
   @override

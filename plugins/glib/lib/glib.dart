@@ -18,6 +18,7 @@ import 'core/data.dart';
 import 'main/project.dart';
 import 'main/context.dart';
 import 'main/data_item.dart';
+import 'main/error.dart';
 import 'utils/git_repository.dart';
 import 'utils/platform.dart';
 import 'utils/bit64.dart';
@@ -49,6 +50,7 @@ class Glib {
     Request.reg();
     Data.reg();
     BufferData.reg();
+    Error.reg();
 
     Pointer<Utf8> pstr = Utf8.toUtf8(root_path);
     postSetup(pstr);

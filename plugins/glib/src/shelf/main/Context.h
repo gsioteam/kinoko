@@ -17,6 +17,7 @@ namespace gs {
         gc::Callback on_data_changed;
         gc::Callback on_loading_status;
         gc::Callback on_error;
+        bool first_enter = true;
 
         void setupTarget(const gc::Ref<Collection> &target);
 

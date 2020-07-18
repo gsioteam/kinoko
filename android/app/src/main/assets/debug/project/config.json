@@ -7,11 +7,13 @@
     "categories": [
         {
             "title": "推薦",
+            "id": "home",
             "url": "https://wap.kukudm.com/",
             "data": {}
         },
         {
             "title": "更新",
+            "id": "update",
             "url": "https://wap.kukudm.com/top100.htm",
             "data": {}
         }

@@ -10,6 +10,7 @@
 #include "../models/KeyValue.h"
 #include "../models/BookData.h"
 #include "DataItem.h"
+#include <sys/time.h>
 
 #include "../gs_define.h"
 
@@ -71,6 +72,12 @@ namespace gs {
         }
 
     CLASS_END
+
+    int64_t currentTime() {
+        struct timeval s_time;
+        gettimeofday(&s_time, NULL);
+        return s_time.tv_sec * 1000 + s_time.tv_usec / 1000;
+    }
 }
 
 gc::Ref<Context> Context::create(const std::string &path, const Variant &data) {
@@ -92,19 +99,25 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data) {
 
 void Context::enterView() {
     if (!isReady()) return;
-    if (target->getData()->size()) return;
-    string list = KeyValue::get(shared::HOME_PAGE_LIST + target->getName());
-    if (list.empty()) {
-        reload();
-    } else {
-        Array data = DataItem::fromJSON(list);
-        if (data.size()) {
-            target->setData(data);
-            if (this->on_data_changed) {
-                this->on_data_changed(target, DataReload);
-            }
-        } else {
+    int64_t current_time = currentTime();
+    if (target->getData()->size() == 0) {
+        string list = KeyValue::get(shared::HOME_PAGE_LIST + target->getName());
+        if (list.empty()) {
             reload();
+        } else {
+            Array data = DataItem::fromJSON(list);
+            if (data.size()) {
+                target->setData(data);
+                if (this->on_data_changed) {
+                    this->on_data_changed(data, DataReload);
+                }
+                if (first_enter) {
+                    reload();
+                    first_enter = false;
+                }
+            } else {
+                reload();
+            }
         }
     }
 }
