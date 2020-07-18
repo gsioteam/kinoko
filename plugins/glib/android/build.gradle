@@ -57,4 +57,5 @@ android {
             jniLibs.srcDirs = ["../thirdparties/v8"]
         }
     }
+    ndkVersion '21.3.6528147'
 }
