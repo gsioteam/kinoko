@@ -16,10 +16,10 @@ namespace gs {
         METHOD static gc::Variant parse(const nlohmann::json &obj);
         METHOD static nlohmann::json serialize(const gc::Variant &variant);
 
-        ON_LOADED_BEGIN(cls, gc::Object)
-            ADD_METHOD(cls, JSON, parse);
-            ADD_METHOD(cls, JSON, serialize);
-        ON_LOADED_END
+//        ON_LOADED_BEGIN(cls, gc::Object)
+//            ADD_METHOD(cls, JSON, parse);
+//            ADD_METHOD(cls, JSON, serialize);
+//        ON_LOADED_END
 
     CLASS_END
 }

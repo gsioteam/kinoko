@@ -92,18 +92,19 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data) {
 
 void Context::enterView() {
     if (!isReady()) return;
+    if (target->getData()->size()) return;
     string list = KeyValue::get(shared::HOME_PAGE_LIST + target->getName());
     if (list.empty()) {
         reload();
     } else {
-        Array data = BookData::query()->in("identifier", list)->results();
-        Array items;
-        for (auto it = data->begin(), _e = data->end(); it != _e ; ++it) {
-            items->push_back(DataItem::fromData(*it));
-        }
-        target->setData(items);
-        if (this->on_data_changed) {
-            this->on_data_changed(items, DataReload);
+        Array data = DataItem::fromJSON(list);
+        if (data.size()) {
+            target->setData(data);
+            if (this->on_data_changed) {
+                this->on_data_changed(target, DataReload);
+            }
+        } else {
+            reload();
         }
     }
 }
@@ -125,8 +126,13 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
     Wk<Context> weak = this;
     target->on(Collection::NOTIFICATION_dataChanged, C([=](Array array, ChangeType type){
         Ref<Context> that = weak.lock();
-        if (that && that->on_data_changed) {
-            that->on_data_changed(array, type);
+        if (that) {
+            if (type == DataReload && array->size() > 0) {
+                KeyValue::set(shared::HOME_PAGE_LIST + target->getName(), DataItem::toJSON(array));
+            }
+            if (that->on_data_changed) {
+                that->on_data_changed(array, type);
+            }
         }
     }));
     target->on(Collection::NOTIFICATION_loading, C([=](bool is_loading) {
