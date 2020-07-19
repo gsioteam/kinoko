@@ -2,8 +2,10 @@
 import 'dart:ui';
 
 import 'package:cache_image/cache_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:glib/main/data_item.dart';
+import 'package:kinoko/localizations/localizations.dart';
 
 class BookPage extends StatefulWidget {
 
@@ -39,25 +41,43 @@ class _BookPageState extends State<BookPage> {
                 child: Container(
                   height: 48,
                   color: Colors.white,
+                  padding: EdgeInsets.only(left: 10, right: 10),
+                  child: Row(
+                    children: <Widget>[
+                      Text(kt("chapters")),
+                      Expanded(child: Container()),
+                      IconButton(
+                          icon: Icon(Icons.sort),
+                          color: Theme.of(context).primaryColor,
+                          onPressed: (){}
+                      ),
+                      IconButton(
+                          icon: Icon(Icons.file_download),
+                          color: Theme.of(context).primaryColor,
+                          onPressed: (){}
+                      ),
+                    ],
+                  ),
                 ),
                 preferredSize: Size(double.infinity, 48)
             ),
             flexibleSpace: FlexibleSpaceBar(
               title: Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(text: data.title,),
-                      TextSpan(text: "\n",),
-                      WidgetSpan(child: Padding(padding: EdgeInsets.only(top: 20))),
-                      TextSpan(
-                        text: "Summary Summary Summary Summary Summary Summary Summary Summary Summary",
-                        style: Theme.of(context).textTheme.bodyText2.copyWith(
-                            color: Colors.white,
-                          fontSize: 8
-                        )
-                      )
-                    ]
-                  ),
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: data.title,
+                      style: Theme.of(context).textTheme.headline2.copyWith(color: Colors.white, fontSize: 14),
+                    ),
+                    WidgetSpan(child: Padding(padding: EdgeInsets.only(top: 5),)),
+                    TextSpan(
+                      text: "\nSummary Summary Summary Summary Summary Summary Summary Summary Summary",
+                      style: Theme.of(context).textTheme.bodyText2.copyWith(color: Colors.white, fontSize: 8),
+                    )
+                  ]
+                ),
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
               ),
               titlePadding: EdgeInsets.only(left: 20, bottom: 64),
               background: Stack(
@@ -78,13 +98,13 @@ class _BookPageState extends State<BookPage> {
                     alignment: Alignment.bottomLeft,
                     width: double.infinity,
                     height: double.infinity,
-                    padding: EdgeInsets.fromLTRB(14, 10, 14, 10),
+                    padding: EdgeInsets.fromLTRB(14, 10, 14, 58),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter, // 10% of the width, so there are ten blinds.
-                          colors: [Color.fromRGBO(0, 0, 0, 0), Color.fromRGBO(0, 0, 0, 0.5)], // whitish to gray
-                          stops: [0.4, 1]
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color.fromRGBO(0, 0, 0, 0), Color.fromRGBO(0, 0, 0, 0.5)],
+                        stops: [0.4, 1]
                       ),
                     ),
                   ),
@@ -95,14 +115,6 @@ class _BookPageState extends State<BookPage> {
               IconButton(
                 icon: Icon(Icons.favorite),
                 onPressed: (){}
-              ),
-              IconButton(
-                  icon: Icon(Icons.sort),
-                  onPressed: (){}
-              ),
-              IconButton(
-                  icon: Icon(Icons.file_download),
-                  onPressed: (){}
               ),
             ],
           ),

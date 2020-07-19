@@ -11,7 +11,9 @@ class KinokoLocalizations {
 
   String get(String key) {
     if (words.containsKey(key)) return words[key];
-    return total_words[key];
+    var txt = total_words[key];
+    if (txt == null) txt = key;
+    return txt;
   }
 }
 
