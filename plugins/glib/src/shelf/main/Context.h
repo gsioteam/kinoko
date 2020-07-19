@@ -60,6 +60,14 @@ namespace gs {
         }
         PROPERTY(data, getData, NULL);
 
+        METHOD const gc::Variant &getInfoData() const {
+            return target->getInfoData();
+        }
+        METHOD void setInfoData(const gc::Variant &info_data) {
+            this->setInfoData(info_data);
+        }
+        PROPERTY(info_data, getInfoData, setInfoData);
+
         static gc::Ref<Context> create(const std::string &path, const gc::Variant &data, ContextType type, const std::string &key);
 
         ON_LOADED_BEGIN(cls, gc::Object)
@@ -73,6 +81,7 @@ namespace gs {
             ADD_PROPERTY(cls, "on_loading_status", NULL, ADD_METHOD(cls, Context, setOnLoadingStatus));
             ADD_PROPERTY(cls, "on_error", NULL, ADD_METHOD(cls, Context, setOnError));
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Context, getData), NULL);
+            ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Context, getInfoData), ADD_METHOD(cls, Context, setInfoData));
         ON_LOADED_END
 
     CLASS_END

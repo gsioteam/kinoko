@@ -15,95 +15,7 @@ import 'package:glib/main/project.dart';
 import 'utils/children_delegate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'book_page.dart';
-
-class _RefreshIndicatorController {
-  _RefreshIndicator target;
-  bool loading = false;
-  Completer<void> completer = Completer<void>();
-
-  Future<void> onRefresh() async {
-    if (!loading && target.onExRefresh != null && target.onExRefresh()) {
-      loading = true;
-    }
-    if (loading) return completer.future;
-  }
-
-  void startLoading() {
-    if (!loading) {
-      loading = true;
-      if (target != null && target.state != null) {
-        target.state.show();
-      } else {
-      }
-    } else {
-      print("already loading!");
-    }
-  }
-
-  void stopLoading() {
-    if (loading) {
-      loading = false;
-      completer.complete();
-      completer = Completer<void>();
-    }
-  }
-
-  void initializer() {
-    if (loading) {
-      if (target != null && target.state != null) {
-        target.state.show();
-      }
-    }
-  }
-}
-
-class _RefreshIndicator extends RefreshIndicator {
-
-  RefreshIndicatorState state;
-  _RefreshIndicatorController controller;
-  bool Function() onExRefresh;
-
-  _RefreshIndicator({
-    Key key,
-    @required Widget child,
-    double displacement = 40.0,
-    Color color,
-    Color backgroundColor,
-    ScrollNotificationPredicate notificationPredicate = defaultScrollNotificationPredicate,
-    String semanticsLabel,
-    String semanticsValue,
-    double strokeWidth = 2.0,
-    @required _RefreshIndicatorController controller,
-    bool Function() onRefresh,
-  }) : super(
-    key: key,
-    child: child,
-    displacement: displacement,
-    color: color,
-    backgroundColor: backgroundColor,
-    notificationPredicate: notificationPredicate,
-    semanticsLabel: semanticsLabel,
-    semanticsValue: semanticsValue,
-    strokeWidth: strokeWidth,
-    onRefresh: controller.onRefresh
-  ) {
-    this.controller = controller;
-    onExRefresh = onRefresh;
-    controller.target = this;
-  }
-
-  @override
-  RefreshIndicatorState createState() {
-    state = super.createState();
-    _sendInit();
-    return state;
-  }
-
-  _sendInit() async {
-    await Future.delayed(Duration(seconds: 0));
-    controller.initializer();
-  }
-}
+import 'widgets/better_refresh_indicator.dart';
 
 class BookListPage extends StatefulWidget {
   Project project;
@@ -118,7 +30,7 @@ class BookListPage extends StatefulWidget {
 
 class _BookListPageState extends State<BookListPage> {
   Array books;
-  _RefreshIndicatorController controller = _RefreshIndicatorController();
+  BetterRefreshIndicatorController controller = BetterRefreshIndicatorController();
 
   void itemClicked(int idx) async {
     Context ctx = widget.project.createBookContext(books[idx]).control();
@@ -129,20 +41,17 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   bool onPullDownRefresh() {
-    print("refresh");
     widget.context.reload();
     return false;
   }
 
   void onDataChanged(Array data, int type) {
     if (data != null) {
-      print("onDataChanged ${data.length}");
       setState(() {});
     }
   }
 
   void onLoadingStatus(bool isLoading) {
-    print("onLoadingStatus ${isLoading}");
     if (isLoading) {
       controller.startLoading();
     } else {
@@ -203,7 +112,7 @@ class _BookListPageState extends State<BookListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return _RefreshIndicator(
+    return BetterRefreshIndicator(
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemBuilder: (BuildContext context, int idx) {
@@ -220,7 +129,6 @@ class _BookListPageState extends State<BookListPage> {
 
   @override
   void dispose() {
-    print("dispose ${widget.index}");
     widget.context.exitView();
     books.release();
     super.dispose();

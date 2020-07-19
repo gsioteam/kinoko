@@ -1,6 +1,4 @@
 
-const prefix = 'kkm:';
-
 class Collection extends glib.Collection {
 
     constructor(data) {
