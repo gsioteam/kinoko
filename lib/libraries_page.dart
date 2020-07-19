@@ -107,6 +107,7 @@ class _LibraryCellState extends State<LibraryCell> {
       setState(() {
         r(project);
         project = Project.allocate(dirName);
+        selectConfirm();
       });
     });
   }

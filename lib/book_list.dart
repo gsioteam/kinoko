@@ -13,6 +13,7 @@ import 'package:glib/core/callback.dart';
 import 'package:glib/main/error.dart' as glib;
 import 'utils/children_delegate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'book_page.dart';
 
 class _RefreshIndicatorController {
   _RefreshIndicator target;
@@ -117,8 +118,12 @@ class _BookListPageState extends State<BookListPage> {
   Array books;
   _RefreshIndicatorController controller = _RefreshIndicatorController();
 
-  void itemClicked(int idx) {
-
+  void itemClicked(int idx) async {
+    DataItem data = books[idx].control();
+    await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => BookPage(data)
+    ));
+    data.release();
   }
 
   bool onPullDownRefresh() {
