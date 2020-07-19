@@ -21,11 +21,13 @@ namespace gs {
 
         bool loading = false;
         gc::Array data;
-        std::string name = "default";
+        gc::Variant info_data;
 
     public:
 
         Collection() {}
+
+        METHOD void initialize(gc::Variant info_data);
 
         EVENT(bool, reload, gc::Callback);
         EVENT(bool, loadMore, gc::Callback);
@@ -45,19 +47,20 @@ namespace gs {
         }
         PROPERTY(data, getData, setData);
 
-        METHOD const std::string &getName() const {
-            return name;
+        METHOD const gc::Variant &getInfoData() const {
+            return info_data;
         }
-        METHOD void setName(const std::string &name) {
-            this->name = name;
+        METHOD void setInfoData(const gc::Variant &info_data) {
+            this->info_data = info_data;
         }
-        PROPERTY(name, getName, setName);
+        PROPERTY(info_data, getInfoData, setInfoData);
 
         ON_LOADED_BEGIN(cls, gc::Object)
+            INITIALIZER(cls, Collection, initialize);
             ADD_METHOD(cls, Collection, reload);
             ADD_METHOD(cls, Collection, loadMore);
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Collection, getData), ADD_METHOD(cls, Collection, setData));
-            ADD_PROPERTY(cls, "name", ADD_METHOD(cls, Collection, getName), ADD_METHOD(cls, Collection, setName));
+            ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Collection, getInfoData), ADD_METHOD(cls, Collection, setInfoData));
         ON_LOADED_END
 
     CLASS_END

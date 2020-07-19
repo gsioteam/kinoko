@@ -40,6 +40,8 @@ class Context extends Base {
   }
 
   Array get data => call("getData");
+  dynamic get info_data => call("getInfoData");
+  set info_data(dynamic data) => call("setInfoData", argv: [data]);
 
   @override
   void destroy() {

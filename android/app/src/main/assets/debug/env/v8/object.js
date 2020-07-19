@@ -13,8 +13,7 @@ class Object {
         for (let i = 0, t = arguments.length; i < t; ++i) {
             argv.push(arguments[i]);
         }
-
-        let obj = new (Function.prototype.bind.apply(this, argv));
+        let obj = new (Function.prototype.bind.apply(this, [null].concat(argv)));
         _newObject(obj, this.class_name, argv);
 
         return obj;

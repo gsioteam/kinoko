@@ -2,10 +2,10 @@
 const prefix = 'kkm:';
 
 class Collection extends glib.Collection {
-    
-    init(data) {
+
+    constructor(data) {
+        super();
         this.url = data.url;
-        this.name = prefix + data.id;
     }
 
     fetch(url) {
@@ -75,10 +75,6 @@ class HomeCollection extends Collection {
 };
 
 class UpdateCollection extends Collection {
-    init(data) {
-        this.url = data.url;
-        this.name = prefix + data.id;
-    }
 
     reload(cb) {
         let purl = new PageURL(this.url);
@@ -117,14 +113,13 @@ module.exports = function(info) {
     let data = info.toObject();
     switch (data.id) {
         case 'home': {
-            col = HomeCollection.new();
+            col = HomeCollection.new(data);
             break;
         }
         case 'update': {
-            col = UpdateCollection.new();
+            col = UpdateCollection.new(data);
             break;
         }
     }
-    if (col) col.init(data);
     return col;
 };

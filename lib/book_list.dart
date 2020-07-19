@@ -11,6 +11,7 @@ import 'package:glib/main/data_item.dart';
 import 'package:glib/main/context.dart';
 import 'package:glib/core/callback.dart';
 import 'package:glib/main/error.dart' as glib;
+import 'package:glib/main/project.dart';
 import 'utils/children_delegate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'book_page.dart';
@@ -105,9 +106,10 @@ class _RefreshIndicator extends RefreshIndicator {
 }
 
 class BookListPage extends StatefulWidget {
+  Project project;
   Context context;
   int index;
-  BookListPage(this.context, this.index);
+  BookListPage(this.project, this.context, this.index);
 
   @override
   State<StatefulWidget> createState()=>_BookListPageState();
@@ -119,11 +121,11 @@ class _BookListPageState extends State<BookListPage> {
   _RefreshIndicatorController controller = _RefreshIndicatorController();
 
   void itemClicked(int idx) async {
-    DataItem data = books[idx].control();
+    Context ctx = widget.project.createBookContext(books[idx]).control();
     await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => BookPage(data)
+      builder: (context) => BookPage(ctx)
     ));
-    data.release();
+    ctx.release();
   }
 
   bool onPullDownRefresh() {

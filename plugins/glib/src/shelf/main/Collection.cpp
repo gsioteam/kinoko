@@ -63,3 +63,7 @@ bool Collection::loadMore() {
     }
     return ret;
 }
+
+void Collection::initialize(gc::Variant info_data) {
+    this->info_data = info_data;
+}

@@ -49,7 +49,7 @@ class _CollectionsPageState extends State<CollectionsPage> {
       tabs.add(Tab(text: title,));
       var ctx = project.createIndexContext(category).control();
       contexts.add(ctx);
-      bodies.add(BookListPage(ctx, i));
+      bodies.add(BookListPage(project, ctx, i));
     }
     return DefaultTabController(
       length: arr.length,

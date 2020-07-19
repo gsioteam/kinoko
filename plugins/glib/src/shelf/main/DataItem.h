@@ -11,6 +11,12 @@
 #include "../gs_define.h"
 
 namespace gs {
+    ENUM_BEGIN(DataType)
+        Book = 0,
+        Chapter = 1,
+        Header = 2,
+    ENUM_END
+
     CLASS_BEGIN_N(DataItem, gc::Object)
 
         std::string title;

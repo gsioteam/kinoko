@@ -4,22 +4,21 @@ import 'dart:ui';
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:kinoko/localizations/localizations.dart';
 
 class BookPage extends StatefulWidget {
 
-  DataItem data;
+  Context context;
 
-  BookPage(this.data);
+  BookPage(this.context);
 
   @override
   State<StatefulWidget> createState() => _BookPageState();
 }
 
 class _BookPageState extends State<BookPage> {
-
-  DataItem get data => widget.data;
 
   Widget createItem(BuildContext context, int idx) {
     return ListTile(
@@ -29,13 +28,22 @@ class _BookPageState extends State<BookPage> {
 
   @override
   Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+    var data = widget.context.info_data;
+    if (!(data is DataItem)) {
+      return Container(
+        child: Text("Wrong type"),
+        color: Colors.red,
+      );
+    }
+
     return Scaffold(
       body: CustomScrollView(
         slivers: <Widget>[
           SliverAppBar(
             floating: true,
             pinned: true,
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: theme.primaryColor,
             expandedHeight: 288.0,
             bottom: PreferredSize(
                 child: Container(
@@ -44,16 +52,17 @@ class _BookPageState extends State<BookPage> {
                   padding: EdgeInsets.only(left: 10, right: 10),
                   child: Row(
                     children: <Widget>[
+                      Icon(Icons.bookmark, color: theme.primaryColor, size: 14,),
                       Text(kt("chapters")),
                       Expanded(child: Container()),
                       IconButton(
                           icon: Icon(Icons.sort),
-                          color: Theme.of(context).primaryColor,
+                          color: theme.primaryColor,
                           onPressed: (){}
                       ),
                       IconButton(
                           icon: Icon(Icons.file_download),
-                          color: Theme.of(context).primaryColor,
+                          color: theme.primaryColor,
                           onPressed: (){}
                       ),
                     ],
@@ -67,12 +76,12 @@ class _BookPageState extends State<BookPage> {
                   children: [
                     TextSpan(
                       text: data.title,
-                      style: Theme.of(context).textTheme.headline2.copyWith(color: Colors.white, fontSize: 14),
+                      style: theme.textTheme.headline2.copyWith(color: Colors.white, fontSize: 14),
                     ),
                     WidgetSpan(child: Padding(padding: EdgeInsets.only(top: 5),)),
                     TextSpan(
                       text: "\nSummary Summary Summary Summary Summary Summary Summary Summary Summary",
-                      style: Theme.of(context).textTheme.bodyText2.copyWith(color: Colors.white, fontSize: 8),
+                      style: theme.textTheme.bodyText2.copyWith(color: Colors.white, fontSize: 8),
                     )
                   ]
                 ),

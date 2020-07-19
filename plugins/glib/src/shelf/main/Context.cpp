@@ -80,16 +80,20 @@ namespace gs {
     }
 }
 
-gc::Ref<Context> Context::create(const std::string &path, const Variant &data) {
+gc::Ref<Context> Context::create(const std::string &path, const Variant &data, ContextType type, const std::string &key) {
     size_t idx = path.find_last_of('.');
     if (idx < path.size()) {
         std::string ext = path.substr(idx+1);
         if (JavaScriptContext::isSupport(ext)) {
             JavaScriptContext *ctx = new JavaScriptContext;
+            ctx->type = type;
+            ctx->key = key;
             ctx->setup(path.c_str(), data);
             return ctx;
         } else if (RubyContext::isSupport(ext)) {
             RubyContext *ctx = new RubyContext;
+            ctx->type = type;
+            ctx->key = key;
             ctx->setup(path.c_str(), data);
             return ctx;
         }
@@ -97,29 +101,34 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data) {
     return nullptr;
 }
 
+gc::Array Context::load() {
+    if (type == ContextProject) {
+        string list = KeyValue::get(shared::HOME_PAGE_LIST + key);
+        if (!list.empty()) {
+            return DataItem::fromJSON(list);
+        }
+    }
+    return gc::Array();
+}
+
+void Context::save(const gc::Array &arr) {
+    if (type == ContextProject) {
+        KeyValue::set(shared::HOME_PAGE_LIST + key, DataItem::toJSON(arr));
+    }
+}
+
 void Context::enterView() {
     if (!isReady()) return;
-    int64_t current_time = currentTime();
     if (first_enter) {
         first_enter = false;
-        string list = KeyValue::get(shared::HOME_PAGE_LIST + target->getName());
-        if (list.empty()) {
-            reload();
-        } else {
-            Array data = DataItem::fromJSON(list);
-            if (data.size()) {
-                target->setData(data);
-                if (this->on_data_changed) {
-                    this->on_data_changed(data, DataReload);
-                }
-                if (first_enter) {
-                    reload();
-                    first_enter = false;
-                }
-            } else {
-                reload();
+        Array data = load();
+        if (data.size()) {
+            target->setData(data);
+            if (this->on_data_changed) {
+                this->on_data_changed(data, DataReload);
             }
         }
+        reload();
     }
 }
 
@@ -141,9 +150,8 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
     target->on(Collection::NOTIFICATION_dataChanged, C([=](Array array, ChangeType type){
         Ref<Context> that = weak.lock();
         if (that) {
-            if (type == DataReload && array->size() > 0) {
-                KeyValue::set(shared::HOME_PAGE_LIST + target->getName(), DataItem::toJSON(array));
-            }
+            if (type == DataReload && array->size() > 0)
+                save(array);
             if (that->on_data_changed) {
                 that->on_data_changed(array, type);
             }

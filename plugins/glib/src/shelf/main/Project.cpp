@@ -6,7 +6,9 @@
 #include <sstream>
 #include "../utils/JSON.h"
 #include "../utils/SharedData.h"
+#include <core/Map.h>
 #include "Context.h"
+#include "DataItem.h"
 #include "../models/KeyValue.h"
 
 using namespace gs;
@@ -72,9 +74,18 @@ void Project::setMainProject() {
 }
 
 gc::Ref<Context> Project::createIndexContext(const gc::Variant &data) {
-    return Context::create(getFullpath() + "/" + index, data);
+    gc::Map map = data;
+    std::string key;
+    if (map) {
+        Variant vid = map->get("id");
+        key = url + ":" + vid.str();
+    } else {
+        key = "unkown";
+        LOG(w, "No id found in data");
+    }
+    return Context::create(getFullpath() + "/" + index, data, ContextProject, key);
 }
 
 gc::Ref<Context> Project::createBookContext(const gc::Ref<DataItem> &item) {
-    return Context::create(getFullpath() + "/" + book, item);
+    return Context::create(getFullpath() + "/" + book, item, ContextBook, item->getLink());
 }

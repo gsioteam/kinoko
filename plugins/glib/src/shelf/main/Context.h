@@ -10,6 +10,12 @@
 #include "../gs_define.h"
 
 namespace gs {
+
+    ENUM_BEGIN(ContextType)
+        ContextProject = 0,
+        ContextBook = 1
+    ENUM_END
+
     CLASS_BEGIN_NV(Context, gc::Object)
 
     protected:
@@ -17,9 +23,14 @@ namespace gs {
         gc::Callback on_data_changed;
         gc::Callback on_loading_status;
         gc::Callback on_error;
+        ContextType type;
         bool first_enter = true;
+        std::string key;
 
         void setupTarget(const gc::Ref<Collection> &target);
+
+        gc::Array load();
+        void save(const gc::Array &arr);
 
     public:
         METHOD virtual void setup(const char *path, const gc::Variant &data) = 0;
@@ -49,7 +60,7 @@ namespace gs {
         }
         PROPERTY(data, getData, NULL);
 
-        METHOD static gc::Ref<Context> create(const std::string &path, const gc::Variant &data);
+        static gc::Ref<Context> create(const std::string &path, const gc::Variant &data, ContextType type, const std::string &key);
 
         ON_LOADED_BEGIN(cls, gc::Object)
             ADD_METHOD(cls, Context, setup);
@@ -58,7 +69,6 @@ namespace gs {
             ADD_METHOD(cls, Context, loadMore);
             ADD_METHOD(cls, Context, enterView);
             ADD_METHOD(cls, Context, exitView);
-            ADD_METHOD(cls, Context, create);
             ADD_PROPERTY(cls, "on_data_changed", NULL, ADD_METHOD(cls, Context, setOnDataChanged));
             ADD_PROPERTY(cls, "on_loading_status", NULL, ADD_METHOD(cls, Context, setOnLoadingStatus));
             ADD_PROPERTY(cls, "on_error", NULL, ADD_METHOD(cls, Context, setOnError));
