@@ -183,6 +183,9 @@ class _BookListPageState extends State<BookListPage> {
         subtitle: Text(item.subtitle),
         leading: Image(
           image: CacheImage(item.picture),
+          fit: BoxFit.cover,
+          width: 56,
+          height: 56,
         ),
         onTap: (){
           itemClicked(idx);

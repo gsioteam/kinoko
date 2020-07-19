@@ -100,7 +100,8 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data) {
 void Context::enterView() {
     if (!isReady()) return;
     int64_t current_time = currentTime();
-    if (target->getData()->size() == 0) {
+    if (first_enter) {
+        first_enter = false;
         string list = KeyValue::get(shared::HOME_PAGE_LIST + target->getName());
         if (list.empty()) {
             reload();
