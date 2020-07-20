@@ -87,6 +87,7 @@ class _BookListPageState extends State<BookListPage> {
               image: CacheImage(item.picture),
               width: 26,
               height: 26,
+              gaplessPlayback: true,
             ),
             Padding(padding: EdgeInsets.all(5)),
             Text(item.title, style: Theme.of(context).textTheme.subtitle1,)

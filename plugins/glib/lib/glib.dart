@@ -51,6 +51,7 @@ class Glib {
     Data.reg();
     BufferData.reg();
     Error.reg();
+    KeyValue.reg();
 
     Pointer<Utf8> pstr = Utf8.toUtf8(root_path);
     postSetup(pstr);

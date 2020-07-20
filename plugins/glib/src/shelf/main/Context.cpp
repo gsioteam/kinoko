@@ -102,18 +102,44 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data, C
 }
 
 gc::Array Context::load() {
-    if (type == ContextProject) {
-        string list = KeyValue::get(shared::HOME_PAGE_LIST + key);
-        if (!list.empty()) {
-            return DataItem::fromJSON(list);
+    switch (type) {
+        case Project: {
+            string list = KeyValue::get(shared::HOME_PAGE_LIST + key);
+            if (!list.empty()) {
+                return DataItem::fromJSON(list);
+            }
+            break;
+        }
+        case Book: {
+            Ref<DataItem> item = this->getInfoData();
+            if (item) {
+                Ref<BookData> data = item->saveData(false);
+                if (data) {
+                    item->fill(data);
+                    return DataItem::fromJSON(data->getSubItems());
+                }
+            }
+            break;
         }
     }
     return gc::Array();
 }
 
 void Context::save(const gc::Array &arr) {
-    if (type == ContextProject) {
-        KeyValue::set(shared::HOME_PAGE_LIST + key, DataItem::toJSON(arr));
+    switch (type) {
+        case Project: {
+            KeyValue::set(shared::HOME_PAGE_LIST + key, DataItem::toJSON(arr));
+            break;
+        }
+        case Book: {
+            Ref<DataItem> item = this->getInfoData();
+            if (item) {
+                Ref<BookData> data = item->saveData(true);
+                data->setSubItems(DataItem::toJSON(arr));
+                data->save();
+            }
+            break;
+        }
     }
 }
 

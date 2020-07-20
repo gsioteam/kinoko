@@ -12,5 +12,7 @@ const Map words = {
   "new_project_hint": "Git://...",
   "add_project_failed": "没能添加，是否已经添加过了？",
   "manage_projects": "辖书斋",
-  "chapters": "章节列表"
+  "chapters": "章节列表",
+  "reverse_order": "逆序",
+  "order": "正序"
 };

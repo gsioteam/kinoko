@@ -28,9 +28,12 @@ class BookCollection extends glib.Collection {
 
     reload(cb) {
         let purl = new PageURL(this.url);
+        let info_data = this.info_data;
         this.fetch(this.url).then(function (doc) {
             let links = doc.querySelectorAll("#list > li > a");
             let results = [];
+            info_data.subtitle = doc.querySelector('.sub_r > .txtItme').text;
+            info_data.summary = doc.querySelector('.txtDesc').text;
             console.log(`Get links ${links.length}`);
             for (let i = 0, t = links.length; i < t; i++) {
                 let el = links[i];

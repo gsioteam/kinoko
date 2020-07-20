@@ -25,6 +25,7 @@
 #include "utils/Encoder.h"
 #include "utils/GumboParser.h"
 #include "utils/Error.h"
+#include "models/KeyValue.h"
 
 using namespace gscript;
 using namespace gc;
@@ -53,6 +54,7 @@ void dart_setupLibrary(Dart_CallClass call_class, Dart_CallInstance call_instanc
     ClassDB::reg<gs::Encoder>();
     ClassDB::reg<gs::GumboNode>();
     ClassDB::reg<gs::Error>();
+    ClassDB::reg<gs::KeyValue>();
 
     DartScript::setup(call_class, call_instance, from_native);
 

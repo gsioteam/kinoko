@@ -11,12 +11,14 @@
 
 namespace gs {
 
-    ENUM_BEGIN(ContextType)
-        ContextProject = 0,
-        ContextBook = 1
-    ENUM_END
-
     CLASS_BEGIN_NV(Context, gc::Object)
+
+    public:
+
+        ENUM_BEGIN(ContextType)
+            Project = 0,
+            Book = 1
+        ENUM_END
 
     protected:
         gc::Ref<Collection> target;

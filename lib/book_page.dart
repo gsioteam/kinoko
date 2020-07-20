@@ -9,9 +9,11 @@ import 'package:glib/core/array.dart';
 import 'package:glib/core/callback.dart';
 import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
+import 'package:glib/main/models.dart';
 import 'package:kinoko/localizations/localizations.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:glib/main/error.dart' as glib;
+import 'picture_viewer.dart';
 
 class BookPage extends StatefulWidget {
 
@@ -28,9 +30,17 @@ class _BookPageState extends State<BookPage> {
   BetterRefreshIndicatorController refreshController = BetterRefreshIndicatorController();
   Array chapters;
   bool editing = false;
-  bool reverse = false;
+  int order_index = 0;
+
+  static const String ORDER_TYPE = "order";
+
+  static const int ORDER = 1;
+  static const int R_ORDER = 0;
 
   Widget createItem(BuildContext context, int idx) {
+    if (order_index == ORDER) {
+      idx = chapters.length - idx - 1;
+    }
     DataItem item = chapters[idx];
     String subtitle = item.subtitle;
     return Column(
@@ -38,6 +48,14 @@ class _BookPageState extends State<BookPage> {
         ListTile(
           title: Text(item.title),
           subtitle: (subtitle == null || subtitle.length == 0) ? null : Text(subtitle),
+          trailing: AnimatedOpacity(
+            opacity: editing ? 1 : 0,
+            child: Icon(Icons.radio_button_unchecked),
+            duration: Duration(milliseconds: 300),
+          ),
+          onTap: () {
+            onSelectItem(idx);
+          },
         ),
         Divider(height: 3,)
       ],
@@ -51,6 +69,16 @@ class _BookPageState extends State<BookPage> {
         style: theme.textTheme.headline2.copyWith(color: Colors.white, fontSize: 14),
       ),
     ];
+
+    String subtitle = item.subtitle;
+    if (subtitle != null && !subtitle.isEmpty) {
+      spans.add(WidgetSpan(child: Padding(padding: EdgeInsets.only(top: 5),)));
+      spans.add(TextSpan(
+        text: "\n${item.subtitle}",
+        style: theme.textTheme.bodyText2.copyWith(color: Colors.white, fontSize: 8),
+      ));
+    }
+
     String summary = item.summary;
     if (summary != null && !summary.isEmpty) {
       spans.add(WidgetSpan(child: Padding(padding: EdgeInsets.only(top: 5),)));
@@ -67,6 +95,29 @@ class _BookPageState extends State<BookPage> {
       maxLines: 4,
       overflow: TextOverflow.ellipsis,
     );
+  }
+
+  onOrderChanged(int value) {
+    setState(() {
+      KeyValue.set(key(ORDER_TYPE),value.toString());
+      order_index = value;
+    });
+  }
+
+  onDownloadClicked() {
+    setState(() {
+      editing = !editing;
+    });
+  }
+
+  onSelectItem(int idx) {
+    if (editing) {
+
+    } else {
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+        return PictureViewer();
+      }));
+    }
   }
 
   @override
@@ -99,15 +150,29 @@ class _BookPageState extends State<BookPage> {
                         Icon(Icons.bookmark, color: theme.primaryColor, size: 14,),
                         Text(kt("chapters")),
                         Expanded(child: Container()),
-                        IconButton(
-                            icon: Icon(Icons.sort),
-                            color: theme.primaryColor,
-                            onPressed: (){}
+                        PopupMenuButton(
+                          onSelected: onOrderChanged,
+                          icon: Icon(Icons.sort, color: theme.primaryColor,),
+                          itemBuilder: (context) {
+                            return [
+                              CheckedPopupMenuItem<int>(
+                                value: R_ORDER,
+                                checked: order_index == R_ORDER,
+                                child: Text(kt("reverse_order"))
+                              ),
+
+                              CheckedPopupMenuItem<int>(
+                                value: ORDER,
+                                checked: order_index == ORDER,
+                                child: Text(kt("order"))
+                              )
+                            ];
+                          }
                         ),
                         IconButton(
                             icon: Icon(Icons.file_download),
                             color: theme.primaryColor,
-                            onPressed: (){}
+                            onPressed: onDownloadClicked
                         ),
                       ],
                     ),
@@ -123,6 +188,7 @@ class _BookPageState extends State<BookPage> {
                       width: double.infinity,
                       height: double.infinity,
                       image: CacheImage(data.picture),
+                      gaplessPlayback: true,
                       fit: BoxFit.cover,
                     ),
                     BackdropFilter(
@@ -140,8 +206,8 @@ class _BookPageState extends State<BookPage> {
                         gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [Color.fromRGBO(0, 0, 0, 0), Color.fromRGBO(0, 0, 0, 0.5)],
-                            stops: [0.4, 1]
+                            colors: [Color.fromRGBO(0, 0, 0, 0.5), Color.fromRGBO(0, 0, 0, 0), Color.fromRGBO(0, 0, 0, 0.5)],
+                            stops: [0, 0.4, 1]
                         ),
                       ),
                     ),
@@ -196,6 +262,10 @@ class _BookPageState extends State<BookPage> {
     );
   }
 
+  String key(String type) {
+    return "$type:${widget.context.info_data.link}";
+  }
+
   @override
   void initState() {
     widget.context.on_data_changed = Callback.fromFunction(onDataChanged).release();
@@ -203,6 +273,12 @@ class _BookPageState extends State<BookPage> {
     widget.context.on_error = Callback.fromFunction(onError).release();
     widget.context.enterView();
     chapters = widget.context.data.control();
+    String order = KeyValue.get(key(ORDER_TYPE));
+    if (order != null && !order.isEmpty) {
+      try {
+        order_index = int.parse(order);
+      } catch (e) { }
+    }
     super.initState();
   }
 

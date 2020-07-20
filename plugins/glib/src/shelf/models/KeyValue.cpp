@@ -12,7 +12,8 @@ std::string KeyValue::get(const std::string &key) {
     Array res = query->equal("key", key)->results();
     if (res.size() > 0) {
         Ref<KeyValue> kv = res->get(0);
-        return kv->getValue();
+        std::string val = kv->getValue();
+        return val;
     }
     return std::string();
 }

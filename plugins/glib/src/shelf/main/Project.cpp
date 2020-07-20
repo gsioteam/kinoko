@@ -83,9 +83,9 @@ gc::Ref<Context> Project::createIndexContext(const gc::Variant &data) {
         key = "unkown";
         LOG(w, "No id found in data");
     }
-    return Context::create(getFullpath() + "/" + index, data, ContextProject, key);
+    return Context::create(getFullpath() + "/" + index, data, Context::Project, key);
 }
 
 gc::Ref<Context> Project::createBookContext(const gc::Ref<DataItem> &item) {
-    return Context::create(getFullpath() + "/" + book, item, ContextBook, item->getLink());
+    return Context::create(getFullpath() + "/" + book, item, Context::Book, item->getLink());
 }
