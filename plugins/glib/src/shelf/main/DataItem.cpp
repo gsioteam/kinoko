@@ -79,8 +79,8 @@ void DataItem::fill(const gc::Ref<BookData> &data) {
     setData(JSON::parse(data->getData()));
 }
 
-gc::Ref<BookData> DataItem::saveData(bool save) {
-    Array arr = BookData::query()->equal("link", getLink())->results();
+gc::Ref<BookData> DataItem::saveData(bool save, const std::string &hash) {
+    Array arr = BookData::query()->equal("link", getLink())->andQ()->equal("hash", hash)->results();
     if (save) {
         Ref<BookData> data = arr->size() ? (Ref<BookData>)arr->get(0) : Ref<BookData>(new BookData());
         data->setTitle(getTitle());

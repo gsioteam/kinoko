@@ -17,7 +17,8 @@ namespace gs {
 
         ENUM_BEGIN(ContextType)
             Project = 0,
-            Book = 1
+            Book = 1,
+            Chapter = 2,
         ENUM_END
 
     protected:

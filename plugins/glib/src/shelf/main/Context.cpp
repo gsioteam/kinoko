@@ -113,7 +113,18 @@ gc::Array Context::load() {
         case Book: {
             Ref<DataItem> item = this->getInfoData();
             if (item) {
-                Ref<BookData> data = item->saveData(false);
+                Ref<BookData> data = item->saveData(false, key);
+                if (data) {
+                    item->fill(data);
+                    return DataItem::fromJSON(data->getSubItems());
+                }
+            }
+            break;
+        }
+        case Chapter: {
+            Ref<DataItem> item = this->getInfoData();
+            if (item) {
+                Ref<BookData> data = item->saveData(false, key);
                 if (data) {
                     item->fill(data);
                     return DataItem::fromJSON(data->getSubItems());
@@ -134,7 +145,16 @@ void Context::save(const gc::Array &arr) {
         case Book: {
             Ref<DataItem> item = this->getInfoData();
             if (item) {
-                Ref<BookData> data = item->saveData(true);
+                Ref<BookData> data = item->saveData(true, key);
+                data->setSubItems(DataItem::toJSON(arr));
+                data->save();
+            }
+            break;
+        }
+        case Chapter: {
+            Ref<DataItem> item = this->getInfoData();
+            if (item) {
+                Ref<BookData> data = item->saveData(true, key);
                 data->setSubItems(DataItem::toJSON(arr));
                 data->save();
             }

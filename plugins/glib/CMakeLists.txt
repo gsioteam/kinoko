@@ -56,6 +56,8 @@ add_library(
         src/shelf/main/Project.cpp
         src/shelf/main/DataItem.cpp
 
+        src/shelf/thirdparties/sha1/sha1.c
+
         src/shelf/utils/dart/DartRequest.cpp
         src/shelf/utils/dart/DartPlatform.cpp
         src/shelf/utils/JSON.cpp
@@ -74,7 +76,13 @@ add_library(
         src/shelf/models/KeyValue.cpp
         src/shelf/models/BookData.cpp
 )
-target_include_directories(glib PUBLIC thirdparties/sqlite3)
+target_include_directories(
+        glib
+        PRIVATE
+
+        thirdparties/sqlite3
+        src/shelf/thirdparties/sha1
+)
 
 add_library(
         charset
@@ -88,6 +96,7 @@ target_include_directories(
 
         thirdparties/libiconv-1.16/libcharset
         thirdparties/libiconv-1.16/libcharset/include
+        src/shelf/thirdparties/sha1/
 )
 
 file(GLOB ICONV_SRCLIB thirdparties/libiconv-1.16/srclib/*.c)

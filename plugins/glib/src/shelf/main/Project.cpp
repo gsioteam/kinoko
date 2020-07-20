@@ -10,6 +10,9 @@
 #include "Context.h"
 #include "DataItem.h"
 #include "../models/KeyValue.h"
+extern "C" {
+#include <sha1.h>
+}
 
 using namespace gs;
 using namespace std;
@@ -21,6 +24,12 @@ void Project::initialize(const std::string &path) {
     this->path = shared::repo_path() + "/" + (shared::is_debug_mode ? "project" : path);
     validated = false;
     stringstream ss;
+    std::string last_seg = this->path.substr(this->path.find_last_of("/") + 1);
+
+    char hash[21];
+    SHA1(hash, last_seg.c_str(), last_seg.size());
+    this->hash = hash;
+
     string config_path = this->path + "/config.json";
     FILE *file = fopen(config_path.c_str(), "r");
     if (file) {
@@ -37,11 +46,13 @@ void Project::initialize(const std::string &path) {
             name = config["name"];
             url = config["url"];
             index = config["index"];
-            book = config["book"];
+            if (config.contains("book"))
+                book = config["book"];
+            if (config.contains("chapter"))
+                chapter = config["chapter"];
             auto it = config.find("subtitle");
-            if (it != config.end()) {
+            if (it != config.end())
                 subtitle = it.value();
-            }
 
             it = config.find("categories");
             if (it != config.end()) {
@@ -74,18 +85,13 @@ void Project::setMainProject() {
 }
 
 gc::Ref<Context> Project::createIndexContext(const gc::Variant &data) {
-    gc::Map map = data;
-    std::string key;
-    if (map) {
-        Variant vid = map->get("id");
-        key = url + ":" + vid.str();
-    } else {
-        key = "unkown";
-        LOG(w, "No id found in data");
-    }
-    return Context::create(getFullpath() + "/" + index, data, Context::Project, key);
+    return Context::create(getFullpath() + "/" + index, data, Context::Project, hash);
 }
 
 gc::Ref<Context> Project::createBookContext(const gc::Ref<DataItem> &item) {
-    return Context::create(getFullpath() + "/" + book, item, Context::Book, item->getLink());
+    return Context::create(getFullpath() + "/" + book, item, Context::Book, hash);
+}
+
+gc::Ref<Context> Project::createChapterContext(const gc::Ref<DataItem> &item) {
+    return Context::create(getFullpath() + "/" + chapter, item, Context::Chapter, hash);
 }

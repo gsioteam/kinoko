@@ -4,6 +4,7 @@
     "url": "https://wap.kukudm.com/",
     "index": "index.js",
     "book": "book.js",
+    "chapter": "chapter.js",
     "categories": [
         {
             "title": "推薦",

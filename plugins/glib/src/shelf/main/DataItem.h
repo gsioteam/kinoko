@@ -35,7 +35,7 @@ namespace gs {
         static gc::Array fromJSON(const std::string &j);
 
         void fill(const gc::Ref<BookData> &data);
-        gc::Ref<BookData> saveData(bool save);
+        gc::Ref<BookData> saveData(bool save, const std::string &hash);
 
         METHOD const std::string &getTitle() const {
             return title;
