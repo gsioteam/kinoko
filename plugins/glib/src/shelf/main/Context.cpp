@@ -171,10 +171,12 @@ void Context::enterView() {
         if (data.size()) {
             target->setData(data);
             if (this->on_data_changed) {
-                this->on_data_changed(data, DataReload);
+                this->on_data_changed(Collection::Reload, data, 0);
             }
         }
-        reload();
+        if (type != Chapter || !data->size()) {
+            reload();
+        }
     }
 }
 
@@ -193,13 +195,14 @@ void Context::loadMore() {
 
 void Context::setupTarget(const gc::Ref<Collection> &target) {
     Wk<Context> weak = this;
-    target->on(Collection::NOTIFICATION_dataChanged, C([=](Array array, ChangeType type){
+    target->on(Collection::NOTIFICATION_dataChanged, C([=](Collection::ChangeType type, Array array, int idx){
         Ref<Context> that = weak.lock();
         if (that) {
-            if (type == DataReload && array->size() > 0)
-                save(array);
+            if (type != Collection::Append && that->getData()->size() > 0) {
+                save(that->getData());
+            }
             if (that->on_data_changed) {
-                that->on_data_changed(array, type);
+                that->on_data_changed(type, array, idx);
             }
         }
     }));
@@ -215,4 +218,10 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
             that->on_error(error);
         }
     }));
+//    target->on(Collection::NOTIFICATION_reloadComplete, C([=]() {
+//        Ref<Context> that = weak.lock();
+//        if (that && that->getData()->size() > 0) {
+//            save(that->getData());
+//        }
+//    }));
 }

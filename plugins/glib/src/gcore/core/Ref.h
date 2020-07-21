@@ -48,6 +48,15 @@ namespace gc {
             apply(name, &ret, (const Variant **)params.data(), (int)params.size());
             return ret;
         }
+        template <class ...Argv>
+        Variant applyArgv(const StringName &name, Argv... argv) {
+            variant_vector var{argv...};
+            pointer_vector pv;
+            for (auto it = var.begin(), _e = var.end(); it != _e; ++it) {
+                pv.push_back(&*it);
+            }
+            return apply(name, pv);
+        }
 
         void addScript(ScriptInstance *scriptClass);
         void removeScript(ScriptInstance *instance);

@@ -12,11 +12,6 @@
 
 namespace gs {
 
-    ENUM_BEGIN(ChangeType)
-        DataReload = 1,
-        DataAppend = 2
-    ENUM_END
-
     CLASS_BEGIN_N(Collection, gc::Object)
 
         bool loading = false;
@@ -25,6 +20,12 @@ namespace gs {
 
     public:
 
+        ENUM_BEGIN(ChangeType)
+            Reload = 1,
+            Append = 2,
+            Changed = 3
+        ENUM_END
+
         Collection() {}
 
         METHOD void initialize(gc::Variant info_data);
@@ -32,18 +33,20 @@ namespace gs {
         EVENT(bool, reload, gc::Callback);
         EVENT(bool, loadMore, gc::Callback);
 
-        NOTIFICATION(dataChanged, gc::Array array, ChangeType type);
+        NOTIFICATION(dataChanged, ChangeType type, gc::Array array, int index);
         NOTIFICATION(loading, bool is_loading);
         NOTIFICATION(error, gc::Ref<Error>);
+        NOTIFICATION(reloadComplete);
 
         METHOD bool reload();
         METHOD bool loadMore();
 
+        METHOD void setDataAt(const gc::Variant &var, int idx);
+        METHOD void setData(const gc::Array &array);
+        METHOD void appendData(const gc::Array &array);
+
         METHOD const gc::Array &getData() const {
             return data;
-        }
-        METHOD void setData(const gc::Array &data) {
-            this->data.vec() = data->vec();
         }
         PROPERTY(data, getData, setData);
 
@@ -59,6 +62,8 @@ namespace gs {
             INITIALIZER(cls, Collection, initialize);
             ADD_METHOD(cls, Collection, reload);
             ADD_METHOD(cls, Collection, loadMore);
+            ADD_METHOD(cls, Collection, setDataAt);
+            ADD_METHOD(cls, Collection, appendData);
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Collection, getData), ADD_METHOD(cls, Collection, setData));
             ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Collection, getInfoData), ADD_METHOD(cls, Collection, setInfoData));
         ON_LOADED_END

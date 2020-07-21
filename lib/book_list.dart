@@ -45,7 +45,7 @@ class _BookListPageState extends State<BookListPage> {
     return false;
   }
 
-  void onDataChanged(Array data, int type) {
+  void onDataChanged(int type, Array data, int idx) {
     if (data != null) {
       setState(() {});
     }

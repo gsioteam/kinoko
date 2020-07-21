@@ -39,7 +39,7 @@ gs::GumboNode::GumboNode(const gc::Ref<gs::Gumbo> &gumbo) {
 gc::Ref<gs::GumboNode> gs::GumboNode::parse(const gc::Ref<gc::Data> &data, const char *encode) {
     if (!data) return nullptr;
     Ref<Data> buf_data;
-    if (encode) {
+    if (encode && strcmp(encode, "")) {
         buf_data = Encoder::decode(data, encode);
     } else {
         buf_data = data;
@@ -47,9 +47,22 @@ gc::Ref<gs::GumboNode> gs::GumboNode::parse(const gc::Ref<gc::Data> &data, const
     b8_vector buf = buf_data->readAll();
     data->close();
     Ref<Gumbo> gumbo(new_t(Gumbo, (const char*)buf.data(), buf.size()));
-    gs::GumboNode *node = new gs::GumboNode(gumbo);
-    node->n = gumbo->output->root;
-    return node;
+    gc::Ref<gs::GumboNode> node(new gs::GumboNode(gumbo));
+    if (gumbo->output) {
+        node->n = gumbo->output->root;
+        return node;
+    }
+    return nullptr;
+}
+
+gc::Ref<gs::GumboNode> gs::GumboNode::parse2(const std::string &html) {
+    Ref<Gumbo> gumbo(new_t(Gumbo, (const char*)html.data(), html.size()));
+    gc::Ref<gs::GumboNode> node(new gs::GumboNode(gumbo));
+    if (gumbo->output) {
+        node->n = gumbo->output->root;
+        return node;
+    }
+    return nullptr;
 }
 
 #define N ((::GumboNode *)n)

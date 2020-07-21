@@ -24,6 +24,7 @@ namespace gs {
     public:
 
         METHOD static gc::Ref<GumboNode> parse(const gc::Ref<gc::Data> &data, const char *encode = nullptr);
+        METHOD static gc::Ref<GumboNode> parse2(const std::string &html);
 
         METHOD std::string getTagName();
         METHOD gc::Array query(const std::string &css);
@@ -37,7 +38,8 @@ namespace gs {
 
     protected:
         ON_LOADED_BEGIN(cls, gc::Object)
-            ADD_METHOD_D(cls, GumboNode, parse, NULL);
+            ADD_METHOD_D(cls, GumboNode, parse, gc::Variant::null());
+            ADD_METHOD(cls, GumboNode, parse2);
             ADD_METHOD(cls, GumboNode, getTagName);
             ADD_METHOD(cls, GumboNode, query);
             ADD_METHOD(cls, GumboNode, getText);

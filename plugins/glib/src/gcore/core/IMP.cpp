@@ -594,7 +594,7 @@ string Variant::str() const {
     } else if (type == TypeReference || type == TypeObject) {
         return get()->str();
     }
-    return "(NULL)";
+    return "";
 }
 
 bool Variant::isRef(int8_t type) {
@@ -607,7 +607,7 @@ Variant::operator const char *() const {
     }else if (type == TypeStringName) {
         return StringName(get<void>()).str();
     }
-    return "(NULL)";
+    return "";
 }
 
 Variant::operator Base *() const {
@@ -882,12 +882,16 @@ string _Array::str() const {
 
 bool _Array::triger(ArrayEvent event, long idx, const Variant &v) {
     Callback *lis = (Callback*)listener;
-    return (*lis)->invoke(Array{event, idx, v});
+    if (lis)
+        return (*lis)->invoke(Array{event, idx, v});
+    return false;
 }
 
 bool _Array::replace(long idx, const Variant &v1, const Variant &v2) {
     Callback *lis = (Callback*)listener;
-    return (*lis)->invoke(Array{E(Replace), idx, v1, v2});
+    if (lis)
+        return (*lis)->invoke(Array{E(Replace), idx, v1, v2});
+    else return false;
 }
 
 void _Array::push_back(const Variant &var) {

@@ -13,20 +13,20 @@ DEVENT(Collection, loadMore);
 DNOTIFICATION(Collection, dataChanged);
 DNOTIFICATION(Collection, loading);
 DNOTIFICATION(Collection, error);
+DNOTIFICATION(Collection, reloadComplete);
 
 bool Collection::reload() {
     if (loading) return false;
     Wk<Collection> weak = this;
-    Variant var = C([=](Ref<Error> error, Array array){
+    Variant var = C([=](Ref<Error> error){
         Ref<Collection> that = weak.lock();
         if (that) {
+            that->loading = false;
             that->trigger(NOTIFICATION_loading, false);
             if (error) {
                 that->trigger(NOTIFICATION_error, error);
             } else {
-                that->setData(array);
-                that->loading = false;
-                that->trigger(NOTIFICATION_dataChanged, array, DataReload);
+                that->trigger(NOTIFICATION_reloadComplete);
             }
         }
     });
@@ -41,18 +41,13 @@ bool Collection::reload() {
 bool Collection::loadMore() {
     if (loading) return false;
     Wk<Collection> weak = this;
-    Variant var = C([=](Ref<Error> error, Array array){
+    Variant var = C([=](Ref<Error> error){
         Ref<Collection> that = weak.lock();
         if (that) {
+            that->loading = false;
             that->trigger(NOTIFICATION_loading, false);
             if (error) {
                 that->trigger(NOTIFICATION_error, error);
-            } else {
-                for (int i = 0; i < array->size(); ++i) {
-                    that->data->push_back(array->get(i));
-                }
-                that->loading = false;
-                that->trigger(NOTIFICATION_dataChanged, array, DataAppend);
             }
         }
     });
@@ -66,4 +61,26 @@ bool Collection::loadMore() {
 
 void Collection::initialize(gc::Variant info_data) {
     this->info_data = info_data;
+}
+
+void Collection::setDataAt(const gc::Variant &var, int idx) {
+    if (data->size() <= idx) {
+        data->resize(idx + 1);
+    }
+    data->set(idx, var);
+
+    trigger(NOTIFICATION_dataChanged, Changed, Array(var), idx);
+}
+
+void Collection::setData(const gc::Array &array) {
+    data->vec() = array->vec();
+    trigger(NOTIFICATION_dataChanged, Reload, array);
+}
+
+void Collection::appendData(const gc::Array &array) {
+    long o_size = data->size();
+    for (int i = 0; i < array->size(); ++i) {
+        data->push_back(array->get(i));
+    }
+    trigger(NOTIFICATION_dataChanged, Reload, array, o_size);
 }

@@ -90,6 +90,7 @@ gc::Ref<BookData> DataItem::saveData(bool save, const std::string &hash) {
         data->setLink(getLink());
         data->setType(getType());
         data->setData(JSON::serialize(getData()).dump());
+        data->setHash(hash);
         return data;
     } else {
         return arr->size() ? (Ref<BookData>)arr->get(0) : Ref<BookData>::null();

@@ -462,7 +462,6 @@ void V8Script::registerClass(const v8::FunctionCallbackInfo<v8::Value> &info) {
         strname.resize(len);
         class_name->WriteUtf8(ISO, (char *)strname.data(), len);
 
-        LOG(i, "Str name %s", strname.c_str());
         v8::Persistent<v8::Function> *clz = new v8::Persistent<v8::Function>(ISO, Cls);
         that->regClass(clz, strname.c_str());
     }

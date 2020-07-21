@@ -32,10 +32,9 @@ class HomeCollection extends Collection {
 
     reload(cb) {
         let purl = new PageURL(this.url);
-        this.fetch(this.url).then(function(doc){
+        this.fetch(this.url).then((doc)=>{
             let results = [];
             let boxes = doc.querySelectorAll('.imgBox');
-            console.log(`Found ${boxes.length} imageBox`);
             for (let box of boxes) {
                 let subhead = box.querySelector('.Sub_H2');
                 if (subhead) {
@@ -61,12 +60,12 @@ class HomeCollection extends Collection {
                     results.push(item);
                 }
             }
-            console.log("result " + results.length);
-            cb.apply(null, results);
+            this.setData(results);
+            cb.apply(null);
         }).catch(function(err) {
             if (err instanceof Error) 
                 err = glib.Error.new(305, err.message);
-            cb.apply(err, null);
+            cb.apply(err);
         });
         return true;
     }
@@ -76,10 +75,9 @@ class UpdateCollection extends Collection {
 
     reload(cb) {
         let purl = new PageURL(this.url);
-        this.fetch(this.url).then(function(doc){
+        this.fetch(this.url).then((doc) => {
             let results = [];
             let boxes = doc.querySelectorAll('.UpdateList .itemBox');
-            console.log(`Found ${boxes.length} imageBox`);
             for (let box of boxes) {
                 let linkimg = box.querySelector('.itemImg a');
                 let item = glib.DataItem.new();
@@ -88,19 +86,18 @@ class UpdateCollection extends Collection {
                 item.picture = purl.href(linkimg.querySelector('img').getAttribute('src'));
                 let items = box.querySelectorAll('.itemTxt > .txtItme');
                 let summary = [];
-                console.log("Link " + items.length);
                 for (const elem of items) {
                     summary.push(elem.text);
                 }
                 item.subtitle = summary.join('|');
                 results.push(item);
             }
-            console.log("result " + results.length);
-            cb.apply(null, results);
+            this.setData(results);
+            cb.apply(null);
         }).catch(function(err) {
             if (err instanceof Error) 
                 err = glib.Error.new(305, err.message);
-            cb.apply(err, null);
+            cb.apply(err);
         });
         return true;
     }

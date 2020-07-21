@@ -114,7 +114,6 @@ class _BookPageState extends State<BookPage> {
 
   onSelectItem(int idx) async {
     if (editing) {
-
     } else {
       DataItem data = chapters[idx];
       Context ctx = widget.project.createChapterContext(data).control();
@@ -246,7 +245,7 @@ class _BookPageState extends State<BookPage> {
   }
 
 
-  void onDataChanged(Array data, int type) {
+  void onDataChanged(int type, Array data, int idx) {
     if (data != null) {
       setState(() {});
     }

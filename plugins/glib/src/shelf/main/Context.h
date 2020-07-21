@@ -67,7 +67,7 @@ namespace gs {
             return target->getInfoData();
         }
         METHOD void setInfoData(const gc::Variant &info_data) {
-            this->setInfoData(info_data);
+            target->setInfoData(info_data);
         }
         PROPERTY(info_data, getInfoData, setInfoData);
 

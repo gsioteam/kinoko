@@ -10,6 +10,7 @@
 #include "Context.h"
 #include "DataItem.h"
 #include "../models/KeyValue.h"
+#include <bit64/bit64.h>
 extern "C" {
 #include <sha1.h>
 }
@@ -28,7 +29,9 @@ void Project::initialize(const std::string &path) {
 
     char hash[21];
     SHA1(hash, last_seg.c_str(), last_seg.size());
-    this->hash = hash;
+    size_t len = bit64_encode_size(20);
+    this->hash.resize(len);
+    bit64_encode((const unsigned char *)hash, 20, (unsigned char *)this->hash.data());
 
     string config_path = this->path + "/config.json";
     FILE *file = fopen(config_path.c_str(), "r");

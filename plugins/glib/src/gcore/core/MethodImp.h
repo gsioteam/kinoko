@@ -250,7 +250,7 @@ public:
         setType(Static);
 //        setReturnType(get_type<Ret>::getClass());
         makeParamsTypes();
-        setDefaultValues(dv, 0);
+        setDefaultValues(dv, count);
     }
     StaticMethodImp(const char *name,
                     const method_type &method,
