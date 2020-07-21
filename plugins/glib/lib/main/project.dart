@@ -38,4 +38,5 @@ class Project extends Base {
 
   Context createIndexContext(dynamic data) => call("createIndexContext", argv: [data]);
   Context createBookContext(DataItem data) => call("createBookContext", argv: [data]);
+  Context createChapterContext(DataItem data) => call("createChapterContext", argv: [data]);
 }

@@ -182,6 +182,11 @@ class Error extends Object {
 }
 Error.reg();
 
+class ScriptContext extends Object {
+    static class_name = 'gs::ScriptContext';
+}
+ScriptContext.reg();
+
 module.exports = {
     Object,
     Callback,
@@ -194,4 +199,5 @@ module.exports = {
     GumboNode,
     DataItem,
     Error,
+    ScriptContext,
 };

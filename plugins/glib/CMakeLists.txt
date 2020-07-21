@@ -71,6 +71,7 @@ add_library(
         src/shelf/utils/database/DBMaker.cpp
         src/shelf/utils/Bit64.cpp
         src/shelf/utils/Error.cpp
+        src/shelf/utils/ScriptContext.cpp
 
         src/shelf/models/GitLibrary.cpp
         src/shelf/models/KeyValue.cpp

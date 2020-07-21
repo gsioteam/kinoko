@@ -10,6 +10,7 @@ import 'package:glib/core/callback.dart';
 import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
+import 'package:glib/main/project.dart';
 import 'package:kinoko/localizations/localizations.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:glib/main/error.dart' as glib;
@@ -18,8 +19,9 @@ import 'picture_viewer.dart';
 class BookPage extends StatefulWidget {
 
   Context context;
+  Project project;
 
-  BookPage(this.context);
+  BookPage(this.context, this.project);
 
   @override
   State<StatefulWidget> createState() => _BookPageState();
@@ -110,13 +112,16 @@ class _BookPageState extends State<BookPage> {
     });
   }
 
-  onSelectItem(int idx) {
+  onSelectItem(int idx) async {
     if (editing) {
 
     } else {
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-        return PictureViewer();
+      DataItem data = chapters[idx];
+      Context ctx = widget.project.createChapterContext(data).control();
+      await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+        return PictureViewer(ctx);
       }));
+      ctx.release();
     }
   }
 

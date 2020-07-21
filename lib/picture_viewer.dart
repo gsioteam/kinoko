@@ -2,10 +2,17 @@
 import 'package:cache_image/cache_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:glib/core/array.dart';
+import 'package:glib/main/context.dart';
+import 'package:glib/main/data_item.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
 class PictureViewer extends StatefulWidget {
+  Context context;
+
+  PictureViewer(this.context);
+
   @override
   State<StatefulWidget> createState() {
     return _PictureViewerState();
@@ -13,17 +20,8 @@ class PictureViewer extends StatefulWidget {
 }
 
 class _PictureViewerState extends State<PictureViewer> {
-  List<String> images = [
-    "https://homepages.cae.wisc.edu/~ece533/images/airplane.png",
-    "https://homepages.cae.wisc.edu/~ece533/images/arctichare.png",
-    "https://homepages.cae.wisc.edu/~ece533/images/baboon.png",
-    "https://homepages.cae.wisc.edu/~ece533/images/barbara.png",
-    "https://homepages.cae.wisc.edu/~ece533/images/boat.png",
-    "https://homepages.cae.wisc.edu/~ece533/images/fruits.png",
-    "https://homepages.cae.wisc.edu/~ece533/images/frymire.png",
-    "https://homepages.cae.wisc.edu/~ece533/images/girl.png",
-    "https://homepages.cae.wisc.edu/~ece533/images/goldhill.png"
-  ];
+
+  Array data;
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +29,11 @@ class _PictureViewerState extends State<PictureViewer> {
       body: Container(
         color: Colors.black,
         child: PhotoViewGallery.builder(
-          itemCount: images.length,
+          itemCount: data.length,
           builder: (BuildContext context, int index) {
+            DataItem item = data[index];
             return PhotoViewGalleryPageOptions(
-              imageProvider: CacheImage(images[index]),
+              imageProvider: CacheImage(item.picture),
               initialScale: PhotoViewComputedScale.contained,
 //              heroAttributes: HeroAttributes(tag: galleryItems[index].id),
             );
@@ -55,5 +54,17 @@ class _PictureViewerState extends State<PictureViewer> {
         ),
       ),
     );
+
+    initState() {
+      widget.context.enterView();
+      data = widget.context.data.control();
+      super.initState();
+    }
+
+    dispose() {
+      widget.context.exitView();
+      data.release();
+      super.dispose();
+    }
   }
 }

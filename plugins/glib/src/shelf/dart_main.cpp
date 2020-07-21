@@ -26,6 +26,7 @@
 #include "utils/GumboParser.h"
 #include "utils/Error.h"
 #include "models/KeyValue.h"
+#include "utils/ScriptContext.h"
 
 using namespace gscript;
 using namespace gc;
@@ -55,6 +56,7 @@ void dart_setupLibrary(Dart_CallClass call_class, Dart_CallInstance call_instanc
     ClassDB::reg<gs::GumboNode>();
     ClassDB::reg<gs::Error>();
     ClassDB::reg<gs::KeyValue>();
+    ClassDB::reg<gs::ScriptContext>();
 
     DartScript::setup(call_class, call_instance, from_native);
 

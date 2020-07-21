@@ -35,7 +35,7 @@ class _BookListPageState extends State<BookListPage> {
   void itemClicked(int idx) async {
     Context ctx = widget.project.createBookContext(books[idx]).control();
     await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => BookPage(ctx)
+      builder: (context) => BookPage(ctx, widget.project)
     ));
     ctx.release();
   }
