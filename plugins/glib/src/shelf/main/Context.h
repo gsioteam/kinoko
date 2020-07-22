@@ -36,6 +36,8 @@ namespace gs {
         void save(const gc::Array &arr);
 
     public:
+        ~Context();
+
         METHOD virtual void setup(const char *path, const gc::Variant &data) = 0;
         METHOD virtual bool isReady() {return !!target;}
 

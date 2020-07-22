@@ -161,6 +161,13 @@ packages:
       relative: true
     source: path
     version: "0.0.1"
+  hardware_buttons:
+    dependency: "direct main"
+    description:
+      name: hardware_buttons
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
   http:
     dependency: transitive
     description:

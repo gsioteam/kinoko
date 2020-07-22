@@ -163,6 +163,10 @@ void Context::save(const gc::Array &arr) {
     }
 }
 
+Context::~Context() {
+    LOG(i, "Delete Context");
+}
+
 void Context::enterView() {
     if (!isReady()) return;
     if (first_enter) {
