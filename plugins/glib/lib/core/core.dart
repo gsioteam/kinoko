@@ -24,6 +24,7 @@ mixin AutoRelease {
   static List<AutoRelease> _cachePool = List<AutoRelease>();
   static Timer timer;
   int _retainCount = 1;
+  bool _destroyed = false;
 
   control() {
     _retainCount ++;
@@ -38,31 +39,31 @@ mixin AutoRelease {
       throw Exception("Object already release!");
     }
     _retainCount--;
-    print("Release ${this.runtimeType} $_retainCount");
     if (_retainCount <= 0 && !_cachePool.contains(this)) {
       _cachePool.add(this);
     }
 
     if (timer == null) {
-      timer = Timer.periodic(Duration(milliseconds: 30), _timeUp);
+      timer = Timer.periodic(Duration(milliseconds: 20), _timeUp);
     }
     return this;
   }
 
   static _timeUp(Timer t) {
     t.cancel();
-    print("_timeUp ${_cachePool.length}");
     List<AutoRelease> copyList = List<AutoRelease>.from(_cachePool);
     _cachePool.clear();
     copyList.forEach((AutoRelease tar){
-      print("delete ${tar.runtimeType}");
       tar.destroy();
+      tar._destroyed = true;
     });
     timer = null;
   }
 
   destroy() {
   }
+
+  bool get isDestroyed => _destroyed;
 }
 
 class AutoPointer<T extends NativeType> with AutoRelease {
@@ -216,6 +217,9 @@ class Base with AutoRelease {
   TypeInfo _type;
 
   dynamic call(String name, { argv: const <dynamic>[]}) {
+    if (isDestroyed) {
+      throw new Exception("This object(${runtimeType}) is destroyed.");
+    }
     Pointer<NativeTarget> argvPtr = _makeArgv(argv);
     Pointer<Utf8> namePtr = Utf8.toUtf8(name);
     Pointer<NativeTarget> resultPtr = callObject(_id, namePtr, argvPtr, argv.length);

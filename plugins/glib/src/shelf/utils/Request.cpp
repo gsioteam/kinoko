@@ -157,5 +157,4 @@ void Request::requestComplete(const gc::Ref<gs::Request> &req) {
 }
 
 Request::~Request() {
-    LOG(i, "Delete Request");
 }

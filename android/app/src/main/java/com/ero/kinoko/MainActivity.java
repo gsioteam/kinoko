@@ -2,7 +2,9 @@ package com.ero.kinoko;
 
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.view.KeyEvent;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.qlp.glib.GlibPlugin;
@@ -12,10 +14,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import io.flutter.Log;
 import io.flutter.embedding.android.FlutterActivity;
+import io.flutter.embedding.engine.FlutterEngine;
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
 
 public class MainActivity extends FlutterActivity {
     final boolean is_debug = true;
+    private final String CHANNEL = "com.ero.kinoko/volume_button";
+    boolean handleVolumeButton = false;
+    MethodChannel channel;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -62,5 +71,40 @@ public class MainActivity extends FlutterActivity {
         }
         outputStream.close();
         stream.close();
+    }
+
+    @Override
+    public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
+        super.configureFlutterEngine(flutterEngine);
+
+        channel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL);
+        channel.setMethodCallHandler(new MethodChannel.MethodCallHandler() {
+            @Override
+            public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
+                if (call.method.equals("start")) {
+                    handleVolumeButton = true;
+                } else if (call.method.equals("stop")) {
+                    handleVolumeButton = false;
+                }
+            }
+        });
+    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (handleVolumeButton) {
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                int code = 0;
+                if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+                    code = 1;
+                } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+                    code = 2;
+                }
+                channel.invokeMethod("keyDown", code);
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

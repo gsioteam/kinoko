@@ -101,10 +101,25 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data, C
     return nullptr;
 }
 
-gc::Array Context::load() {
+#define TIME_TAIL "-time"
+#define EXPIRE_TIME (30 * 60 * 100)
+
+void Context::saveTime(const std::string &key) {
+    char time_str[256];
+    sprintf(time_str, "%lld", currentTime());
+    KeyValue::set(key + TIME_TAIL, time_str);
+}
+
+gc::Array Context::load(bool &update, int &flag) {
     switch (type) {
         case Project: {
-            string list = KeyValue::get(shared::HOME_PAGE_LIST + key);
+            Map data = target->getInfoData();
+            std::string url = data["url"];
+            string save_key = key + ":" + url;
+            string list = KeyValue::get(save_key);
+            string timestr = KeyValue::get(save_key + TIME_TAIL);
+            long long time = timestr.empty() ? 0 : atoll(timestr.c_str());
+            update = (currentTime() - time) > EXPIRE_TIME;
             if (!list.empty()) {
                 return DataItem::fromJSON(list);
             }
@@ -115,7 +130,9 @@ gc::Array Context::load() {
             if (item) {
                 Ref<BookData> data = item->saveData(false, key);
                 if (data) {
+                    flag = data->getFlag();
                     item->fill(data);
+                    update = (currentTime() - data->getDate()) > EXPIRE_TIME;
                     return DataItem::fromJSON(data->getSubItems());
                 }
             }
@@ -126,7 +143,9 @@ gc::Array Context::load() {
             if (item) {
                 Ref<BookData> data = item->saveData(false, key);
                 if (data) {
+                    flag = data->getFlag();
                     item->fill(data);
+                    update = (currentTime() - data->getDate()) > EXPIRE_TIME;
                     return DataItem::fromJSON(data->getSubItems());
                 }
             }
@@ -139,7 +158,11 @@ gc::Array Context::load() {
 void Context::save(const gc::Array &arr) {
     switch (type) {
         case Project: {
-            KeyValue::set(shared::HOME_PAGE_LIST + key, DataItem::toJSON(arr));
+            Map data = target->getInfoData();
+            std::string url = data["url"];
+            string save_key = key + ":" + url;
+            KeyValue::set(save_key, DataItem::toJSON(arr));
+            saveTime(save_key);
             break;
         }
         case Book: {
@@ -147,6 +170,7 @@ void Context::save(const gc::Array &arr) {
             if (item) {
                 Ref<BookData> data = item->saveData(true, key);
                 data->setSubItems(DataItem::toJSON(arr));
+                data->setDate(currentTime());
                 data->save();
             }
             break;
@@ -156,6 +180,7 @@ void Context::save(const gc::Array &arr) {
             if (item) {
                 Ref<BookData> data = item->saveData(true, key);
                 data->setSubItems(DataItem::toJSON(arr));
+                data->setDate(currentTime());
                 data->save();
             }
             break;
@@ -163,23 +188,29 @@ void Context::save(const gc::Array &arr) {
     }
 }
 
-Context::~Context() {
-    LOG(i, "Delete Context");
-}
+//Context::~Context() {}
 
 void Context::enterView() {
     if (!isReady()) return;
     if (first_enter) {
         first_enter = false;
-        Array data = load();
+        bool update = false;
+        int flag = 0;
+        Array data = load(update, flag);
         if (data.size()) {
             target->setData(data);
             if (this->on_data_changed) {
                 this->on_data_changed(Collection::Reload, data, 0);
             }
         }
-        if (type != Chapter || !data->size()) {
-            reload();
+        if (type == Chapter) {
+            if (flag == 0) {
+                reload();
+            }
+        } else {
+            if (update || !data->size()) {
+                reload();
+            }
         }
     }
 }
@@ -222,10 +253,17 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
             that->on_error(error);
         }
     }));
-//    target->on(Collection::NOTIFICATION_reloadComplete, C([=]() {
-//        Ref<Context> that = weak.lock();
-//        if (that && that->getData()->size() > 0) {
-//            save(that->getData());
-//        }
-//    }));
+    target->on(Collection::NOTIFICATION_reloadComplete, C([=]() {
+        Ref<Context> that = weak.lock();
+        if (that) {
+            Ref<DataItem> item = this->getInfoData();
+            if (item) {
+                Ref<BookData> data = item->saveData(false, key);
+                if (data) {
+                    data->setFlag(1);
+                    data->save();
+                }
+            }
+        }
+    }));
 }

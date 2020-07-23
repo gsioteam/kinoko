@@ -11,6 +11,7 @@
 #include <core/String.h>
 #include <fstream>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "../script_define.h"
 
@@ -63,7 +64,6 @@ namespace gscript {
     class V8Container {
     public:
         v8::Isolate *isolate = NULL;
-        std::unique_ptr<v8::Platform> platform;
         v8::Global<v8::Context> context;
         v8::Global<v8::Private> native_key;
 
@@ -80,7 +80,19 @@ namespace gscript {
         int script_index = 0;
 
         ~V8Container() {
-            if (isolate) isolate->Dispose();
+            if (isolate) {
+                LOG(i, "Delete at %ld", pthread_self());
+                isolate->Dispose();
+            }
+        }
+
+        void clear() {
+            context.Reset();
+            native_key.Reset();
+            global_template.Reset();
+            global.Reset();
+            convert.Reset();
+            setup_global.Reset();
         }
     };
 
@@ -108,23 +120,23 @@ namespace gscript {
         }
         return res;
     }
+
+    std::shared_ptr<v8::ArrayBuffer::Allocator> array_buffer_allocator_shared;
+    std::unique_ptr<v8::Platform> v8platform;
 }
 
 V8Script::V8Script(const char *dir) : Script("v8") {
     c = new V8Container;
-    c->platform = v8::platform::NewDefaultPlatform();
     if (!v8_init) {
-//        v8::V8::InitializeICUDefaultLocation(dir);
-//        v8::V8::InitializeExternalStartupData(dir);
-        v8::V8::InitializePlatform(c->platform.get());
+        v8platform = v8::platform::NewDefaultPlatform();
+        v8::V8::InitializePlatform(v8platform.get());
         v8::V8::Initialize();
         v8_init = true;
+        array_buffer_allocator_shared = std::shared_ptr<v8::ArrayBuffer::Allocator>(v8::ArrayBuffer::Allocator::NewDefaultAllocator());
     }
-    v8::V8::SetFlagsFromString("--expose_gc");
 
     v8::Isolate::CreateParams create_params;
-    create_params.array_buffer_allocator =
-            v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+    create_params.array_buffer_allocator_shared = array_buffer_allocator_shared;
 
     c->isolate = v8::Isolate::New(create_params);
     c->isolate->SetFatalErrorHandler(V8Script::fatalErrorCallback);
@@ -135,7 +147,6 @@ V8Script::V8Script(const char *dir) : Script("v8") {
     v8::Local<v8::ObjectTemplate> g_temp = v8::ObjectTemplate::New(ISO);
 
     env_path = dir;
-    v8::Local<v8::External> cur_data = v8::External::New(ISO, this);
 
     g_temp->Set(ISO, "_printInfo", v8::FunctionTemplate::New(ISO, V8Script::printCallback, v8::Int32::New(ISO, 0)));
     g_temp->Set(ISO, "_printWarn", v8::FunctionTemplate::New(ISO, V8Script::printCallback, v8::Int32::New(ISO, 1)));
@@ -173,6 +184,11 @@ V8Script::V8Script(const char *dir) : Script("v8") {
 }
 
 V8Script::~V8Script() {
+    {
+        GLB_ENV(ctx);
+        clear();
+        c->clear();
+    }
     delete c;
 }
 

@@ -32,7 +32,9 @@ class HomeCollection extends Collection {
 
     reload(cb) {
         let purl = new PageURL(this.url);
+        console.log("start request");
         this.fetch(this.url).then((doc)=>{
+            console.log("complete request");
             let results = [];
             let boxes = doc.querySelectorAll('.imgBox');
             for (let box of boxes) {

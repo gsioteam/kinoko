@@ -14,7 +14,7 @@
 using namespace gc;
 using namespace std;
 
-pointer_map Script::scripts;
+pointer_set Script::scripts;
 
 ScriptClass* Script::findOrCreate(const StringName &fullname, bool &create) {
     auto it = classes.find(fullname);
@@ -35,16 +35,22 @@ ScriptClass* Script::findOrCreate(const StringName &fullname, bool &create) {
     return (ScriptClass *)it->second;
 }
 
-Script::~Script() {
+void Script::clear() {
     for (auto it = instances.begin(), _e = instances.end(); it != _e; ++it) {
         ScriptInstance *ins = (ScriptInstance *)*it;
         ins->script = nullptr;
         delete ins;
     }
-    scripts.erase(name);
+    instances.clear();
     for (auto it = classes.begin(), _e = classes.end(); it != _e; ++it) {
         delete (ScriptClass*)it->second;
     }
+    classes.clear();
+}
+
+Script::~Script() {
+    clear();
+    scripts.erase(this);
 }
 
 ScriptClass *Script::find(const StringName &fullname) const {
@@ -69,7 +75,7 @@ ScriptClass *Script::find(const Class *cls) const {
 }
 
 Script::Script(const StringName &name) : name(name) {
-    scripts[name] = this;
+    scripts.insert(this);
 }
 
 void Script::addFunction(const StringName &name, const gc::Callback &function) {
@@ -111,6 +117,16 @@ void Script::addInstance(gc::ScriptInstance *ins) {
 
 void Script::removeInstance(gc::ScriptInstance *ins) {
     instances.erase(ins);
+}
+
+Script * Script::get(const StringName &name) {
+    for (auto it = scripts.begin(), _e = scripts.end(); it != _e; ++it) {
+        Script *src = (Script *)*it;
+        if (src->name == name) {
+            return src;
+        }
+    }
+    return nullptr;
 }
 
 Variant ScriptClass::call(const StringName &name, const Variant **params, int count) const {

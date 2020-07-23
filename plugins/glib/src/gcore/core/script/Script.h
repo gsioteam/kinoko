@@ -27,7 +27,7 @@ namespace gc {
      */
     class Script {
         
-        static pointer_map scripts;
+        static pointer_set scripts;
         pointer_map classes;
         pointer_set instances;
         StringName name;
@@ -53,6 +53,8 @@ namespace gc {
          */
         ScriptClass *findOrCreate(const StringName &fullname, bool &create);
 
+        void clear();
+
     public:
         virtual ~Script();
 
@@ -65,9 +67,7 @@ namespace gc {
         ScriptClass *regClass(void *script_cls, const gc::StringName &name);
         Script(const StringName &name);
         
-        _FORCE_INLINE_ static Script *get(const StringName &name) {
-            return (Script *)scripts[name];
-        }
+        static Script *get(const StringName &name);
         
         ScriptInstance *getScriptInstance(const Object *target) const;
 //        /**

@@ -129,6 +129,7 @@ class Request extends Base {
         break;
       }
     }
+    control();
   }
 
   Data getResponseBody() {
@@ -218,6 +219,7 @@ class Request extends Base {
     }
 
     if (onComplete != null) {
+      print("invoke complete!");
       onComplete.invoke([]);
     }
   }

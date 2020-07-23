@@ -272,6 +272,7 @@ class _BookPageState extends State<BookPage> {
 
   @override
   void initState() {
+    widget.context.control();
     widget.context.on_data_changed = Callback.fromFunction(onDataChanged).release();
     widget.context.on_loading_status = Callback.fromFunction(onLoadingStatus).release();
     widget.context.on_error = Callback.fromFunction(onError).release();
@@ -290,6 +291,7 @@ class _BookPageState extends State<BookPage> {
   void dispose() {
     widget.context.exitView();
     chapters.release();
+    widget.context.release();
     super.dispose();
   }
 }

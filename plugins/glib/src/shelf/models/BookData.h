@@ -24,6 +24,7 @@ namespace gs {
         DEFINE_STRING(subitems, SubItems);
         DEFINE_FIELD(int, type, Type);
         DEFINE_FIELD(int, flag, Flag);
+        DEFINE_FIELD(long long, date, Date);
 
     public:
         static void registerFields() {
@@ -38,7 +39,10 @@ namespace gs {
             ADD_FILED(BookData, subitems, SubItems, false);
             ADD_FILED(BookData, type, Type, false);
             ADD_FILED(BookData, flag, Flag, false);
+            ADD_FILED(BookData, date, Date, false);
         }
+
+        BookData();
 
     CLASS_END
 }

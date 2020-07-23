@@ -31,12 +31,13 @@ namespace gs {
         std::string key;
 
         void setupTarget(const gc::Ref<Collection> &target);
+        void saveTime(const std::string &key);
 
-        gc::Array load();
+        gc::Array load(bool &update, int &flag);
         void save(const gc::Array &arr);
 
     public:
-        ~Context();
+//        ~Context();
 
         METHOD virtual void setup(const char *path, const gc::Variant &data) = 0;
         METHOD virtual bool isReady() {return !!target;}

@@ -33,7 +33,9 @@ class _BookListPageState extends State<BookListPage> {
   BetterRefreshIndicatorController controller = BetterRefreshIndicatorController();
 
   void itemClicked(int idx) async {
+    print("onItem click $idx");
     Context ctx = widget.project.createBookContext(books[idx]).control();
+    print("onItem click $idx 2");
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => BookPage(ctx, widget.project)
     ));
@@ -68,6 +70,7 @@ class _BookListPageState extends State<BookListPage> {
 
   @override
   void initState() {
+    widget.context.control();
     widget.context.on_data_changed = Callback.fromFunction(onDataChanged).release();
     widget.context.on_loading_status = Callback.fromFunction(onLoadingStatus).release();
     widget.context.on_error = Callback.fromFunction(onError).release();
@@ -132,6 +135,7 @@ class _BookListPageState extends State<BookListPage> {
   void dispose() {
     widget.context.exitView();
     books.release();
+    widget.context.release();
     super.dispose();
   }
 }

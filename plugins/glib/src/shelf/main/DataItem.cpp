@@ -39,7 +39,9 @@ std::string DataItem::toJSON(const gc::Array &arr) {
         GET("subtitle", getSubtitle);
         GET("link", getLink);
         item_json["type"] = item->getType();
-        item_json["data"] = JSON::serialize(item->data);
+        if (item->data) {
+            item_json["data"] = JSON::serialize(item->data);
+        }
         json.push_back(item_json);
     }
     return json.dump();
@@ -63,7 +65,9 @@ gc::Array DataItem::fromJSON(const std::string &json) {
         SET("subtitle", setSubtitle);
         SET("link", setLink);
         item->setType(val["type"]);
-        item->setData(JSON::parse(val["data"]));
+        if (val.contains("data")) {
+            item->setData(JSON::parse(val["data"]));
+        }
         arr.push_back(item);
     }
     return arr;
@@ -76,7 +80,12 @@ void DataItem::fill(const gc::Ref<BookData> &data) {
     setSubtitle(data->getSubtitle());
     setLink(data->getLink());
     setType(data->getType());
-    setData(JSON::parse(data->getData()));
+    const std::string &dstr = data->getData();
+    if (dstr.empty()) {
+        setData(Variant::null());
+    } else {
+        setData(JSON::parse(dstr));
+    }
 }
 
 gc::Ref<BookData> DataItem::saveData(bool save, const std::string &hash) {
@@ -89,7 +98,11 @@ gc::Ref<BookData> DataItem::saveData(bool save, const std::string &hash) {
         data->setSubtitle(getSubtitle());
         data->setLink(getLink());
         data->setType(getType());
-        data->setData(JSON::serialize(getData()).dump());
+        if (getData()) {
+            data->setData(JSON::serialize(getData()).dump());
+        } else {
+            data->setData("");
+        }
         data->setHash(hash);
         return data;
     } else {
