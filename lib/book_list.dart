@@ -33,9 +33,7 @@ class _BookListPageState extends State<BookListPage> {
   BetterRefreshIndicatorController controller = BetterRefreshIndicatorController();
 
   void itemClicked(int idx) async {
-    print("onItem click $idx");
     Context ctx = widget.project.createBookContext(books[idx]).control();
-    print("onItem click $idx 2");
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => BookPage(ctx, widget.project)
     ));

@@ -152,6 +152,8 @@ const Class *CLZ::getInstanceClass() const {\
     return CLZ::getClass();\
 }
 
+#define NAME(name) static const StringName name(#name)
+
 // --------------- for meta program ---------------
 
 

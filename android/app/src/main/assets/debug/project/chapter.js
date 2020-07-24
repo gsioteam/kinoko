@@ -4,6 +4,7 @@ class ChapterCollection extends glib.Collection {
     request(url, text) {
         return new Promise((resolve, reject) => {
             let req = glib.Request.new('GET', url);
+            req.setCacheResponse(true);
             this.callback = glib.Callback.fromFunction(function() {
                 if (req.getError()) {
                     reject(glib.Error.new(302, "Request error " + req.getError()));
@@ -45,13 +46,11 @@ class ChapterCollection extends glib.Collection {
             }
             let script = doc.querySelector('script:not([src])');
             let html = ctx.eval(script.text);
-            console.log("get " + html);
             let doc2 = glib.GumboNode.parse2(html);
             let link = doc2.querySelector('a');
             let item = glib.DataItem.new();
             item.picture = link.querySelector('img').getAttribute('src');
             item.link = url;
-            console.log('get picture ' + item.picture);
             url = purl.href(link.getAttribute('href'));
             this.setDataAt(item, count);
             count++;

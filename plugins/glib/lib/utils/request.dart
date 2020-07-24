@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:glib/core/callback.dart';
@@ -7,6 +8,7 @@ import 'package:glib/core/callback.dart';
 import '../core/core.dart';
 import '../core/data.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class ExtendsRequest {
   void Function(int bytes, int totalBytes) onProgress;
@@ -86,7 +88,7 @@ class Request extends Base {
   Callback onDownloadProgress;
   Callback onComplete;
 
-  bool readCache = false;
+  bool cacheResponse = false;
 
   Request();
 
@@ -108,6 +110,7 @@ class Request extends Base {
     on("getError", getError);
     on("cancel", cancel);
     on("start", start);
+    on("setCacheResponse", setCacheResponse);
 
     on("getResponseBody", getResponseBody);
   }
@@ -193,27 +196,44 @@ class Request extends Base {
     return downloadTotal;
   }
 
+  setCacheResponse(bool cr) {
+    cacheResponse = cr;
+  }
+
   start() async {
     if (_started) return;
     _started = true;
     try {
-
-      http.StreamedResponse res = await request.send();
-      if (_canceled) return;
-      downloadTotal = res.contentLength;
-      downloadNow = 0;
-      List<int> receiveBody = List();
-      _subscription = res.stream.listen((value) {
-        downloadNow += value.length;
-        receiveBody.addAll(value);
-        if (onDownloadProgress != null) onDownloadProgress.invoke([downloadNow, downloadTotal]);
-      });
-      await _subscription.asFuture().timeout(Duration(milliseconds: _timeout == null ? 30 : _timeout), onTimeout: () {
-        if (!_canceled) {
-          throw new Exception("Timeout");
+      if (cacheResponse) {
+        Stream<FileResponse> stream = DefaultCacheManager().getFileStream(request.url.toString(), headers: request.headers, withProgress: true);
+        await for (FileResponse res in stream) {
+          if (res is DownloadProgress) {
+            downloadTotal = res.totalSize;
+            downloadNow = res.downloaded;
+            if (onDownloadProgress != null) onDownloadProgress.invoke([downloadNow, downloadTotal]);
+          } else if (res is FileInfo) {
+            responseBody = await res.file.readAsBytes();
+          }
         }
-      });
-      responseBody = Uint8List.fromList(receiveBody);
+      } else {
+        http.StreamedResponse res = await request.send();
+        if (_canceled) return;
+        downloadTotal = res.contentLength;
+        downloadNow = 0;
+        List<int> receiveBody = List();
+        _subscription = res.stream.listen((value) {
+          downloadNow += value.length;
+          receiveBody.addAll(value);
+          if (onDownloadProgress != null) onDownloadProgress.invoke([downloadNow, downloadTotal]);
+        });
+        await _subscription.asFuture().timeout(Duration(milliseconds: _timeout == null ? 30 : _timeout), onTimeout: () {
+          if (!_canceled) {
+            throw new Exception("Timeout");
+          }
+        });
+        responseBody = Uint8List.fromList(receiveBody);
+      }
+
     } catch (e) {
       _error = e.toString();
       cancel();

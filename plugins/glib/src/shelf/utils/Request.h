@@ -61,9 +61,11 @@ namespace gs {
         METHOD void setOnProgress(const gc::Callback &on_progress);
         METHOD void setOnComplete(const gc::Callback & on_complete);
 
+        METHOD void setCacheResponse(bool cache_response);
+
         METHOD gc::Ref<gc::Data> getResponseBody();
         METHOD gc::Ref<gc::Map> getResponseHeaders();
-        METHOD const std::string &getError();
+        METHOD std::string getError();
 
         METHOD void start();
         METHOD void cancel();
@@ -84,6 +86,7 @@ namespace gs {
             ADD_METHOD(cls, Request, getDownloadNow);
             ADD_METHOD(cls, Request, getResponseBody);
             ADD_METHOD(cls, Request, getResponseHeaders);
+            ADD_METHOD(cls, Request, setCacheResponse);
             ADD_METHOD(cls, Request, getError);
             ADD_METHOD(cls, Request, start);
             ADD_METHOD(cls, Request, cancel);

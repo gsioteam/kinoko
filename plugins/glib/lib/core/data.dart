@@ -34,7 +34,6 @@ class BufferData extends Data {
     TypedData.Uint8List buflist = buf.asTypedList(length);
     buflist.setRange(0, length, buffer.asUint8List(0, length).getRange(0, length));
 
-    print("New BufferData ($length)");
     super.allocate([buf, length, 1]);
     free(buf);
   }

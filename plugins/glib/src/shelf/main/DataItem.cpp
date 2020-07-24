@@ -5,6 +5,7 @@
 #include "DataItem.h"
 #include <nlohmann/json.hpp>
 #include "../utils/JSON.h"
+#include "../models/CollectionData.h"
 
 using namespace gs;
 using namespace gc;
@@ -20,6 +21,7 @@ gc::Ref<DataItem> DataItem::fromData(const gc::Ref<BookData> &data) {
         item->setLink(data->getLink());
         item->setType(data->getType());
         item->setData(data->getData());
+        item->setHash(data->getHash());
     }
     return item;
 }
@@ -38,6 +40,7 @@ std::string DataItem::toJSON(const gc::Array &arr) {
         GET("picture", getPicture);
         GET("subtitle", getSubtitle);
         GET("link", getLink);
+        GET("hash", getHash());
         item_json["type"] = item->getType();
         if (item->data) {
             item_json["data"] = JSON::serialize(item->data);
@@ -88,7 +91,7 @@ void DataItem::fill(const gc::Ref<BookData> &data) {
     }
 }
 
-gc::Ref<BookData> DataItem::saveData(bool save, const std::string &hash) {
+gc::Ref<BookData> DataItem::saveData(bool save) {
     Array arr = BookData::query()->equal("link", getLink())->andQ()->equal("hash", hash)->results();
     if (save) {
         Ref<BookData> data = arr->size() ? (Ref<BookData>)arr->get(0) : Ref<BookData>(new BookData());
@@ -107,5 +110,43 @@ gc::Ref<BookData> DataItem::saveData(bool save, const std::string &hash) {
         return data;
     } else {
         return arr->size() ? (Ref<BookData>)arr->get(0) : Ref<BookData>::null();
+    }
+}
+
+void DataItem::saveToCollection(const std::string &type, int flag) {
+    Ref<CollectionData> col = CollectionData::find(type, hash);
+    if (!col) {
+        col = new CollectionData;
+        col->setType(type);
+        col->setKey(hash);
+    }
+    col->setFlag(flag);
+    col->save();
+}
+
+gc::Array DataItem::loadCollectionItems(const std::string &type) {
+    Array cols = CollectionData::all(type);
+    Array keys;
+    for (auto it = cols->begin(), _e = cols->end(); it != _e; ++it) {
+        Ref<CollectionData> col = *it;
+        keys.push_back(col->getKey());
+    }
+    Array result;
+    Array res = BookData::query()->in("hash", keys)->results();
+    for (auto it = res->begin(), _e = res->end(); it != _e; ++it) {
+        result.push_back(DataItem::fromData(*it));
+    }
+    return result;
+}
+
+bool DataItem::isInCollection(const std::string &type) {
+    Ref<CollectionData> col = CollectionData::find(type,hash);
+    return col;
+}
+
+void DataItem::removeFromCollection(const std::string &type) {
+    Ref<CollectionData> col = CollectionData::find(type, hash);
+    if (col) {
+        col->remove();
     }
 }

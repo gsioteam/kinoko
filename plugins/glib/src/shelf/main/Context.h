@@ -74,6 +74,11 @@ namespace gs {
         }
         PROPERTY(info_data, getInfoData, setInfoData);
 
+        METHOD const std::string &getKey() const {
+            return key;
+        }
+        PROPERTY(key, getKey, NULL);
+
         static gc::Ref<Context> create(const std::string &path, const gc::Variant &data, ContextType type, const std::string &key);
 
         ON_LOADED_BEGIN(cls, gc::Object)
@@ -88,6 +93,7 @@ namespace gs {
             ADD_PROPERTY(cls, "on_error", NULL, ADD_METHOD(cls, Context, setOnError));
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Context, getData), NULL);
             ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Context, getInfoData), ADD_METHOD(cls, Context, setInfoData));
+            ADD_PROPERTY(cls, "key", ADD_METHOD(cls, Context, getKey), NULL);
         ON_LOADED_END
 
     CLASS_END

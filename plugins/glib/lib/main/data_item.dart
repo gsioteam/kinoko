@@ -1,4 +1,6 @@
 
+import 'package:glib/core/array.dart';
+
 import '../core/core.dart';
 
 enum DataItemType {
@@ -70,4 +72,9 @@ class DataItem extends Base {
     }
     call("setType", argv: [t]);
   }
+
+  void addToCollection(String type, String hash) => call("addToCollection", argv: [type, hash]);
+  Array loadCollectionItems(String type) => call("loadCollectionItems", argv: [type]);
+  bool isInCollection(String type) => call("isInCollection", argv: [type]);
+  void removeFromCollection(String type) => call("removeFromCollection", argv: [type]);
 }

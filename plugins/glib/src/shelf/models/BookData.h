@@ -42,6 +42,10 @@ namespace gs {
             ADD_FILED(BookData, date, Date, false);
         }
 
+        static float version() {
+            return 1;
+        }
+
         BookData();
 
     CLASS_END

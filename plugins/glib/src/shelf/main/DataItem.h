@@ -24,6 +24,7 @@ namespace gs {
         std::string picture;
         std::string subtitle;
         std::string link;
+        std::string hash;
         gc::Variant data;
         int type;
 
@@ -35,7 +36,7 @@ namespace gs {
         static gc::Array fromJSON(const std::string &j);
 
         void fill(const gc::Ref<BookData> &data);
-        gc::Ref<BookData> saveData(bool save, const std::string &hash);
+        gc::Ref<BookData> saveData(bool save);
 
         METHOD const std::string &getTitle() const {
             return title;
@@ -93,6 +94,20 @@ namespace gs {
         }
         PROPERTY(type, getType, setType);
 
+        METHOD const std::string &getHash() const {
+            return hash;
+        }
+        METHOD void setHash(const std::string &hash) {
+            this->hash = hash;
+        }
+        PROPERTY(hash, getHash, setHash);
+
+
+        METHOD void saveToCollection(const std::string &type, int flag);
+        METHOD static gc::Array loadCollectionItems(const std::string &type);
+        METHOD bool isInCollection(const std::string &type);
+        METHOD void removeFromCollection(const std::string &type);
+
     protected:
         ON_LOADED_BEGIN(cls, gc::Object)
             ADD_PROPERTY(cls, "title", ADD_METHOD(cls, DataItem, getTitle), ADD_METHOD(cls, DataItem, setTitle));
@@ -102,6 +117,12 @@ namespace gs {
             ADD_PROPERTY(cls, "link", ADD_METHOD(cls, DataItem, getLink), ADD_METHOD(cls, DataItem, setLink));
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, DataItem, getData), ADD_METHOD(cls, DataItem, setData));
             ADD_PROPERTY(cls, "type",ADD_METHOD(cls, DataItem, getType), ADD_METHOD(cls, DataItem, setType));
+            ADD_PROPERTY(cls, "hash",ADD_METHOD(cls, DataItem, getHash), ADD_METHOD(cls, DataItem, setHash));
+
+            ADD_METHOD(cls, DataItem, saveToCollection);
+            ADD_METHOD(cls, DataItem, loadCollectionItems);
+            ADD_METHOD(cls, DataItem, isInCollection);
+            ADD_METHOD(cls, DataItem, removeFromCollection);
         ON_LOADED_END
     CLASS_END
 }

@@ -49,68 +49,88 @@ Request::~Request() {
 }
 
 void Request::setHeader(const std::string &name, const std::string &value) {
+    NAME(setHeader);
     Variant v1(name), v2(value);
-    imp->req()->apply("setHeader", pointer_vector{&v1, &v2});
+    imp->req()->apply(setHeader, pointer_vector{&v1, &v2});
 }
 
 void Request::setBody(const gc::Ref<gc::Data> &body) {
+    NAME(setBody);
     b8_vector v = body->readAll();
     Variant v1(v.data()), v2(v.size());
-    imp->req()->apply("setBody", pointer_vector{&v1, &v2});
+    imp->req()->apply(setBody, pointer_vector{&v1, &v2});
 }
 
 void Request::start() {
-    imp->req()->apply("start");
+    NAME(start);
+    imp->req()->apply(start);
 }
 
 void Request::cancel() {
-    imp->req()->apply("cancel");
+    NAME(cancel);
+    imp->req()->apply(cancel);
 }
 
 void Request::setTimeout(uint64_t timeout) {
+    NAME(setTimeout);
     Variant v1 = timeout;
-    imp->req()->apply("setTimeout", pointer_vector{&v1});
+    imp->req()->apply(setTimeout, pointer_vector{&v1});
 }
 
 int64_t Request::getUploadNow() const {
-    return imp->req()->apply("getUploadNow", pointer_vector());
+    NAME(getUploadNow);
+    return imp->req()->apply(getUploadNow, pointer_vector());
 }
 
 int64_t Request::getUploadTotal() const {
-    return imp->req()->apply("getUploadTotal", pointer_vector());
+    NAME(getUploadTotal);
+    return imp->req()->apply(getUploadTotal, pointer_vector());
 }
 
 int64_t Request::getDownloadNow() const {
-    return imp->req()->apply("getDownloadNow", pointer_vector());
+    NAME(getDownloadNow);
+    return imp->req()->apply(getDownloadNow, pointer_vector());
 }
 
 int64_t Request::getDownloadTotal() const {
-    return imp->req()->apply("getDownloadTotal", pointer_vector());
+    NAME(getDownloadTotal);
+    return imp->req()->apply(getDownloadTotal, pointer_vector());
 }
 
 void Request::setOnUploadProgress(const gc::Callback &on_progress) {
+    NAME(setOnUploadProgress);
     Variant v1 = on_progress;
-    imp->req()->apply("setOnUploadProgress", pointer_vector{&v1});
+    imp->req()->apply(setOnUploadProgress, pointer_vector{&v1});
 }
 
 void Request::setOnProgress(const gc::Callback &on_progress) {
+    NAME(setOnProgress);
     Variant v1 = on_progress;
-    imp->req()->apply("setOnProgress", pointer_vector{&v1});
+    imp->req()->apply(setOnProgress, pointer_vector{&v1});
 }
 
 void Request::setOnComplete(const gc::Callback &on_complete) {
+    NAME(setOnComplete);
     Variant v1 = on_complete;
-    imp->req()->apply("setOnComplete", pointer_vector{&v1});
+    imp->req()->apply(setOnComplete, pointer_vector{&v1});
 }
 
 gc::Ref<gc::Data> Request::getResponseBody() {
-    return imp->req()->apply("getResponseBody", pointer_vector());
+    NAME(getResponseBody);
+    return imp->req()->apply(getResponseBody, pointer_vector());
 }
 
 gc::Ref<gc::Map> Request::getResponseHeaders() {
-    return imp->req()->apply("getResponseHeaders", pointer_vector());
+    NAME(getResponseHeaders);
+    return imp->req()->apply(getResponseHeaders, pointer_vector());
 }
 
-const std::string& Request::getError() {
-    return imp->req()->apply("getError", pointer_vector());
+std::string Request::getError() {
+    NAME(getError);
+    return imp->req()->apply(getError, pointer_vector());
+}
+
+void Request::setCacheResponse(bool cache_response) {
+    NAME(setCacheResponse);
+    imp->req()->applyArgv(setCacheResponse, cache_response);
 }

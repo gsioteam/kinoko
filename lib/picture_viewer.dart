@@ -10,6 +10,8 @@ import 'package:glib/core/array.dart';
 import 'package:glib/core/callback.dart';
 import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
+import 'package:glib/main/models.dart';
+import 'package:kinoko/utils/cached_picture_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:glib/main/error.dart' as glib;
@@ -70,6 +72,8 @@ class _PictureViewerState extends State<PictureViewer> {
   @override
   Widget build(BuildContext context) {
     MediaQueryData media = MediaQuery.of(context);
+    String key = widget.context.key;
+//    KeyValue.get("Saved:${}");
 
     return Scaffold(
       body: Stack(
@@ -83,7 +87,10 @@ class _PictureViewerState extends State<PictureViewer> {
                 builder: (BuildContext context, int index) {
                   DataItem item = data[index];
                   return PhotoViewGalleryPageOptions(
-                    imageProvider: CacheImage(item.picture),
+                    imageProvider: CachedPictureImage(
+                      item.picture,
+                      key: widget.context.key,
+                    ),
                     initialScale: PhotoViewComputedScale.contained,
                     onTapUp: (c0, c1, c2) {
                       setState(() {
