@@ -291,14 +291,17 @@ class Base with AutoRelease {
     return this;
   }
 
+  static bool setuped = false;
+
   void allocate(List<dynamic> argv) {
+    if (!setuped) {
+      throw new Exception("Can not create ${this.runtimeType} because glib is destroyed.");
+    }
     Pointer<NativeTarget> argvPtr = _makeArgv(argv);
     _id = createObject(_type.ptr, argvPtr, argv.length);
     free(argvPtr);
     _objectDB[_id] = this;
   }
-
-  static bool setuped = false;
 
   static TypeInfo reg(Type type, String name, Type superType) {
     if (!setuped) {
@@ -328,3 +331,12 @@ class Base with AutoRelease {
 }
 
 void r(Base b) {if (b != null) b.release();}
+
+void destroyAllObject() {
+  _objectDB.forEach((key, value) {
+    value._destroyed = true;
+  });
+  _objectDB.clear();
+  _classDB.clear();
+  _classRef.clear();
+}

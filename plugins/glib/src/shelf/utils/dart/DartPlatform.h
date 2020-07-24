@@ -12,14 +12,14 @@
 
 namespace gs {
     CLASS_BEGIN_N(DartPlatform, gc::Object)
-        static gc::Ref<DartPlatform> share_instance;
+        static gc::Wk<DartPlatform> share_instance;
         static std::mutex mtx;
         static gc::Callback sendSignal;
         pthread_t main_thread;
         friend class Platform;
 
     public:
-        static DartPlatform *instance();
+        static gc::Ref<DartPlatform> instance();
 
         DartPlatform();
 

@@ -15,22 +15,24 @@ Callback DartPlatform::sendSignal;
 std::mutex Platform::mtx;
 
 namespace gs {
-    gc::Ref<DartPlatform> DartPlatform::share_instance = nullptr;
+    gc::Wk<DartPlatform> DartPlatform::share_instance;
     std::mutex DartPlatform::mtx;
 
     long timer_count = 1;
     std::mutex timer_mutex;
 
-    DartPlatform* DartPlatform::instance() {
+    gc::Ref<DartPlatform> DartPlatform::instance() {
         mtx.lock();
-        if (!share_instance) {
+        Ref<DartPlatform> ins = share_instance.lock();
+        if (!ins) {
             ScriptClass *cls = DartScript::instance()->find(DartPlatform::getClass());
-            share_instance = new DartPlatform();
-            cls->create(share_instance);
-            share_instance->apply("control");
+            ins = new DartPlatform();
+            cls->create(ins);
+            ins->apply("control");
+            share_instance = ins.get();
         }
         mtx.unlock();
-        return share_instance.get();
+        return ins;
     }
 
     DartPlatform::DartPlatform() {
@@ -43,7 +45,7 @@ long Platform::startTimer(const gc::Callback &callback, float time, bool repeat)
     long id = timer_count++;
     timer_mutex.unlock();
 
-    DartPlatform *platform = DartPlatform::instance();
+    Ref<DartPlatform> platform = DartPlatform::instance();
     if (platform->isMainThread()) {
         Variant v1(callback), v2(time), v3(repeat), v4(id);
         platform->apply("startTimer", pointer_vector{&v1, &v2, &v3, &v4});
@@ -57,7 +59,7 @@ long Platform::startTimer(const gc::Callback &callback, float time, bool repeat)
 }
 
 void Platform::cancelTimer(long timer) {
-    DartPlatform *platform = DartPlatform::instance();
+    Ref<DartPlatform> platform = DartPlatform::instance();
     if (platform->isMainThread()) {
         Variant v1(timer);
         platform->apply("cancelTimer", pointer_vector{&v1});
@@ -70,7 +72,7 @@ void Platform::cancelTimer(long timer) {
 }
 
 void Platform::sendSignal() {
-    DartPlatform *platform = DartPlatform::instance();
+    Ref<DartPlatform> platform = DartPlatform::instance();
     if (platform->sendSignal) {
         platform->sendSignal();
     }

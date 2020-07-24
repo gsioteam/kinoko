@@ -81,7 +81,6 @@ namespace gscript {
 
         ~V8Container() {
             if (isolate) {
-                LOG(i, "Delete at %ld", pthread_self());
                 isolate->Dispose();
             }
         }

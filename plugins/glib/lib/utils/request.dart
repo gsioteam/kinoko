@@ -86,6 +86,8 @@ class Request extends Base {
   Callback onDownloadProgress;
   Callback onComplete;
 
+  bool readCache = false;
+
   Request();
 
   @override
@@ -195,6 +197,7 @@ class Request extends Base {
     if (_started) return;
     _started = true;
     try {
+
       http.StreamedResponse res = await request.send();
       if (_canceled) return;
       downloadTotal = res.contentLength;
@@ -219,7 +222,6 @@ class Request extends Base {
     }
 
     if (onComplete != null) {
-      print("invoke complete!");
       onComplete.invoke([]);
     }
   }

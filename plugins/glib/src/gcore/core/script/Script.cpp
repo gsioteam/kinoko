@@ -169,6 +169,7 @@ ScriptInstance* ScriptClass::create(Object *target) const {
         ins->setMiddleClass(const_cast<ScriptClass*>(this));
         ins->setTarget(target);
         target->addScript(ins);
+        script->addInstance(ins);
         return ins;
     }else {
         LOG(w, "%s is not Object", cls->getName());

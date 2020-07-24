@@ -255,7 +255,7 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
     }));
     target->on(Collection::NOTIFICATION_reloadComplete, C([=]() {
         Ref<Context> that = weak.lock();
-        if (that) {
+        if (that && that->type == Context::Chapter) {
             Ref<DataItem> item = this->getInfoData();
             if (item) {
                 Ref<BookData> data = item->saveData(false, key);

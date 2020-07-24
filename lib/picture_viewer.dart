@@ -95,16 +95,11 @@ class _PictureViewerState extends State<PictureViewer> {
                 },
                 gaplessPlayback: true,
                 loadingBuilder: (context, event) {
-                  print("[Loading] ${event.cumulativeBytesLoaded}/${event.expectedTotalBytes}");
                   return Center(
                     child: Container(
                       width: 20.0,
                       height: 20.0,
-                      child: CircularProgressIndicator(
-                        value: event == null
-                            ? 0
-                            : event.cumulativeBytesLoaded / event.expectedTotalBytes,
-                      ),
+                      color: Colors.red,
                     ),
                   );
                 },
