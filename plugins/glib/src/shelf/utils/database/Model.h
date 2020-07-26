@@ -132,7 +132,7 @@ namespace gs {
     CLASS_BEGIN_NV(Query, gc::Object)
 
         bool changed;
-        bool sort_asc;
+        bool sort_asc = true;
 
     protected:
         const Table *table;

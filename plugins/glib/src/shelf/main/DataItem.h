@@ -38,7 +38,9 @@ namespace gs {
         static gc::Array fromJSON(const std::string &j);
 
         void fill(const gc::Ref<BookData> &data);
-        gc::Ref<BookData> saveData(bool save);
+        gc::Ref<BookData> saveData(bool save) const;
+
+        METHOD gc::Array getSubItems() const;
 
         METHOD const std::string &getTitle() const {
             return title;
@@ -80,7 +82,7 @@ namespace gs {
         }
         PROPERTY(link, getLink, setLink);
 
-        METHOD const gc::Variant &getData() {
+        METHOD const gc::Variant &getData() const {
             return data;
         }
         METHOD void setData(const gc::Variant &val) {
@@ -104,7 +106,7 @@ namespace gs {
         }
         PROPERTY(project_key, getProjectKey, setProjectKey);
 
-        METHOD void saveToCollection(const std::string &type, int flag);
+        METHOD gc::Ref<CollectionData> saveToCollection(const std::string &type);
         METHOD static gc::Array loadCollectionItems(const std::string &type);
         METHOD bool isInCollection(const std::string &type);
         METHOD void removeFromCollection(const std::string &type);
@@ -119,8 +121,9 @@ namespace gs {
             ADD_PROPERTY(cls, "link", ADD_METHOD(cls, DataItem, getLink), ADD_METHOD(cls, DataItem, setLink));
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, DataItem, getData), ADD_METHOD(cls, DataItem, setData));
             ADD_PROPERTY(cls, "type",ADD_METHOD(cls, DataItem, getType), ADD_METHOD(cls, DataItem, setType));
-            ADD_PROPERTY(cls, "hash",ADD_METHOD(cls, DataItem, getProjectKey), ADD_METHOD(cls, DataItem, setProjectKey));
+            ADD_PROPERTY(cls, "project_key",ADD_METHOD(cls, DataItem, getProjectKey), ADD_METHOD(cls, DataItem, setProjectKey));
 
+            ADD_METHOD(cls, DataItem, getSubItems);
             ADD_METHOD(cls, DataItem, saveToCollection);
             ADD_METHOD(cls, DataItem, loadCollectionItems);
             ADD_METHOD(cls, DataItem, isInCollection);

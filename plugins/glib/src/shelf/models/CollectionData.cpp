@@ -10,7 +10,7 @@ CollectionData::CollectionData() : flag(0) {
 }
 
 gc::Array CollectionData::all(const std::string &type) {
-    return CollectionData::query()->equal("type", type)->results();
+    return CollectionData::query()->equal("type", type)->sortBy("identifier")->results();
 }
 
 gc::Ref<CollectionData> CollectionData::find(const std::string &type, int target_id) {

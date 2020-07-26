@@ -132,6 +132,7 @@ namespace gc {
             ADD_METHOD(cls, _Array, find);
             ADD_METHOD(cls, _Array, clear);
             ADD_METHOD(cls, _Array, resize);
+            ADD_METHOD(cls, _Array, insert);
         ON_LOADED_END
     CLASS_END
 

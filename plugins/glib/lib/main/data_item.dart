@@ -2,6 +2,7 @@
 import 'package:glib/core/array.dart';
 
 import '../core/core.dart';
+import 'collection_data.dart';
 
 enum DataItemType {
   Book,
@@ -75,8 +76,12 @@ class DataItem extends Base {
     call("setType", argv: [t]);
   }
 
-  void saveToCollection(String type, int flag) => call("saveToCollection", argv: [type, flag]);
+  Array getSubItems() => call("getSubItems");
+
+  CollectionData saveToCollection(String type) => call("saveToCollection", argv: [type]);
   static Array loadCollectionItems(String type) => Base.s_call(DataItem, "loadCollectionItems", argv: [type]);
   bool isInCollection(String type) => call("isInCollection", argv: [type]);
   void removeFromCollection(String type) => call("removeFromCollection", argv: [type]);
+
+  static DataItem fromCollectionData(CollectionData data) => Base.s_call(DataItem, "fromCollectionData", argv: [data]);
 }

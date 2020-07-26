@@ -263,14 +263,19 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
     }));
     target->on(Collection::NOTIFICATION_reloadComplete, C([=]() {
         Ref<Context> that = weak.lock();
-        if (that && that->type == Context::Chapter) {
-            Ref<DataItem> item = this->getInfoData();
-            if (item) {
-                Ref<BookData> data = item->saveData(false);
-                if (data) {
-                    data->setFlag(1);
-                    data->save();
+        if (that) {
+            if (that->type == Context::Chapter) {
+                Ref<DataItem> item = this->getInfoData();
+                if (item) {
+                    Ref<BookData> data = item->saveData(false);
+                    if (data) {
+                        data->setFlag(1);
+                        data->save();
+                    }
                 }
+            }
+            if (that->on_reload_complete) {
+                that->on_reload_complete();
             }
         }
     }));

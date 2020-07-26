@@ -296,7 +296,7 @@ class _BookPageState extends State<BookPage> {
       if (data.isInCollection(collection_mark)) {
         data.removeFromCollection(collection_mark);
       } else {
-        data.saveToCollection(collection_mark, 0);
+        data.saveToCollection(collection_mark);
       }
     });
   }

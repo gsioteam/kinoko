@@ -26,6 +26,7 @@ namespace gs {
         gc::Callback on_data_changed;
         gc::Callback on_loading_status;
         gc::Callback on_error;
+        gc::Callback on_reload_complete;
         ContextType type;
         bool first_enter = true;
         std::string project_key;
@@ -61,6 +62,11 @@ namespace gs {
         }
         PROPERTY(on_error, NULL, setOnError);
 
+        METHOD void setOnReloadComplete(const gc::Callback &callback) {
+            on_reload_complete = callback;
+        }
+        PROPERTY(on_reload_complete, NULL, setOnReloadComplete);
+
         METHOD gc::Array getData() const {
             return target ? target->getData() : gc::Array();
         }
@@ -91,6 +97,7 @@ namespace gs {
             ADD_PROPERTY(cls, "on_data_changed", NULL, ADD_METHOD(cls, Context, setOnDataChanged));
             ADD_PROPERTY(cls, "on_loading_status", NULL, ADD_METHOD(cls, Context, setOnLoadingStatus));
             ADD_PROPERTY(cls, "on_error", NULL, ADD_METHOD(cls, Context, setOnError));
+            ADD_PROPERTY(cls, "on_reload_complete", NULL, ADD_METHOD(cls, Context, setOnReloadComplete));
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Context, getData), NULL);
             ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Context, getInfoData), ADD_METHOD(cls, Context, setInfoData));
             ADD_PROPERTY(cls, "project_key", ADD_METHOD(cls, Context, getProjectKey), NULL);

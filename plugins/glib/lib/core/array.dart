@@ -39,4 +39,19 @@ class Array extends Base with ListMixin<dynamic> {
   void operator []=(int index, dynamic value) {
     call("set", argv:[index, value]);
   }
+  
+  @override
+  void add(element) {
+    call("push_back", argv: [element]);
+  }
+  
+  @override
+  void insert(int index, element) {
+    call("insert", argv: [index, element]);
+  }
+
+  @override
+  removeAt(int index) {
+    call("erase", argv: [index]);
+  }
 }

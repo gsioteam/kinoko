@@ -94,7 +94,7 @@ void DataItem::fill(const gc::Ref<BookData> &data) {
     }
 }
 
-gc::Ref<BookData> DataItem::saveData(bool save) {
+gc::Ref<BookData> DataItem::saveData(bool save) const {
     Array arr = BookData::query()->equal("link", getLink())->andQ()->equal("project_key", project_key)->results();
     if (save) {
         Ref<BookData> data = arr->size() ? (Ref<BookData>)arr->get(0) : Ref<BookData>(new BookData());
@@ -116,7 +116,15 @@ gc::Ref<BookData> DataItem::saveData(bool save) {
     }
 }
 
-void DataItem::saveToCollection(const std::string &type, int flag) {
+gc::Array DataItem::getSubItems() const {
+    Ref<BookData> data = saveData(false);
+    if (data) {
+        return fromJSON(data->getSubItems());
+    }
+    return Array();
+}
+
+Ref<CollectionData> DataItem::saveToCollection(const std::string &type) {
     Ref<BookData> data = saveData(false);
     if (data) {
         Ref<CollectionData> col = CollectionData::find(type, data->getIdentifier());
@@ -125,10 +133,11 @@ void DataItem::saveToCollection(const std::string &type, int flag) {
             col->setType(type);
             col->setTargetID(data->getIdentifier());
         }
-        col->setFlag(flag);
         col->save();
+        return col;
     }else {
         LOG(e, "Can not save to collection %s, data not found.", type.c_str());
+        return Ref<CollectionData>::null();
     }
 }
 

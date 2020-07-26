@@ -9,4 +9,10 @@ class CollectionData extends Base {
   }
 
   static Array all(String type) => Base.s_call(CollectionData, "all", argv: [type]);
+
+  void save() => call("save");
+  void remove() => call("remove");
+
+  int get flag => call("getFlag");
+  set flag(int v) => call("setFlag", argv: [v]);
 }

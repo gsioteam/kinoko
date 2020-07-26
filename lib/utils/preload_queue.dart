@@ -13,10 +13,11 @@ class PreloadQueue {
     if (queue.length > 0) {
       CachedPictureImage cache = queue.removeFirst();
       loading = true;
-      print("Start " + cache.url);
       cache.fetchImage().then((value) {
         loading = false;
-        print("Complete " + cache.url);
+        _checkStart();
+      }).catchError((err) {
+        loading = false;
         _checkStart();
       });
     }
@@ -24,7 +25,6 @@ class PreloadQueue {
 
   void add(CachedPictureImage provider) {
     if (stoped) {
-      print("PreloadQueue is stoped");
       return;
     }
     queue.add(provider);

@@ -83,4 +83,8 @@ class CachedPictureImage extends ImageProvider<CachedPictureImage> {
     return SynchronousFuture<CachedPictureImage>(this);
   }
 
+  Future<bool> exist() async {
+    FileInfo info = await cacheManager.getFileFromCache(url);
+    return info != null;
+  }
 }
