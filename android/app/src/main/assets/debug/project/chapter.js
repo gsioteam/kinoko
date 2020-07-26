@@ -44,16 +44,20 @@ class ChapterCollection extends glib.Collection {
                     }
                 }
             }
-            let script = doc.querySelector('script:not([src])');
-            let html = ctx.eval(script.text);
-            let doc2 = glib.GumboNode.parse2(html);
-            let link = doc2.querySelector('a');
-            let item = glib.DataItem.new();
-            item.picture = link.querySelector('img').getAttribute('src');
-            item.link = url;
-            url = purl.href(link.getAttribute('href'));
-            this.setDataAt(item, count);
-            count++;
+            try {
+                let script = doc.querySelector('script:not([src])');
+                let html = ctx.eval(script.text);
+                let doc2 = glib.GumboNode.parse2(html);
+                let link = doc2.querySelector('a');
+                let item = glib.DataItem.new();
+                item.picture = link.querySelector('img').getAttribute('src');
+                item.link = url;
+                url = purl.href(link.getAttribute('href'));
+                this.setDataAt(item, count);
+                count++;
+            }catch (e) {
+                break;
+            }
         }
     }
 

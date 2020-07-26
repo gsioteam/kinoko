@@ -21,17 +21,10 @@ using namespace gc;
 using namespace nlohmann;
 
 void Project::initialize(const std::string &path) {
-    dir_name = path;
-    this->path = shared::repo_path() + "/" + (shared::is_debug_mode ? "project" : path);
+    dir_name = (shared::is_debug_mode ? "project" : path);
+    this->path = shared::repo_path() + "/" + dir_name;
     validated = false;
     stringstream ss;
-    std::string last_seg = this->path.substr(this->path.find_last_of("/") + 1);
-
-    char hash[21];
-    SHA1(hash, last_seg.c_str(), last_seg.size());
-    size_t len = bit64_encode_size(20);
-    this->hash.resize(len);
-    bit64_encode((const unsigned char *)hash, 20, (unsigned char *)this->hash.data());
 
     string config_path = this->path + "/config.json";
     FILE *file = fopen(config_path.c_str(), "r");
@@ -88,13 +81,13 @@ void Project::setMainProject() {
 }
 
 gc::Ref<Context> Project::createIndexContext(const gc::Variant &data) {
-    return Context::create(getFullpath() + "/" + index, data, Context::Project, hash);
+    return Context::create(getFullpath() + "/" + index, data, Context::Project, dir_name);
 }
 
 gc::Ref<Context> Project::createBookContext(const gc::Ref<DataItem> &item) {
-    return Context::create(getFullpath() + "/" + book, item, Context::Book, hash);
+    return Context::create(getFullpath() + "/" + book, item, Context::Book, dir_name);
 }
 
 gc::Ref<Context> Project::createChapterContext(const gc::Ref<DataItem> &item) {
-    return Context::create(getFullpath() + "/" + chapter, item, Context::Chapter, hash);
+    return Context::create(getFullpath() + "/" + chapter, item, Context::Chapter, dir_name);
 }

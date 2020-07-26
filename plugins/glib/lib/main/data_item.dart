@@ -34,6 +34,8 @@ class DataItem extends Base {
 
   dynamic get data => call("getData");
   set data(v) => call("setData", argv: [v]);
+  
+  String get projectKey => call("getProjectKey");
 
   DataItemType get type {
     int type = call("getType");
@@ -73,8 +75,8 @@ class DataItem extends Base {
     call("setType", argv: [t]);
   }
 
-  void addToCollection(String type, String hash) => call("addToCollection", argv: [type, hash]);
-  Array loadCollectionItems(String type) => call("loadCollectionItems", argv: [type]);
+  void saveToCollection(String type, int flag) => call("saveToCollection", argv: [type, flag]);
+  static Array loadCollectionItems(String type) => Base.s_call(DataItem, "loadCollectionItems", argv: [type]);
   bool isInCollection(String type) => call("isInCollection", argv: [type]);
   void removeFromCollection(String type) => call("removeFromCollection", argv: [type]);
 }

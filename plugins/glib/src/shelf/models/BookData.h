@@ -20,7 +20,7 @@ namespace gs {
         DEFINE_STRING(subtitle, Subtitle);
         DEFINE_STRING(link, Link);
         DEFINE_STRING(data, Data);
-        DEFINE_STRING(hash, Hash);
+        DEFINE_STRING(project_key, ProjectKey);
         DEFINE_STRING(subitems, SubItems);
         DEFINE_FIELD(int, type, Type);
         DEFINE_FIELD(int, flag, Flag);
@@ -35,7 +35,7 @@ namespace gs {
             ADD_FILED(BookData, subtitle, Subtitle, false);
             ADD_FILED(BookData, link, Link, false);
             ADD_FILED(BookData, data, Data, false);
-            ADD_FILED(BookData, hash, Hash, true);
+            ADD_FILED(BookData, project_key, ProjectKey, true);
             ADD_FILED(BookData, subitems, SubItems, false);
             ADD_FILED(BookData, type, Type, false);
             ADD_FILED(BookData, flag, Flag, false);

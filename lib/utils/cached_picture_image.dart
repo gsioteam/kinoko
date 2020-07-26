@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -29,8 +30,9 @@ class PictureCacheManager extends BaseCacheManager {
 
 class CachedPictureImage extends ImageProvider<CachedPictureImage> {
 
+  static Map<String, Completer<Codec>> processing = Map();
   String url;
-  Map headers;
+  Map<String, String> headers;
   double scale;
   PictureCacheManager cacheManager;
 
@@ -43,28 +45,31 @@ class CachedPictureImage extends ImageProvider<CachedPictureImage> {
     cacheManager = PictureCacheManager(key, maxAgeCacheObject: maxAgeCacheObject);
   }
 
-  Future<Codec> _fetchImage() async {
-    Stream<FileResponse> stream = cacheManager.getFileStream(
-      url,
-      headers: headers
-    );
-    FileInfo fileInfo;
-    await for (FileResponse res in stream) {
-      if (res is FileInfo) {
-        fileInfo = res;
+  Future<Codec> fetchImage() async {
+    if (processing.containsKey(url)) {
+      return processing[url].future;
+    } else {
+      Completer<Codec> completer = Completer();
+      processing[url] = completer;
+      File file = await cacheManager.getSingleFile(
+          url,
+          headers: headers
+      );
+      var res;
+      if (file != null) {
+        res = await PaintingBinding.instance.instantiateImageCodec(await file.readAsBytes());
       }
+      processing.remove(url);
+      completer.complete(res);
+      return res;
     }
-    if (fileInfo != null) {
-      return PaintingBinding.instance.instantiateImageCodec(await fileInfo.file.readAsBytes());
-    }
-    return null;
   }
 
   @override
   ImageStreamCompleter load(CachedPictureImage key, decode) {
     return MultiFrameImageStreamCompleter(
-      codec: _fetchImage(),
-      scale: this.scale,
+      codec: key.fetchImage(),
+      scale: key.scale,
       informationCollector: () sync* {
         yield DiagnosticsProperty<ImageProvider>(
         'Image provider: $this \n Image key: $key', this,

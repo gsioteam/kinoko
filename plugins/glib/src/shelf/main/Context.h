@@ -28,7 +28,7 @@ namespace gs {
         gc::Callback on_error;
         ContextType type;
         bool first_enter = true;
-        std::string key;
+        std::string project_key;
 
         void setupTarget(const gc::Ref<Collection> &target);
         void saveTime(const std::string &key);
@@ -74,10 +74,10 @@ namespace gs {
         }
         PROPERTY(info_data, getInfoData, setInfoData);
 
-        METHOD const std::string &getKey() const {
-            return key;
+        METHOD const std::string &getProjectKey() const {
+            return project_key;
         }
-        PROPERTY(key, getKey, NULL);
+        PROPERTY(project_key, getProjectKey, NULL);
 
         static gc::Ref<Context> create(const std::string &path, const gc::Variant &data, ContextType type, const std::string &key);
 
@@ -93,7 +93,7 @@ namespace gs {
             ADD_PROPERTY(cls, "on_error", NULL, ADD_METHOD(cls, Context, setOnError));
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Context, getData), NULL);
             ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Context, getInfoData), ADD_METHOD(cls, Context, setInfoData));
-            ADD_PROPERTY(cls, "key", ADD_METHOD(cls, Context, getKey), NULL);
+            ADD_PROPERTY(cls, "project_key", ADD_METHOD(cls, Context, getProjectKey), NULL);
         ON_LOADED_END
 
     CLASS_END

@@ -43,7 +43,7 @@ class Context extends Base {
   dynamic get info_data => call("getInfoData");
   set info_data(dynamic data) => call("setInfoData", argv: [data]);
 
-  String get key => call("getKey");
+  String get projectKey => call("getProjectKey");
 
   @override
   void destroy() {

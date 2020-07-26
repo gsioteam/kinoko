@@ -28,7 +28,6 @@ namespace gs {
         std::string index;
         std::string book;
         std::string chapter;
-        std::string hash;
 
         gc::Array categories;
 

@@ -17,6 +17,8 @@ namespace gs {
         Header = 2,
     ENUM_END
 
+    class CollectionData;
+
     CLASS_BEGIN_N(DataItem, gc::Object)
 
         std::string title;
@@ -24,7 +26,7 @@ namespace gs {
         std::string picture;
         std::string subtitle;
         std::string link;
-        std::string hash;
+        std::string project_key;
         gc::Variant data;
         int type;
 
@@ -94,19 +96,19 @@ namespace gs {
         }
         PROPERTY(type, getType, setType);
 
-        METHOD const std::string &getHash() const {
-            return hash;
+        METHOD const std::string &getProjectKey() const {
+            return project_key;
         }
-        METHOD void setHash(const std::string &hash) {
-            this->hash = hash;
+        METHOD void setProjectKey(const std::string &hash) {
+            this->project_key = hash;
         }
-        PROPERTY(hash, getHash, setHash);
-
+        PROPERTY(project_key, getProjectKey, setProjectKey);
 
         METHOD void saveToCollection(const std::string &type, int flag);
         METHOD static gc::Array loadCollectionItems(const std::string &type);
         METHOD bool isInCollection(const std::string &type);
         METHOD void removeFromCollection(const std::string &type);
+        METHOD gc::Ref<DataItem> fromCollectionData(const gc::Ref<CollectionData> &data);
 
     protected:
         ON_LOADED_BEGIN(cls, gc::Object)
@@ -117,12 +119,13 @@ namespace gs {
             ADD_PROPERTY(cls, "link", ADD_METHOD(cls, DataItem, getLink), ADD_METHOD(cls, DataItem, setLink));
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, DataItem, getData), ADD_METHOD(cls, DataItem, setData));
             ADD_PROPERTY(cls, "type",ADD_METHOD(cls, DataItem, getType), ADD_METHOD(cls, DataItem, setType));
-            ADD_PROPERTY(cls, "hash",ADD_METHOD(cls, DataItem, getHash), ADD_METHOD(cls, DataItem, setHash));
+            ADD_PROPERTY(cls, "hash",ADD_METHOD(cls, DataItem, getProjectKey), ADD_METHOD(cls, DataItem, setProjectKey));
 
             ADD_METHOD(cls, DataItem, saveToCollection);
             ADD_METHOD(cls, DataItem, loadCollectionItems);
             ADD_METHOD(cls, DataItem, isInCollection);
             ADD_METHOD(cls, DataItem, removeFromCollection);
+            ADD_METHOD(cls, DataItem, fromCollectionData);
         ON_LOADED_END
     CLASS_END
 }

@@ -16,6 +16,7 @@ import 'utils/children_delegate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'book_page.dart';
 import 'widgets/better_refresh_indicator.dart';
+import 'widgets/book_item.dart';
 
 class BookListPage extends StatefulWidget {
   Project project;
@@ -78,38 +79,9 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   Widget cellWithData(DataItem item, int idx) {
-    if (item.type == DataItemType.Header) {
-      return Container(
-        padding: EdgeInsets.fromLTRB(5, 2, 5, 2),
-        height: 30,
-        child: Row(
-          children: <Widget>[
-            Image(
-              image: CacheImage(item.picture),
-              width: 26,
-              height: 26,
-              gaplessPlayback: true,
-            ),
-            Padding(padding: EdgeInsets.all(5)),
-            Text(item.title, style: Theme.of(context).textTheme.subtitle1,)
-          ],
-        ),
-      );
-    } else {
-      return ListTile(
-        title: Text(item.title),
-        subtitle: Text(item.subtitle),
-        leading: Image(
-          image: CacheImage(item.picture),
-          fit: BoxFit.cover,
-          width: 56,
-          height: 56,
-        ),
-        onTap: (){
-          itemClicked(idx);
-        },
-      );
-    }
+    return makeBookItem(context, item, () {
+      itemClicked(idx);
+    });
   }
 
   @override

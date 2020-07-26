@@ -12,23 +12,27 @@ namespace gs {
     CLASS_BEGIN_TN(CollectionData, Model, 1, CollectionData)
 
         DEFINE_STRING(type, Type);
-        DEFINE_STRING(key, Key);
+        DEFINE_FIELD(int, target_id, TargetID);
         DEFINE_FIELD(int, flag, Flag);
 
     public:
 
         CollectionData();
 
-        static gc::Array all(const std::string &type);
-        static gc::Ref<CollectionData> find(const std::string &type, const std::string &key);
+        METHOD static gc::Array all(const std::string &type);
+        static gc::Ref<CollectionData> find(const std::string &type, int target_id);
 
         static void registerFields() {
             Model::registerFields();
 
             ADD_FILED(CollectionData, type, Type, true);
-            ADD_FILED(CollectionData, key, Key, true);
+            ADD_FILED(CollectionData, target_id, TargetID, true);
             ADD_FILED(CollectionData, flag, Flag, false);
         }
+
+        ON_LOADED_BEGIN(cls, Model)
+            ADD_METHOD(cls, CollectionData, all);
+        ON_LOADED_END
 
     CLASS_END
 }

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:glib/core/core.dart';
+import 'package:kinoko/favorites_page.dart';
 import 'book_list.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'collections_page.dart';
@@ -16,6 +17,7 @@ import 'utils/progress_items.dart';
 import 'localizations/localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'widgets/home_widget.dart';
+import 'favorites_page.dart';
 
 void main() {
   runApp(MainApp());
@@ -291,6 +293,9 @@ class _HomePageState extends State<HomePage> {
         return CollectionsPage();
       }
       case 1: {
+        return FavoritesPage();
+      }
+      case 2: {
         return LibrariesPage();
       }
     }
@@ -320,14 +325,20 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               selected: selected == 0,
               leading: Icon(Icons.collections_bookmark),
-              title: Text('山陬海筮'),
+              title: Text(kt("manga_home")),
               onTap: _onTap(0),
             ),
             ListTile(
               selected: selected == 1,
-              leading: Icon(Icons.account_balance),
-              title: Text("辖书间"),
+              leading: Icon(Icons.favorite),
+              title: Text(kt("favorites")),
               onTap: _onTap(1),
+            ),
+            ListTile(
+              selected: selected == 2,
+              leading: Icon(Icons.account_balance),
+              title: Text(kt("manage_projects")),
+              onTap: _onTap(2),
             ),
           ],
         ),

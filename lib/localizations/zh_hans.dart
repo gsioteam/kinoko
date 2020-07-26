@@ -12,7 +12,11 @@ const Map words = {
   "new_project_hint": "Git://...",
   "add_project_failed": "没能添加，是否已经添加过了？",
   "manage_projects": "辖书斋",
+  "manga_home": "漫畫之家",
+  "favorites": "收藏夾",
   "chapters": "章节列表",
   "reverse_order": "逆序",
-  "order": "正序"
+  "order": "正序",
+  "no_project_found": "沒有安裝這個項目",
+  "can_not_determine_the_context_type": "不能識別這個數據類型"
 };

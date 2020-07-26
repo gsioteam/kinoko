@@ -87,13 +87,13 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data, C
         if (JavaScriptContext::isSupport(ext)) {
             JavaScriptContext *ctx = new JavaScriptContext;
             ctx->type = type;
-            ctx->key = key;
+            ctx->project_key = key;
             ctx->setup(path.c_str(), data);
             return ctx;
         } else if (RubyContext::isSupport(ext)) {
             RubyContext *ctx = new RubyContext;
             ctx->type = type;
-            ctx->key = key;
+            ctx->project_key = key;
             ctx->setup(path.c_str(), data);
             return ctx;
         }
@@ -115,7 +115,7 @@ gc::Array Context::load(bool &update, int &flag) {
         case Project: {
             Map data = target->getInfoData();
             std::string url = data["url"];
-            string save_key = key + ":" + url;
+            string save_key = project_key + ":" + url;
             string list = KeyValue::get(save_key);
             string timestr = KeyValue::get(save_key + TIME_TAIL);
             long long time = timestr.empty() ? 0 : atoll(timestr.c_str());
@@ -128,12 +128,16 @@ gc::Array Context::load(bool &update, int &flag) {
         case Book: {
             Ref<DataItem> item = this->getInfoData();
             if (item) {
-                Ref<BookData> data = item->saveData(false, key);
+                item->setProjectKey(project_key);
+                Ref<BookData> data = item->saveData(false);
                 if (data) {
                     flag = data->getFlag();
                     item->fill(data);
                     update = (currentTime() - data->getDate()) > EXPIRE_TIME;
                     return DataItem::fromJSON(data->getSubItems());
+                } else {
+                    Ref<BookData> data = item->saveData(true);
+                    data->save();
                 }
             }
             break;
@@ -141,12 +145,16 @@ gc::Array Context::load(bool &update, int &flag) {
         case Chapter: {
             Ref<DataItem> item = this->getInfoData();
             if (item) {
-                Ref<BookData> data = item->saveData(false, key);
+                item->setProjectKey(project_key);
+                Ref<BookData> data = item->saveData(false);
                 if (data) {
                     flag = data->getFlag();
                     item->fill(data);
                     update = (currentTime() - data->getDate()) > EXPIRE_TIME;
                     return DataItem::fromJSON(data->getSubItems());
+                } else {
+                    Ref<BookData> data = item->saveData(true);
+                    data->save();
                 }
             }
             break;
@@ -160,7 +168,7 @@ void Context::save(const gc::Array &arr) {
         case Project: {
             Map data = target->getInfoData();
             std::string url = data["url"];
-            string save_key = key + ":" + url;
+            string save_key = project_key + ":" + url;
             KeyValue::set(save_key, DataItem::toJSON(arr));
             saveTime(save_key);
             break;
@@ -168,7 +176,7 @@ void Context::save(const gc::Array &arr) {
         case Book: {
             Ref<DataItem> item = this->getInfoData();
             if (item) {
-                Ref<BookData> data = item->saveData(true, key);
+                Ref<BookData> data = item->saveData(true);
                 data->setSubItems(DataItem::toJSON(arr));
                 data->setDate(currentTime());
                 data->save();
@@ -178,7 +186,7 @@ void Context::save(const gc::Array &arr) {
         case Chapter: {
             Ref<DataItem> item = this->getInfoData();
             if (item) {
-                Ref<BookData> data = item->saveData(true, key);
+                Ref<BookData> data = item->saveData(true);
                 data->setSubItems(DataItem::toJSON(arr));
                 data->setDate(currentTime());
                 data->save();
@@ -258,7 +266,7 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
         if (that && that->type == Context::Chapter) {
             Ref<DataItem> item = this->getInfoData();
             if (item) {
-                Ref<BookData> data = item->saveData(false, key);
+                Ref<BookData> data = item->saveData(false);
                 if (data) {
                     data->setFlag(1);
                     data->save();

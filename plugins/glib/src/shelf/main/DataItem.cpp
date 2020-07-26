@@ -21,7 +21,7 @@ gc::Ref<DataItem> DataItem::fromData(const gc::Ref<BookData> &data) {
         item->setLink(data->getLink());
         item->setType(data->getType());
         item->setData(data->getData());
-        item->setHash(data->getHash());
+        item->setProjectKey(data->getProjectKey());
     }
     return item;
 }
@@ -40,7 +40,7 @@ std::string DataItem::toJSON(const gc::Array &arr) {
         GET("picture", getPicture);
         GET("subtitle", getSubtitle);
         GET("link", getLink);
-        GET("hash", getHash());
+//        GET("project_key", getProjectKey);
         item_json["type"] = item->getType();
         if (item->data) {
             item_json["data"] = JSON::serialize(item->data);
@@ -51,8 +51,9 @@ std::string DataItem::toJSON(const gc::Array &arr) {
 }
 
 gc::Array DataItem::fromJSON(const std::string &json) {
-    nlohmann::json jarr = nlohmann::json::parse(json);
     Array arr;
+    if (json.empty()) return arr;
+    nlohmann::json jarr = nlohmann::json::parse(json);
     if (!jarr.is_array()) return arr;
     for (auto it = jarr.begin(), _e = jarr.end(); it != _e; ++it) {
         auto &val = it.value();
@@ -67,6 +68,7 @@ gc::Array DataItem::fromJSON(const std::string &json) {
         SET("picture", setPicture);
         SET("subtitle", setSubtitle);
         SET("link", setLink);
+//        SET("project_key", setProjectKey);
         item->setType(val["type"]);
         if (val.contains("data")) {
             item->setData(JSON::parse(val["data"]));
@@ -83,6 +85,7 @@ void DataItem::fill(const gc::Ref<BookData> &data) {
     setSubtitle(data->getSubtitle());
     setLink(data->getLink());
     setType(data->getType());
+    setProjectKey(data->getProjectKey());
     const std::string &dstr = data->getData();
     if (dstr.empty()) {
         setData(Variant::null());
@@ -92,7 +95,7 @@ void DataItem::fill(const gc::Ref<BookData> &data) {
 }
 
 gc::Ref<BookData> DataItem::saveData(bool save) {
-    Array arr = BookData::query()->equal("link", getLink())->andQ()->equal("hash", hash)->results();
+    Array arr = BookData::query()->equal("link", getLink())->andQ()->equal("project_key", project_key)->results();
     if (save) {
         Ref<BookData> data = arr->size() ? (Ref<BookData>)arr->get(0) : Ref<BookData>(new BookData());
         data->setTitle(getTitle());
@@ -106,7 +109,7 @@ gc::Ref<BookData> DataItem::saveData(bool save) {
         } else {
             data->setData("");
         }
-        data->setHash(hash);
+        data->setProjectKey(getProjectKey());
         return data;
     } else {
         return arr->size() ? (Ref<BookData>)arr->get(0) : Ref<BookData>::null();
@@ -114,14 +117,19 @@ gc::Ref<BookData> DataItem::saveData(bool save) {
 }
 
 void DataItem::saveToCollection(const std::string &type, int flag) {
-    Ref<CollectionData> col = CollectionData::find(type, hash);
-    if (!col) {
-        col = new CollectionData;
-        col->setType(type);
-        col->setKey(hash);
+    Ref<BookData> data = saveData(false);
+    if (data) {
+        Ref<CollectionData> col = CollectionData::find(type, data->getIdentifier());
+        if (!col) {
+            col = new CollectionData;
+            col->setType(type);
+            col->setTargetID(data->getIdentifier());
+        }
+        col->setFlag(flag);
+        col->save();
+    }else {
+        LOG(e, "Can not save to collection %s, data not found.", type.c_str());
     }
-    col->setFlag(flag);
-    col->save();
 }
 
 gc::Array DataItem::loadCollectionItems(const std::string &type) {
@@ -129,10 +137,10 @@ gc::Array DataItem::loadCollectionItems(const std::string &type) {
     Array keys;
     for (auto it = cols->begin(), _e = cols->end(); it != _e; ++it) {
         Ref<CollectionData> col = *it;
-        keys.push_back(col->getKey());
+        keys.push_back(col->getTargetID());
     }
     Array result;
-    Array res = BookData::query()->in("hash", keys)->results();
+    Array res = BookData::query()->in("identifier", keys)->results();
     for (auto it = res->begin(), _e = res->end(); it != _e; ++it) {
         result.push_back(DataItem::fromData(*it));
     }
@@ -140,13 +148,26 @@ gc::Array DataItem::loadCollectionItems(const std::string &type) {
 }
 
 bool DataItem::isInCollection(const std::string &type) {
-    Ref<CollectionData> col = CollectionData::find(type,hash);
-    return col;
+    Ref<BookData> data = saveData(false);
+    if (data) {
+        Ref<CollectionData> col = CollectionData::find(type, data->getIdentifier());
+        return col;
+    }
+    return false;
 }
 
 void DataItem::removeFromCollection(const std::string &type) {
-    Ref<CollectionData> col = CollectionData::find(type, hash);
-    if (col) {
-        col->remove();
+    Ref<BookData> data = saveData(false);
+    if (data) {
+        Ref<CollectionData> col = CollectionData::find(type, data->getIdentifier());
+        if (col) col->remove();
     }
+}
+
+gc::Ref<DataItem> DataItem::fromCollectionData(const gc::Ref<CollectionData> &data) {
+    Array arr = BookData::query()->equal("identifier", data->getTargetID())->results();
+    if (arr->size()) {
+        return DataItem::fromData(arr->get(0));
+    }
+    return gc::Ref<DataItem>::null();
 }

@@ -11,6 +11,7 @@ import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
+import 'package:kinoko/configs.dart';
 import 'package:kinoko/localizations/localizations.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:glib/main/error.dart' as glib;
@@ -39,6 +40,8 @@ class _BookPageState extends State<BookPage> {
   static const int ORDER = 1;
   static const int R_ORDER = 0;
 
+  Set<int> selected = Set();
+
   Widget createItem(BuildContext context, int idx) {
     if (order_index == ORDER) {
       idx = chapters.length - idx - 1;
@@ -52,7 +55,9 @@ class _BookPageState extends State<BookPage> {
           subtitle: (subtitle == null || subtitle.length == 0) ? null : Text(subtitle),
           trailing: AnimatedOpacity(
             opacity: editing ? 1 : 0,
-            child: Icon(Icons.radio_button_unchecked),
+            child: Icon(
+              item.isInCollection(collection_download) ? Icons.done : (selected.contains(idx) ? Icons.radio_button_checked : Icons.radio_button_unchecked)
+            ),
             duration: Duration(milliseconds: 300),
           ),
           onTap: () {
@@ -108,12 +113,37 @@ class _BookPageState extends State<BookPage> {
 
   onDownloadClicked() {
     setState(() {
-      editing = !editing;
+      editing = true;
+    });
+  }
+
+  onCancelClicked() {
+    setState(() {
+      selected.clear();
+      editing = false;
+    });
+  }
+
+  onDownloadStartClicked() {
+    selected.forEach((idx) {
+//      DataItem data = chapters[idx];
+//      data.saveToCollection(collection_download, 0);
     });
   }
 
   onSelectItem(int idx) async {
     if (editing) {
+      DataItem data = chapters[idx];
+      if (data.isInCollection(collection_download)) {
+      } else {
+        setState(() {
+          if (selected.contains(idx)) {
+            selected.remove(idx);
+          } else {
+            selected.add(idx);
+          }
+        });
+      }
     } else {
       DataItem data = chapters[idx];
       Context ctx = widget.project.createChapterContext(data).control();
@@ -173,10 +203,25 @@ class _BookPageState extends State<BookPage> {
                             ];
                           }
                         ),
-                        IconButton(
+                        AnimatedSwitcher(
+                          duration: Duration(milliseconds: 300),
+                          child: editing ? IconButton(
+                            icon: Icon(Icons.clear),
+                            color: theme.primaryColor,
+                            onPressed: onCancelClicked
+                          ) : Container(),
+                        ),
+                        AnimatedSwitcher(
+                          duration: Duration(milliseconds: 300),
+                          child: editing ? IconButton(
+                            icon: Icon(Icons.check),
+                            color: theme.primaryColor,
+                            onPressed: onDownloadStartClicked
+                          ): IconButton(
                             icon: Icon(Icons.file_download),
                             color: theme.primaryColor,
                             onPressed: onDownloadClicked
+                          ),
                         ),
                       ],
                     ),
@@ -220,8 +265,9 @@ class _BookPageState extends State<BookPage> {
               ),
               actions: <Widget>[
                 IconButton(
-                    icon: Icon(Icons.favorite),
-                    onPressed: (){}
+                  icon: Icon(Icons.favorite),
+                  color: data.isInCollection(collection_mark) ? Colors.red : Colors.white,
+                  onPressed: favoriteClicked
                 ),
               ],
             ),
@@ -244,6 +290,16 @@ class _BookPageState extends State<BookPage> {
     return false;
   }
 
+  void favoriteClicked() {
+    setState(() {
+      DataItem data = widget.context.info_data;
+      if (data.isInCollection(collection_mark)) {
+        data.removeFromCollection(collection_mark);
+      } else {
+        data.saveToCollection(collection_mark, 0);
+      }
+    });
+  }
 
   void onDataChanged(int type, Array data, int idx) {
     if (data != null) {

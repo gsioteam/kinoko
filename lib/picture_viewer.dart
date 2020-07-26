@@ -11,10 +11,14 @@ import 'package:glib/core/callback.dart';
 import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
+import 'package:kinoko/configs.dart';
 import 'package:kinoko/utils/cached_picture_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:glib/main/error.dart' as glib;
+import 'package:glib/utils/bit64.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'utils/preload_queue.dart';
 
 class PictureViewer extends StatefulWidget {
   Context context;
@@ -36,9 +40,12 @@ class _PictureViewerState extends State<PictureViewer> {
   Offset downPosition;
   MethodChannel channel;
   PageController pageController = PageController();
+  String cacheKey;
+  PreloadQueue preloadQueue;
 
   void onDataChanged(int type, Array data, int pos) {
     if (data != null) {
+      addToPreload(data);
       setState(() {});
     }
   }
@@ -69,74 +76,66 @@ class _PictureViewerState extends State<PictureViewer> {
     }
   }
 
+  CachedPictureImage makeImageProvider(DataItem item) {
+    if (cacheKey == null) {
+      cacheKey = widget.context.projectKey + "/" + Bit64.encodeString(widget.context.info_data.link);
+    }
+    return CachedPictureImage(
+        item.picture,
+        key: cacheKey,
+        maxAgeCacheObject: item.isInCollection(collection_download) ? Duration(days: 365 * 99999) : Duration(days: 30)
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     MediaQueryData media = MediaQuery.of(context);
-    String key = widget.context.key;
-//    KeyValue.get("Saved:${}");
 
     return Scaffold(
       body: Stack(
         children: <Widget>[
           Container(
             color: Colors.black,
-            child: Listener(
-              child: PhotoViewGallery.builder(
-                itemCount: data.length,
-                pageController: pageController,
-                builder: (BuildContext context, int index) {
-                  DataItem item = data[index];
-                  return PhotoViewGalleryPageOptions(
-                    imageProvider: CachedPictureImage(
-                      item.picture,
-                      key: widget.context.key,
-                    ),
+            child: data.length == 0 ?
+            Center(
+              child: SpinKitRing(
+                lineWidth: 4,
+                size: 36,
+                color: Colors.white,
+              ),
+            ):
+            PhotoViewGallery.builder(
+              itemCount: data.length,
+              pageController: pageController,
+              builder: (BuildContext context, int index) {
+                DataItem item = data[index];
+                return PhotoViewGalleryPageOptions(
+                    imageProvider: makeImageProvider(item),
                     initialScale: PhotoViewComputedScale.contained,
                     onTapUp: (c0, c1, c2) {
                       setState(() {
                         appBarDisplay = !appBarDisplay;
                       });
                     }
-                    // heroAttributes: HeroAttributes(tag: galleryItems[index].id),
-                  );
-                },
-                gaplessPlayback: true,
-                loadingBuilder: (context, event) {
-                  return Center(
-                    child: Container(
-                      width: 20.0,
-                      height: 20.0,
-                      color: Colors.red,
-                    ),
-                  );
-                },
+                  // heroAttributes: HeroAttributes(tag: galleryItems[index].id),
+                );
+              },
+              gaplessPlayback: true,
+              loadingBuilder: (context, event) {
+                return Center(
+                  child: SpinKitRing(
+                    lineWidth: 4,
+                    size: 36,
+                    color: Colors.white,
+                  ),
+                );
+              },
 
-                onPageChanged: (idx) {
-                  setState(() {
-                    index = idx;
-                  });
-                },
-              ),
-
-//              onPointerDown: (event) {
-//                downPosition = event.localPosition;
-//                touchState = 1;
-//              },
-//
-//              onPointerMove: (event) {
-//                Offset off = event.localPosition - downPosition;
-//                if (touchState == 1 && off.distance > 2)
-//                  touchState = 2;
-//              },
-//
-//              onPointerUp: (event) {
-//                if (touchState == 1) {
-//                  setState(() {
-//                    appBarDisplay = !appBarDisplay;
-//                  });
-//                }
-//                touchState = 0;
-//              },
+              onPageChanged: (idx) {
+                setState(() {
+                  index = idx;
+                });
+              },
             ),
           ),
 
@@ -157,8 +156,7 @@ class _PictureViewerState extends State<PictureViewer> {
                   )
                 ),
                 PopupMenuButton(
-                  color: Colors.white,
-                  icon: Icon(Icons.more_vert),
+                  icon: Icon(Icons.more_vert, color: Colors.white,),
                   itemBuilder: (context) {
                     return <PopupMenuItem>[
                       PopupMenuItem(
@@ -179,7 +177,7 @@ class _PictureViewerState extends State<PictureViewer> {
           Positioned(
             child: AnimatedOpacity(
               child: Text(
-                "${index + 1}/${data.length}",
+                data.length > 0 ? "${index + 1}/${data.length}" : "",
                 style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
               ),
               opacity: appBarDisplay ? 1 : 0,
@@ -196,6 +194,8 @@ class _PictureViewerState extends State<PictureViewer> {
 
   @override
   initState() {
+    preloadQueue = PreloadQueue();
+
     widget.context.control();
     widget.context.on_data_changed = Callback.fromFunction(onDataChanged).release();
     widget.context.on_loading_status = Callback.fromFunction(onLoadingStatus).release();
@@ -210,10 +210,19 @@ class _PictureViewerState extends State<PictureViewer> {
 
   @override
   dispose() {
+    preloadQueue.stop();
     widget.context.exitView();
     data?.release();
     widget.context.release();
     channel?.invokeMethod("stop");
     super.dispose();
+  }
+
+  void addToPreload(Array arr) {
+    for (int i = 0 ,t = arr.length; i < t; ++i) {
+      DataItem item = arr[i];
+      print("added " + item.picture);
+      preloadQueue.add(makeImageProvider(item));
+    }
   }
 }

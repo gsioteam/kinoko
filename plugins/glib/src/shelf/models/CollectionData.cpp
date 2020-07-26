@@ -13,8 +13,8 @@ gc::Array CollectionData::all(const std::string &type) {
     return CollectionData::query()->equal("type", type)->results();
 }
 
-gc::Ref<CollectionData> CollectionData::find(const std::string &type, const std::string &key) {
-    gc::Array arr = CollectionData::query()->equal("type", type)->andQ()->equal("key", key)->results();
+gc::Ref<CollectionData> CollectionData::find(const std::string &type, int target_id) {
+    gc::Array arr = CollectionData::query()->equal("type", type)->andQ()->equal("target_id", target_id)->results();
     if (arr->size())
         return arr->get(0);
     return gc::Ref<CollectionData>::null();

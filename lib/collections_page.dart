@@ -18,10 +18,17 @@ class CollectionsPage extends HomeWidget {
   }
 }
 
+class _CollectionData {
+  Context context;
+  String title;
+
+  _CollectionData(this.context, this.title);
+}
+
 class _CollectionsPageState extends State<CollectionsPage> {
 
   Project project;
-  List<Context> contexts = new List();
+  List<_CollectionData> contexts;
 
   Widget missBuild(BuildContext context) {
     return Container(
@@ -32,27 +39,21 @@ class _CollectionsPageState extends State<CollectionsPage> {
 
   freeContexts() {
     for (int i = 0, t = contexts.length; i < t; ++i) {
-      contexts[i].release();
+      contexts[i].context.release();
     }
     contexts.clear();
   }
 
   Widget defaultBuild(BuildContext context) {
-    Array arr = project.categories.control();
     List<Widget> tabs = [];
     List<Widget> bodies = [];
-    freeContexts();
-    for (int i = 0, t = arr.length; i < t; ++i) {
-      GMap category = arr[i];
-      String title = category["title"];
-      if (title == null) title = "";
-      tabs.add(Tab(text: title,));
-      var ctx = project.createIndexContext(category).control();
-      contexts.add(ctx);
-      bodies.add(BookListPage(project, ctx, i));
+    for (int i = 0, t = contexts.length; i < t; ++i) {
+      _CollectionData data = contexts[i];
+      tabs.add(Tab(text: data.title,));
+      bodies.add(BookListPage(project, data.context, i));
     }
     return DefaultTabController(
-      length: arr.length,
+      length: contexts.length,
       child: Scaffold(
         appBar: AppBar(
           elevation: 0,
@@ -72,8 +73,17 @@ class _CollectionsPageState extends State<CollectionsPage> {
   @override
   void initState() {
     project = Project.getMainProject();
+    contexts = [];
     if (project != null) {
       project.control();
+      Array arr = project.categories.control();
+      for (int i = 0, t = arr.length; i < t; ++i) {
+        GMap category = arr[i];
+        String title = category["title"];
+        if (title == null) title = "";
+        var ctx = project.createIndexContext(category).control();
+        contexts.add(_CollectionData(ctx, title));
+      }
     }
     super.initState();
   }

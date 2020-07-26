@@ -587,12 +587,56 @@ Variant::Variant(const string &str) : Variant() {
 }
 
 string Variant::str() const {
-    if (type == TypeReference && class_type == _String::getClass()) {
-        return get<_String>()->str();
-    }else if (type == TypeStringName) {
-        return StringName(get<void>()).str();
-    } else if (type == TypeReference || type == TypeObject) {
-        return get()->str();
+    switch (type) {
+        case TypeReference: {
+            if (class_type == _String::getClass()) {
+                return get<_String>()->str();
+            } else {
+                return get()->str();
+            }
+            break;
+        }
+        case TypeObject: {
+            return get()->str();
+        }
+        case TypeStringName: {
+            return StringName(get<void>()).str();
+        }
+        case TypeBool: {
+            return bool(*this) ? "true":"false";
+        }
+        case TypeChar: {
+            char ch[2];
+            ch[0] = *this;
+            ch[1] = 0;
+            return ch;
+        }
+        case TypeShort:
+        case TypeInt: {
+            int n = *this;
+            char str[256];
+            sprintf(str, "%d", n);
+            return str;
+        }
+        case TypeLong: {
+            long n = *this;
+            char str[256];
+            sprintf(str, "%ld", n);
+            return str;
+        }
+        case TypeLongLong: {
+            long long n = *this;
+            char str[256];
+            sprintf(str, "%lld", n);
+            return str;
+        }
+        case TypeFloat:
+        case TypeDouble: {
+            double n = *this;
+            char str[256];
+            sprintf(str, "%f", n);
+            return str;
+        }
     }
     return "";
 }
