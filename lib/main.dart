@@ -18,6 +18,7 @@ import 'localizations/localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'widgets/home_widget.dart';
 import 'favorites_page.dart';
+import 'download_page.dart';
 
 void main() {
   runApp(MainApp());
@@ -296,6 +297,9 @@ class _HomePageState extends State<HomePage> {
         return FavoritesPage();
       }
       case 2: {
+        return DownloadPage();
+      }
+      case 3: {
         return LibrariesPage();
       }
     }
@@ -336,9 +340,15 @@ class _HomePageState extends State<HomePage> {
             ),
             ListTile(
               selected: selected == 2,
+              leading: Icon(Icons.file_download),
+              title: Text(kt("download_list")),
+              onTap: _onTap(2),
+            ),
+            ListTile(
+              selected: selected == 3,
               leading: Icon(Icons.account_balance),
               title: Text(kt("manage_projects")),
-              onTap: _onTap(2),
+              onTap: _onTap(3),
             ),
           ],
         ),

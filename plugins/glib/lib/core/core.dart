@@ -54,7 +54,6 @@ mixin AutoRelease {
     List<AutoRelease> copyList = List<AutoRelease>.from(_cachePool);
     _cachePool.clear();
     copyList.forEach((AutoRelease tar){
-      print("Destroy ${tar.runtimeType}");
       tar.destroy();
       tar._destroyed = true;
     });

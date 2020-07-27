@@ -17,6 +17,13 @@ using namespace gs;
 using namespace std;
 using namespace gc;
 
+namespace gs {
+    struct Cursor {
+        sqlite3 *db;
+        sqlite3_stmt *stmt;
+    };
+};
+
 gc::Ref<SQLTable> SQLTable::getInfo(Table *table) {
     const char *name = table->cls->getName();
     Array arr = query()->equal("table_name", name)->results();
@@ -145,7 +152,8 @@ void SQLQuery::find() {
 
     _results.clear();
     db::database()->exce(ss, &params, C([=](void *data){
-        sqlite3_stmt *stmt = (sqlite3_stmt*)data;
+        Cursor *cursor = (Cursor *)data;
+        sqlite3_stmt *stmt = cursor->stmt;
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             BaseModel *obj = (BaseModel*)table->cls->instance();
             int count = 0;
@@ -207,10 +215,10 @@ void SQLite::begin() {
         db = NULL;
         return;
     }
-    char *err = NULL;
-    if (sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, &err)) {
-        LOG(w, "%s", err);
-    }
+//    char *err = NULL;
+//    if (sqlite3_exec(db, "BEGIN TRANSACTION;", NULL, NULL, &err)) {
+//        LOG(w, "%s", err);
+//    }
 }
 
 void SQLite::action(const string &statement, variant_vector *params, const Callback &callback) {
@@ -238,7 +246,11 @@ void SQLite::action(const string &statement, variant_vector *params, const Callb
                 }
             }
             if (callback) {
-                variant_vector vs{stmt};
+                Cursor cursor{
+                    .db = db,
+                    .stmt = stmt
+                };
+                variant_vector vs{&cursor};
                 callback->invoke(vs);
             }else {
                 sqlite3_step(stmt);
@@ -250,10 +262,10 @@ void SQLite::action(const string &statement, variant_vector *params, const Callb
 
 void SQLite::end() {
     if (db) {
-        char *err = NULL;
-        if (sqlite3_exec(db, "END TRANSACTION;", NULL, NULL, &err)) {
-            LOG(w, "%s", err);
-        }
+//        char *err = NULL;
+//        if (sqlite3_exec(db, "END TRANSACTION;", NULL, NULL, &err)) {
+//            LOG(w, "%s", err);
+//        }
         sqlite3_close(db);
         db = NULL;
     }
@@ -291,34 +303,36 @@ void SQLite::afterUpdate(gs::Table *table) {
 
     string ss = "SELECT * FROM " + temp_table + ";";
     queueExce(ss, NULL, C([=](void *data){
-        sqlite3_stmt *stmt = (sqlite3_stmt *)data;
-        int count = sqlite3_column_count(stmt);
+        Cursor *cursor = (Cursor *)data;
+        int count = sqlite3_column_count(cursor->stmt);
         BaseModel *obj = (BaseModel*)table->cls->instance();
         for (int i = 0; i < count; ++i) {
-            StringName name(sqlite3_column_name(stmt, i));
+            const char *nstr = sqlite3_column_name(cursor->stmt, i);
+            if (!nstr) continue;
+            StringName name(nstr);
             if (name == id) continue;
             auto it = table->fields.find(name);
             if (it != table->fields.end()) {
                 Field * field = (Field *)it->second;
                 switch (field->type) {
                     case Field::Integer: {
-                        int val = sqlite3_column_int(stmt, count++);
+                        int val = sqlite3_column_int(cursor->stmt, count++);
                         field->set(obj, &val);
                     }
                         break;
                     case Field::Long: {
-                        long long val = sqlite3_column_int64(stmt, count++);
+                        long long val = sqlite3_column_int64(cursor->stmt, count++);
                         field->set(obj, &val);
                     }
                         break;
                     case Field::Real: {
-                        float val = (float)sqlite3_column_double(stmt, count++);
+                        float val = (float)sqlite3_column_double(cursor->stmt, count++);
                         field->set(obj, &val);
                     }
                         break;
 
                     case Field::Text: {
-                        const char * chs = (const char *)sqlite3_column_text(stmt, count++);
+                        const char * chs = (const char *)sqlite3_column_text(cursor->stmt, count++);
                         if (chs) {
                             string text = chs;
                             field->set(obj, &text);
@@ -466,17 +480,24 @@ void SQLite::update(Object *model, Table *table) {
         ss += ") VALUES (";
         ss += values.str();
         ss += ");";
-        queueExce(ss, &vs, NULL);
-
-        ss.clear();
-        ss += "SELECT identifier FROM ";
-        ss += table->cls->getName();
-        ss += " ORDER BY identifier DESC limit 1;";
-        exce(ss, NULL, C([=](void *data){
-            sqlite3_stmt *stmt = (sqlite3_stmt*)data;
-            int _id = sqlite3_column_int(stmt, 0);
+        exce(ss, &vs, C([=](void *data){
+            Cursor *cursor = (Cursor *)data;
+            sqlite3_step(cursor->stmt);
+            int _id = sqlite3_last_insert_rowid(cursor->db);
             id_field->set(model, &_id);
         }));
+
+//        ss.clear();
+//        ss = "SELECT MAX(identifier) FROM ";
+//        ss += table->cls->getName();
+//        ss.push_back(';');
+//        exce(ss, NULL, C([=](void *data){
+//            Cursor *cursor = (Cursor *)data;
+//            int _id = sqlite3_column_int(cursor->stmt, 0);
+//            LOG(i, "select id %d", _id);
+//            id_field->set(model, &_id);
+//        }));
+
     }else {
         string ss = "UPDATE ";
         ss += table->cls->getName();

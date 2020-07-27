@@ -18,5 +18,6 @@ const Map words = {
   "reverse_order": "逆序",
   "order": "正序",
   "no_project_found": "沒有安裝這個項目",
-  "can_not_determine_the_context_type": "不能識別這個數據類型"
+  "can_not_determine_the_context_type": "不能識別這個數據類型",
+  "download_list": "下载列表"
 };
