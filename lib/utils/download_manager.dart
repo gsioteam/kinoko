@@ -16,6 +16,7 @@ import '../configs.dart';
 import 'cached_picture_image.dart';
 import 'package:glib/utils/bit64.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'dart:math';
 
 enum DownloadState {
   None,
@@ -33,9 +34,13 @@ class DownloadQueueItem {
   String cacheKey;
   void Function() onImageQueueClear;
   Set<String> urls = Set();
-  int loaded = 0;
-  int total = 0;
+  int _total = 0;
+  int _total2 = 0;
+  int _loaded = 0;
+  int _loaded2 = 0;
   bool _downloading = false;
+  bool cancel = false;
+  Context context;
 
   static const Duration MaxDuration = Duration(days: 365 * 99999);
 
@@ -44,16 +49,24 @@ class DownloadQueueItem {
   void Function() onProgress;
   void Function() onState;
 
-  DownloadState _state;
-
   bool get downloading => _downloading;
 
-  DownloadQueueItem(this.data) {
-    data.control();
-    item = DataItem.fromCollectionData(data).control();
+  int get loaded => max(_loaded, _loaded2);
+  int get total => max(_total, _total2);
+
+  factory DownloadQueueItem(data) {
+    if (data == null) return null;
+    DataItem item = DataItem.fromCollectionData(data);
+    if (item == null) {
+      return null;
+    }
+    return DownloadQueueItem._(data.control(), item.control());
+  }
+
+  DownloadQueueItem._(this.data, this.item) {
     Array subitems = item.getSubItems();
     cacheKey = item.projectKey + "/" + Bit64.encodeString(item.link);
-    total = subitems.length;
+    _total = subitems.length;
     if (state != DownloadState.AllComplete) {
       List<String> urls = [];
       for (int i = 0, t = subitems.length; i < t; ++i) {
@@ -62,7 +75,7 @@ class DownloadQueueItem {
       }
       _checkImages(urls);
     } else {
-      loaded = total;
+      _loaded = total;
     }
   }
 
@@ -76,11 +89,11 @@ class DownloadQueueItem {
       FileInfo info = await cacheManager.getFileFromCache(url);
       if (info != null) {
         ++count;
-        loaded = count;
+        _loaded = count;
         onProgress?.call();
       }
     }
-    if (loaded == total && state == DownloadState.ListComplete) {
+    if (_loaded == total && state == DownloadState.ListComplete) {
       state = DownloadState.AllComplete;
       data.save();
       onState?.call();
@@ -91,6 +104,7 @@ class DownloadQueueItem {
   void destroy() {
     r(data);
     r(item);
+    r(context);
   }
 
   DownloadState get state {
@@ -127,16 +141,17 @@ class DownloadQueueItem {
   }
 
   void checkImageQueue() async {
-    if (downloading) return;
+    if (!_downloading) return;
+    if (_picture_downloading) return;
     if (queue.length == 0) {
       onImageQueueClear?.call();
       return;
     }
 
     CachedPictureImage image = queue.removeFirst();
-    _downloading = true;
+    _picture_downloading = true;
     await image.fetchImage();
-    _downloading = false;
+    _picture_downloading = false;
     checkImageQueue();
   }
 
@@ -153,6 +168,8 @@ class DownloadQueueItem {
   void addToQueue(DataItem item) {
     if (!urls.contains(item.picture)) {
       urls.add(item.picture);
+      _total2 = urls.length;
+      onProgress?.call();
       CachedPictureImage image = CachedPictureImage(
           item.picture,
           key: cacheKey,
@@ -186,12 +203,12 @@ class DownloadQueueItem {
     Project project = Project.allocate(item.projectKey);
 
     if (!project.isValidated) {
-      if (onError != null) onError("can not find the item.");
+      onError?.call("can not find the item.");
       return false;
     }
     project.control();
 
-    Context context = project.createChapterContext(item).control();
+    context = project.createChapterContext(item).control();
 
     try {
       if (state == DownloadState.None) {
@@ -207,10 +224,14 @@ class DownloadQueueItem {
         onState?.call();
       }
     } catch (e) {
-      onError?.call(e.toString());
+      if (_downloading)
+        onError?.call(e.toString());
     }
 
-    context.release();
+    if (context != null) {
+      context.release();
+      context = null;
+    }
     project.release();
   }
 
@@ -229,7 +250,11 @@ class DownloadQueueItem {
   }
 
   void stop() {
-
+    if (context != null) {
+      context.release();
+      context = null;
+    }
+    _downloading = false;
   }
 }
 
@@ -251,22 +276,30 @@ class DownloadManager {
     data = CollectionData.all(collection_download).control();
     for (int  i = 0, t = data.length; i < t; ++i) {
       CollectionData d = data[i];
-      items.add(DownloadQueueItem(d));
+      DownloadQueueItem queueItem = DownloadQueueItem(d);
+      if (queueItem != null)
+        items.add(queueItem);
     }
   }
 
-  void add(DataItem item) {
+  DownloadQueueItem add(DataItem item) {
     if (!item.isInCollection(collection_download)) {
       CollectionData data = item.saveToCollection(collection_download);
-      items.add(DownloadQueueItem(data));
+      DownloadQueueItem queueItem = DownloadQueueItem(data);
+      if (queueItem != null)
+        items.add(queueItem);
+      return queueItem;
     }
+    return null;
   }
 
   void remove(int idx) {
-//    if (idx < items.length) {
-//      CollectionData data = items[idx];
-//      data.remove();
-//      items.removeAt(idx);
-//    }
+    if (idx < items.length) {
+      DownloadQueueItem item = items[idx];
+      item.stop();
+      item.data.remove();
+      item.destroy();
+      items.removeAt(idx);
+    }
   }
 }

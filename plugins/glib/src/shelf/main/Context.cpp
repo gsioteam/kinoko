@@ -241,6 +241,12 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
     target->on(Collection::NOTIFICATION_dataChanged, C([=](Collection::ChangeType type, Array array, int idx){
         Ref<Context> that = weak.lock();
         if (that) {
+            for (auto it = array->begin(), _e = array->end(); it != _e; ++it) {
+                if ((*it).getTypeClass()->isTypeOf(DataItem::getClass())) {
+                    Ref<DataItem> item = *it;
+                    item->setProjectKey(project_key);
+                }
+            }
             if (type != Collection::Append && that->getData()->size() > 0) {
                 save(that->getData());
             }

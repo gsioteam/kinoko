@@ -13,6 +13,7 @@ import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
 import 'package:kinoko/configs.dart';
 import 'package:kinoko/localizations/localizations.dart';
+import 'package:kinoko/utils/download_manager.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:glib/main/error.dart' as glib;
 import 'picture_viewer.dart';
@@ -126,8 +127,8 @@ class _BookPageState extends State<BookPage> {
 
   onDownloadStartClicked() {
     selected.forEach((idx) {
-//      DataItem data = chapters[idx];
-//      data.saveToCollection(collection_download, 0);
+      DownloadQueueItem item = DownloadManager().add(chapters[idx]);
+      item.start();
     });
   }
 

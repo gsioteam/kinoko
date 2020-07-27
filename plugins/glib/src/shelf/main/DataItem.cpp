@@ -125,20 +125,20 @@ gc::Array DataItem::getSubItems() const {
 }
 
 Ref<CollectionData> DataItem::saveToCollection(const std::string &type) {
-    Ref<BookData> data = saveData(false);
-    if (data) {
-        Ref<CollectionData> col = CollectionData::find(type, data->getIdentifier());
-        if (!col) {
-            col = new CollectionData;
-            col->setType(type);
-            col->setTargetID(data->getIdentifier());
+    string key = getProjectKey() + ":" + getLink();
+    Ref<CollectionData> col = CollectionData::find(type, key);
+    if (!col) {
+        Ref<BookData> data = saveData(true);
+        if (data->getIdentifier() < 0) {
+            data->save();
         }
+        col = new CollectionData;
+        col->setType(type);
+        col->setKey(key);
+        col->setTargetID(data->getIdentifier());
         col->save();
-        return col;
-    }else {
-        LOG(e, "Can not save to collection %s, data not found.", type.c_str());
-        return Ref<CollectionData>::null();
     }
+    return col;
 }
 
 gc::Array DataItem::loadCollectionItems(const std::string &type) {
@@ -157,26 +157,20 @@ gc::Array DataItem::loadCollectionItems(const std::string &type) {
 }
 
 bool DataItem::isInCollection(const std::string &type) {
-    Ref<BookData> data = saveData(false);
-    if (data) {
-        Ref<CollectionData> col = CollectionData::find(type, data->getIdentifier());
-        return col;
-    }
-    return false;
+    Ref<CollectionData> col = CollectionData::find(type, getProjectKey() + ":" + getLink());
+    return col;
 }
 
 void DataItem::removeFromCollection(const std::string &type) {
-    Ref<BookData> data = saveData(false);
-    if (data) {
-        Ref<CollectionData> col = CollectionData::find(type, data->getIdentifier());
-        if (col) col->remove();
-    }
+    string key = getProjectKey() + ":" + getLink();
+    Ref<CollectionData> col = CollectionData::find(type, key);
+    if (col)col->remove();
 }
 
 gc::Ref<DataItem> DataItem::fromCollectionData(const gc::Ref<CollectionData> &data) {
-    Array arr = BookData::query()->equal("identifier", data->getTargetID())->results();
-    if (arr->size()) {
-        return DataItem::fromData(arr->get(0));
+    Ref<BookData> bdata = BookData::find(data->getTargetID());
+    if (bdata) {
+        return DataItem::fromData(bdata);
     }
     return gc::Ref<DataItem>::null();
 }
