@@ -55,7 +55,7 @@ namespace gc {
     private:
 
         u_value value;
-        int8_t type;
+        int8_t type = TypeNull;
         const Class *class_type;
 
         void release();
