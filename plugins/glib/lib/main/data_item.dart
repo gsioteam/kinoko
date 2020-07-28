@@ -78,7 +78,7 @@ class DataItem extends Base {
 
   Array getSubItems() => call("getSubItems");
 
-  CollectionData saveToCollection(String type) => call("saveToCollection", argv: [type]);
+  CollectionData saveToCollection(String type, [dynamic data]) => call("saveToCollection", argv: [type, data]);
   static Array loadCollectionItems(String type) => Base.s_call(DataItem, "loadCollectionItems", argv: [type]);
   bool isInCollection(String type) => call("isInCollection", argv: [type]);
   void removeFromCollection(String type) => call("removeFromCollection", argv: [type]);

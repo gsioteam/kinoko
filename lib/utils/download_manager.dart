@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:glib/core/callback.dart';
@@ -17,6 +18,7 @@ import 'cached_picture_image.dart';
 import 'package:glib/utils/bit64.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:math';
+import 'book_info.dart';
 
 enum DownloadState {
   None,
@@ -44,8 +46,6 @@ class DownloadQueueItem {
 
   static const Duration MaxDuration = Duration(days: 365 * 99999);
 
-  bool _setup = false;
-
   void Function() onProgress;
   void Function() onState;
 
@@ -53,6 +53,21 @@ class DownloadQueueItem {
 
   int get loaded => max(_loaded, _loaded2);
   int get total => max(_total, _total2);
+
+  bool _setup = false;
+
+  BookInfo _info;
+  BookInfo get info {
+    if (_info == null) {
+      Map<String, String> map = jsonDecode(data.data);
+      _info = BookInfo(
+        title: map["title"],
+        picture: map["picture"],
+        link: map["link"]
+      );
+    }
+    return _info;
+  }
 
   factory DownloadQueueItem(data) {
     if (data == null) return null;
@@ -282,9 +297,13 @@ class DownloadManager {
     }
   }
 
-  DownloadQueueItem add(DataItem item) {
+  DownloadQueueItem add(DataItem item, BookInfo bookInfo) {
     if (!item.isInCollection(collection_download)) {
-      CollectionData data = item.saveToCollection(collection_download);
+      CollectionData data = item.saveToCollection(collection_download, {
+        "title": bookInfo.title,
+        "picture": bookInfo.picture,
+        "link": bookInfo.link
+      });
       DownloadQueueItem queueItem = DownloadQueueItem(data);
       if (queueItem != null)
         items.add(queueItem);

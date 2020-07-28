@@ -17,6 +17,7 @@ import 'package:kinoko/utils/download_manager.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:glib/main/error.dart' as glib;
 import 'picture_viewer.dart';
+import 'utils/book_info.dart';
 
 class BookPage extends StatefulWidget {
 
@@ -126,8 +127,13 @@ class _BookPageState extends State<BookPage> {
   }
 
   onDownloadStartClicked() {
+    DataItem dataItem = widget.context.info_data;
     selected.forEach((idx) {
-      DownloadQueueItem item = DownloadManager().add(chapters[idx]);
+      DownloadQueueItem item = DownloadManager().add(chapters[idx], BookInfo(
+        title: dataItem.title,
+        picture: dataItem.picture,
+        link: dataItem.link
+      ));
       item.start();
     });
   }

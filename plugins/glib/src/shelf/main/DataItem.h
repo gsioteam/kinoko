@@ -106,7 +106,7 @@ namespace gs {
         }
         PROPERTY(project_key, getProjectKey, setProjectKey);
 
-        METHOD gc::Ref<CollectionData> saveToCollection(const std::string &type);
+        METHOD gc::Ref<CollectionData> saveToCollection(const std::string &type, const gc::Variant &data);
         METHOD static gc::Array loadCollectionItems(const std::string &type);
         METHOD bool isInCollection(const std::string &type);
         METHOD void removeFromCollection(const std::string &type);

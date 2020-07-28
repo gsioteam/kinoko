@@ -15,4 +15,6 @@ class CollectionData extends Base {
 
   int get flag => call("getFlag");
   set flag(int v) => call("setFlag", argv: [v]);
+
+  String get data => call("getData");
 }

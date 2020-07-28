@@ -15,6 +15,7 @@ namespace gs {
         DEFINE_STRING(key, Key);
         DEFINE_FIELD(int, target_id, TargetID);
         DEFINE_FIELD(int, flag, Flag);
+        DEFINE_STRING(data, Data);
 
     public:
 
@@ -30,6 +31,7 @@ namespace gs {
             ADD_FILED(CollectionData, target_id, TargetID, true);
             ADD_FILED(CollectionData, flag, Flag, false);
             ADD_FILED(CollectionData, key, Key, false);
+            ADD_FILED(CollectionData, data, Data, false);
         }
 
         ON_LOADED_BEGIN(cls, Model)
