@@ -59,12 +59,17 @@ class DownloadQueueItem {
   BookInfo _info;
   BookInfo get info {
     if (_info == null) {
-      Map<String, String> map = jsonDecode(data.data);
-      _info = BookInfo(
-        title: map["title"],
-        picture: map["picture"],
-        link: map["link"]
-      );
+      if (data.data != null) {
+        Map<String, dynamic> map = jsonDecode(data.data);
+        _info = BookInfo(
+            title: map["title"],
+            picture: map["picture"],
+            link: map["link"],
+            subtitle: map["subtitle"]
+        );
+      } else {
+        _info = BookInfo();
+      }
     }
     return _info;
   }
@@ -302,7 +307,8 @@ class DownloadManager {
       CollectionData data = item.saveToCollection(collection_download, {
         "title": bookInfo.title,
         "picture": bookInfo.picture,
-        "link": bookInfo.link
+        "link": bookInfo.link,
+        "subtitle": bookInfo.subtitle
       });
       DownloadQueueItem queueItem = DownloadQueueItem(data);
       if (queueItem != null)

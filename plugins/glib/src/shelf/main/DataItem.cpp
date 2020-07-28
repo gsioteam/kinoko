@@ -128,17 +128,18 @@ Ref<CollectionData> DataItem::saveToCollection(const std::string &type, const gc
     string key = getProjectKey() + ":" + getLink();
     Ref<CollectionData> col = CollectionData::find(type, key);
     if (!col) {
-        Ref<BookData> data = saveData(true);
-        if (data->getIdentifier() < 0) {
-            data->save();
+        Ref<BookData> d = saveData(true);
+        if (d->getIdentifier() < 0) {
+            d->save();
         }
         col = new CollectionData;
         col->setType(type);
         col->setKey(key);
-        col->setTargetID(data->getIdentifier());
+        col->setTargetID(d->getIdentifier());
         if (data) {
             nlohmann::json json = JSON::serialize(data);
             col->setData(json.dump());
+            LOG(i, "save data %s", col->getData().c_str());
         }
         col->save();
     }

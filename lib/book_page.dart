@@ -132,7 +132,8 @@ class _BookPageState extends State<BookPage> {
       DownloadQueueItem item = DownloadManager().add(chapters[idx], BookInfo(
         title: dataItem.title,
         picture: dataItem.picture,
-        link: dataItem.link
+        link: dataItem.link,
+        subtitle: dataItem.subtitle
       ));
       item.start();
     });

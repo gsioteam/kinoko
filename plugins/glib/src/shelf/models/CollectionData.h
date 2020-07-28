@@ -37,6 +37,7 @@ namespace gs {
         ON_LOADED_BEGIN(cls, Model)
             ADD_METHOD(cls, CollectionData, all);
             ADD_PROPERTY(cls, "flag", ADD_METHOD(cls, CollectionData, getFlag), ADD_METHOD(cls, CollectionData, setFlag));
+            ADD_METHOD(cls, CollectionData, getData);
         ON_LOADED_END
 
     CLASS_END
