@@ -32,6 +32,84 @@ class CellData {
   });
 }
 
+class ChapterCell extends StatefulWidget {
+
+  DownloadQueueItem item;
+  void Function() onTap;
+
+  ChapterCell(this.item, {
+    this.onTap
+  });
+
+  @override
+  State<StatefulWidget> createState() => _ChapterCellState();
+}
+
+class _ChapterCellState extends State<ChapterCell> {
+  String errorStr;
+
+  @override
+  Widget build(BuildContext context) {
+    DownloadQueueItem queueItem = widget.item;
+    DataItem item = queueItem.item;
+    ThemeData theme = Theme.of(context);
+    return Container(
+      color: Colors.grey.withOpacity(0.1),
+      padding: EdgeInsets.only(left: 10, right: 10),
+      child: ListTile(
+        title: Text(item.title),
+        subtitle: Text("(${queueItem.loaded}/${queueItem.total})", style: theme.textTheme.caption,),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            queueItem.downloading ?
+            IconButton(
+                icon: Icon(Icons.pause),
+                onPressed: () {
+                  setState(() {
+                    queueItem.stop();
+                  });
+                }
+            ):
+            IconButton(
+              icon: Icon(Icons.play_arrow),
+              onPressed: () {
+                setState(() {
+                  queueItem.start();
+                });
+              }
+            ),
+            Icon(Icons.chevron_right)
+          ],
+        ),
+        onTap: widget.onTap,
+      ),
+    );
+  }
+
+  onProgress() {
+    setState(() {});
+  }
+
+  onState() {
+    setState(() {});
+  }
+
+  onError(String err) {
+    setState(() {
+      errorStr = err;
+    });
+  }
+
+  @override
+  void initState() {
+    widget.item.onProgress = onProgress;
+    widget.item.onState = onState;
+    widget.item.onError = onError;
+    super.initState();
+  }
+}
+
 class DownloadPage extends HomeWidget {
   @override
   State<StatefulWidget> createState() => _DownloadPageState();
@@ -47,7 +125,25 @@ class _DownloadPageState extends State<DownloadPage> {
       case _CellType.Book: {
         BookData bookData = cdata.data;
         if (cdata.extend) {
-
+          int start = index + 1;
+          for (int i = start; i < data.length;) {
+            CellData ndata = data[i];
+            if (ndata.type != _CellType.Chapter) {
+              break;
+            }
+            data.removeAt(i);
+            _listKey.currentState.removeItem(i, (context, animation) {
+              DownloadQueueItem queueItem = ndata.data;
+              DataItem item = queueItem.item;
+              return SizeTransition(
+                sizeFactor: animation,
+                child: ListTile(
+                  title: Text(item.title),
+                  trailing: Icon(Icons.chevron_right),
+                ),
+              );
+            });
+          }
         } else {
           if (bookData.items.length > 0) {
             List<CellData> list = List(bookData.items.length);
@@ -64,6 +160,10 @@ class _DownloadPageState extends State<DownloadPage> {
           }
         }
         cdata.extend = !cdata.extend;
+        break;
+      }
+      case _CellType.Chapter: {
+        break;
       }
     }
   }
@@ -73,22 +173,38 @@ class _DownloadPageState extends State<DownloadPage> {
     switch (cdata.type) {
       case _CellType.Book: {
         BookData downloadData = cdata.data;
-        return ListTile(
-          title: Text(downloadData.bookInfo.title),
-          subtitle: Text(downloadData.bookInfo.subtitle),
-          leading: Image(image: CacheImage(downloadData.bookInfo.picture)),
-          trailing: Icon(Icons.keyboard_arrow_down),
-          onTap: () {
-            clickBookCell(index);
-          },
+        return Column(
+          children: <Widget>[
+            ListTile(
+              title: Text(downloadData.bookInfo.title),
+              subtitle: Text(downloadData.bookInfo.subtitle),
+              leading: Image(
+                image: CacheImage(downloadData.bookInfo.picture),
+                fit: BoxFit.cover,
+                width: 56,
+                height: 56,
+                gaplessPlayback: true,
+              ),
+              trailing: AnimatedCrossFade(
+                firstChild: Icon(Icons.keyboard_arrow_up),
+                secondChild: Icon(Icons.keyboard_arrow_down),
+                crossFadeState: cdata.extend ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+                duration: Duration(milliseconds: 300)
+              ),
+              onTap: () {
+                clickBookCell(index);
+              },
+            ),
+            Divider(
+              height: 1,
+            )
+          ],
         );
       }
       case _CellType.Chapter: {
         DownloadQueueItem queueItem = cdata.data;
-        DataItem item = queueItem.item;
-        return ListTile(
-          title: Text(item.title),
-          trailing: Icon(Icons.chevron_right),
+        return ChapterCell(
+          queueItem,
           onTap: () {
             clickBookCell(index);
           },
@@ -136,6 +252,11 @@ class _DownloadPageState extends State<DownloadPage> {
         ));
       }
       downloadItem.items.add(item);
+    }
+    for (int i = 0, t = data.length; i < t; ++i) {
+      CellData cdata = data[i];
+      BookData downloadItem = cdata.data;
+      downloadItem.items.sort((item1, item2) => item1.item.title.compareTo(item2.item.title));
     }
 
     super.initState();

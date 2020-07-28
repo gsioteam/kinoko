@@ -108,9 +108,12 @@ class DownloadQueueItem {
     for (String url in urls) {
       FileInfo info = await cacheManager.getFileFromCache(url);
       if (info != null) {
+        print("exist $url");
         ++count;
         _loaded = count;
         onProgress?.call();
+      } else {
+        print("not exist $url");
       }
     }
     if (_loaded == total && state == DownloadState.ListComplete) {
@@ -170,13 +173,17 @@ class DownloadQueueItem {
 
     CachedPictureImage image = queue.removeFirst();
     _picture_downloading = true;
+    print("fetch ${image.url}");
     await image.fetchImage();
+    print("fetch over ${image.url}");
     _picture_downloading = false;
+    onProgress?.call();
     checkImageQueue();
   }
 
   Future<void> waitForImageQueue() async {
     if (!downloading && queue.length == 0) return;
+    print("waitForImageQueue");
     Completer<void> completer = Completer();
     onImageQueueClear = () {
       onImageQueueClear = null;
@@ -187,6 +194,7 @@ class DownloadQueueItem {
 
   void addToQueue(DataItem item) {
     if (!urls.contains(item.picture)) {
+      print("add queue ${item.picture}");
       urls.add(item.picture);
       _total2 = urls.length;
       onProgress?.call();
@@ -232,18 +240,21 @@ class DownloadQueueItem {
 
     try {
       if (state == DownloadState.None) {
+        print("reload context");
         await reload(context);
         state = DownloadState.ListComplete;
         data.save();
         onState?.call();
       }
       if (state == DownloadState.ListComplete) {
+        print("request images");
         await waitForImageQueue();
         state = DownloadState.AllComplete;
         data.save();
         onState?.call();
       }
     } catch (e) {
+      print("error ${e.toString()}");
       if (_downloading)
         onError?.call(e.toString());
     }
