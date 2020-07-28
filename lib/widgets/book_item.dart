@@ -32,6 +32,7 @@ Widget makeBookItem(BuildContext context, DataItem item, void Function() onTap) 
         fit: BoxFit.cover,
         width: 56,
         height: 56,
+        gaplessPlayback: true,
       ),
       onTap: onTap,
     );
