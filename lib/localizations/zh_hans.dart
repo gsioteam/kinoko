@@ -19,5 +19,7 @@ const Map words = {
   "order": "正序",
   "no_project_found": "沒有安裝這個項目",
   "can_not_determine_the_context_type": "不能識別這個數據類型",
-  "download_list": "下载列表"
+  "download_list": "下载列表",
+  "delete_item": "删除 {0}({1})",
+  "undo": "取消"
 };

@@ -7,6 +7,8 @@ import 'package:glib/main/data_item.dart';
 import 'package:kinoko/utils/book_info.dart';
 import 'package:kinoko/utils/cached_picture_image.dart';
 import 'utils/download_manager.dart';
+import 'localizations/localizations.dart';
+import 'package:flushbar/flushbar.dart';
 
 import 'widgets/home_widget.dart';
 
@@ -25,14 +27,11 @@ class CellData {
   _CellType type;
   bool extend = false;
   dynamic data;
-  LocalKey key;
 
   CellData({
     this.type,
     this.data
-  }) {
-    key = ObjectKey(data);
-  }
+  });
 }
 
 class ChapterCell extends StatefulWidget {
@@ -132,53 +131,40 @@ class _ChapterCellState extends State<ChapterCell> {
     widget.item.onError = onError;
     super.initState();
   }
-}
 
-class _DeleteController {
-  bool _editMode = false;
-  void Function() onEditModeChange;
-
-  bool get editMode => _editMode;
-  set editMode(bool mode) {
-    if (_editMode != mode) {
-      _editMode = mode;
-      onEditModeChange?.call();
-    }
+  @override
+  void dispose() {
+    widget.item.onProgress = null;
+    widget.item.onState = null;
+    widget.item.onError = null;
+    super.dispose();
   }
 }
 
 class DownloadPage extends HomeWidget {
-  _DeleteController _controller = _DeleteController();
-
   DownloadPage() : super(key: GlobalKey<_DownloadPageState>()) {
     this.title = "download_list";
   }
 
   @override
-  State<StatefulWidget> createState() => _DownloadPageState(_controller);
+  State<StatefulWidget> createState() => _DownloadPageState();
 
-  @override
-  List<Widget> buildActions(BuildContext context, reload) {
-    return [
-      IconButton(
-        icon: Icon(_controller.editMode ? Icons.done : Icons.delete),
-        onPressed: () {
-          _controller.editMode = !_controller.editMode;
-          reload();
-          GlobalKey<_DownloadPageState> key = this.key;
-          key.currentState.setState(() { });
-        },
-      )
-    ];
-  }
+}
+
+class _NeedRemove {
+  CellData mainData;
+  DownloadQueueItem downloadItem;
+
+  _NeedRemove(this.mainData, this.downloadItem);
 }
 
 class _DownloadPageState extends State<DownloadPage> {
   List<CellData> data;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
-  _DeleteController controller;
+  List<_NeedRemove> needRemove = List();
+  List<Flushbar<bool>> flushbars = List();
 
-  _DownloadPageState(this.controller);
+  _DownloadPageState();
 
   void clickBookCell(int index) {
     CellData cdata = data[index];
@@ -225,6 +211,47 @@ class _DownloadPageState extends State<DownloadPage> {
     }
   }
 
+  removeItem(_NeedRemove item) {
+    if (needRemove.contains(item)) {
+      DownloadManager().removeItem(item.downloadItem);
+      needRemove.remove(item);
+    }
+  }
+
+  reverseItem(_NeedRemove item) {
+    if (needRemove.contains(item)) {
+      if (item.mainData.extend) {
+        BookData bookData = item.mainData.data;
+        int i, t = bookData.items.length;
+        for (i = 0; i < t; ++i) {
+          DownloadQueueItem cItem = bookData.items[i];
+          if (cItem.item.title.compareTo(item.downloadItem.item.title) >= 0) {
+            break;
+          }
+        }
+        bookData.items.insert(i, item.downloadItem);
+        int cIndex = data.indexOf(item.mainData);
+        int listIndex = cIndex + i + 1;
+        data.insert(listIndex, CellData(
+          type: _CellType.Chapter,
+          data: item.downloadItem
+        ));
+        _listKey.currentState.insertItem(listIndex);
+      } else {
+        BookData bookData = item.mainData.data;
+        int i, t = bookData.items.length;
+        for (i = 0; i < t; ++i) {
+          DownloadQueueItem cItem = bookData.items[i];
+          if (item.downloadItem.item.title.compareTo(cItem.item.title) >= 0) {
+            break;
+          }
+        }
+        bookData.items.insert(i, item.downloadItem);
+      }
+      needRemove.remove(item);
+    }
+  }
+
   Widget cellWithData(int index) {
     CellData cdata = data[index];
     switch (cdata.type) {
@@ -233,7 +260,6 @@ class _DownloadPageState extends State<DownloadPage> {
         return Column(
           children: <Widget>[
             ListTile(
-              key: cdata.key,
               title: Text(downloadData.bookInfo.title),
               subtitle: Text(downloadData.bookInfo.subtitle),
               leading: Image(
@@ -261,16 +287,67 @@ class _DownloadPageState extends State<DownloadPage> {
         );
       }
       case _CellType.Chapter: {
-        DownloadQueueItem queueItem = cdata.data;
-        return ChapterCell(
-          queueItem,
-          key: cdata.key,
-          onTap: () {
-            clickBookCell(index);
-          },
-          editMode: controller.editMode,
-        );
-      }
+          DownloadQueueItem queueItem = cdata.data;
+          return Dismissible(
+            key: ObjectKey(queueItem),
+            child: ChapterCell(
+              queueItem,
+              onTap: () {
+                clickBookCell(index);
+              },
+            ),
+            onDismissed: (DismissDirection direction) async {
+              Flushbar<bool> flushbar;
+              flushbar = Flushbar<bool>(
+                backgroundColor: Colors.redAccent,
+                title: kt("confirm"),
+                message: kt("delete_item").replaceAll("{0}", queueItem.info.title).replaceAll("{1}", queueItem.item.title),
+                mainButton: FlatButton(
+                  child: Text(kt("undo")),
+                  onPressed: () {
+                    flushbar.dismiss(true);
+                  },
+                ),
+                duration: Duration(seconds: 5),
+                animationDuration: Duration(milliseconds: 300),
+              );
+
+              flushbars.add(flushbar);
+
+              int index = data.indexOf(cdata);
+              CellData mainData;
+              for (int i = index - 1; i >= 0; --i) {
+                CellData cellData = data[i];
+                if (cellData.type == _CellType.Book) {
+                  mainData = cellData;
+                  BookData bookData = mainData.data;
+                  bookData.items.remove(queueItem);
+                  break;
+                }
+              }
+
+              _NeedRemove item = _NeedRemove(mainData, queueItem);
+              needRemove.add(item);
+              data.removeAt(index);
+              _listKey.currentState.removeItem(index, (context, animation) {
+                return SizeTransition(
+                  sizeFactor: animation,
+                  child: Container(),
+                );
+              });
+
+              bool result = await flushbar.show(context);
+              print("Result $result");
+              if (result == true) {
+                reverseItem(item);
+              } else {
+                removeItem(item);
+              }
+
+              flushbars.remove(flushbar);
+            },
+          );
+        }
     }
   }
 
@@ -283,12 +360,14 @@ class _DownloadPageState extends State<DownloadPage> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedList(
-      key: _listKey,
-      initialItemCount: data.length,
-      itemBuilder: (context, index, Animation<double> animation) {
-        return animationItem(index, animation);
-      },
+    return Scaffold(
+      body: AnimatedList(
+        key: _listKey,
+        initialItemCount: data.length,
+        itemBuilder: (context, index, Animation<double> animation) {
+          return animationItem(index, animation);
+        },
+      ),
     );
   }
 
@@ -326,6 +405,8 @@ class _DownloadPageState extends State<DownloadPage> {
 
   @override
   void dispose() {
+    flushbars.forEach((element)=>element.dismiss(false));
+    flushbars.clear();
     super.dispose();
   }
 }

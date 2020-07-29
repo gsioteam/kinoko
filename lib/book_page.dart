@@ -19,6 +19,89 @@ import 'package:glib/main/error.dart' as glib;
 import 'picture_viewer.dart';
 import 'utils/book_info.dart';
 
+class ChapterItem extends StatefulWidget {
+
+  bool editing;
+  bool selected;
+  String title;
+  String subtitle;
+  DownloadQueueItem downloadItem;
+  void Function() onTap;
+
+  ChapterItem({
+    this.editing = false,
+    this.title,
+    this.subtitle,
+    this.downloadItem,
+    this.selected = false,
+    this.onTap
+  });
+
+  @override
+  State<StatefulWidget> createState() => _ChapterItemState();
+
+}
+
+class _ChapterItemState extends State<ChapterItem> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        ListTile(
+          title: Text(widget.title),
+          subtitle: (widget.subtitle == null || widget.subtitle.length == 0) ? null : Text(widget.subtitle),
+          trailing:
+          widget.downloadItem == null ?
+          AnimatedOpacity(
+            opacity: widget.editing ? 1 : 0,
+            child: Icon(
+                widget.selected ? Icons.radio_button_checked : Icons.radio_button_unchecked
+            ),
+            duration: Duration(milliseconds: 300),
+          ) :
+          Text(
+            "${widget.downloadItem.loaded}/${widget.downloadItem.total}",
+            style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.black26, fontSize: 12),
+          ),
+          onTap: widget.onTap,
+        ),
+        Divider(height: 3,)
+      ],
+    );
+  }
+
+  onProgress() {
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    if (widget.downloadItem != null) {
+      widget.downloadItem.onProgress = onProgress;
+    }
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(ChapterItem oldWidget) {
+    if (oldWidget.downloadItem != null) {
+      oldWidget.downloadItem = null;
+    }
+    if (widget.downloadItem != null) {
+      widget.downloadItem.onProgress = onProgress;
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void dispose() {
+    if (widget.downloadItem != null) {
+      widget.downloadItem.onProgress = null;
+    }
+    super.dispose();
+  }
+}
+
 class BookPage extends StatefulWidget {
 
   Context context;
@@ -50,24 +133,17 @@ class _BookPageState extends State<BookPage> {
     }
     DataItem item = chapters[idx];
     String subtitle = item.subtitle;
-    return Column(
-      children: <Widget>[
-        ListTile(
-          title: Text(item.title),
-          subtitle: (subtitle == null || subtitle.length == 0) ? null : Text(subtitle),
-          trailing: AnimatedOpacity(
-            opacity: editing ? 1 : 0,
-            child: Icon(
-              item.isInCollection(collection_download) ? Icons.done : (selected.contains(idx) ? Icons.radio_button_checked : Icons.radio_button_unchecked)
-            ),
-            duration: Duration(milliseconds: 300),
-          ),
-          onTap: () {
-            onSelectItem(idx);
-          },
-        ),
-        Divider(height: 3,)
-      ],
+    DownloadQueueItem downloadItem = DownloadManager().find(item);
+
+    return ChapterItem(
+      title: item.title,
+      subtitle: subtitle,
+      editing: editing,
+      selected: selected.contains(idx),
+      downloadItem: downloadItem,
+      onTap: () {
+        onSelectItem(idx);
+      },
     );
   }
 
@@ -127,15 +203,18 @@ class _BookPageState extends State<BookPage> {
   }
 
   onDownloadStartClicked() {
-    DataItem dataItem = widget.context.info_data;
-    selected.forEach((idx) {
-      DownloadQueueItem item = DownloadManager().add(chapters[idx], BookInfo(
-        title: dataItem.title,
-        picture: dataItem.picture,
-        link: dataItem.link,
-        subtitle: dataItem.subtitle
-      ));
-      item.start();
+    setState(() {
+      DataItem dataItem = widget.context.info_data;
+      selected.forEach((idx) {
+        DownloadQueueItem item = DownloadManager().add(chapters[idx], BookInfo(
+            title: dataItem.title,
+            picture: dataItem.picture,
+            link: dataItem.link,
+            subtitle: dataItem.subtitle
+        ));
+        item.start();
+      });
+      editing = false;
     });
   }
 

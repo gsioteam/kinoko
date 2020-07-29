@@ -127,8 +127,11 @@ class DownloadQueueItem {
 
   void destroy() {
     r(data);
+    data = null;
     r(item);
+    item = null;
     r(context);
+    context = null;
   }
 
   DownloadState get state {
@@ -177,6 +180,7 @@ class DownloadQueueItem {
     await image.fetchImage();
     _picture_downloading = false;
     _loaded2++;
+    print("Call onProgress ${loaded}");
     onProgress?.call();
     checkImageQueue();
   }
@@ -339,5 +343,22 @@ class DownloadManager {
       item.destroy();
       items.removeAt(idx);
     }
+  }
+
+  void removeItem(DownloadQueueItem item) {
+    item.stop();
+    item.data.remove();
+    item.destroy();
+    items.remove(item);
+  }
+
+  DownloadQueueItem find(DataItem item) {
+    for (int i = 0, t = items.length; i < t; ++i) {
+      String link = items[i].item.link;
+      if (item.link == link) {
+        return items[i];
+      }
+    }
+    return null;
   }
 }

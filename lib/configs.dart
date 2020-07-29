@@ -6,3 +6,5 @@ GitRepository env_repo;
 
 const String collection_download = "download";
 const String collection_mark = "mark";
+
+const String home_page_name = "home";

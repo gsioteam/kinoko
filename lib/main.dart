@@ -104,7 +104,8 @@ class SplashScreen extends StatelessWidget {
     Future<void> future = setup(context);
     future.then((value) {
       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
-          builder: (BuildContext context)=>HomePage()
+        settings: RouteSettings(name: home_page_name),
+        builder: (BuildContext context)=>HomePage()
       ), (route) => route.isCurrent);
     });
     return Container(color: Colors.white,);
@@ -345,13 +346,10 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           selected = idx;
         });
-        Navigator.of(context).pop();
+
+        Navigator.of(context).popUntil(ModalRoute.withName(home_page_name));
       }
     };
-  }
-
-  void actionChanged() {
-
   }
 
   @override
