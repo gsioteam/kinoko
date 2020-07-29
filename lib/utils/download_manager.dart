@@ -35,11 +35,12 @@ class DownloadQueueItem {
   bool _picture_downloading = false;
   String cacheKey;
   void Function() onImageQueueClear;
-  Set<String> urls = Set();
+  List<String> urls = List();
   int _total = 0;
   int _total2 = 0;
   int _loaded = 0;
   int _loaded2 = 0;
+
   bool _downloading = false;
   bool cancel = false;
   Context context;
@@ -62,10 +63,10 @@ class DownloadQueueItem {
       if (data.data != null) {
         Map<String, dynamic> map = jsonDecode(data.data);
         _info = BookInfo(
-            title: map["title"],
-            picture: map["picture"],
-            link: map["link"],
-            subtitle: map["subtitle"]
+          title: map["title"],
+          picture: map["picture"],
+          link: map["link"],
+          subtitle: map["subtitle"]
         );
       } else {
         _info = BookInfo();
@@ -94,6 +95,9 @@ class DownloadQueueItem {
         urls.add(item.picture);
       }
       _checkImages(urls);
+      if (state == DownloadState.ListComplete) {
+        this.urls = urls;
+      }
     } else {
       _loaded = total;
     }
@@ -108,12 +112,9 @@ class DownloadQueueItem {
     for (String url in urls) {
       FileInfo info = await cacheManager.getFileFromCache(url);
       if (info != null) {
-        print("exist $url");
         ++count;
         _loaded = count;
         onProgress?.call();
-      } else {
-        print("not exist $url");
       }
     }
     if (_loaded == total && state == DownloadState.ListComplete) {
@@ -173,17 +174,15 @@ class DownloadQueueItem {
 
     CachedPictureImage image = queue.removeFirst();
     _picture_downloading = true;
-    print("fetch ${image.url}");
     await image.fetchImage();
-    print("fetch over ${image.url}");
     _picture_downloading = false;
+    _loaded2++;
     onProgress?.call();
     checkImageQueue();
   }
 
   Future<void> waitForImageQueue() async {
     if (!downloading && queue.length == 0) return;
-    print("waitForImageQueue");
     Completer<void> completer = Completer();
     onImageQueueClear = () {
       onImageQueueClear = null;
@@ -192,14 +191,13 @@ class DownloadQueueItem {
     return completer.future;
   }
 
-  void addToQueue(DataItem item) {
-    if (!urls.contains(item.picture)) {
-      print("add queue ${item.picture}");
-      urls.add(item.picture);
+  void addToQueue(url) {
+    if (!urls.contains(url)) {
+      urls.add(url);
       _total2 = urls.length;
       onProgress?.call();
       CachedPictureImage image = CachedPictureImage(
-          item.picture,
+          url,
           key: cacheKey,
           maxAgeCacheObject: Duration(days: 365 * 99999)
       );
@@ -209,6 +207,7 @@ class DownloadQueueItem {
   }
 
   Future<void> reload(Context context) {
+    _loaded2 = 0;
     Completer<void> completer = Completer();
     context.on_error = Callback.fromFunction((glib.Error error){
       completer.completeError(Exception(error.msg));
@@ -218,7 +217,7 @@ class DownloadQueueItem {
     }).release();
     context.on_data_changed = Callback.fromFunction((int type, Array data, int idx) {
       for (int i = 0, t = data.length; i < t; ++i) {
-        addToQueue(data[i]);
+        addToQueue(data[i].picture);
       }
     }).release();
     context.enterView();
@@ -240,21 +239,24 @@ class DownloadQueueItem {
 
     try {
       if (state == DownloadState.None) {
-        print("reload context");
+        urls.clear();
         await reload(context);
         state = DownloadState.ListComplete;
         data.save();
         onState?.call();
+      } else {
+        _loaded2 = 0;
+        urls.forEach((url) {
+          addToQueue(url);
+        });
       }
       if (state == DownloadState.ListComplete) {
-        print("request images");
         await waitForImageQueue();
         state = DownloadState.AllComplete;
         data.save();
         onState?.call();
       }
     } catch (e) {
-      print("error ${e.toString()}");
       if (_downloading)
         onError?.call(e.toString());
     }

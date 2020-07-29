@@ -25,21 +25,27 @@ class CellData {
   _CellType type;
   bool extend = false;
   dynamic data;
+  LocalKey key;
 
   CellData({
     this.type,
     this.data
-  });
+  }) {
+    key = ObjectKey(data);
+  }
 }
 
 class ChapterCell extends StatefulWidget {
 
   DownloadQueueItem item;
   void Function() onTap;
+  bool editMode = false;
 
   ChapterCell(this.item, {
-    this.onTap
-  });
+    key,
+    this.onTap,
+    this.editMode = false
+  }):super(key: key);
 
   @override
   State<StatefulWidget> createState() => _ChapterCellState();
@@ -47,6 +53,46 @@ class ChapterCell extends StatefulWidget {
 
 class _ChapterCellState extends State<ChapterCell> {
   String errorStr;
+
+  Widget extendButtons(BuildContext context, DownloadQueueItem queueItem) {
+    if (widget.editMode) {
+      return IconButton(
+        icon: Icon(Icons.delete_outline),
+        onPressed: () {
+
+        },
+      );
+    } else {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Container(
+            child: queueItem.state == DownloadState.AllComplete ? null : (
+                queueItem.downloading ?
+                IconButton(
+                    icon: Icon(Icons.pause),
+                    onPressed: () {
+                      setState(() {
+                        queueItem.stop();
+                      });
+                    }
+                ):
+                IconButton(
+                    icon: Icon(Icons.play_arrow),
+                    onPressed: () {
+                      setState(() {
+                        queueItem.start();
+                      });
+                    }
+                )
+            ),
+          ),
+          Icon(Icons.chevron_right)
+        ],
+      );
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,29 +105,7 @@ class _ChapterCellState extends State<ChapterCell> {
       child: ListTile(
         title: Text(item.title),
         subtitle: Text("(${queueItem.loaded}/${queueItem.total})", style: theme.textTheme.caption,),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            queueItem.downloading ?
-            IconButton(
-                icon: Icon(Icons.pause),
-                onPressed: () {
-                  setState(() {
-                    queueItem.stop();
-                  });
-                }
-            ):
-            IconButton(
-              icon: Icon(Icons.play_arrow),
-              onPressed: () {
-                setState(() {
-                  queueItem.start();
-                });
-              }
-            ),
-            Icon(Icons.chevron_right)
-          ],
-        ),
+        trailing: extendButtons(context, queueItem),
         onTap: widget.onTap,
       ),
     );
@@ -110,14 +134,51 @@ class _ChapterCellState extends State<ChapterCell> {
   }
 }
 
+class _DeleteController {
+  bool _editMode = false;
+  void Function() onEditModeChange;
+
+  bool get editMode => _editMode;
+  set editMode(bool mode) {
+    if (_editMode != mode) {
+      _editMode = mode;
+      onEditModeChange?.call();
+    }
+  }
+}
+
 class DownloadPage extends HomeWidget {
+  _DeleteController _controller = _DeleteController();
+
+  DownloadPage() : super(key: GlobalKey<_DownloadPageState>()) {
+    this.title = "download_list";
+  }
+
   @override
-  State<StatefulWidget> createState() => _DownloadPageState();
+  State<StatefulWidget> createState() => _DownloadPageState(_controller);
+
+  @override
+  List<Widget> buildActions(BuildContext context, reload) {
+    return [
+      IconButton(
+        icon: Icon(_controller.editMode ? Icons.done : Icons.delete),
+        onPressed: () {
+          _controller.editMode = !_controller.editMode;
+          reload();
+          GlobalKey<_DownloadPageState> key = this.key;
+          key.currentState.setState(() { });
+        },
+      )
+    ];
+  }
 }
 
 class _DownloadPageState extends State<DownloadPage> {
   List<CellData> data;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
+  _DeleteController controller;
+
+  _DownloadPageState(this.controller);
 
   void clickBookCell(int index) {
     CellData cdata = data[index];
@@ -134,13 +195,9 @@ class _DownloadPageState extends State<DownloadPage> {
             data.removeAt(i);
             _listKey.currentState.removeItem(i, (context, animation) {
               DownloadQueueItem queueItem = ndata.data;
-              DataItem item = queueItem.item;
               return SizeTransition(
                 sizeFactor: animation,
-                child: ListTile(
-                  title: Text(item.title),
-                  trailing: Icon(Icons.chevron_right),
-                ),
+                child: ChapterCell(queueItem),
               );
             });
           }
@@ -176,9 +233,11 @@ class _DownloadPageState extends State<DownloadPage> {
         return Column(
           children: <Widget>[
             ListTile(
+              key: cdata.key,
               title: Text(downloadData.bookInfo.title),
               subtitle: Text(downloadData.bookInfo.subtitle),
               leading: Image(
+                key: ObjectKey(downloadData.bookInfo.picture),
                 image: CacheImage(downloadData.bookInfo.picture),
                 fit: BoxFit.cover,
                 width: 56,
@@ -205,9 +264,11 @@ class _DownloadPageState extends State<DownloadPage> {
         DownloadQueueItem queueItem = cdata.data;
         return ChapterCell(
           queueItem,
+          key: cdata.key,
           onTap: () {
             clickBookCell(index);
           },
+          editMode: controller.editMode,
         );
       }
     }
@@ -233,6 +294,7 @@ class _DownloadPageState extends State<DownloadPage> {
 
   @override
   void initState() {
+
     data = [];
     List<DownloadQueueItem> items = DownloadManager().items;
     Map<String, BookData> cache = Map();
@@ -260,5 +322,10 @@ class _DownloadPageState extends State<DownloadPage> {
     }
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

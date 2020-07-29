@@ -200,6 +200,9 @@ class LibrariesPage extends HomeWidget {
   String _inputText;
 
   @override
+  String get title => "manage_projects";
+
+  @override
   State<StatefulWidget> createState() {
     state = _LibrariesPageState();
     return state;
@@ -220,7 +223,7 @@ class LibrariesPage extends HomeWidget {
     }
   }
 
-  buildActions(BuildContext context) {
+  buildActions(BuildContext context, reload) {
     return [
       IconButton(
           icon: Icon(Icons.add),

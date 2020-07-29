@@ -30,6 +30,7 @@ bool Collection::reload() {
             }
         }
     });
+    LOG(i, "--- callEventReload");
     bool ret = apply(EVENT_reload, pointer_vector{&var});
     if (ret) {
         loading = true;

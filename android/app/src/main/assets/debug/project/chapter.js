@@ -62,7 +62,9 @@ class ChapterCollection extends glib.Collection {
     }
 
     reload(cb) {
+        console.log("**start reload");
         this.loadProcess(this.info_data.link).then(function () {
+            console.log("**reload complete");
             cb.apply(null);
         }).catch(function (err) {
             if (err instanceof Error) 
@@ -70,6 +72,7 @@ class ChapterCollection extends glib.Collection {
             console.error(err.msg);
             cb.apply(err);
         });
+        return true;
     }
 }
 

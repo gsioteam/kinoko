@@ -48,6 +48,7 @@ class BookCollection extends glib.Collection {
                 err = glib.Error.new(305, err.message);
             cb.apply(err);
         });
+        return true;
     }
 }
 

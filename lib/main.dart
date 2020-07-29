@@ -263,23 +263,56 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
   }
 }
 
+class NavigationController {
+  AppBarData appBarData;
+
+  NavigationController(this.appBarData);
+
+  String get title => appBarData == null ? "" : appBarData.title;
+
+  List<Widget> buildActions(BuildContext context, void Function() reload) {
+    return appBarData == null ? [] : appBarData.buildActions(context, reload);
+  }
+}
+
+class NavigationBar extends StatefulWidget implements PreferredSizeWidget {
+
+  NavigationController controller;
+
+  NavigationBar(AppBarData appBarData) {
+    controller = NavigationController(appBarData);
+  }
+
+  @override
+  State<StatefulWidget> createState() => _NavigationBarState();
+
+  @override
+  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+}
+
+class _NavigationBarState extends State<NavigationBar> {
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: Text(kt(widget.controller.title)),
+      elevation: 0,
+      actions: widget.controller.buildActions(context, onReload),
+    );
+  }
+
+  void onReload() {
+    setState(() {});
+  }
+
+}
+
 class HomePage extends HomeWidget {
   HomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
   @override
   _HomePageState createState() => _HomePageState();
-
 }
 
 class _HomePageState extends State<HomePage> {
@@ -315,6 +348,10 @@ class _HomePageState extends State<HomePage> {
         Navigator.of(context).pop();
       }
     };
+  }
+
+  void actionChanged() {
+
   }
 
   @override
@@ -353,11 +390,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      appBar: AppBar(
-        title: Text(kt("app_title")),
-        elevation: 0,
-        actions: body.buildActions(context),
-      ),
+      appBar: NavigationBar(body.appBarData),
       body: body,
     );
   }

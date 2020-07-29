@@ -281,6 +281,7 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
                 }
             }
             if (that->on_reload_complete) {
+                LOG(i, "--reload complete!");
                 that->on_reload_complete();
             }
         }

@@ -16,6 +16,9 @@ import 'picture_viewer.dart';
 
 class FavoritesPage extends HomeWidget {
   @override
+  String get title => "favorites";
+
+  @override
   State<StatefulWidget> createState() {
     return _FavoritesPageState();
   }

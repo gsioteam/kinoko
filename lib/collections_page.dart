@@ -12,6 +12,10 @@ import 'widgets/home_widget.dart';
 import './configs.dart';
 
 class CollectionsPage extends HomeWidget {
+  CollectionsPage() {
+    this.title = "app_title";
+  }
+
   @override
   State<StatefulWidget> createState() {
     return _CollectionsPageState();

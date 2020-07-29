@@ -586,7 +586,6 @@ void V8Script::callStaticMethod(const v8::FunctionCallbackInfo<v8::Value> &info)
     v8::Array *arr = v8::Array::Cast(*info.Data());
     v8::Local<v8::External> ex = v8::Local<v8::External>::Cast(arr->Get(ctx, 0).ToLocalChecked());
     const Method *method = (const Method *)ex->Value();
-    LOG(i, "callStaticMethod %s", method->name.str());
 
     v8::MaybeLocal<v8::Value> maybe = info.This()->GetPrivate(ctx, c->native_key.Get(ISO));
     v8::Local<v8::Value> val;
