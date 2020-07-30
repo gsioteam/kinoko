@@ -21,5 +21,6 @@ const Map words = {
   "can_not_determine_the_context_type": "不能識別這個數據類型",
   "download_list": "下载列表",
   "delete_item": "删除 {0}({1})",
-  "undo": "取消"
+  "undo": "取消",
+  "search": "寻幽觅胜"
 };

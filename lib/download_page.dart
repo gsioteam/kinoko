@@ -303,7 +303,7 @@ class _DownloadPageState extends State<DownloadPage> {
                 title: kt("confirm"),
                 message: kt("delete_item").replaceAll("{0}", queueItem.info.title).replaceAll("{1}", queueItem.item.title),
                 mainButton: FlatButton(
-                  child: Text(kt("undo")),
+                  child: Text(kt("undo"), style: Theme.of(context).textTheme.bodyText2.copyWith(color: Colors.white, fontWeight: FontWeight.bold),),
                   onPressed: () {
                     flushbar.dismiss(true);
                   },
@@ -378,7 +378,7 @@ class _DownloadPageState extends State<DownloadPage> {
     Map<String, BookData> cache = Map();
     for (int i = 0, t = items.length; i < t; ++i) {
       DownloadQueueItem item = items[i];
-      BookData downloadItem = null;
+      BookData downloadItem;
       if (cache.containsKey(item.info.link)) {
         downloadItem = cache[item.info.link];
       }

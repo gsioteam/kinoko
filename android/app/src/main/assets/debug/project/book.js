@@ -26,7 +26,7 @@ class BookCollection extends glib.Collection {
         });
     }
 
-    reload(cb) {
+    reload(_, cb) {
         let purl = new PageURL(this.url);
         let info_data = this.info_data;
         this.fetch(this.url).then((doc) => {

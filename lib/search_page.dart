@@ -1,45 +1,39 @@
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:kinoko/book_list.dart';
 import 'package:kinoko/widgets/better_refresh_indicator.dart';
 import 'package:glib/main/data_item.dart';
+import 'package:glib/main/project.dart';
+import 'package:glib/main/context.dart';
+import 'localizations/localizations.dart';
 
 class SearchPage extends StatefulWidget {
+
+  Project project;
+  Context context;
+
+  SearchPage(this.project, this.context);
+
   @override
-  State<StatefulWidget> createState() => _SearchPageState();
+  State<StatefulWidget> createState() {
+    return _SearchPageState();
+  }
 
 }
 
 class _SearchPageState extends State<SearchPage> {
-
-
-  BetterRefreshIndicatorController controller = BetterRefreshIndicatorController();
-
   @override
   Widget build(BuildContext context) {
-//    return NotificationListener<ScrollUpdateNotification>(
-//      child: BetterRefreshIndicator(
-//        child: ListView.separated(
-//          padding: const EdgeInsets.all(16),
-//          itemBuilder: (BuildContext context, int idx) {
-//            DataItem book = books[idx];
-//            return cellWithData(book, idx);
-//          },
-//          separatorBuilder: (BuildContext context, int index) => const Divider(),
-//          itemCount: books.length,
-//        ),
-//        controller: controller,
-//        onRefresh: onPullDownRefresh,
-//      ),
-//      onNotification: (ScrollUpdateNotification notification) {
-//        if (notification.metrics.maxScrollExtent - notification.metrics.pixels < 20 && cooldown) {
-//          widget.context.loadMore();
-//          cooldown = false;
-//          Future.delayed(Duration(seconds: 2)).then((value) => cooldown = true);
-//        }
-//        return false;
-//      },
-//    );
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(kt("search")),
+        backgroundColor: Colors.white,
+        iconTheme: Theme.of(context).iconTheme.copyWith(color: Colors.black87),
+      ),
+      body: BookListPage(widget.project, widget.context),
+    );
   }
 
 }

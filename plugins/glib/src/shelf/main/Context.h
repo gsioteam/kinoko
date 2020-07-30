@@ -6,6 +6,7 @@
 #define ANDROID_CONTEXT_H
 
 #include <core/Ref.h>
+#include <core/Map.h>
 #include "./Collection.h"
 #include "../gs_define.h"
 
@@ -19,6 +20,7 @@ namespace gs {
             Project = 0,
             Book = 1,
             Chapter = 2,
+            Search = 3
         ENUM_END
 
     protected:
@@ -43,7 +45,7 @@ namespace gs {
         METHOD virtual void setup(const char *path, const gc::Variant &data) = 0;
         METHOD virtual bool isReady() {return !!target;}
 
-        METHOD void reload();
+        METHOD void reload(const gc::Map &data = gc::Map());
         METHOD void loadMore();
 
         METHOD void enterView();

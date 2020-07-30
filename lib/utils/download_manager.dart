@@ -180,7 +180,6 @@ class DownloadQueueItem {
     await image.fetchImage();
     _picture_downloading = false;
     _loaded2++;
-    print("Call onProgress ${loaded}");
     onProgress?.call();
     checkImageQueue();
   }

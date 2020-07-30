@@ -10,7 +10,7 @@ class Context extends Base {
   }
   
   bool isReady() => call("isReady");
-  void reload() => call("reload");
+  void reload([Map data]) => call("reload", argv: [data]);
   void loadMore() => call("loadMore");
   void enterView() => call("enterView");
   void exitView() => call("exitView");

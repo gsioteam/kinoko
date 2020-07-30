@@ -21,8 +21,7 @@ import 'widgets/book_item.dart';
 class BookListPage extends StatefulWidget {
   Project project;
   Context context;
-  int index;
-  BookListPage(this.project, this.context, this.index);
+  BookListPage(this.project, this.context);
 
   @override
   State<StatefulWidget> createState()=>_BookListPageState();

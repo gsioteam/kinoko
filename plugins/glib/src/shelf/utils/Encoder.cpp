@@ -24,9 +24,9 @@ bool is_non_symbol(char c)
     return (c_int >= 48 && c_int <= 57) || (c_int >= 65 && c_int <= 90) || (c_int >= 97 && c_int <= 122);
 }
 
-string Encoder::urlEncode(const char *str) {
+string Encoder::urlEncode(const std::string &str) {
     stringstream ss;
-    const char *ch = str;
+    const char *ch = str.c_str();
     unsigned char c;
     while ((c = *ch)) {
         if (is_non_symbol(c)) {
@@ -43,11 +43,12 @@ string Encoder::urlEncode(const char *str) {
 
 #define UTF_8 "utf-8"
 
-string Encoder::urlEncodeWithEncoding(const char *str, const char *encoding) {
+string Encoder::urlEncodeWithEncoding(const std::string &str, const char *encoding) {
+    if (str.empty()) return string();
     if (strcmp(encoding, UTF_8) != 0) {
         iconv_t cd = iconv_open(encoding, "utf-8//IGNORE");
         if (cd) {
-            const char *instr = str;
+            const char *instr = str.c_str();
             size_t inlen = strlen(instr);
             size_t outlen = 4 * inlen;
             char *oristr = (char*)malloc(outlen);

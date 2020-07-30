@@ -6,6 +6,7 @@
 #define ANDROID_COLLECTION_H
 
 #include <core/Ref.h>
+#include <core/Map.h>
 #include <core/Callback.h>
 #include "../utils/Error.h"
 #include "../gs_define.h"
@@ -30,7 +31,7 @@ namespace gs {
 
         METHOD void initialize(gc::Variant info_data);
 
-        EVENT(bool, reload, gc::Callback);
+        EVENT(bool, reload, gc::Map, gc::Callback);
         EVENT(bool, loadMore, gc::Callback);
 
         NOTIFICATION(dataChanged, ChangeType type, gc::Array array, int index);
@@ -38,7 +39,7 @@ namespace gs {
         NOTIFICATION(error, gc::Ref<Error>);
         NOTIFICATION(reloadComplete);
 
-        METHOD bool reload();
+        METHOD bool reload(const gc::Map &data);
         METHOD bool loadMore();
 
         METHOD void setDataAt(const gc::Variant &var, int idx);

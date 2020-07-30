@@ -200,4 +200,5 @@ module.exports = {
     DataItem,
     Error,
     ScriptContext,
+    Encoder,
 };

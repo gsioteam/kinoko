@@ -215,7 +215,7 @@ void Context::enterView() {
             if (flag == 0) {
                 reload();
             }
-        } else {
+        } else if (type != Search) {
             if (update || !data->size()) {
                 reload();
             }
@@ -227,9 +227,9 @@ void Context::exitView() {
     if (!isReady()) return;
 }
 
-void Context::reload() {
+void Context::reload(const gc::Map &data) {
     if (!isReady()) return;
-    target->reload();
+    target->reload(data);
 }
 
 void Context::loadMore() {
@@ -282,7 +282,6 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
                 }
             }
             if (that->on_reload_complete) {
-                LOG(i, "--reload complete!");
                 that->on_reload_complete();
             }
         }

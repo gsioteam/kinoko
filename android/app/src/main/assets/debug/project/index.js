@@ -30,7 +30,7 @@ class Collection extends glib.Collection {
 
 class HomeCollection extends Collection {
 
-    reload(cb) {
+    reload(_, cb) {
         let purl = new PageURL(this.url);
         console.log("start request");
         this.fetch(this.url).then((doc)=>{
@@ -75,7 +75,7 @@ class HomeCollection extends Collection {
 
 class UpdateCollection extends Collection {
 
-    reload(cb) {
+    reload(_, cb) {
         let purl = new PageURL(this.url);
         this.fetch(this.url).then((doc) => {
             let results = [];
@@ -136,7 +136,7 @@ class OtherCollection extends Collection {
         });
     }
 
-    reload(cb) {
+    reload(_, cb) {
         let url = this.url.replace("{0}", 1);
         this.loadPage(url, (err, data) => {
             if (!err) {

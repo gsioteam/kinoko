@@ -28,6 +28,8 @@ namespace gs {
         std::string index;
         std::string book;
         std::string chapter;
+        std::string search;
+        gc::Variant search_data;
 
         gc::Array categories;
 
@@ -43,6 +45,7 @@ namespace gs {
         METHOD const std::string &getIndex() const {return index;}
         METHOD const std::string &getBook() const {return book;}
         METHOD const std::string &getChapter() const {return chapter;}
+        METHOD const std::string &getSearch() const {return search;}
         METHOD const gc::Array &getCategories() const {return categories;}
         METHOD const std::string &getFullpath() const {return path;}
         METHOD const std::string &getPath() const {return dir_name;}
@@ -53,6 +56,7 @@ namespace gs {
         METHOD gc::Ref<Context> createIndexContext(const gc::Variant &data);
         METHOD gc::Ref<Context> createBookContext(const gc::Ref<DataItem> &item);
         METHOD gc::Ref<Context> createChapterContext(const gc::Ref<DataItem> &item);
+        METHOD gc::Ref<Context> createSearchContext();
 
         ON_LOADED_BEGIN(cls, gc::Object)
             INITIALIZER(cls, Project, initialize);
@@ -63,6 +67,7 @@ namespace gs {
             ADD_METHOD(cls, Project, getIndex);
             ADD_METHOD(cls, Project, getBook);
             ADD_METHOD(cls, Project, getChapter);
+            ADD_METHOD(cls, Project, getSearch);
             ADD_METHOD(cls, Project, getCategories);
             ADD_METHOD(cls, Project, getFullpath);
             ADD_METHOD(cls, Project, getPath);
@@ -72,6 +77,7 @@ namespace gs {
             ADD_METHOD(cls, Project, createIndexContext);
             ADD_METHOD(cls, Project, createBookContext);
             ADD_METHOD(cls, Project, createChapterContext);
+            ADD_METHOD(cls, Project, createSearchContext);
         ON_LOADED_END
 
     CLASS_END

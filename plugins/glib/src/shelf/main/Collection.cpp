@@ -15,7 +15,7 @@ DNOTIFICATION(Collection, loading);
 DNOTIFICATION(Collection, error);
 DNOTIFICATION(Collection, reloadComplete);
 
-bool Collection::reload() {
+bool Collection::reload(const gc::Map &data) {
     if (loading) return false;
     Wk<Collection> weak = this;
     Variant var = C([=](Ref<Error> error){
@@ -30,8 +30,7 @@ bool Collection::reload() {
             }
         }
     });
-    LOG(i, "--- callEventReload");
-    bool ret = apply(EVENT_reload, pointer_vector{&var});
+    bool ret = applyArgv(EVENT_reload, data, var);
     if (ret) {
         loading = true;
         trigger(NOTIFICATION_loading, true);

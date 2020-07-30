@@ -18,8 +18,8 @@ namespace gs {
     
     public:
         // url 编码默认用utf-8编码，urlEncodeWithEncoding来选择编码例如:"gbk"
-        METHOD static std::string urlEncode(const char *);
-        METHOD static std::string urlEncodeWithEncoding(const char *, const char *encoding);
+        METHOD static std::string urlEncode(const std::string &);
+        METHOD static std::string urlEncodeWithEncoding(const std::string &str, const char *encoding);
     
         // 字符串编码(encoding -> utf-8)
         METHOD static gc::Ref<gc::Data> decode(const gc::Ref<gc::Data> &data, const char *encoding);

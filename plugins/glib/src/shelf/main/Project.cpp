@@ -46,6 +46,13 @@ void Project::initialize(const std::string &path) {
                 book = config["book"];
             if (config.contains("chapter"))
                 chapter = config["chapter"];
+            if (config.contains("search")) {
+                nlohmann::json sd = config["search"];
+                search = sd["src"];
+                if (sd.contains("data")) {
+                    search_data = JSON::parse(sd["data"]);
+                }
+            }
             auto it = config.find("subtitle");
             if (it != config.end())
                 subtitle = it.value();
@@ -90,4 +97,8 @@ gc::Ref<Context> Project::createBookContext(const gc::Ref<DataItem> &item) {
 
 gc::Ref<Context> Project::createChapterContext(const gc::Ref<DataItem> &item) {
     return Context::create(getFullpath() + "/" + chapter, item, Context::Chapter, dir_name);
+}
+
+gc::Ref<Context> Project::createSearchContext() {
+    return Context::create(getFullpath() + "/" + search, search_data, Context::Search, dir_name);
 }
