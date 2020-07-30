@@ -17,6 +17,26 @@
             "id": "update",
             "url": "https://wap.kukudm.com/top100.htm",
             "data": {}
+        },
+        {
+            "title": "日漫",
+            "id": "japan",
+            "url": "https://wap.kukudm.com/comictype/3_{0}.htm"
+        },
+        {
+            "title": "港漫",
+            "id": "hongkong",
+            "url": "https://wap.kukudm.com/comictype/5_{0}.htm"
+        },
+        {
+            "title": "国漫",
+            "id": "china",
+            "url": "https://wap.kukudm.com/comictype/30_{0}.htm"
+        },
+        {
+            "title": "更多",
+            "id": "more",
+            "url": "https://wap.kukudm.com/comictype/31_{0}.htm"
         }
     ]
 }

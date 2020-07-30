@@ -105,6 +105,64 @@ class UpdateCollection extends Collection {
     }
 }
 
+class OtherCollection extends Collection {
+    constructor(data) {
+        super(data);
+        this.page = 0;
+    }
+
+    loadPage(url, func) {
+        let purl = new PageURL(url);
+        console.log("load " + url);
+        this.fetch(url).then((doc) => {
+            let results = [];
+            let boxes = doc.querySelectorAll('#classify_container > li');
+            console.log("loaded  " + boxes.length);
+            for (let box of boxes) {
+                let linkimg = box.querySelector('.ImgA');
+                let item = glib.DataItem.new();
+                item.link = purl.href(linkimg.getAttribute('href'));
+                item.picture = purl.href(linkimg.querySelector('img').getAttribute('src'));
+                
+                item.title = box.querySelector('.txtA').text;
+                item.subtitle = box.querySelector('.info').text;
+                results.push(item);
+            }
+            func(null, results);
+        }).catch(function(err) {
+            if (err instanceof Error) 
+                err = glib.Error.new(305, err.message);
+            func(err);
+        });
+    }
+
+    reload(cb) {
+        let url = this.url.replace("{0}", 1);
+        this.loadPage(url, (err, data) => {
+            if (!err) {
+                this.setData(data);
+                this.page = 0;
+            }
+            cb.apply(err);
+        });
+        return true;
+    } 
+
+    loadMore(cb) {
+        let page = this.page + 1;
+        let url = this.url.replace("{0}", page + 1);
+        console.log("load more " + url);
+        this.loadPage(url, (err, data) => {
+            if (!err) {
+                this.appendData(data);
+                this.page = page;
+            }
+            cb.apply(err);
+        });
+        return true;
+    }
+}
+
 module.exports = function(info) {
     let col;
     let data = info.toObject();
@@ -115,6 +173,10 @@ module.exports = function(info) {
         }
         case 'update': {
             col = UpdateCollection.new(data);
+            break;
+        }
+        default: {
+            col = OtherCollection.new(data);
             break;
         }
     }

@@ -337,7 +337,6 @@ class _DownloadPageState extends State<DownloadPage> {
               });
 
               bool result = await flushbar.show(context);
-              print("Result $result");
               if (result == true) {
                 reverseItem(item);
               } else {

@@ -234,6 +234,7 @@ void Context::reload() {
 
 void Context::loadMore() {
     if (!isReady()) return;
+    target->loadMore();
 }
 
 void Context::setupTarget(const gc::Ref<Collection> &target) {

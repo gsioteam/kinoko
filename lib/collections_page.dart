@@ -20,6 +20,18 @@ class CollectionsPage extends HomeWidget {
   State<StatefulWidget> createState() {
     return _CollectionsPageState();
   }
+
+  @override
+  List<Widget> buildActions(BuildContext context, void Function() changed) {
+    return [
+      IconButton(
+        icon: Icon(Icons.search),
+        onPressed: () {
+          
+        }
+      )
+    ];
+  }
 }
 
 class _CollectionData {

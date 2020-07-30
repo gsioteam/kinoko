@@ -32,6 +32,7 @@ class BookListPage extends StatefulWidget {
 class _BookListPageState extends State<BookListPage> {
   Array books;
   BetterRefreshIndicatorController controller = BetterRefreshIndicatorController();
+  bool cooldown = true;
 
   void itemClicked(int idx) async {
     Context ctx = widget.project.createBookContext(books[idx]).control();
@@ -86,23 +87,36 @@ class _BookListPageState extends State<BookListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BetterRefreshIndicator(
-      child: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemBuilder: (BuildContext context, int idx) {
-          DataItem book = books[idx];
-          return cellWithData(book, idx);
-        },
-        separatorBuilder: (BuildContext context, int index) => const Divider(),
-        itemCount: books.length
+    return NotificationListener<ScrollUpdateNotification>(
+      child: BetterRefreshIndicator(
+        child: ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemBuilder: (BuildContext context, int idx) {
+            DataItem book = books[idx];
+            return cellWithData(book, idx);
+          },
+          separatorBuilder: (BuildContext context, int index) => const Divider(),
+          itemCount: books.length,
+        ),
+        controller: controller,
+        onRefresh: onPullDownRefresh,
       ),
-      controller: controller,
-      onRefresh: onPullDownRefresh,
+      onNotification: (ScrollUpdateNotification notification) {
+        if (notification.metrics.maxScrollExtent - notification.metrics.pixels < 20 && cooldown) {
+          widget.context.loadMore();
+          cooldown = false;
+          Future.delayed(Duration(seconds: 2)).then((value) => cooldown = true);
+        }
+        return false;
+      },
     );
   }
 
   @override
   void dispose() {
+    widget.context.on_data_changed = null;
+    widget.context.on_loading_status = null;
+    widget.context.on_error = null;
     widget.context.exitView();
     books.release();
     widget.context.release();
