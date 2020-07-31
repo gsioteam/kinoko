@@ -10,6 +10,7 @@
 #include "../models/KeyValue.h"
 #include "../models/BookData.h"
 #include "DataItem.h"
+#include "../models/SearchData.h"
 #include <sys/time.h>
 
 #include "../gs_define.h"
@@ -230,6 +231,12 @@ void Context::exitView() {
 void Context::reload(const gc::Map &data) {
     if (!isReady()) return;
     target->reload(data);
+    if (type == Search) {
+        Variant key = data->get("key");
+        if (key) {
+            SearchData::insert(key, currentTime());
+        }
+    }
 }
 
 void Context::loadMore() {
@@ -286,4 +293,43 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
             }
         }
     }));
+}
+
+gc::Array Context::searchKeys(const std::string &key, int limit) {
+    Ref<Query> query = SearchData::query();
+    query->setSortAsc(false);
+    ref_vector keys = query->like("key", "%"+key+"%")->sortBy("date")->limit(limit)->res();
+    if (keys.size() < limit) {
+        int over = limit - keys.size();
+        Ref<Query> query = SearchData::query();
+        query->setSortAsc(false);
+        ref_vector ex_keys = query->sortBy("date")->limit(limit)->res();
+        for (auto it = ex_keys.begin(), _e = ex_keys.end(); it != _e; ++it) {
+            Ref<SearchData> data = *it;
+            int id = data->getIdentifier();
+            Ref<SearchData> sdata;
+            {
+                for (auto it = keys.begin(), _e = keys.end(); it != _e; ++it) {
+                    Ref<SearchData> data = *it;
+                    if (data->getIdentifier() == id) {
+                        sdata = data;
+                        break;
+                    }
+                }
+            }
+            if (sdata) {
+                keys.push_back(sdata);
+                over--;
+                if (over <= 0) {
+                    break;
+                }
+            }
+        }
+    }
+    gc::Array res;
+    for (auto it = keys.begin(), _e = keys.end(); it != _e; ++it) {
+        Ref<SearchData> data = *it;
+        res.push_back(data->getKey());
+    }
+    return res;
 }

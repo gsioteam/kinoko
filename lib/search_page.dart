@@ -24,13 +24,73 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
+  TextEditingController textController = TextEditingController();
+  bool showClear = false;
+
+  _SearchPageState();
+
+  search() {
+  }
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(kt("search")),
+        title: Stack(
+          children: <Widget>[
+            TextField(
+              decoration: InputDecoration(
+                hintText: kt("search"),
+                border: InputBorder.none,
+              ),
+              controller: textController,
+              onChanged: (text) {
+                if (text.isEmpty && showClear) {
+                  setState(() {
+                    showClear = false;
+                  });
+                } else if (text.isNotEmpty && !showClear) {
+                  setState(() {
+                    showClear = true;
+                  });
+                }
+              },
+              onSubmitted: (text) {
+                search();
+              },
+            ),
+            Positioned(
+              right: 0,
+              child: AnimatedCrossFade(
+                  firstChild: Container(
+                    width: 0,
+                    height: 0,
+                  ),
+                  secondChild: IconButton(
+                      icon: Icon(Icons.clear),
+                      color: Colors.black38,
+                      onPressed: () {
+                        textController.clear();
+                        setState(() {
+                          showClear = false;
+                        });
+                      }
+                  ),
+                  crossFadeState: showClear ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                  duration: Duration(milliseconds: 300)
+              )
+            ),
+          ],
+        ),
         backgroundColor: Colors.white,
         iconTheme: Theme.of(context).iconTheme.copyWith(color: Colors.black87),
+        actions: <Widget>[
+          IconButton(
+              icon: Icon(Icons.search),
+              onPressed: search
+          ),
+        ],
       ),
       body: BookListPage(widget.project, widget.context),
     );

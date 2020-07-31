@@ -89,6 +89,8 @@ namespace gs {
 
         static gc::Ref<Context> create(const std::string &path, const gc::Variant &data, ContextType type, const std::string &key);
 
+        METHOD static gc::Array searchKeys(const std::string &key, int limit);
+
         ON_LOADED_BEGIN(cls, gc::Object)
             ADD_METHOD(cls, Context, setup);
             ADD_METHOD(cls, Context, isReady);
@@ -96,6 +98,7 @@ namespace gs {
             ADD_METHOD(cls, Context, loadMore);
             ADD_METHOD(cls, Context, enterView);
             ADD_METHOD(cls, Context, exitView);
+            ADD_METHOD(cls, Context, searchKeys);
             ADD_PROPERTY(cls, "on_data_changed", NULL, ADD_METHOD(cls, Context, setOnDataChanged));
             ADD_PROPERTY(cls, "on_loading_status", NULL, ADD_METHOD(cls, Context, setOnLoadingStatus));
             ADD_PROPERTY(cls, "on_error", NULL, ADD_METHOD(cls, Context, setOnError));

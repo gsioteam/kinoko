@@ -77,6 +77,7 @@ add_library(
         src/shelf/models/KeyValue.cpp
         src/shelf/models/BookData.cpp
         src/shelf/models/CollectionData.cpp
+        src/shelf/models/SearchData.cpp
 )
 target_include_directories(
         glib
