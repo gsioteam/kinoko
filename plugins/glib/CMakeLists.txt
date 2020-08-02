@@ -15,7 +15,6 @@ include_directories(
         thirdparties/libgit2/include
         thirdparties/v8/include
         thirdparties/
-        thirdparties/libiconv-1.16/include
 )
 link_directories(
         thirdparties/mruby/lib/${ANDROID_ABI}
@@ -85,40 +84,23 @@ target_include_directories(
 
         thirdparties/sqlite3
         src/shelf/thirdparties/sha1
+        thirdparties/iconv/include
 )
 
-add_library(
-        charset
-        STATIC
-        thirdparties/libiconv-1.16/libcharset/lib/localcharset.c
-)
-
-target_include_directories(
-        charset
-        PRIVATE
-
-        thirdparties/libiconv-1.16/libcharset
-        thirdparties/libiconv-1.16/libcharset/include
-        src/shelf/thirdparties/sha1/
-)
-
-file(GLOB ICONV_SRCLIB thirdparties/libiconv-1.16/srclib/*.c)
+file(GLOB ICONV_SRCLIB thirdparties/iconv/src/*.c)
 
 add_library(
         iconv
         STATIC
 
-        thirdparties/libiconv-1.16/src/iconv.c
-        thirdparties/libiconv-1.16/src/iconv_no_i18n.c
-        thirdparties/libiconv-1.16/lib/iconv.c
+        ${ICONV_SRCLIB}
+        thirdparties/iconv/src/uniwidth/width.c
 )
 target_include_directories(
         iconv
         PRIVATE
-        thirdparties/libiconv-1.16
-        thirdparties/libiconv-1.16/srclib
-        thirdparties/libiconv-1.16/lib
-        thirdparties/libiconv-1.16/include
+        thirdparties/iconv/include
+        thirdparties/iconv/src
         )
 
 file(GLOB GUMBO_SRC thirdparties/gumbo/*.c)
@@ -156,7 +138,6 @@ target_link_libraries(
         mruby
         bit64
         iconv
-        charset
         gumbo
         gumbo_query
 )

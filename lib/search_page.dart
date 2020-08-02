@@ -30,6 +30,9 @@ class _SearchPageState extends State<SearchPage> {
   _SearchPageState();
 
   search() {
+    widget.context.reload({
+      "key": textController.text
+    });
   }
 
   @override
@@ -96,4 +99,15 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
+  @override
+  void initState() {
+    widget.context.control();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    widget.context.release();
+    super.dispose();
+  }
 }

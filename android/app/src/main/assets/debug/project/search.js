@@ -62,7 +62,8 @@ class SearchCollection extends Collection {
 
     reload(data, cb) {
         this.key = data.get("key");
-        let url = this.url.replace("{0}", glib.Encoder.urlEncodeWithEncoding(this.key, 'gkb'));
+        console.log(this.key);
+        let url = this.url.replace("{0}", glib.Encoder.urlEncodeWithEncoding(this.key, 'gbk'));
         console.log(url);
         this.loadPage(url, (err, data) => {
             if (!err) {

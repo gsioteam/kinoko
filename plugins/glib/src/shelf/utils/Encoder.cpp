@@ -47,7 +47,7 @@ string Encoder::urlEncodeWithEncoding(const std::string &str, const char *encodi
     if (str.empty()) return string();
     if (strcmp(encoding, UTF_8) != 0) {
         iconv_t cd = iconv_open(encoding, "utf-8//IGNORE");
-        if (cd) {
+        if ((long)cd != -1 && cd) {
             const char *instr = str.c_str();
             size_t inlen = strlen(instr);
             size_t outlen = 4 * inlen;
