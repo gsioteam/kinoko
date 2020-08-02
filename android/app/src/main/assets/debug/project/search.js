@@ -60,15 +60,20 @@ class SearchCollection extends Collection {
         });
     }
 
+    makeUrl(key, page) {
+        return this.url.replace("{0}", glib.Encoder.urlEncodeWithEncoding(this.key, 'gbk')).replace("{1}", page + 1);
+    }
+
     reload(data, cb) {
-        this.key = data.get("key");
-        console.log(this.key);
-        let url = this.url.replace("{0}", glib.Encoder.urlEncodeWithEncoding(this.key, 'gbk'));
+        this.key = data.get("key") || this.key;
+        let page = data.get("page") || 0;
+        if (!this.key) return false;
+        let url = this.makeUrl(this.key, page);
         console.log(url);
         this.loadPage(url, (err, data) => {
             if (!err) {
                 this.setData(data);
-                this.page = 0;
+                this.page = page;
             }
             cb.apply(err);
         });
@@ -77,7 +82,7 @@ class SearchCollection extends Collection {
 
     loadMore(cb) {
         let page = this.page + 1;
-        let url = this.url.replace("{0}", page + 1);
+        let url = this.makeUrl(this.key, page);
         console.log("load more " + url);
         this.loadPage(url, (err, data) => {
             if (!err) {

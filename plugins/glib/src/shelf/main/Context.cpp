@@ -228,8 +228,9 @@ void Context::exitView() {
     if (!isReady()) return;
 }
 
-void Context::reload(const gc::Map &data) {
+void Context::reload(gc::Map data) {
     if (!isReady()) return;
+    if (!data) data = Map();
     target->reload(data);
     if (type == Search) {
         Variant key = data->get("key");

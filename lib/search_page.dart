@@ -24,20 +24,23 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  TextEditingController textController = TextEditingController();
+  TextEditingController textController;
   bool showClear = false;
+  FocusNode focusNode;
 
   _SearchPageState();
 
   search() {
-    widget.context.reload({
-      "key": textController.text
-    });
+    focusNode.unfocus();
+    if (textController.text.isNotEmpty) {
+      widget.context.reload({
+        "key": textController.text
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Stack(
@@ -48,6 +51,8 @@ class _SearchPageState extends State<SearchPage> {
                 border: InputBorder.none,
               ),
               controller: textController,
+              autofocus: true,
+              focusNode: focusNode,
               onChanged: (text) {
                 if (text.isEmpty && showClear) {
                   setState(() {
@@ -102,12 +107,16 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     widget.context.control();
+    textController = TextEditingController();
+    focusNode = FocusNode();
     super.initState();
   }
 
   @override
   void dispose() {
     widget.context.release();
+    focusNode.dispose();
+    textController.dispose();
     super.dispose();
   }
 }

@@ -45,7 +45,7 @@ namespace gs {
         METHOD virtual void setup(const char *path, const gc::Variant &data) = 0;
         METHOD virtual bool isReady() {return !!target;}
 
-        METHOD void reload(const gc::Map &data = gc::Map());
+        METHOD void reload(gc::Map data = gc::Map());
         METHOD void loadMore();
 
         METHOD void enterView();

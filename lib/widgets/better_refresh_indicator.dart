@@ -18,6 +18,7 @@ class BetterRefreshIndicatorController {
 
   void startLoading() {
     if (!loading) {
+      print("loading start");
       loading = true;
       if (target != null && target.state != null) {
         target.state.show();
@@ -30,6 +31,7 @@ class BetterRefreshIndicatorController {
 
   void stopLoading() {
     if (loading) {
+      print("loading stop");
       loading = false;
       completer.complete();
       completer = Completer<void>();
