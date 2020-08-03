@@ -299,34 +299,40 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
 gc::Array Context::searchKeys(const std::string &key, int limit) {
     Ref<Query> query = SearchData::query();
     query->setSortAsc(false);
-    ref_vector keys = query->like("key", "%"+key+"%")->sortBy("date")->limit(limit)->res();
-    if (keys.size() < limit) {
-        int over = limit - keys.size();
-        Ref<Query> query = SearchData::query();
-        query->setSortAsc(false);
-        ref_vector ex_keys = query->sortBy("date")->limit(limit)->res();
-        for (auto it = ex_keys.begin(), _e = ex_keys.end(); it != _e; ++it) {
-            Ref<SearchData> data = *it;
-            int id = data->getIdentifier();
-            Ref<SearchData> sdata;
-            {
-                for (auto it = keys.begin(), _e = keys.end(); it != _e; ++it) {
-                    Ref<SearchData> data = *it;
-                    if (data->getIdentifier() == id) {
-                        sdata = data;
+    ref_vector keys;
+    if (key.empty()) {
+        keys = query->sortBy("date")->limit(limit)->res();
+    } else {
+        keys = query->like("key", "%"+key+"%")->sortBy("date")->limit(limit)->res();
+        if (keys.size() < limit) {
+            int over = limit - keys.size();
+            Ref<Query> query = SearchData::query();
+            query->setSortAsc(false);
+            ref_vector ex_keys = query->sortBy("date")->limit(limit)->res();
+            for (auto it = ex_keys.begin(), _e = ex_keys.end(); it != _e; ++it) {
+                Ref<SearchData> data = *it;
+                int id = data->getIdentifier();
+                bool not_exist = true;
+                {
+                    for (auto it = keys.begin(), _e = keys.end(); it != _e; ++it) {
+                        Ref<SearchData> data = *it;
+                        if (data->getIdentifier() == id) {
+                            not_exist = false;
+                            break;
+                        }
+                    }
+                }
+                if (not_exist) {
+                    keys.push_back(data);
+                    over--;
+                    if (over <= 0) {
                         break;
                     }
                 }
             }
-            if (sdata) {
-                keys.push_back(sdata);
-                over--;
-                if (over <= 0) {
-                    break;
-                }
-            }
         }
     }
+
     gc::Array res;
     for (auto it = keys.begin(), _e = keys.end(); it != _e; ++it) {
         Ref<SearchData> data = *it;

@@ -5,12 +5,13 @@ import 'package:flutter/material.dart';
 
 
 class BetterRefreshIndicatorController {
-  BetterRefreshIndicator target;
   bool loading = false;
   Completer<void> completer = Completer<void>();
+  GlobalKey<RefreshIndicatorState> key = GlobalKey();
+  bool Function() onRefresh;
 
-  Future<void> onRefresh() async {
-    if (!loading && target.onExRefresh != null && target.onExRefresh()) {
+  Future<void> _onRefresh() async {
+    if (!loading && onRefresh != null && onRefresh()) {
       loading = true;
     }
     if (loading) return completer.future;
@@ -18,20 +19,17 @@ class BetterRefreshIndicatorController {
 
   void startLoading() {
     if (!loading) {
-      print("loading start");
+      print("[E]loading start");
       loading = true;
-      if (target != null && target.state != null) {
-        target.state.show();
-      } else {
-      }
+      key.currentState?.show();
     } else {
-      print("already loading!");
+      print("[E]already loading!");
     }
   }
 
   void stopLoading() {
     if (loading) {
-      print("loading stop");
+      print("[E]loading stop");
       loading = false;
       completer.complete();
       completer = Completer<void>();
@@ -40,20 +38,17 @@ class BetterRefreshIndicatorController {
 
   void initializer() {
     if (loading) {
-      if (target != null && target.state != null) {
-        target.state.show();
-      }
+      key.currentState?.show();
     }
   }
 }
 
 class BetterRefreshIndicator extends RefreshIndicator {
   RefreshIndicatorState state;
-  BetterRefreshIndicatorController controller;
+  BetterRefreshIndicatorController _controller;
   bool Function() onExRefresh;
 
   BetterRefreshIndicator({
-    Key key,
     @required Widget child,
     double displacement = 40.0,
     Color color,
@@ -63,9 +58,8 @@ class BetterRefreshIndicator extends RefreshIndicator {
     String semanticsValue,
     double strokeWidth = 2.0,
     @required BetterRefreshIndicatorController controller,
-    bool Function() onRefresh,
   }) : super(
-      key: key,
+      key: controller.key,
       child: child,
       displacement: displacement,
       color: color,
@@ -74,22 +68,19 @@ class BetterRefreshIndicator extends RefreshIndicator {
       semanticsLabel: semanticsLabel,
       semanticsValue: semanticsValue,
       strokeWidth: strokeWidth,
-      onRefresh: controller.onRefresh
+      onRefresh: controller._onRefresh,
   ) {
-    this.controller = controller;
-    onExRefresh = onRefresh;
-    controller.target = this;
+    _controller = controller;
   }
 
   @override
   RefreshIndicatorState createState() {
-    state = super.createState();
-    _sendInit();
-    return state;
+    _onInit();
+    return super.createState();
   }
 
-  _sendInit() async {
-    await Future.delayed(Duration(seconds: 0));
-    controller.initializer();
+  _onInit() async {
+    await Future.delayed(Duration(milliseconds: 20));
+    _controller.initializer();
   }
 }

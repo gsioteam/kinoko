@@ -83,3 +83,13 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+  fonts:
+    - family: DancingScript
+      fonts:
+        - asset: fonts/DancingScript-Regular.ttf
+        - asset: fonts/DancingScript-Bold.ttf
+          weight: 700
+        - asset: fonts/DancingScript-Medium.ttf
+          weight: 500
+        - asset: fonts/DancingScript-SemiBold.ttf
+          weight: 600

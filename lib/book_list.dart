@@ -73,6 +73,7 @@ class _BookListPageState extends State<BookListPage> {
     widget.context.on_data_changed = Callback.fromFunction(onDataChanged).release();
     widget.context.on_loading_status = Callback.fromFunction(onLoadingStatus).release();
     widget.context.on_error = Callback.fromFunction(onError).release();
+    controller.onRefresh = onPullDownRefresh;
     widget.context.enterView();
     books = widget.context.data.control();
     super.initState();
@@ -88,17 +89,8 @@ class _BookListPageState extends State<BookListPage> {
   Widget build(BuildContext context) {
     return NotificationListener<ScrollUpdateNotification>(
       child: BetterRefreshIndicator(
-        child: ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemBuilder: (BuildContext context, int idx) {
-            DataItem book = books[idx];
-            return cellWithData(book, idx);
-          },
-          separatorBuilder: (BuildContext context, int index) => const Divider(),
-          itemCount: books.length,
-        ),
+        child: buildMain(context),
         controller: controller,
-        onRefresh: onPullDownRefresh,
       ),
       onNotification: (ScrollUpdateNotification notification) {
         if (notification.metrics.maxScrollExtent - notification.metrics.pixels < 20 && cooldown) {
@@ -109,6 +101,28 @@ class _BookListPageState extends State<BookListPage> {
         return false;
       },
     );
+  }
+
+  Widget buildMain(BuildContext context) {
+    if (books.length == 0) {
+      return ListView(
+        children: <Widget>[
+          Center(
+            child: Text("no data!"),
+          )
+        ],
+      );
+    } else {
+      return ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemBuilder: (BuildContext context, int idx) {
+          DataItem book = books[idx];
+          return cellWithData(book, idx);
+        },
+        separatorBuilder: (BuildContext context, int index) => const Divider(),
+        itemCount: books.length,
+      );
+    }
   }
 
   @override

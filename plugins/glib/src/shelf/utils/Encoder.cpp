@@ -49,7 +49,6 @@ string Encoder::urlEncodeWithEncoding(const std::string &str, const char *encodi
         iconv_t cd = iconv_open(encoding, "utf-8//IGNORE");
         if ((long)cd != -1 && cd) {
             const char *instr = str.c_str();
-            LOG(i, "From %s", instr);
             size_t inlen = strlen(instr);
             size_t outlen = 4 * inlen;
             char *oristr = (char*)malloc(outlen);
@@ -59,7 +58,6 @@ string Encoder::urlEncodeWithEncoding(const std::string &str, const char *encodi
             iconv(cd, (char**)&instr, &inlen, &outstr, &outlen);
 
             string ret = urlEncode(oristr);
-            LOG(i, "Encode %s", ret.c_str());
 
             free(oristr);
 

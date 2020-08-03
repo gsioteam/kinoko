@@ -32,7 +32,6 @@ class _RectClipper extends CustomClipper<Rect> {
   bool shouldReclip(CustomClipper<Rect> oldClipper) {
     return !(oldClipper is _RectClipper) || (oldClipper as _RectClipper).value != value;
   }
-
 }
 
 class CollectionsPage extends HomeWidget {

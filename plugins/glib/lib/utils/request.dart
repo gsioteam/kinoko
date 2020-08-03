@@ -236,9 +236,9 @@ class Request extends Base {
 
     } catch (e) {
       _error = e.toString();
-      cancel();
       if (onComplete != null) onComplete.invoke([]);
-      else print("Error complete null " + _error);
+      else print("Error complete $onComplete  on ($this) " + _error);
+      cancel();
     }
 
     if (onComplete != null) {

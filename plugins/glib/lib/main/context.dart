@@ -52,6 +52,8 @@ class Context extends Base {
 
   String get projectKey => call("getProjectKey");
 
+  static Array searchKeys(String key, int limit) => Base.s_call(Context, "searchKeys", argv: [key, limit]);
+
   @override
   void destroy() {
     r(_on_data_changed);

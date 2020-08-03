@@ -367,7 +367,6 @@ class _BookPageState extends State<BookPage> {
           ],
         ),
         controller: refreshController,
-        onRefresh: onPullDownRefresh,
       ),
     );
   }
@@ -419,6 +418,7 @@ class _BookPageState extends State<BookPage> {
     widget.context.on_data_changed = Callback.fromFunction(onDataChanged).release();
     widget.context.on_loading_status = Callback.fromFunction(onLoadingStatus).release();
     widget.context.on_error = Callback.fromFunction(onError).release();
+    refreshController.onRefresh = onPullDownRefresh;
     widget.context.enterView();
     chapters = widget.context.data.control();
     String order = KeyValue.get(key(ORDER_TYPE));
