@@ -32,6 +32,7 @@ class _BookListPageState extends State<BookListPage> {
   Array books;
   BetterRefreshIndicatorController controller = BetterRefreshIndicatorController();
   bool cooldown = true;
+  GlobalKey _nullKey = GlobalKey();
 
   void itemClicked(int idx) async {
     Context ctx = widget.project.createBookContext(books[idx]).control();
@@ -104,25 +105,45 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   Widget buildMain(BuildContext context) {
-    if (books.length == 0) {
-      return ListView(
-        children: <Widget>[
-          Center(
-            child: Text("no data!"),
-          )
-        ],
-      );
-    } else {
-      return ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemBuilder: (BuildContext context, int idx) {
-          DataItem book = books[idx];
-          return cellWithData(book, idx);
-        },
-        separatorBuilder: (BuildContext context, int index) => const Divider(),
-        itemCount: books.length,
-      );
-    }
+    return Stack(
+      children: <Widget>[
+        ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemBuilder: (BuildContext context, int idx) {
+            DataItem book = books[idx];
+            return cellWithData(book, idx);
+          },
+          separatorBuilder: (BuildContext context, int index) => const Divider(),
+          itemCount: books.length,
+        ),
+        IgnorePointer(
+          child: AnimatedOpacity(
+            opacity: books.length == 0 ? 1 : 0,
+            duration: Duration(milliseconds: 300),
+            child: Center(
+              child: Text("No data!", style: TextStyle(
+                color: Color.fromRGBO(0xee, 0xee, 0xee, 1),
+                shadows: [
+                  Shadow(
+                    offset: Offset(-1, -1),
+                    blurRadius: 0,
+                    color: Colors.black26
+                  ),
+                  Shadow(
+                    offset: Offset(1, 1),
+                    blurRadius: 0,
+                    color: Colors.white
+                  )
+                ],
+                fontSize: 26,
+                fontFamily: "DancingScript",
+                fontWeight: FontWeight.bold
+              ),),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override

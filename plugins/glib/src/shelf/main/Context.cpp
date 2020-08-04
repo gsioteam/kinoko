@@ -340,3 +340,13 @@ gc::Array Context::searchKeys(const std::string &key, int limit) {
     }
     return res;
 }
+
+void Context::removeSearchKey(const std::string &key) {
+    ref_vector res = SearchData::query()->equal("key", key)->res();
+    if (res.size()) {
+        for (auto it = res.begin(), _e = res.end(); it != _e; ++it) {
+            Ref<SearchData> data = *it;
+            data->remove();
+        }
+    }
+}

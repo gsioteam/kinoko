@@ -142,7 +142,10 @@ class _SearchPageState extends State<SearchPage> {
   updateSearchHit(text) {
     Array keys = Context.searchKeys(text, 10);
     for (int i = 0, t = searchHits.length; i < t; ++i) {
-      _listKey.currentState?.removeItem(0, (context, animation) => animatedItem(searchHits[i], animation, true), duration: Duration(milliseconds: 0));
+      _listKey.currentState?.removeItem(0, (context, animation) => animatedItem(
+        key: searchHits[i],
+        animation: animation,
+      ), duration: Duration(milliseconds: 0));
     }
     searchHits.clear();
     for (int i = 0, t = keys.length; i < t; ++i) {
@@ -152,7 +155,7 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  Widget animatedItem(String key, Animation<double> animation, bool removing) {
+  Widget animatedItem({String key, Animation<double> animation, void Function() onClear, void Function() onTap}) {
     return SizeTransition(
       sizeFactor: animation,
       child: ListTile(
@@ -160,14 +163,9 @@ class _SearchPageState extends State<SearchPage> {
         leading: Icon(Icons.history),
         trailing: IconButton(
             icon: Icon(Icons.clear),
-            onPressed: removing ? null : () {
-
-            }
+            onPressed: onClear
         ),
-        onTap: removing ? null : () {
-          textController.text = key;
-          search();
-        },
+        onTap: onTap,
       ),
     );
   }
@@ -235,7 +233,13 @@ class _SearchPageState extends State<SearchPage> {
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.search),
-              onPressed: search
+              onPressed: () {
+                if (focusNode.hasFocus) {
+                  search();
+                } else {
+                  focusNode.requestFocus();
+                }
+              }
             ),
           ],
           leading: IconButton(
@@ -258,7 +262,23 @@ class _SearchPageState extends State<SearchPage> {
                 child: AnimatedList(
                   key: _listKey,
                   itemBuilder: (context, index, Animation<double> animation) {
-                    return animatedItem(searchHits[index], animation, false);
+                    String key = searchHits[index];
+                    return animatedItem(
+                      key: key,
+                      animation: animation,
+                      onClear: () {
+                        Context.removeSearchKey(key);
+                        searchHits.removeAt(index);
+                        _listKey.currentState.removeItem(index, (context, animation) => animatedItem(
+                          key: key,
+                          animation: animation
+                        ), duration: Duration(milliseconds: 300));
+                      },
+                      onTap: () {
+                        textController.text = key;
+                        search();
+                      }
+                    );
                   },
                   initialItemCount: searchHits.length,
                 ),
