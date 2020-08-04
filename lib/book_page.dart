@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:glib/core/array.dart';
 import 'package:glib/core/callback.dart';
+import 'package:glib/core/core.dart';
 import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
@@ -232,12 +233,35 @@ class _BookPageState extends State<BookPage> {
         });
       }
     } else {
-      DataItem data = chapters[idx];
-      Context ctx = widget.project.createChapterContext(data).control();
+      int currentIndex = idx;
+      DataItem data = chapters[currentIndex];
+      widget.project.control();
+      Context currentContext = widget.project.createChapterContext(data).control();
       await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-        return PictureViewer(ctx);
+        return PictureViewer(currentContext, (PictureFlipType flipType) {
+          // 倒序排序
+          if (flipType == PictureFlipType.Prev) {
+            if (currentIndex < chapters.length - 1) {
+              currentIndex++;
+              DataItem data = chapters[currentIndex];
+              r(currentContext);
+              currentContext = widget.project.createChapterContext(data).control();
+              return currentContext;
+            }
+          } else if (flipType == PictureFlipType.Next) {
+            if (currentIndex > 0) {
+              currentIndex--;
+              DataItem data = chapters[currentIndex];
+              r(currentContext);
+              currentContext = widget.project.createChapterContext(data).control();
+              return currentContext;
+            }
+          }
+          return null;
+        });
       }));
-      ctx.release();
+      currentContext.release();
+      widget.project.release();
     }
   }
 
@@ -414,6 +438,7 @@ class _BookPageState extends State<BookPage> {
 
   @override
   void initState() {
+    widget.project.control();
     widget.context.control();
     widget.context.on_data_changed = Callback.fromFunction(onDataChanged).release();
     widget.context.on_loading_status = Callback.fromFunction(onLoadingStatus).release();
@@ -435,6 +460,7 @@ class _BookPageState extends State<BookPage> {
     widget.context.exitView();
     chapters.release();
     widget.context.release();
+    widget.project.release();
     super.dispose();
   }
 }

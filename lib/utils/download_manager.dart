@@ -27,11 +27,30 @@ enum DownloadState {
   Unkown
 }
 
+class DownloadPictureItem {
+  PictureCacheManager cacheManager;
+  String url;
+  Map<String, String> headers;
+
+  DownloadPictureItem(this.url, this.cacheManager, {this.headers});
+
+  Future<void> fetchImage() async {
+    try {
+      print("Start load ${url}");
+      await cacheManager.getSingleFile(url, headers: headers);
+      print("Load complete ${url}");
+    } catch (e) {
+      print("Load failed $e");
+    }
+  }
+}
+
 class DownloadQueueItem {
   CollectionData data;
   DataItem item;
   void Function(String error) onError;
-  Queue<CachedPictureImage> queue = Queue();
+  PictureCacheManager cacheManager;
+  Queue<DownloadPictureItem> queue = Queue();
   bool _picture_downloading = false;
   String cacheKey;
   void Function() onImageQueueClear;
@@ -87,6 +106,7 @@ class DownloadQueueItem {
   DownloadQueueItem._(this.data, this.item) {
     Array subitems = item.getSubItems();
     cacheKey = item.projectKey + "/" + Bit64.encodeString(item.link);
+    cacheManager = PictureCacheManager(cacheKey, maxAgeCacheObject: Duration(days: 365 * 99999));
     _total = subitems.length;
     if (state != DownloadState.AllComplete) {
       List<String> urls = [];
@@ -105,10 +125,6 @@ class DownloadQueueItem {
 
   void _checkImages(List<String> urls) async {
     int count = 0;
-    PictureCacheManager cacheManager = PictureCacheManager(
-      cacheKey,
-      maxAgeCacheObject: MaxDuration
-    );
     for (String url in urls) {
       FileInfo info = await cacheManager.getFileFromCache(url);
       if (info != null) {
@@ -175,7 +191,7 @@ class DownloadQueueItem {
       return;
     }
 
-    CachedPictureImage image = queue.removeFirst();
+    DownloadPictureItem image = queue.removeFirst();
     _picture_downloading = true;
     await image.fetchImage();
     _picture_downloading = false;
@@ -194,16 +210,12 @@ class DownloadQueueItem {
     return completer.future;
   }
 
-  void addToQueue(url) {
+  void addToQueue(url, {Map<String, String> headers}) {
     if (!urls.contains(url)) {
       urls.add(url);
       _total2 = urls.length;
       onProgress?.call();
-      CachedPictureImage image = CachedPictureImage(
-          url,
-          key: cacheKey,
-          maxAgeCacheObject: Duration(days: 365 * 99999)
-      );
+      DownloadPictureItem image = DownloadPictureItem(url, cacheManager, headers: headers);
       queue.add(image);
       checkImageQueue();
     }

@@ -51,7 +51,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
       if (type == DataItemType.Book) {
         return BookPage(ctx, project);
       } else {
-        return PictureViewer(ctx);
+        return PictureViewer(ctx, null);
       }
     }));
     ctx.release();

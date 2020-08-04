@@ -23,68 +23,9 @@ class PictureCacheManager extends BaseCacheManager {
   @override
   Future<String> getFilePath() async {
     var directory = await getTemporaryDirectory();
-    return p.join(directory.path, "pic", key);
+    String result = p.join(directory.path, "pic", key);
+    print("Result $result");
+    return result;
   }
 
-}
-
-class CachedPictureImage extends ImageProvider<CachedPictureImage> {
-
-  static Map<String, Completer<Codec>> processing = Map();
-  String url;
-  Map<String, String> headers;
-  double scale;
-  PictureCacheManager cacheManager;
-
-  CachedPictureImage(this.url, {
-    String key = "others",
-    Duration maxAgeCacheObject,
-    this.headers,
-    this.scale = 1.0,
-  }) {
-    cacheManager = PictureCacheManager(key, maxAgeCacheObject: maxAgeCacheObject);
-  }
-
-  Future<Codec> fetchImage() async {
-    if (processing.containsKey(url)) {
-      return processing[url].future;
-    } else {
-      Completer<Codec> completer = Completer();
-      processing[url] = completer;
-      File file = await cacheManager.getSingleFile(
-          url,
-          headers: headers
-      );
-      var res;
-      if (file != null) {
-        res = await PaintingBinding.instance.instantiateImageCodec(await file.readAsBytes());
-      }
-      processing.remove(url);
-      completer.complete(res);
-      return res;
-    }
-  }
-
-  @override
-  ImageStreamCompleter load(CachedPictureImage key, decode) {
-    return MultiFrameImageStreamCompleter(
-      codec: key.fetchImage(),
-      scale: key.scale,
-      informationCollector: () sync* {
-        yield DiagnosticsProperty<ImageProvider>(
-        'Image provider: $this \n Image key: $key', this,
-        style: DiagnosticsTreeStyle.errorProperty);
-      }
-    );
-  }
-
-  @override
-  Future<CachedPictureImage> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture<CachedPictureImage>(this);
-  }
-
-  Future<bool> exist() async {
-    FileInfo info = await cacheManager.getFileFromCache(url);
-    return info != null;
-  }
 }

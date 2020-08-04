@@ -1,17 +1,18 @@
 
 import 'dart:collection';
 import 'cached_picture_image.dart';
+import 'download_manager.dart';
 
 class PreloadQueue {
   bool stoped = false, loading = false;
-  Queue<CachedPictureImage> queue = Queue();
+  Queue<DownloadPictureItem> queue = Queue();
 
 
   void _checkStart() {
     if (stoped || loading)
       return;
     if (queue.length > 0) {
-      CachedPictureImage cache = queue.removeFirst();
+      DownloadPictureItem cache = queue.removeFirst();
       loading = true;
       cache.fetchImage().then((value) {
         loading = false;
@@ -23,7 +24,7 @@ class PreloadQueue {
     }
   }
 
-  void add(CachedPictureImage provider) {
+  void add(DownloadPictureItem provider) {
     if (stoped) {
       return;
     }

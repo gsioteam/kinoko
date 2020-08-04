@@ -379,6 +379,7 @@ class _HomePageState extends State<HomePage> {
               title: Text(kt("download_list")),
               onTap: _onTap(2),
             ),
+            Divider(),
             ListTile(
               selected: selected == 3,
               leading: Icon(Icons.account_balance),
