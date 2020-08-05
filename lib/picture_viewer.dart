@@ -35,8 +35,12 @@ enum PictureFlipType {
 class PictureViewer extends StatefulWidget {
   Context context;
   Context Function(PictureFlipType) onChapterChanged;
+  void Function(DataItem) onDownload;
 
-  PictureViewer(this.context, this.onChapterChanged);
+  PictureViewer(this.context, {
+    this.onChapterChanged,
+    this.onDownload
+  });
 
   @override
   State<StatefulWidget> createState() {
@@ -61,6 +65,10 @@ class _PictureViewerState extends State<PictureViewer> {
   PhotoController photoController;
   bool isHorizontal = false;
   bool isLandscape = false;
+
+  String _directionKey;
+  String _deviceKey;
+  String _pageKey;
 
   void onDataChanged(int type, Array data, int pos) {
     if (data != null) {
@@ -139,9 +147,6 @@ class _PictureViewerState extends State<PictureViewer> {
   PictureCacheManager get cacheManager {
     if (_cacheManager == null) {
       DataItem item = widget.context.info_data;
-      if (cacheKey == null) {
-        cacheKey = widget.context.projectKey + "/" + Bit64.encodeString(widget.context.info_data.link);
-      }
       _cacheManager = PictureCacheManager(
         cacheKey,
         maxAgeCacheObject: item.isInCollection(collection_download) ? Duration(days: 365 * 99999) : Duration(days: 30)
@@ -242,7 +247,7 @@ class _PictureViewerState extends State<PictureViewer> {
                   PopupMenuButton(
                     icon: Icon(Icons.more_vert, color: Colors.white,),
                     itemBuilder: (context) {
-                      return <PopupMenuEntry>[
+                      List<PopupMenuEntry> list = [
                         PopupMenuItem(
                           child: FlatButton(
                             onPressed: () {
@@ -250,6 +255,7 @@ class _PictureViewerState extends State<PictureViewer> {
                                 setState(() {
                                   isHorizontal = true;
                                 });
+                                KeyValue.set(_directionKey, "horizontal");
                                 Navigator.of(context).pop();
                               }
                             },
@@ -272,6 +278,7 @@ class _PictureViewerState extends State<PictureViewer> {
                                 setState(() {
                                   isHorizontal = false;
                                 });
+                                KeyValue.set(_directionKey, "vertical");
                                 Navigator.of(context).pop();
                               }
                             },
@@ -294,7 +301,9 @@ class _PictureViewerState extends State<PictureViewer> {
                               if (isLandscape) {
                                 setState(() {
                                   isLandscape = false;
+                                  updateOrientation();
                                 });
+                                KeyValue.set(_deviceKey, "portrait");
                                 Navigator.of(context).pop();
                               }
                             },
@@ -316,7 +325,9 @@ class _PictureViewerState extends State<PictureViewer> {
                               if (!isLandscape) {
                                 setState(() {
                                   isLandscape = true;
+                                  updateOrientation();
                                 });
+                                KeyValue.set(_deviceKey, "landscape");
                                 Navigator.of(context).pop();
                               }
                             },
@@ -332,11 +343,14 @@ class _PictureViewerState extends State<PictureViewer> {
                             textColor: isLandscape ? Colors.blue : Colors.black87,
                           ),
                         ),
-                        PopupMenuDivider(),
-                        PopupMenuItem(
+                      ];
+
+                      if (widget.onDownload != null) {
+                        list.add(PopupMenuDivider());
+                        list.add(PopupMenuItem(
                           child: FlatButton(
                               onPressed: () {
-
+                                widget.onDownload(widget.context.info_data);
                               },
                               child: Row(
                                 children: <Widget>[
@@ -348,8 +362,9 @@ class _PictureViewerState extends State<PictureViewer> {
                                 ],
                               )
                           ),
-                        ),
-                      ];
+                        ));
+                      }
+                      return list;
                     }
                   )
                 ],
@@ -408,6 +423,7 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   void touch() {
+    cacheKey = widget.context.projectKey + "/" + Bit64.encodeString(widget.context.info_data.link);
     preloadQueue = PreloadQueue();
     widget.context.control();
     widget.context.on_data_changed = Callback.fromFunction(onDataChanged).release();
@@ -415,6 +431,7 @@ class _PictureViewerState extends State<PictureViewer> {
     widget.context.on_error = Callback.fromFunction(onError).release();
     widget.context.enterView();
     data = widget.context.data.control();
+    loadSavedData();
   }
 
   void untouch() {
@@ -425,31 +442,100 @@ class _PictureViewerState extends State<PictureViewer> {
     data?.release();
     widget.context.release();
     preloadQueue.stop();
+    loading = false;
   }
 
   void onPage(index) {
     setState(() {
       this.index = index;
     });
+    KeyValue.set(_pageKey, index.toString());
   }
 
-  @override
-  initState() {
-    _timer = Timer(Duration(seconds: 5), () {
+  void updateOrientation() {
+    if (isLandscape) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
+    }
+  }
+
+  void loadSavedData() {
+    String key = widget.context.projectKey;
+    _directionKey = "$direction_key:$key";
+    _deviceKey = "$device_key:$key";
+    _pageKey = "$page_key:$cacheKey";
+    String direction = KeyValue.get(_directionKey);
+    isHorizontal = direction != "vertical";
+    String device = KeyValue.get(_deviceKey);
+    isLandscape = device == "landscape";
+    String pageStr = KeyValue.get(_pageKey);
+    if (pageStr != null) {
+      try {
+        index = int.parse(pageStr);
+      } catch (e) {
+      }
+    }
+  }
+
+  void onOverBound(BoundType type) {
+    if (type == BoundType.Start) {
+      Context context;
+      if (widget.onChapterChanged != null && (context = widget.onChapterChanged(PictureFlipType.Prev)) != null) {
+        untouch();
+        widget.context = context;
+        touch();
+        photoController.jumpTo(math.max(data.length - 1, 0));
+        setState(() {
+          index = photoController.index;
+          if (!appBarDisplay) {
+            appBarDisplay = true;
+            willDismissAppBar();
+          }
+        });
+      }
+    } else if (!loading) {
+      Context context;
+      if (widget.onChapterChanged != null && (context = widget.onChapterChanged(PictureFlipType.Next)) != null) {
+        untouch();
+        widget.context = context;
+        touch();
+        photoController.jumpTo(0);
+        setState(() {
+          index = photoController.index;
+          if (!appBarDisplay) {
+            appBarDisplay = true;
+            willDismissAppBar();
+          }
+        });
+      }
+    }
+  }
+
+  willDismissAppBar() {
+    _timer = Timer(Duration(seconds: 4), () {
       setState(() {
         appBarDisplay = false;
       });
     });
-    photoController = PhotoController(
-      onPage: onPage,
-    );
+  }
+
+  @override
+  initState() {
 
     touch();
-    String key = widget.context.projectKey;
-    String direction = KeyValue.get("$direction_key:$key");
-    isHorizontal = direction != "vertical";
-    String device = KeyValue.get("$device_key:$key");
-    isLandscape = device != "portrait";
+    willDismissAppBar();
+    photoController = PhotoController(
+      onPage: onPage,
+      index: index,
+      onOverBound: onOverBound
+    );
+    updateOrientation();
     channel = MethodChannel("com.ero.kinoko/volume_button");
     channel.invokeMethod("start");
     channel.setMethodCallHandler(onVolumeButtonClicked);
@@ -464,6 +550,9 @@ class _PictureViewerState extends State<PictureViewer> {
     }
     photoController.dispose();
     untouch();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     channel?.invokeMethod("stop");
     super.dispose();
   }

@@ -11,29 +11,30 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:math' as math;
 
+enum BoundType {
+  Start,
+  End
+}
+
 class PhotoController {
   int index;
-  PageController pageController;
-  ItemScrollController scrollController;
-  ItemPositionsListener positionsListener;
+  PageController _pageController;
+  ItemScrollController _scrollController;
+  ItemPositionsListener _positionsListener;
   void Function(int) onPage;
   _PhotoListState state;
+  void Function(BoundType) onOverBound;
 
   static const Duration _duration = const Duration(milliseconds: 300);
 
   PhotoController({
     this.index = 0,
     this.onPage,
-  }) {
-    pageController = PageController(initialPage: index);
-    scrollController = ItemScrollController();
-    positionsListener = ItemPositionsListener.create();
-    pageController.addListener(onPageScroll);
-    positionsListener.itemPositions.addListener(onListScroll);
-  }
+    this.onOverBound
+  });
 
   onPageScroll() {
-    int idx = (pageController.page + 0.5).toInt();
+    int idx = (_pageController.page + 0.5).toInt();
     if (index != idx) {
       index = idx;
       this.onPage?.call(index);
@@ -42,7 +43,7 @@ class PhotoController {
 
   onListScroll() {
     int idx;
-    Iterable<ItemPosition> positions = positionsListener.itemPositions.value;
+    Iterable<ItemPosition> positions = _positionsListener.itemPositions.value;
     for (ItemPosition pos in positions) {
       if (pos.itemLeadingEdge <= 0.5 && pos.itemTrailingEdge > 0.5) {
         idx = pos.index;
@@ -60,31 +61,35 @@ class PhotoController {
   }
 
   void dispose() {
-    pageController.dispose();
+    _pageController?.dispose();
   }
 
   void next() {
     if (state != null && state.widget != null) {
-      if (state.widget.isHorizontal) {
-        pageController.nextPage(duration: _duration, curve: Curves.easeOutCubic);
-      } else {
-        if (index < state.widget.itemCount - 1) {
+      if (index < state.widget.itemCount - 1) {
+        if (state.widget.isHorizontal) {
+          pageController.nextPage(duration: _duration, curve: Curves.easeOutCubic);
+        } else {
           index++;
           scrollController.scrollTo(index: index, alignment: 0.1, duration: _duration, curve: Curves.easeOutCubic);
         }
+      } else {
+        onOverBound?.call(BoundType.End);
       }
     }
   }
 
   void prev() {
     if (state != null && state.widget != null) {
-      if (state.widget.isHorizontal) {
-        pageController.previousPage(duration: _duration, curve: Curves.easeOutCubic);
-      } else {
-        if (index > 0) {
+      if (index > 0) {
+        if (state.widget.isHorizontal) {
+          pageController.previousPage(duration: _duration, curve: Curves.easeOutCubic);
+        } else {
           index--;
           scrollController.scrollTo(index: index, alignment: 0.1, duration: _duration, curve: Curves.easeOutCubic);
         }
+      } else {
+        onOverBound?.call(BoundType.Start);
       }
     }
   }
@@ -106,6 +111,41 @@ class PhotoController {
 
   void _untouch() {
     this.state = null;
+  }
+
+  void reset() {
+    if (_pageController != null) {
+      _pageController.dispose();
+      _pageController = null;
+    }
+    _scrollController = null;
+    if (_positionsListener != null) {
+      _positionsListener.itemPositions.removeListener(onListScroll);
+      _positionsListener = null;
+    }
+  }
+
+  PageController get pageController {
+    if (_pageController == null && state?.widget?.isHorizontal == true) {
+      _pageController = PageController(initialPage: index);
+      _pageController.addListener(onPageScroll);
+    }
+    return _pageController;
+  }
+
+  ItemScrollController get scrollController {
+    if (_scrollController == null && state?.widget?.isHorizontal == false) {
+      _scrollController = ItemScrollController();
+    }
+    return _scrollController;
+  }
+
+  ItemPositionsListener get positionsListener {
+    if (_positionsListener == null && state?.widget?.isHorizontal == false) {
+      _positionsListener = ItemPositionsListener.create();
+      _positionsListener.itemPositions.addListener(onListScroll);
+    }
+    return _positionsListener;
   }
 }
 
@@ -162,7 +202,6 @@ class _PhotoListState extends State<PhotoList> {
             ),
           );
         },
-
       );
     } else {
       return ScrollablePositionedList.builder(
@@ -170,6 +209,7 @@ class _PhotoListState extends State<PhotoList> {
             top: MediaQuery.of(context).padding.top + 44
         ),
         initialScrollIndex: widget.controller.index,
+        initialAlignment: 0.1,
         itemScrollController: widget.controller.scrollController,
         itemPositionsListener: widget.controller.positionsListener,
         itemBuilder: (context, index) {
@@ -212,7 +252,13 @@ class _PhotoListState extends State<PhotoList> {
 
   @override
   void didUpdateWidget(PhotoList oldWidget) {
-    widget.controller._touch(this);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller._untouch();
+      widget.controller._touch(this);
+    }
+    if (widget.isHorizontal != oldWidget.isHorizontal) {
+      widget.controller.reset();
+    }
     super.didUpdateWidget(oldWidget);
   }
 

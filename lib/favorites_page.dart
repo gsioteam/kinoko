@@ -51,7 +51,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
       if (type == DataItemType.Book) {
         return BookPage(ctx, project);
       } else {
-        return PictureViewer(ctx, null);
+        return PictureViewer(ctx);
       }
     }));
     ctx.release();
@@ -60,13 +60,14 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return ListView.separated(
       itemCount: data.length,
       itemBuilder: (context, index) {
         return makeBookItem(context, data[index], () {
           itemClicked(index);
         });
-      }
+      },
+      separatorBuilder: (context, idx)=>Divider(),
     );
   }
 

@@ -238,27 +238,42 @@ class _BookPageState extends State<BookPage> {
       widget.project.control();
       Context currentContext = widget.project.createChapterContext(data).control();
       await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-        return PictureViewer(currentContext, (PictureFlipType flipType) {
-          // 倒序排序
-          if (flipType == PictureFlipType.Prev) {
-            if (currentIndex < chapters.length - 1) {
-              currentIndex++;
-              DataItem data = chapters[currentIndex];
-              r(currentContext);
-              currentContext = widget.project.createChapterContext(data).control();
-              return currentContext;
+        return PictureViewer(
+          currentContext,
+          onChapterChanged: (PictureFlipType flipType) {
+            // 倒序排序
+            if (flipType == PictureFlipType.Prev) {
+              if (currentIndex < chapters.length - 1) {
+                currentIndex++;
+                DataItem data = chapters[currentIndex];
+                r(currentContext);
+                currentContext = widget.project.createChapterContext(data).control();
+                return currentContext;
+              }
+            } else if (flipType == PictureFlipType.Next) {
+              if (currentIndex > 0) {
+                currentIndex--;
+                DataItem data = chapters[currentIndex];
+                r(currentContext);
+                currentContext = widget.project.createChapterContext(data).control();
+                return currentContext;
+              }
             }
-          } else if (flipType == PictureFlipType.Next) {
-            if (currentIndex > 0) {
-              currentIndex--;
-              DataItem data = chapters[currentIndex];
-              r(currentContext);
-              currentContext = widget.project.createChapterContext(data).control();
-              return currentContext;
-            }
-          }
-          return null;
-        });
+            return null;
+          },
+          onDownload: (_item) {
+            DataItem dataItem = widget.context.info_data;
+            setState(() {
+              DownloadQueueItem item = DownloadManager().add(_item, BookInfo(
+                  title: dataItem.title,
+                  picture: dataItem.picture,
+                  link: dataItem.link,
+                  subtitle: dataItem.subtitle
+              ));
+              item.start();
+            });
+          },
+        );
       }));
       currentContext.release();
       widget.project.release();
