@@ -27,5 +27,5 @@ const Map words = {
   "vertical_flip": "垂直翻頁",
   "portrait": "竪屏",
   "landscape": "橫屏",
-
+  "download": "下载"
 };

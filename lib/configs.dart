@@ -8,3 +8,6 @@ const String collection_download = "download";
 const String collection_mark = "mark";
 
 const String home_page_name = "home";
+
+const String direction_key = "direction";
+const String device_key = "device";

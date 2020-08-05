@@ -18,13 +18,14 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:glib/main/error.dart' as glib;
 import 'package:glib/utils/bit64.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'utils/download_manager.dart';
 import 'utils/preload_queue.dart';
 import 'dart:math' as math;
 import 'package:gesture_zoom_box/gesture_zoom_box.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'localizations/localizations.dart';
-import 'package:scroll_to_index/scroll_to_index.dart';
+import 'widgets/photo_list.dart';
 
 enum PictureFlipType {
   Next,
@@ -51,15 +52,15 @@ class _PictureViewerState extends State<PictureViewer> {
   bool appBarDisplay = true;
   Offset downPosition;
   MethodChannel channel;
-  PageController pageController;
-  AutoScrollController scrollController;
   String cacheKey;
   PreloadQueue preloadQueue;
   bool loading = false;
   bool isTap = false;
   Timer _timer;
-  bool isHorizontal = true;
   PictureCacheManager _cacheManager;
+  PhotoController photoController;
+  bool isHorizontal = false;
+  bool isLandscape = false;
 
   void onDataChanged(int type, Array data, int pos) {
     if (data != null) {
@@ -82,23 +83,11 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   void pageNext() {
-    if (isHorizontal) {
-      pageController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.easeOutCubic);
-    } else {
-      index++;
-      print("To $index");
-      scrollController.scrollToIndex(index);
-    }
+    photoController.next();
   }
 
   void pagePrev() {
-    if (isHorizontal) {
-      pageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.easeOutCubic);
-    } else {
-      index--;
-      print("To $index");
-      scrollController.scrollToIndex(index);
-    }
+    photoController.prev();
   }
 
   Future<void> onVolumeButtonClicked(MethodCall call) async {
@@ -106,41 +95,41 @@ class _PictureViewerState extends State<PictureViewer> {
       int code = call.arguments;
       switch (code) {
         case 1: {
-          if (!loading) {
-            if (pageController.page < data.length - 1) {
-              pageNext();
-            } else {
-              Context context;
-              if (widget.onChapterChanged != null && (context = widget.onChapterChanged(PictureFlipType.Next)) != null) {
-                untouch();
-                widget.context = context;
-                touch();
-                pageController.jumpTo(0);
-                setState(() { });
-              } else {
-                pageNext();
-              }
-            }
-          } else {
-            pageNext();
-          }
+          pageNext();
+//          if (!loading) {
+//            if (index < data.length - 1) {
+//            } else {
+//              Context context;
+//              if (widget.onChapterChanged != null && (context = widget.onChapterChanged(PictureFlipType.Next)) != null) {
+//                untouch();
+//                widget.context = context;
+//                touch();
+//                photoController.jumpTo(0);
+//                setState(() { });
+//              } else {
+//                pageNext();
+//              }
+//            }
+//          } else {
+//            pageNext();
+//          }
           break;
         }
         case 2: {
-          if (pageController.page > 0) {
-            pagePrev();
-          } else {
-            Context context;
-            if (widget.onChapterChanged != null && (context = widget.onChapterChanged(PictureFlipType.Prev)) != null) {
-              untouch();
-              widget.context = context;
-              touch();
-              pageController.jumpTo(math.max(data.length.toDouble() - 1, 0));
-              setState(() { });
-            } else {
-              pagePrev();
-            }
-          }
+          pagePrev();
+//          if (index > 0) {
+//          } else {
+//            Context context;
+//            if (widget.onChapterChanged != null && (context = widget.onChapterChanged(PictureFlipType.Prev)) != null) {
+//              untouch();
+//              widget.context = context;
+//              touch();
+//              pageController.jumpTo(math.max(data.length.toDouble() - 1, 0));
+//              setState(() { });
+//            } else {
+//              pagePrev();
+//            }
+//          }
           break;
         }
       }
@@ -153,7 +142,10 @@ class _PictureViewerState extends State<PictureViewer> {
       if (cacheKey == null) {
         cacheKey = widget.context.projectKey + "/" + Bit64.encodeString(widget.context.info_data.link);
       }
-      _cacheManager = PictureCacheManager(cacheKey, maxAgeCacheObject: item.isInCollection(collection_download) ? Duration(days: 365 * 99999) : Duration(days: 30));
+      _cacheManager = PictureCacheManager(
+        cacheKey,
+        maxAgeCacheObject: item.isInCollection(collection_download) ? Duration(days: 365 * 99999) : Duration(days: 30)
+      );
     }
     return _cacheManager;
   }
@@ -176,83 +168,15 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   Widget buildPager(BuildContext context) {
-    if (isHorizontal) {
-      return PhotoViewGallery.builder(
-        itemCount: data.length,
-        pageController: pageController,
-        builder: (BuildContext context, int index) {
-          DataItem item = data[index];
-          return PhotoViewGalleryPageOptions(
-            imageProvider: makeImageProvider(item),
-            initialScale: PhotoViewComputedScale.contained,
-          );
-        },
-        gaplessPlayback: true,
-        loadingBuilder: (context, event) {
-          return Center(
-            child: SpinKitRing(
-              lineWidth: 4,
-              size: 36,
-              color: Colors.white,
-            ),
-          );
-        },
-
-        onPageChanged: (idx) {
-          setState(() {
-            index = idx;
-          });
-        },
-      );
-    } else {
-
-      return ListView.builder(
-        padding: EdgeInsets.only(
-          top: MediaQuery.of(context).padding.top + 44
-        ),
-        controller: scrollController,
-        itemBuilder: (context, index) {
-          DataItem item = data[index];
-          return AutoScrollTag(
-            key: ValueKey(index),
-            controller: scrollController,
-            index: index,
-            child: Container(
-              constraints: BoxConstraints(
-                  minHeight: 560
-              ),
-              clipBehavior: Clip.hardEdge,
-              decoration: BoxDecoration(
-                  color: Colors.black
-              ),
-              padding: EdgeInsets.only(top: 2, bottom: 2),
-              child: Center(
-                child: GestureZoomBox(
-                  maxScale: 5.0,
-                  doubleTapScale: 2.0,
-                  child: CachedNetworkImage(
-                    imageUrl: item.picture,
-                    cacheManager: cacheManager,
-                    fit: BoxFit.fitWidth,
-                    placeholder: (context, url) {
-                      return SpinKitRing(
-                        lineWidth: 4,
-                        size: 36,
-                        color: Colors.white,
-                      );
-                    },
-                    errorWidget: (context, url, error) {
-                      return Icon(Icons.broken_image);
-                    },
-                  ),
-                ),
-              ),
-            )
-          );
-        },
-        itemCount: data.length,
-      );
-    }
+    return PhotoList(
+      itemCount: data.length,
+      imageUrlProvider: (int index) {
+        return (data[index] as DataItem).picture;
+      },
+      isHorizontal: isHorizontal,
+      controller: photoController,
+      cacheManager: cacheManager,
+    );
   }
 
   @override
@@ -316,101 +240,117 @@ class _PictureViewerState extends State<PictureViewer> {
                       )
                   ),
                   PopupMenuButton(
-                      icon: Icon(Icons.more_vert, color: Colors.white,),
-                      itemBuilder: (context) {
-                        return <PopupMenuEntry>[
-                          PopupMenuItem(
-                            child: FlatButton(
+                    icon: Icon(Icons.more_vert, color: Colors.white,),
+                    itemBuilder: (context) {
+                      return <PopupMenuEntry>[
+                        PopupMenuItem(
+                          child: FlatButton(
+                            onPressed: () {
+                              if (!isHorizontal) {
+                                setState(() {
+                                  isHorizontal = true;
+                                });
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            child: Row(
+                              children: <Widget>[
+                                Icon(Icons.border_vertical),
+                                Container(
+                                  padding: EdgeInsets.only(left: 20),
+                                  child: Text(kt("horizontal_flip")),
+                                ),
+                              ],
+                            ),
+                            textColor: isHorizontal ? Colors.blue : Colors.black87,
+                          ),
+                        ),
+                        PopupMenuItem(
+                          child: FlatButton(
+                            onPressed: () {
+                              if (isHorizontal) {
+                                setState(() {
+                                  isHorizontal = false;
+                                });
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            child: Row(
+                              children: <Widget>[
+                                Icon(Icons.border_horizontal),
+                                Container(
+                                  padding: EdgeInsets.only(left: 20),
+                                  child: Text(kt("vertical_flip")),
+                                ),
+                              ],
+                            ),
+                            textColor: !isHorizontal ? Colors.blue : Colors.black87,
+                          ),
+                        ),
+                        PopupMenuDivider(),
+                        PopupMenuItem(
+                          child: FlatButton(
+                            onPressed: () {
+                              if (isLandscape) {
+                                setState(() {
+                                  isLandscape = false;
+                                });
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            child: Row(
+                              children: <Widget>[
+                                Icon(Icons.stay_current_portrait),
+                                Container(
+                                  padding: EdgeInsets.only(left: 20),
+                                  child: Text(kt("portrait")),
+                                ),
+                              ],
+                            ),
+                            textColor: !isLandscape ? Colors.blue : Colors.black87,
+                          ),
+                        ),
+                        PopupMenuItem(
+                          child: FlatButton(
+                            onPressed: () {
+                              if (!isLandscape) {
+                                setState(() {
+                                  isLandscape = true;
+                                });
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            child: Row(
+                              children: <Widget>[
+                                Icon(Icons.stay_current_landscape),
+                                Container(
+                                  padding: EdgeInsets.only(left: 20),
+                                  child: Text(kt("landscape")),
+                                ),
+                              ],
+                            ),
+                            textColor: isLandscape ? Colors.blue : Colors.black87,
+                          ),
+                        ),
+                        PopupMenuDivider(),
+                        PopupMenuItem(
+                          child: FlatButton(
                               onPressed: () {
-                                if (!isHorizontal) {
-                                  setState(() {
-                                    isHorizontal = true;
-                                  });
-                                }
+
                               },
                               child: Row(
                                 children: <Widget>[
-                                  Icon(Icons.border_vertical),
+                                  Icon(Icons.file_download),
                                   Container(
                                     padding: EdgeInsets.only(left: 20),
-                                    child: Text(kt("horizontal_flip")),
+                                    child: Text(kt("download")),
                                   ),
                                 ],
-                              ),
-                            ),
+                              )
                           ),
-                          PopupMenuItem(
-                            child: FlatButton(
-                              onPressed: () {
-                                if (isHorizontal) {
-                                  setState(() {
-                                    isHorizontal = false;
-                                  });
-                                }
-                              },
-                              child: Row(
-                                children: <Widget>[
-                                  Icon(Icons.border_horizontal),
-                                  Container(
-                                    padding: EdgeInsets.only(left: 20),
-                                    child: Text("vertical"),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          PopupMenuDivider(),
-                          PopupMenuItem(
-                            child: FlatButton(
-                                onPressed: () {
-
-                                },
-                                child: Row(
-                                  children: <Widget>[
-                                    Icon(Icons.stay_current_portrait),
-                                    Container(
-                                      padding: EdgeInsets.only(left: 20),
-                                      child: Text("portrait"),
-                                    ),
-                                  ],
-                                )
-                            ),
-                          ),
-                          PopupMenuItem(
-                            child: FlatButton(
-                                onPressed: () {
-
-                                },
-                                child: Row(
-                                  children: <Widget>[
-                                    Icon(Icons.stay_current_landscape),
-                                    Container(
-                                      padding: EdgeInsets.only(left: 20),
-                                      child: Text("landscape"),
-                                    ),
-                                  ],
-                                )
-                            ),
-                          ),
-                          PopupMenuDivider(),
-                          PopupMenuItem(
-                            child: FlatButton(
-                                onPressed: () {
-
-                                },
-                                child: Row(
-                                  children: <Widget>[
-                                    Icon(Icons.file_download),
-                                    Container(
-                                      padding: EdgeInsets.only(left: 20),
-                                      child: Text("download"),
-                                    ),
-                                  ],
-                                )
-                            ),
-                          ),
-                        ];
-                      }
+                        ),
+                      ];
+                    }
                   )
                 ],
               ),
@@ -487,6 +427,12 @@ class _PictureViewerState extends State<PictureViewer> {
     preloadQueue.stop();
   }
 
+  void onPage(index) {
+    setState(() {
+      this.index = index;
+    });
+  }
+
   @override
   initState() {
     _timer = Timer(Duration(seconds: 5), () {
@@ -494,10 +440,16 @@ class _PictureViewerState extends State<PictureViewer> {
         appBarDisplay = false;
       });
     });
-    pageController = PageController();
-    scrollController = AutoScrollController();
+    photoController = PhotoController(
+      onPage: onPage,
+    );
 
     touch();
+    String key = widget.context.projectKey;
+    String direction = KeyValue.get("$direction_key:$key");
+    isHorizontal = direction != "vertical";
+    String device = KeyValue.get("$device_key:$key");
+    isLandscape = device != "portrait";
     channel = MethodChannel("com.ero.kinoko/volume_button");
     channel.invokeMethod("start");
     channel.setMethodCallHandler(onVolumeButtonClicked);
@@ -510,8 +462,7 @@ class _PictureViewerState extends State<PictureViewer> {
       _timer.cancel();
       _timer = null;
     }
-    pageController.dispose();
-    scrollController.dispose();
+    photoController.dispose();
     untouch();
     channel?.invokeMethod("stop");
     super.dispose();

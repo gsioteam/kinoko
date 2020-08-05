@@ -39,8 +39,8 @@ namespace gs {
         NOTIFICATION(error, gc::Ref<Error>);
         NOTIFICATION(reloadComplete);
 
-        METHOD bool reload(const gc::Map &data);
-        METHOD bool loadMore();
+        bool reload(const gc::Map &data);
+        bool loadMore();
 
         METHOD void setDataAt(const gc::Variant &var, int idx);
         METHOD void setData(const gc::Array &array);
@@ -61,8 +61,8 @@ namespace gs {
 
         ON_LOADED_BEGIN(cls, gc::Object)
             INITIALIZER(cls, Collection, initialize);
-            ADD_METHOD(cls, Collection, reload);
-            ADD_METHOD(cls, Collection, loadMore);
+//            ADD_METHOD(cls, Collection, reload);
+//            ADD_METHOD(cls, Collection, loadMore);
             ADD_METHOD(cls, Collection, setDataAt);
             ADD_METHOD(cls, Collection, appendData);
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Collection, getData), ADD_METHOD(cls, Collection, setData));

@@ -336,13 +336,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.24.1"
-  scroll_to_index:
+  scrollable_positioned_list:
     dependency: "direct main"
     description:
-      name: scroll_to_index
+      name: scrollable_positioned_list
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.6"
+    version: "0.1.7"
   sky_engine:
     dependency: transitive
     description: flutter
