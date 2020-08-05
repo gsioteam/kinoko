@@ -319,13 +319,14 @@ std::string GitRepository::localID() const {
     if (repo) {
         git_object *obj = nullptr;
         git_revparse_single(&obj, repo, "HEAD");
-        const unsigned char *chs = git_object_id(obj)->id;
-        std::string ret = oid_str(chs);
-        git_object_free(obj);
-        return ret;
-    } else {
-        return "-";
+        if (obj) {
+            const unsigned char *chs = git_object_id(obj)->id;
+            std::string ret = oid_str(chs);
+            git_object_free(obj);
+            return ret;
+        }
     }
+    return "";
 }
 
 std::string GitRepository::highID() {

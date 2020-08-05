@@ -84,7 +84,7 @@ class SplashScreen extends StatelessWidget {
     if (!env_repo.isOpen()) {
       GitItem item = GitItem.clone(env_repo, env_git_url);
       item.cancelable = false;
-      await showDialog(
+      ProgressResult result = await showDialog<ProgressResult>(
         barrierDismissible: false,
         context: context,
         builder: (context) {
@@ -94,8 +94,10 @@ class SplashScreen extends StatelessWidget {
           );
         }
       );
+      if (result != ProgressResult.Success) {
+        throw Exception("What the fuck!");
+      }
     } else {
-
     }
   }
 

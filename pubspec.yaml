@@ -39,6 +39,7 @@ dependencies:
   flushbar: ^1.10.4
   gesture_zoom_box: ^0.0.2
   cached_network_image: ^2.2.0+1
+  scroll_to_index: ^1.0.6
 
 dev_dependencies:
   flutter_test:

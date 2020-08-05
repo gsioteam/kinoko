@@ -23,13 +23,13 @@ import 'utils/preload_queue.dart';
 import 'dart:math' as math;
 import 'package:gesture_zoom_box/gesture_zoom_box.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'localizations/localizations.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 
 enum PictureFlipType {
   Next,
   Prev
 }
-
-class
 
 class PictureViewer extends StatefulWidget {
   Context context;
@@ -51,13 +51,14 @@ class _PictureViewerState extends State<PictureViewer> {
   bool appBarDisplay = true;
   Offset downPosition;
   MethodChannel channel;
-  PageController pageController = PageController();
+  PageController pageController;
+  AutoScrollController scrollController;
   String cacheKey;
   PreloadQueue preloadQueue;
   bool loading = false;
   bool isTap = false;
   Timer _timer;
-  bool isHorizontal = false;
+  bool isHorizontal = true;
   PictureCacheManager _cacheManager;
 
   void onDataChanged(int type, Array data, int pos) {
@@ -81,11 +82,23 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   void pageNext() {
-    pageController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.easeOutCubic);
+    if (isHorizontal) {
+      pageController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.easeOutCubic);
+    } else {
+      index++;
+      print("To $index");
+      scrollController.scrollToIndex(index);
+    }
   }
 
   void pagePrev() {
-    pageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.easeOutCubic);
+    if (isHorizontal) {
+      pageController.previousPage(duration: Duration(milliseconds: 300), curve: Curves.easeOutCubic);
+    } else {
+      index--;
+      print("To $index");
+      scrollController.scrollToIndex(index);
+    }
   }
 
   Future<void> onVolumeButtonClicked(MethodCall call) async {
@@ -192,35 +205,47 @@ class _PictureViewerState extends State<PictureViewer> {
         },
       );
     } else {
+
       return ListView.builder(
+        padding: EdgeInsets.only(
+          top: MediaQuery.of(context).padding.top + 44
+        ),
+        controller: scrollController,
         itemBuilder: (context, index) {
           DataItem item = data[index];
-          return Container(
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              color: Colors.black
-            ),
-            padding: EdgeInsets.only(top: 2, bottom: 2),
-            child: GestureZoomBox(
-              maxScale: 5.0,
-              doubleTapScale: 2.0,
-              child: Image(
-                image: makeImageProvider(item),
-                fit: BoxFit.fitWidth,
-                gaplessPlayback: true,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    height: 460,
-                    child: Center(
-                      child: SpinKitRing(
+          return AutoScrollTag(
+            key: ValueKey(index),
+            controller: scrollController,
+            index: index,
+            child: Container(
+              constraints: BoxConstraints(
+                  minHeight: 560
+              ),
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                  color: Colors.black
+              ),
+              padding: EdgeInsets.only(top: 2, bottom: 2),
+              child: Center(
+                child: GestureZoomBox(
+                  maxScale: 5.0,
+                  doubleTapScale: 2.0,
+                  child: CachedNetworkImage(
+                    imageUrl: item.picture,
+                    cacheManager: cacheManager,
+                    fit: BoxFit.fitWidth,
+                    placeholder: (context, url) {
+                      return SpinKitRing(
                         lineWidth: 4,
                         size: 36,
                         color: Colors.white,
-                      ),
-                    ),
-                  );
-                },
+                      );
+                    },
+                    errorWidget: (context, url, error) {
+                      return Icon(Icons.broken_image);
+                    },
+                  ),
+                ),
               ),
             )
           );
@@ -273,86 +298,122 @@ class _PictureViewerState extends State<PictureViewer> {
           ),
 
           AnimatedPositioned(
-            child: Row(
-              children: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.arrow_back), 
-                  color: Colors.white,
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  }
-                ),
-                Expanded(
-                  child: Text(
-                    widget.context.info_data.title,
-                    style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white),
+            child: Container(
+              color: Colors.black26,
+              child: Row(
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.arrow_back),
+                    color: Colors.white,
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    }
+                  ),
+                  Expanded(
+                      child: Text(
+                        widget.context.info_data.title,
+                        style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white),
+                      )
+                  ),
+                  PopupMenuButton(
+                      icon: Icon(Icons.more_vert, color: Colors.white,),
+                      itemBuilder: (context) {
+                        return <PopupMenuEntry>[
+                          PopupMenuItem(
+                            child: FlatButton(
+                              onPressed: () {
+                                if (!isHorizontal) {
+                                  setState(() {
+                                    isHorizontal = true;
+                                  });
+                                }
+                              },
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(Icons.border_vertical),
+                                  Container(
+                                    padding: EdgeInsets.only(left: 20),
+                                    child: Text(kt("horizontal_flip")),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            child: FlatButton(
+                              onPressed: () {
+                                if (isHorizontal) {
+                                  setState(() {
+                                    isHorizontal = false;
+                                  });
+                                }
+                              },
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(Icons.border_horizontal),
+                                  Container(
+                                    padding: EdgeInsets.only(left: 20),
+                                    child: Text("vertical"),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          PopupMenuDivider(),
+                          PopupMenuItem(
+                            child: FlatButton(
+                                onPressed: () {
+
+                                },
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(Icons.stay_current_portrait),
+                                    Container(
+                                      padding: EdgeInsets.only(left: 20),
+                                      child: Text("portrait"),
+                                    ),
+                                  ],
+                                )
+                            ),
+                          ),
+                          PopupMenuItem(
+                            child: FlatButton(
+                                onPressed: () {
+
+                                },
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(Icons.stay_current_landscape),
+                                    Container(
+                                      padding: EdgeInsets.only(left: 20),
+                                      child: Text("landscape"),
+                                    ),
+                                  ],
+                                )
+                            ),
+                          ),
+                          PopupMenuDivider(),
+                          PopupMenuItem(
+                            child: FlatButton(
+                                onPressed: () {
+
+                                },
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(Icons.file_download),
+                                    Container(
+                                      padding: EdgeInsets.only(left: 20),
+                                      child: Text("download"),
+                                    ),
+                                  ],
+                                )
+                            ),
+                          ),
+                        ];
+                      }
                   )
-                ),
-                PopupMenuButton(
-                  icon: Icon(Icons.more_vert, color: Colors.white,),
-                  itemBuilder: (context) {
-                    return <PopupMenuEntry>[
-                      PopupMenuItem(
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.border_vertical),
-                            Container(
-                              padding: EdgeInsets.only(left: 20),
-                              child: Text("horizontle"),
-                            ),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.border_horizontal),
-                            Container(
-                              padding: EdgeInsets.only(left: 20),
-                              child: Text("vertical"),
-                            ),
-                          ],
-                        ),
-                      ),
-                      PopupMenuDivider(),
-                      PopupMenuItem(
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.stay_current_portrait),
-                            Container(
-                              padding: EdgeInsets.only(left: 20),
-                              child: Text("portrait"),
-                            ),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.stay_current_landscape),
-                            Container(
-                              padding: EdgeInsets.only(left: 20),
-                              child: Text("landscape"),
-                            ),
-                          ],
-                        ),
-                      ),
-                      PopupMenuDivider(),
-                      PopupMenuItem(
-                        child: Row(
-                          children: <Widget>[
-                            Icon(Icons.file_download),
-                            Container(
-                              padding: EdgeInsets.only(left: 20),
-                              child: Text("download"),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ];
-                  }
-                )
-              ],
+                ],
+              ),
             ),
             top: appBarDisplay ? media.padding.top : (-44),
             left: media.padding.left,
@@ -383,7 +444,16 @@ class _PictureViewerState extends State<PictureViewer> {
                       alignment: PlaceholderAlignment.middle
                     )
                   ]
-                )
+                ),
+                style: TextStyle(
+                  shadows: [
+                    Shadow(
+                      color: Colors.black26,
+                      blurRadius: 2,
+                      offset: Offset(1, 1)
+                    )
+                  ]
+                ),
               ) ,
               opacity: appBarDisplay ? 1 : 0,
               duration: Duration(milliseconds: 300)
@@ -424,6 +494,8 @@ class _PictureViewerState extends State<PictureViewer> {
         appBarDisplay = false;
       });
     });
+    pageController = PageController();
+    scrollController = AutoScrollController();
 
     touch();
     channel = MethodChannel("com.ero.kinoko/volume_button");
@@ -438,6 +510,8 @@ class _PictureViewerState extends State<PictureViewer> {
       _timer.cancel();
       _timer = null;
     }
+    pageController.dispose();
+    scrollController.dispose();
     untouch();
     channel?.invokeMethod("stop");
     super.dispose();

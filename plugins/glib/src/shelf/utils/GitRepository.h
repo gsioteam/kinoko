@@ -75,7 +75,7 @@ namespace gs {
         METHOD static void shutdown();
 
         METHOD bool isOpen() const {
-            return repo != nullptr;
+            return repo != nullptr && !localID().empty();
         }
 
         METHOD std::string getPath() const {

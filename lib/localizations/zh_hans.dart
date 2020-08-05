@@ -22,5 +22,10 @@ const Map words = {
   "download_list": "下载列表",
   "delete_item": "删除 {0}({1})",
   "undo": "取消",
-  "search": "寻幽觅胜"
+  "search": "寻幽觅胜",
+  "horizontal_flip": "水平翻頁",
+  "vertical_flip": "垂直翻頁",
+  "portrait": "竪屏",
+  "landscape": "橫屏",
+
 };

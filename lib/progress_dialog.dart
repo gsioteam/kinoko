@@ -55,6 +55,11 @@ enum _Status {
   Failed
 }
 
+enum ProgressResult {
+  Success,
+  Failed
+}
+
 class _ProgressDialogState extends State<ProgressDialog> {
   String processText;
   _Status status;
@@ -68,7 +73,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
     item.onComplete = () {
       print("complete");
       status = _Status.Done;
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(ProgressResult.Success);
     };
     item.onFail = (String msg) {
       print("fail " + msg);
@@ -83,7 +88,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
   onCancel() {
     if (widget.item.cancelable) {
       widget.item.cancel();
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(ProgressResult.Failed);
     }
   }
 
