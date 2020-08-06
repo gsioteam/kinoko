@@ -110,11 +110,15 @@ class _BookListPageState extends State<BookListPage> {
         ListView.separated(
           padding: const EdgeInsets.all(16),
           itemBuilder: (BuildContext context, int idx) {
-            DataItem book = books[idx];
-            return cellWithData(book, idx);
+            if (idx < books.length) {
+              DataItem book = books[idx];
+              return cellWithData(book, idx);
+            } else {
+              return Container(height: 10,);
+            }
           },
           separatorBuilder: (BuildContext context, int index) => const Divider(),
-          itemCount: books.length,
+          itemCount: books.length + 1,
         ),
         IgnorePointer(
           child: AnimatedOpacity(
