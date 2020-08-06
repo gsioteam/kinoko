@@ -20,6 +20,71 @@ import 'package:glib/main/error.dart' as glib;
 import 'picture_viewer.dart';
 import 'utils/book_info.dart';
 
+class BarItem extends StatefulWidget {
+
+  bool display;
+  Widget child;
+
+  BarItem({
+    this.display = false,
+    @required this.child
+  });
+
+  @override
+  State<StatefulWidget> createState() => BarItemState();
+}
+
+class BarItemState extends State<BarItem> with SingleTickerProviderStateMixin {
+
+  AnimationController controller;
+  Animation<double> _animation;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizeTransition(
+      axis: Axis.horizontal,
+      sizeFactor: _animation,
+      child: widget.child,
+    );
+  }
+
+  @override
+  void didUpdateWidget(BarItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.display != widget.display) {
+      if (widget.display) {
+        controller.forward();
+      } else {
+        controller.reverse();
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+      reverseDuration: Duration(milliseconds: 300)
+    );
+    
+//    _animation = controller;
+    _animation = CurvedAnimation(
+      parent: controller,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeOutCubic
+    );
+    controller.value = widget.display ? 1 : 0;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    controller.dispose();
+  }
+}
+
 class ChapterItem extends StatefulWidget {
 
   bool editing;
@@ -329,24 +394,28 @@ class _BookPageState extends State<BookPage> {
                             ];
                           }
                         ),
-                        AnimatedSwitcher(
-                          duration: Duration(milliseconds: 300),
-                          child: editing ? IconButton(
+                        BarItem(
+                          display: editing,
+                          child: IconButton(
                             icon: Icon(Icons.clear),
                             color: theme.primaryColor,
                             onPressed: onCancelClicked
-                          ) : Container(),
+                          ),
                         ),
-                        AnimatedSwitcher(
-                          duration: Duration(milliseconds: 300),
-                          child: editing ? IconButton(
+                        BarItem(
+                          display: editing,
+                          child: IconButton(
                             icon: Icon(Icons.check),
                             color: theme.primaryColor,
                             onPressed: onDownloadStartClicked
-                          ): IconButton(
-                            icon: Icon(Icons.file_download),
-                            color: theme.primaryColor,
-                            onPressed: onDownloadClicked
+                          ),
+                        ),
+                        BarItem(
+                          display: !editing,
+                          child: IconButton(
+                              icon: Icon(Icons.file_download),
+                              color: theme.primaryColor,
+                              onPressed: onDownloadClicked
                           ),
                         ),
                       ],

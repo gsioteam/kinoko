@@ -202,13 +202,7 @@ class _PictureViewerState extends State<PictureViewer> {
                   color: Colors.white,
                 ),
               ):
-              NotificationListener<OverscrollNotification>(
-                child: buildPager(context),
-                onNotification: (notification) {
-                  print("overscroll ${notification.overscroll}");
-                  return false;
-                },
-              ),
+              buildPager(context),
             ),
             onPointerDown: (event) {
               isTap = true;

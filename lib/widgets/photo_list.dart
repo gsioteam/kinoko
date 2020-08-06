@@ -10,6 +10,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:math' as math;
+import 'over_drag.dart';
 
 enum BoundType {
   Start,
@@ -177,8 +178,7 @@ class PhotoList extends StatefulWidget {
 
 class _PhotoListState extends State<PhotoList> {
 
-  @override
-  Widget build(BuildContext context) {
+  Widget buildScrollable(BuildContext context) {
     if (widget.isHorizontal) {
       return PhotoViewGallery.builder(
         itemCount: widget.itemCount,
@@ -248,6 +248,17 @@ class _PhotoListState extends State<PhotoList> {
         itemCount: widget.itemCount,
       );
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return OverDrag(
+      child: buildScrollable(context),
+      left: widget.isHorizontal,
+      right: widget.isHorizontal,
+      up: !widget.isHorizontal,
+      down: !widget.isHorizontal,
+    );
   }
 
   @override
