@@ -490,9 +490,10 @@ class _PictureViewerState extends State<PictureViewer> {
         untouch();
         widget.context = context;
         touch();
-        photoController.jumpTo(math.max(data.length - 1, 0));
         setState(() {
+          photoController.jumpTo(math.max(data.length - 1, 0));
           index = photoController.index;
+          print("index $index/${data.length}");
           if (!appBarDisplay) {
             appBarDisplay = true;
             willDismissAppBar();
@@ -505,9 +506,10 @@ class _PictureViewerState extends State<PictureViewer> {
         untouch();
         widget.context = context;
         touch();
-        photoController.jumpTo(0);
         setState(() {
+          photoController.jumpTo(0);
           index = photoController.index;
+          print("index $index/${data.length}");
           if (!appBarDisplay) {
             appBarDisplay = true;
             willDismissAppBar();
@@ -560,7 +562,6 @@ class _PictureViewerState extends State<PictureViewer> {
   void addToPreload(Array arr) {
     for (int i = 0 ,t = arr.length; i < t; ++i) {
       DataItem item = arr[i];
-      print("added " + item.picture);
       preloadQueue.add(DownloadPictureItem(item.picture, cacheManager));
     }
   }

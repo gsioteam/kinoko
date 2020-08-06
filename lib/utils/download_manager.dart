@@ -36,9 +36,7 @@ class DownloadPictureItem {
 
   Future<void> fetchImage() async {
     try {
-      print("Start load ${url}");
       await cacheManager.getSingleFile(url, headers: headers);
-      print("Load complete ${url}");
     } catch (e) {
       print("Load failed $e");
     }

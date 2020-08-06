@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:gesture_zoom_box/gesture_zoom_box.dart';
+import 'package:glib/core/core.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -24,6 +25,7 @@ class PhotoController {
   void Function(int) onPage;
   _PhotoListState state;
   void Function(BoundType) onOverBound;
+  bool listen = true;
 
   static const Duration _duration = const Duration(milliseconds: 300);
 
@@ -34,14 +36,17 @@ class PhotoController {
   });
 
   onPageScroll() {
+    if (!listen) return;
     int idx = (_pageController.page + 0.5).toInt();
     if (index != idx) {
+      print("onPageScroll $index");
       index = idx;
       this.onPage?.call(index);
     }
   }
 
   onListScroll() {
+    if (!listen) return;
     int idx;
     Iterable<ItemPosition> positions = _positionsListener.itemPositions.value;
     for (ItemPosition pos in positions) {
@@ -97,11 +102,13 @@ class PhotoController {
   void jumpTo(index) {
     if (state != null && state.widget != null) {
       this.index = index;
+      listen = false;
       if (state.widget.isHorizontal) {
         pageController.jumpToPage(index);
       } else {
         scrollController.jumpTo(index: this.index, alignment: 0.1);
       }
+      listen = true;
     }
   }
 
