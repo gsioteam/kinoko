@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
+import 'package:glib/main/project.dart';
 import 'package:kinoko/utils/book_info.dart';
 import 'package:kinoko/utils/cached_picture_image.dart';
+import 'picture_viewer.dart';
 import 'utils/download_manager.dart';
 import 'localizations/localizations.dart';
 import 'package:flushbar/flushbar.dart';
@@ -166,7 +168,7 @@ class _DownloadPageState extends State<DownloadPage> {
 
   _DownloadPageState();
 
-  void clickBookCell(int index) {
+  void clickBookCell(int index) async {
     CellData cdata = data[index];
     switch (cdata.type) {
       case _CellType.Book: {
@@ -206,6 +208,17 @@ class _DownloadPageState extends State<DownloadPage> {
         break;
       }
       case _CellType.Chapter: {
+        DownloadQueueItem queueItem = cdata.data;
+        DataItem item = queueItem.item;
+        Project project = Project.allocate(item.projectKey).control();
+        Context ctx = project.createChapterContext(item).control();
+        await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+          return PictureViewer(
+            ctx,
+          );
+        }));
+        ctx.release();
+        project.release();
         break;
       }
     }

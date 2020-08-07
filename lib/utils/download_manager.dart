@@ -31,15 +31,24 @@ class DownloadPictureItem {
   PictureCacheManager cacheManager;
   String url;
   Map<String, String> headers;
+  bool canceled = false;
 
   DownloadPictureItem(this.url, this.cacheManager, {this.headers});
 
-  Future<void> fetchImage() async {
-    try {
-      await cacheManager.getSingleFile(url, headers: headers);
-    } catch (e) {
-      print("Load failed $e");
-    }
+  void fetchImage(void Function() callback) {
+    cacheManager.getSingleFile(url, headers: headers).then((value) {
+      if (!canceled) {
+        callback();
+      }
+    }).catchError(() {
+      if (!canceled) {
+        callback();
+      }
+    });
+  }
+
+  void cancel() {
+    canceled = true;
   }
 }
 
@@ -181,6 +190,8 @@ class DownloadQueueItem {
     }
   }
 
+  DownloadPictureItem currentImage;
+
   void checkImageQueue() async {
     if (!_downloading) return;
     if (_picture_downloading) return;
@@ -189,17 +200,20 @@ class DownloadQueueItem {
       return;
     }
 
-    DownloadPictureItem image = queue.removeFirst();
+    currentImage = queue.removeFirst();
     _picture_downloading = true;
-    await image.fetchImage();
-    _picture_downloading = false;
-    _loaded2++;
-    onProgress?.call();
-    checkImageQueue();
+    currentImage.fetchImage(() {
+      currentImage = null;
+      _picture_downloading = false;
+
+      _loaded2++;
+      onProgress?.call();
+      checkImageQueue();
+    });
   }
 
   Future<void> waitForImageQueue() async {
-    if (!downloading && queue.length == 0) return;
+    if (!_picture_downloading && queue.length == 0) return;
     Completer<void> completer = Completer();
     onImageQueueClear = () {
       onImageQueueClear = null;
@@ -208,7 +222,7 @@ class DownloadQueueItem {
     return completer.future;
   }
 
-  void addToQueue(url, {Map<String, String> headers}) {
+  void addToQueue(url, {Map<String, String> headers, bool force = false}) {
     if (!urls.contains(url)) {
       urls.add(url);
       _total2 = urls.length;
@@ -216,6 +230,12 @@ class DownloadQueueItem {
       DownloadPictureItem image = DownloadPictureItem(url, cacheManager, headers: headers);
       queue.add(image);
       checkImageQueue();
+    } else if (force) {
+      DownloadPictureItem image = DownloadPictureItem(url, cacheManager, headers: headers);
+      queue.add(image);
+      checkImageQueue();
+    } else {
+      print("not add ${url}");
     }
   }
 
@@ -258,8 +278,12 @@ class DownloadQueueItem {
         data.save();
         onState?.call();
       } else {
+        _loaded = max(_loaded, _loaded2);
         _loaded2 = 0;
-        urls.forEach((url) {
+        List<String> tmp = List<String>.from(urls);
+        urls.clear();
+        queue.clear();
+        tmp.forEach((url) {
           addToQueue(url);
         });
       }
@@ -299,6 +323,11 @@ class DownloadQueueItem {
     if (context != null) {
       context.release();
       context = null;
+    }
+    if (currentImage != null) {
+      currentImage.cancel();
+      currentImage = null;
+      _picture_downloading = false;
     }
     _downloading = false;
   }

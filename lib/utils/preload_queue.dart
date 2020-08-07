@@ -14,10 +14,7 @@ class PreloadQueue {
     if (queue.length > 0) {
       DownloadPictureItem cache = queue.removeFirst();
       loading = true;
-      cache.fetchImage().then((value) {
-        loading = false;
-        _checkStart();
-      }).catchError((err) {
+      cache.fetchImage(() {
         loading = false;
         _checkStart();
       });

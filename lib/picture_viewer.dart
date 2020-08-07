@@ -343,6 +343,7 @@ class _PictureViewerState extends State<PictureViewer> {
                           child: FlatButton(
                             onPressed: () {
                               widget.onDownload(widget.context.info_data);
+                              Navigator.of(context).pop();
                             },
                             child: Row(
                               children: <Widget>[
