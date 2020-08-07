@@ -40,7 +40,6 @@ class PhotoController {
     if (!listen) return;
     int idx = (_pageController.page + 0.5).toInt();
     if (index != idx) {
-      print("onPageScroll $index");
       index = idx;
       this.onPage?.call(index);
     }
@@ -100,7 +99,7 @@ class PhotoController {
     }
   }
 
-  void jumpTo(index) {
+  void jumpTo(int index) {
     if (state != null && state.widget != null) {
       this.index = index;
       listen = false;
@@ -108,6 +107,19 @@ class PhotoController {
         pageController.jumpToPage(index);
       } else {
         scrollController.jumpTo(index: this.index, alignment: 0.1);
+      }
+      listen = true;
+    }
+  }
+
+  void animateTo(int index) {
+    if (state != null && state.widget != null) {
+      this.index = index;
+      listen = false;
+      if (state.widget.isHorizontal) {
+        pageController.animateToPage(index, duration: Duration(milliseconds: 400), curve: Curves.easeInOutCubic);
+      } else {
+        scrollController.scrollTo(index: this.index, alignment: 0.1, duration: Duration(milliseconds: 400), curve: Curves.easeInOutCubic);
       }
       listen = true;
     }
@@ -164,6 +176,7 @@ class PhotoList extends StatefulWidget {
   void Function(int index) onPageChanged;
   BaseCacheManager cacheManager;
   PhotoController controller;
+  double appBarHeight;
 
   PhotoList({
     this.isHorizontal = true,
@@ -172,6 +185,7 @@ class PhotoList extends StatefulWidget {
     this.cacheManager,
     this.controller,
     this.itemCount,
+    this.appBarHeight = 0,
   }) {
     if (controller == null) {
       controller = PhotoController();
@@ -265,6 +279,22 @@ class _PhotoListState extends State<PhotoList> {
       right: widget.isHorizontal,
       up: !widget.isHorizontal,
       down: !widget.isHorizontal,
+      iconInsets: EdgeInsets.only(top: widget.appBarHeight),
+      onOverDrag: (OverDragType type) {
+        switch (type) {
+          case OverDragType.Up:
+          case OverDragType.Left: {
+            widget.controller?.onOverBound?.call(BoundType.Start);
+            break;
+          }
+          case OverDragType.Down:
+          case OverDragType.Right: {
+            widget.controller?.onOverBound?.call(BoundType.End);
+            break;
+          }
+          default: break;
+        }
+      },
     );
   }
 

@@ -66,8 +66,17 @@ class TransformWidgetState extends State<TransformWidget> with SingleTickerProvi
   @override
   void dispose() {
     super.dispose();
+    controller.stop();
     controller.dispose();
   }
+}
+
+enum OverDragType {
+  None,
+  Up,
+  Down,
+  Left,
+  Right
 }
 
 class OverDrag extends StatefulWidget {
@@ -77,6 +86,7 @@ class OverDrag extends StatefulWidget {
   bool up;
   bool down;
   EdgeInsets iconInsets;
+  void Function(OverDragType) onOverDrag;
 
   OverDrag({
     @required this.child,
@@ -84,19 +94,12 @@ class OverDrag extends StatefulWidget {
     this.right = false,
     this.up = false,
     this.down = false,
-    this.iconInsets = EdgeInsets.zero
+    this.iconInsets = EdgeInsets.zero,
+    this.onOverDrag
   });
 
   @override
   State<StatefulWidget> createState() => _OverDragState();
-}
-
-enum _OverDragType {
-  None,
-  Up,
-  Down,
-  Left,
-  Right
 }
 
 class _OverDragState extends State<OverDrag> {
@@ -107,96 +110,120 @@ class _OverDragState extends State<OverDrag> {
   GlobalKey<TransformWidgetState> _downKey = GlobalKey();
   GlobalKey<TransformWidgetState> _leftKey = GlobalKey();
   GlobalKey<TransformWidgetState> _rightKey = GlobalKey();
-  _OverDragType type = _OverDragType.None;
+  OverDragType type = OverDragType.None;
   double _offset = 0;
+  bool _isTouching = false;
 
   void touchEnd() {
-    switch (type) {
-      case _OverDragType.Left: {
-        _leftKey.currentState?.receive();
-        break;
-      }
-      case _OverDragType.Right: {
-        _rightKey.currentState?.receive();
-        break;
-      }
-      case _OverDragType.Up: {
-        _upKey.currentState?.receive();
-        break;
-      }
-      case _OverDragType.Down: {
-        _downKey.currentState?.receive();
-        break;
-      }
-      default: break;
-    }
-
-    _offset = 0;
-    type = _OverDragType.None;
-  }
-
-  bool _onNotification(ScrollNotification scrollNotification) {
-    if (type == _OverDragType.None) {
-      if (scrollNotification is OverscrollNotification) {
-        if (scrollNotification.metrics.axis == Axis.horizontal) {
-          if (scrollNotification.overscroll > 0) {
-            type = _OverDragType.Right;
-          } else if (scrollNotification.overscroll < 0) {
-            type = _OverDragType.Left;
-          }
-        } else {
-          if (scrollNotification.overscroll > 0) {
-            type = _OverDragType.Down;
-          } else if (scrollNotification.overscroll < 0) {
-            type = _OverDragType.Up;
-          }
-        }
-        print("o ${scrollNotification.overscroll} ${type}");
-      }
-    } else {
-      double delta = 0;
-      if (scrollNotification is OverscrollNotification) {
-        delta = scrollNotification.overscroll;
-      } else if (scrollNotification is ScrollUpdateNotification) {
-        if (scrollNotification.dragDetails == null) {
-          touchEnd();
-          return false;
-        } else {
-          delta = scrollNotification.scrollDelta;
-        }
-      } else if (scrollNotification is ScrollEndNotification) {
-        touchEnd();
-        return false;
-      } else {
-        return false;
-      }
+    if (_isTouching) {
+      _isTouching = false;
       EdgeInsets padding = MediaQuery.of(context).padding;
       switch (type) {
-        case _OverDragType.Left: {
+        case OverDragType.Left: {
           double size = padding.left + translateSize + widget.iconInsets.left;
-          _offset = math.max(0, math.min(_offset - delta, size));
-          _leftKey.currentState?.translatePosition(_offset / size);
+          if (size - _offset <= 1)
+            widget.onOverDrag?.call(type);
+          _leftKey.currentState?.receive();
           break;
         }
-        case _OverDragType.Right: {
+        case OverDragType.Right: {
           double size = padding.right + translateSize + widget.iconInsets.right;
-          _offset = math.max(0, math.min(_offset + delta, size));
-          _rightKey.currentState?.translatePosition(_offset / size);
+          if (size - _offset <= 1)
+            widget.onOverDrag?.call(type);
+          _rightKey.currentState?.receive();
           break;
         }
-        case _OverDragType.Up: {
+        case OverDragType.Up: {
           double size = padding.top + translateSize + widget.iconInsets.top;
-          _offset = math.max(0, math.min(_offset - delta, size));
-          _upKey.currentState?.translatePosition(_offset / size);
+          if (size - _offset <= 1)
+            widget.onOverDrag?.call(type);
+          _upKey.currentState?.receive();
           break;
         }
-        case _OverDragType.Down: {
+        case OverDragType.Down: {
           double size = padding.bottom + translateSize + widget.iconInsets.bottom;
-          _offset = math.max(0, math.min(_offset - delta, size));
-          _downKey.currentState?.translatePosition(_offset / size);
+          if (size - _offset <= 1)
+            widget.onOverDrag?.call(type);
+          _downKey.currentState?.receive();
           break;
         }
         default: break;
+      }
+
+      _offset = 0;
+      type = OverDragType.None;
+    }
+  }
+
+  bool _onNotification(ScrollNotification scrollNotification) {
+    if (_isTouching) {
+
+      if (type == OverDragType.None) {
+        if (scrollNotification is OverscrollNotification) {
+          if (scrollNotification.metrics.axis == Axis.horizontal) {
+            if (scrollNotification.overscroll > 0) {
+              type = OverDragType.Right;
+            } else if (scrollNotification.overscroll < 0) {
+              type = OverDragType.Left;
+            }
+          } else {
+            if (scrollNotification.overscroll > 0) {
+              type = OverDragType.Down;
+            } else if (scrollNotification.overscroll < 0) {
+              type = OverDragType.Up;
+            }
+          }
+          print("o ${scrollNotification.overscroll} ${type}");
+        }
+      } else {
+        double delta = 0;
+        if (scrollNotification is OverscrollNotification) {
+          delta = scrollNotification.overscroll;
+        } else if (scrollNotification is ScrollUpdateNotification) {
+          if (scrollNotification.dragDetails == null) {
+            touchEnd();
+            return false;
+          } else {
+            delta = scrollNotification.scrollDelta;
+          }
+        } else if (scrollNotification is ScrollEndNotification) {
+          touchEnd();
+          return false;
+        } else {
+          return false;
+        }
+        EdgeInsets padding = MediaQuery.of(context).padding;
+        switch (type) {
+          case OverDragType.Left: {
+            double size = padding.left + translateSize + widget.iconInsets.left;
+            _offset = math.max(0, math.min(_offset - delta, size));
+            _leftKey.currentState?.translatePosition(_offset / size);
+            break;
+          }
+          case OverDragType.Right: {
+            double size = padding.right + translateSize + widget.iconInsets.right;
+            _offset = math.max(0, math.min(_offset + delta, size));
+            _rightKey.currentState?.translatePosition(_offset / size);
+            break;
+          }
+          case OverDragType.Up: {
+            double size = padding.top + translateSize + widget.iconInsets.top;
+            _offset = math.max(0, math.min(_offset - delta, size));
+            _upKey.currentState?.translatePosition(_offset / size);
+            break;
+          }
+          case OverDragType.Down: {
+            double size = padding.bottom + translateSize + widget.iconInsets.bottom;
+            _offset = math.max(0, math.min(_offset + delta, size));
+            _downKey.currentState?.translatePosition(_offset / size);
+            break;
+          }
+          default: break;
+        }
+      }
+    } else {
+      if (scrollNotification is ScrollStartNotification && scrollNotification.dragDetails != null) {
+        _isTouching = true;
       }
     }
     return false;
@@ -257,7 +284,7 @@ class _OverDragState extends State<OverDrag> {
         alignment: Alignment.centerLeft,
         icon: Icon(Icons.chevron_left),
         offset: Offset(-translateSize, 0),
-        targetOffset: Offset(padding.left + translateSize, 0),
+        targetOffset: Offset(padding.left + translateSize + widget.iconInsets.left, 0),
       ));
     }
     if (widget.right) {
@@ -266,7 +293,7 @@ class _OverDragState extends State<OverDrag> {
         alignment: Alignment.centerRight,
         icon: Icon(Icons.chevron_right),
         offset: Offset(translateSize, 0),
-        targetOffset: Offset(-(padding.right + translateSize), 0),
+        targetOffset: Offset(-(padding.right + translateSize + widget.iconInsets.right), 0),
       ));
     }
     if (widget.up) {
@@ -275,7 +302,7 @@ class _OverDragState extends State<OverDrag> {
         alignment: Alignment.topCenter,
         icon: Icon(Icons.keyboard_arrow_up),
         offset: Offset(0, -translateSize),
-        targetOffset: Offset(0, padding.top + translateSize)
+        targetOffset: Offset(0, padding.top + translateSize + widget.iconInsets.top)
       ));
     }
     if (widget.down) {
@@ -284,7 +311,7 @@ class _OverDragState extends State<OverDrag> {
         alignment: Alignment.bottomCenter,
         icon: Icon(Icons.keyboard_arrow_down),
         offset: Offset(0, translateSize),
-        targetOffset: Offset(0, -(padding.bottom + translateSize))
+        targetOffset: Offset(0, -(padding.bottom + translateSize + widget.iconInsets.bottom))
       ));
     }
 

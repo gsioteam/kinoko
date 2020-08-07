@@ -40,6 +40,7 @@ dependencies:
   gesture_zoom_box: ^0.0.2
   cached_network_image: ^2.2.0+1
   scrollable_positioned_list: ^0.1.7
+  flutter_picker: ^1.1.5
 
 dev_dependencies:
   flutter_test:

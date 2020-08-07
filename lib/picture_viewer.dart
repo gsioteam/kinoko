@@ -26,6 +26,8 @@ import 'package:gesture_zoom_box/gesture_zoom_box.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'localizations/localizations.dart';
 import 'widgets/photo_list.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_picker/flutter_picker.dart';
 
 enum PictureFlipType {
   Next,
@@ -104,40 +106,10 @@ class _PictureViewerState extends State<PictureViewer> {
       switch (code) {
         case 1: {
           pageNext();
-//          if (!loading) {
-//            if (index < data.length - 1) {
-//            } else {
-//              Context context;
-//              if (widget.onChapterChanged != null && (context = widget.onChapterChanged(PictureFlipType.Next)) != null) {
-//                untouch();
-//                widget.context = context;
-//                touch();
-//                photoController.jumpTo(0);
-//                setState(() { });
-//              } else {
-//                pageNext();
-//              }
-//            }
-//          } else {
-//            pageNext();
-//          }
           break;
         }
         case 2: {
           pagePrev();
-//          if (index > 0) {
-//          } else {
-//            Context context;
-//            if (widget.onChapterChanged != null && (context = widget.onChapterChanged(PictureFlipType.Prev)) != null) {
-//              untouch();
-//              widget.context = context;
-//              touch();
-//              pageController.jumpTo(math.max(data.length.toDouble() - 1, 0));
-//              setState(() { });
-//            } else {
-//              pagePrev();
-//            }
-//          }
           break;
         }
       }
@@ -181,13 +153,39 @@ class _PictureViewerState extends State<PictureViewer> {
       isHorizontal: isHorizontal,
       controller: photoController,
       cacheManager: cacheManager,
+      appBarHeight: appBarDisplay ? 44 : 0,
     );
+  }
+
+  void showPagePicker() {
+    if (!appBarDisplay) {
+      setState(() {
+        appBarDisplay = true;
+      });
+      return;
+    }
+    List<PickerItem<int>> items = [];
+    for (int i = 0, t= data.length; i < t; ++i) {
+      items.add(PickerItem<int>(
+        text: Text(kt("n_page").replaceAll("{0}", (i + 1).toString())),
+        value: i,
+      ));
+    }
+    print("Item length ${items.length}");
+    new Picker(
+      adapter: PickerDataAdapter<int>(
+        data: items
+      ),
+      selecteds: [index],
+      onConfirm: (picker, values) {
+        photoController.animateTo(values[0]);
+      }
+    ).showModal(context);
   }
 
   @override
   Widget build(BuildContext context) {
     MediaQueryData media = MediaQuery.of(context);
-
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -343,18 +341,18 @@ class _PictureViewerState extends State<PictureViewer> {
                         list.add(PopupMenuDivider());
                         list.add(PopupMenuItem(
                           child: FlatButton(
-                              onPressed: () {
-                                widget.onDownload(widget.context.info_data);
-                              },
-                              child: Row(
-                                children: <Widget>[
-                                  Icon(Icons.file_download),
-                                  Container(
-                                    padding: EdgeInsets.only(left: 20),
-                                    child: Text(kt("download")),
-                                  ),
-                                ],
-                              )
+                            onPressed: () {
+                              widget.onDownload(widget.context.info_data);
+                            },
+                            child: Row(
+                              children: <Widget>[
+                                Icon(Icons.file_download),
+                                Container(
+                                  padding: EdgeInsets.only(left: 20),
+                                  child: Text(kt("download")),
+                                ),
+                              ],
+                            )
                           ),
                         ));
                       }
@@ -373,37 +371,44 @@ class _PictureViewerState extends State<PictureViewer> {
 
           Positioned(
             child: AnimatedOpacity(
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: data.length > 0 ? "${index + 1}/${data.length}" : "",
-                      style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
-                    ),
-                    WidgetSpan(child: Container(padding: EdgeInsets.only(left: 5),)),
-                    WidgetSpan(
-                      child: AnimatedOpacity(
-                        opacity: loading ? 1 : 0,
-                        duration: Duration(milliseconds: 300),
-                        child: SpinKitFoldingCube(
-                          size: 12,
-                          color: Colors.white,
+              child: FlatButton(
+                onPressed: showPagePicker,
+                child: Text.rich(
+                  TextSpan(
+                      children: [
+                        WidgetSpan(
+                          child: Padding(padding: EdgeInsets.only(right: 6), child: Icon(Icons.toc, color: Colors.white,size: 16,),),
+                          alignment: PlaceholderAlignment.middle
                         ),
-                      ),
-                      alignment: PlaceholderAlignment.middle
-                    )
-                  ]
+                        TextSpan(
+                          text: data.length > 0 ? "${index + 1}/${data.length}" : "",
+                          style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
+                        ),
+                        WidgetSpan(child: Container(padding: EdgeInsets.only(left: 5),)),
+                        WidgetSpan(
+                            child: AnimatedOpacity(
+                              opacity: loading ? 1 : 0,
+                              duration: Duration(milliseconds: 300),
+                              child: SpinKitFoldingCube(
+                                size: 12,
+                                color: Colors.white,
+                              ),
+                            ),
+                            alignment: PlaceholderAlignment.middle
+                        )
+                      ]
+                  ),
+                  style: TextStyle(
+                      shadows: [
+                        Shadow(
+                            color: Colors.black26,
+                            blurRadius: 2,
+                            offset: Offset(1, 1)
+                        )
+                      ]
+                  ),
                 ),
-                style: TextStyle(
-                  shadows: [
-                    Shadow(
-                      color: Colors.black26,
-                      blurRadius: 2,
-                      offset: Offset(1, 1)
-                    )
-                  ]
-                ),
-              ) ,
+              ),
               opacity: appBarDisplay ? 1 : 0,
               duration: Duration(milliseconds: 300)
             ),
@@ -477,6 +482,8 @@ class _PictureViewerState extends State<PictureViewer> {
     }
   }
 
+  bool _toastCoolDown = true;
+
   void onOverBound(BoundType type) {
     if (type == BoundType.Start) {
       Context context;
@@ -487,12 +494,15 @@ class _PictureViewerState extends State<PictureViewer> {
         setState(() {
           photoController.jumpTo(math.max(data.length - 1, 0));
           index = photoController.index;
-          print("index $index/${data.length}");
           if (!appBarDisplay) {
             appBarDisplay = true;
             willDismissAppBar();
           }
         });
+      } else if (_toastCoolDown) {
+        _toastCoolDown = false;
+        Fluttertoast.showToast(msg: kt("no_prev_chapter"), toastLength: Toast.LENGTH_SHORT);
+        Future.delayed(Duration(seconds: 3)).then((value) => _toastCoolDown = true);
       }
     } else if (!loading) {
       Context context;
@@ -503,12 +513,15 @@ class _PictureViewerState extends State<PictureViewer> {
         setState(() {
           photoController.jumpTo(0);
           index = photoController.index;
-          print("index $index/${data.length}");
           if (!appBarDisplay) {
             appBarDisplay = true;
             willDismissAppBar();
           }
         });
+      } else if (_toastCoolDown) {
+        _toastCoolDown = false;
+        Fluttertoast.showToast(msg: kt("no_next_chapter"), toastLength: Toast.LENGTH_SHORT);
+        Future.delayed(Duration(seconds: 3)).then((value) => _toastCoolDown = true);
       }
     }
   }

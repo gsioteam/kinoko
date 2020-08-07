@@ -27,5 +27,8 @@ const Map words = {
   "vertical_flip": "垂直翻頁",
   "portrait": "竪屏",
   "landscape": "橫屏",
-  "download": "下载"
+  "download": "下载",
+  "no_prev_chapter": "沒有上一章",
+  "no_next_chapter": "沒有下一章",
+  "n_page": "{0} 頁"
 };
