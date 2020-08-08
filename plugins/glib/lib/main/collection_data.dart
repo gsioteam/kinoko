@@ -17,4 +17,5 @@ class CollectionData extends Base {
   set flag(int v) => call("setFlag", argv: [v]);
 
   String get data => call("getData");
+  void setJSONData(dynamic data) => call("setJSONData", argv: [data]);
 }

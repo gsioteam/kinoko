@@ -12,13 +12,14 @@ import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
-import 'package:kinoko/configs.dart';
-import 'package:kinoko/localizations/localizations.dart';
-import 'package:kinoko/utils/download_manager.dart';
+import 'configs.dart';
+import 'localizations/localizations.dart';
+import 'utils/download_manager.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:glib/main/error.dart' as glib;
 import 'picture_viewer.dart';
 import 'utils/book_info.dart';
+import 'utils/favorites_manager.dart';
 
 class BarItem extends StatefulWidget {
 
@@ -461,7 +462,7 @@ class _BookPageState extends State<BookPage> {
               actions: <Widget>[
                 IconButton(
                   icon: Icon(Icons.favorite),
-                  color: data.isInCollection(collection_mark) ? Colors.red : Colors.white,
+                  color: FavoritesManager().isFavorite(data) ? Colors.red : Colors.white,
                   onPressed: favoriteClicked
                 ),
               ],
@@ -487,10 +488,10 @@ class _BookPageState extends State<BookPage> {
   void favoriteClicked() {
     setState(() {
       DataItem data = widget.context.info_data;
-      if (data.isInCollection(collection_mark)) {
-        data.removeFromCollection(collection_mark);
+      if (FavoritesManager().isFavorite(data)) {
+        FavoritesManager().remove(data);
       } else {
-        data.saveToCollection(collection_mark);
+        FavoritesManager().add(data);
       }
     });
   }

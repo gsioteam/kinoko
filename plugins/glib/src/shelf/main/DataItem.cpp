@@ -139,7 +139,6 @@ Ref<CollectionData> DataItem::saveToCollection(const std::string &type, const gc
         if (data) {
             nlohmann::json json = JSON::serialize(data);
             col->setData(json.dump());
-            LOG(i, "save data %s", col->getData().c_str());
         }
         col->save();
     }

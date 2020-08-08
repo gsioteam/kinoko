@@ -376,37 +376,37 @@ class _PictureViewerState extends State<PictureViewer> {
                 onPressed: showPagePicker,
                 child: Text.rich(
                   TextSpan(
-                      children: [
-                        WidgetSpan(
-                          child: Padding(padding: EdgeInsets.only(right: 6), child: Icon(Icons.toc, color: Colors.white,size: 16,),),
-                          alignment: PlaceholderAlignment.middle
+                    children: [
+                      WidgetSpan(
+                        child: Padding(padding: EdgeInsets.only(right: 6), child: Icon(Icons.toc, color: Colors.white,size: 16,),),
+                        alignment: PlaceholderAlignment.middle
+                      ),
+                      TextSpan(
+                        text: data.length > 0 ? "${index + 1}/${data.length}" : "",
+                        style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
+                      ),
+                      WidgetSpan(child: Container(padding: EdgeInsets.only(left: 5),)),
+                      WidgetSpan(
+                        child: AnimatedOpacity(
+                          opacity: loading ? 1 : 0,
+                          duration: Duration(milliseconds: 300),
+                          child: SpinKitFoldingCube(
+                            size: 12,
+                            color: Colors.white,
+                          ),
                         ),
-                        TextSpan(
-                          text: data.length > 0 ? "${index + 1}/${data.length}" : "",
-                          style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
-                        ),
-                        WidgetSpan(child: Container(padding: EdgeInsets.only(left: 5),)),
-                        WidgetSpan(
-                            child: AnimatedOpacity(
-                              opacity: loading ? 1 : 0,
-                              duration: Duration(milliseconds: 300),
-                              child: SpinKitFoldingCube(
-                                size: 12,
-                                color: Colors.white,
-                              ),
-                            ),
-                            alignment: PlaceholderAlignment.middle
-                        )
-                      ]
+                        alignment: PlaceholderAlignment.middle
+                      )
+                    ]
                   ),
                   style: TextStyle(
-                      shadows: [
-                        Shadow(
-                            color: Colors.black26,
-                            blurRadius: 2,
-                            offset: Offset(1, 1)
-                        )
-                      ]
+                    shadows: [
+                      Shadow(
+                          color: Colors.black26,
+                          blurRadius: 2,
+                          offset: Offset(1, 1)
+                      )
+                    ]
                   ),
                 ),
               ),

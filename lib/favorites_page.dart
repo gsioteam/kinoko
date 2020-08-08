@@ -1,5 +1,6 @@
 
 
+import 'package:cache_image/cache_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glib/core/array.dart';
@@ -13,6 +14,62 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'localizations/localizations.dart';
 import 'book_page.dart';
 import 'picture_viewer.dart';
+import 'utils/favorites_manager.dart';
+
+class FavoriteItem extends StatefulWidget {
+  void Function() onTap;
+  FavCheckItem item;
+
+  FavoriteItem({
+    Key key,
+    this.onTap,
+    this.item
+  }) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _FavoriteItemState();
+}
+
+class _FavoriteItemState extends State<FavoriteItem> {
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(widget.item.item.title),
+      subtitle: Text(widget.item.item.subtitle),
+      leading: Image(
+        image: CacheImage(widget.item.item.picture),
+        fit: BoxFit.cover,
+        width: 56,
+        height: 56,
+        gaplessPlayback: true,
+      ),
+      onTap: widget.onTap,
+    );
+  }
+
+  onStateChanged() {
+    setState(() {
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    widget.item.onStateChanged = onStateChanged;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    widget.item.onStateChanged = null;
+  }
+
+  @override
+  void didUpdateWidget(FavoriteItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    widget.item.onStateChanged = onStateChanged;
+  }
+}
 
 class FavoritesPage extends HomeWidget {
   @override
@@ -22,14 +79,14 @@ class FavoritesPage extends HomeWidget {
   State<StatefulWidget> createState() {
     return _FavoritesPageState();
   }
-
 }
 
 class _FavoritesPageState extends State<FavoritesPage> {
-  Array data;
+  List<FavCheckItem> items;
 
   itemClicked(int idx) async {
-    DataItem item = data[idx];
+    FavCheckItem checkItem = items[idx];
+    DataItem item = checkItem.item;
     Project project = Project.allocate(item.projectKey);
     if (!project.isValidated) {
       Fluttertoast.showToast(msg: kt("no_project_found"));
@@ -61,11 +118,14 @@ class _FavoritesPageState extends State<FavoritesPage> {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      itemCount: data.length,
+      itemCount: items.length,
       itemBuilder: (context, index) {
-        return makeBookItem(context, data[index], () {
-          itemClicked(index);
-        });
+        return FavoriteItem(
+          item: items[index],
+          onTap: () {
+            itemClicked(index);
+          },
+        );
       },
       separatorBuilder: (context, idx)=>Divider(),
     );
@@ -73,13 +133,12 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   @override
   void initState() {
-    data = DataItem.loadCollectionItems(collection_mark).control();
+    items = List<FavCheckItem>.from(FavoritesManager().items);
     super.initState();
   }
 
   @override
   void dispose() {
-    data.release();
     super.dispose();
   }
 }
