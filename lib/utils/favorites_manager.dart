@@ -62,8 +62,6 @@ class FavCheckItem {
         data.save();
       }
 
-      project.release();
-      context.release();
       completer.complete();
     }).release();
     context.reload();
@@ -133,25 +131,33 @@ class FavoritesManager {
         FavCheckItem checkItem = FavCheckItem(data.control(), item.control());
         items.add(checkItem);
         checkItem.checkNew(true);
+      } else {
       }
     } else {
       print("${item.title} already added!");
     }
   }
 
-  void remove(DataItem item) {
-    if (item.isInCollection(collection_mark)) {
-      item.removeFromCollection(collection_mark);
-      List needRemove = [];
-      for (int i = 0, t = items.length; i < t; ++i) {
-        FavCheckItem checkItem = items[i];
-        if (checkItem.item.link == item.link) {
-          needRemove.add(checkItem);
+  void remove(dynamic item) {
+    if (item is DataItem) {
+      if (item.isInCollection(collection_mark)) {
+        item.removeFromCollection(collection_mark);
+        List needRemove = [];
+        for (int i = 0, t = items.length; i < t; ++i) {
+          FavCheckItem checkItem = items[i];
+          if (checkItem.item.link == item.link) {
+            needRemove.add(checkItem);
+          }
         }
+        needRemove.forEach((element) {
+          items.remove(element);
+        });
       }
-      needRemove.forEach((element) {
-        items.remove(element);
-      });
+    } else if (item is FavCheckItem) {
+      if (items.contains(item)) {
+        item.item.removeFromCollection(collection_mark);
+        items.remove(item);
+      }
     }
   }
 
@@ -164,5 +170,16 @@ class FavoritesManager {
 
   bool isFavorite(DataItem item) {
     return item.isInCollection(collection_mark);
+  }
+
+  void clearNew(DataItem item) {
+    if (isFavorite(item)) {
+      for (int i = 0, t = items.length; i < t; ++i) {
+        FavCheckItem checkItem = items[i];
+        if (checkItem.item.link == item.link) {
+          checkItem.clearNew();
+        }
+      }
+    }
   }
 }

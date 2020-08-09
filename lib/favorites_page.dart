@@ -1,6 +1,7 @@
 
 
 import 'package:cache_image/cache_image.dart';
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glib/core/array.dart';
@@ -18,12 +19,14 @@ import 'utils/favorites_manager.dart';
 
 class FavoriteItem extends StatefulWidget {
   void Function() onTap;
+  void Function() onDismissed;
   FavCheckItem item;
 
   FavoriteItem({
     Key key,
     this.onTap,
-    this.item
+    this.item,
+    this.onDismissed
   }) : super(key: key);
 
   @override
@@ -33,23 +36,33 @@ class FavoriteItem extends StatefulWidget {
 class _FavoriteItemState extends State<FavoriteItem> {
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.item.item.title),
-      subtitle: Text(widget.item.item.subtitle),
-      leading: Image(
-        image: CacheImage(widget.item.item.picture),
-        fit: BoxFit.cover,
-        width: 56,
-        height: 56,
-        gaplessPlayback: true,
+    return Dismissible(
+      key: ValueKey(widget.item),
+      child: ListTile(
+        title: Text(widget.item.item.title),
+        subtitle: Text(widget.item.item.subtitle),
+        leading: Image(
+          image: CacheImage(widget.item.item.picture),
+          fit: BoxFit.cover,
+          width: 56,
+          height: 56,
+          gaplessPlayback: true,
+        ),
+        onTap: () {
+          setState(() {
+            widget.onTap();
+          });
+        },
+        trailing: widget.item.hasNew ? Icon(Icons.fiber_new, color: Colors.red,) : null,
       ),
-      onTap: widget.onTap,
+      onDismissed: (direction) {
+        widget.onDismissed?.call();
+      },
     );
   }
 
   onStateChanged() {
-    setState(() {
-    });
+    setState(() { });
   }
 
   @override
@@ -83,6 +96,8 @@ class FavoritesPage extends HomeWidget {
 
 class _FavoritesPageState extends State<FavoritesPage> {
   List<FavCheckItem> items;
+  List<Flushbar<bool>> flushbars = List();
+  GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
   itemClicked(int idx) async {
     FavCheckItem checkItem = items[idx];
@@ -111,23 +126,83 @@ class _FavoritesPageState extends State<FavoritesPage> {
         return PictureViewer(ctx);
       }
     }));
+    setState(() {});
     ctx.release();
     project.release();
   }
 
+  void onRemoveItem(FavCheckItem item) async {
+    int index = items.indexOf(item);
+    if (index >= 0) {
+      items.removeAt(index);
+      _listKey.currentState.removeItem(index, (context, animation) {
+        return Container();
+      }, duration: Duration(milliseconds: 0));
+
+      Flushbar<bool> flushbar;
+      flushbar = Flushbar<bool>(
+        backgroundColor: Colors.redAccent,
+        title: kt("confirm"),
+        message: kt("delete_item_2").replaceAll("{0}", item.item.title),
+        mainButton: FlatButton(
+          child: Text(kt("undo"), style: Theme.of(context).textTheme.bodyText2.copyWith(color: Colors.white, fontWeight: FontWeight.bold),),
+          onPressed: () {
+            flushbar.dismiss(true);
+          },
+        ),
+        duration: Duration(seconds: 5),
+        animationDuration: Duration(milliseconds: 300),
+      );
+
+      flushbars.add(flushbar);
+
+      bool result = await flushbar.show(context);
+      print("dismiss ${item.item.title}");
+      if (result == true) {
+        reverseItem(item, index);
+      } else {
+        removeItem(item);
+      }
+
+      flushbars.remove(flushbar);
+    }
+  }
+
+  void reverseItem(FavCheckItem item, int index) {
+    if (index < items.length) {
+      items.insert(index, item);
+    } else {
+      index = items.length;
+      items.add(item);
+    }
+    print("reverse ${item.item.title}");
+    _listKey.currentState.insertItem(index, duration: Duration(milliseconds: 300));
+  }
+
+  void removeItem(FavCheckItem item) {
+    print("remove ${item.item.title}");
+    FavoritesManager().remove(item);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        return FavoriteItem(
-          item: items[index],
-          onTap: () {
-            itemClicked(index);
-          },
+    return AnimatedList(
+      key: _listKey,
+      initialItemCount: items.length,
+      itemBuilder: (context, index, animation) {
+        return SizeTransition(
+          sizeFactor: animation,
+          child: FavoriteItem(
+            item: items[index],
+            onTap: () {
+              itemClicked(index);
+            },
+            onDismissed: () {
+              onRemoveItem(items[index]);
+            },
+          ),
         );
       },
-      separatorBuilder: (context, idx)=>Divider(),
     );
   }
 
@@ -139,6 +214,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   @override
   void dispose() {
+    print(flushbars.length);
+    flushbars.forEach((element) {
+      element.dismiss(false);
+    });
+    flushbars.clear();
     super.dispose();
   }
 }

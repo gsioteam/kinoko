@@ -530,6 +530,7 @@ class _BookPageState extends State<BookPage> {
     widget.context.on_error = Callback.fromFunction(onError).release();
     refreshController.onRefresh = onPullDownRefresh;
     widget.context.enterView();
+    FavoritesManager().clearNew(widget.context.info_data);
     chapters = widget.context.data.control();
     String order = KeyValue.get(key(ORDER_TYPE));
     if (order != null && !order.isEmpty) {

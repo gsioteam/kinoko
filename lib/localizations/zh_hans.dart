@@ -30,5 +30,6 @@ const Map words = {
   "download": "下载",
   "no_prev_chapter": "沒有上一章",
   "no_next_chapter": "沒有下一章",
-  "n_page": "{0} 頁"
+  "n_page": "{0} 頁",
+  "delete_item_2": "删除 {0}"
 };
