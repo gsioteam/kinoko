@@ -17,14 +17,22 @@ import 'picture_viewer.dart';
 import 'utils/favorites_manager.dart';
 import 'widgets/better_snack_bar.dart';
 
+class _FavKey extends GlobalObjectKey {
+  _FavKey(value) : super(value);
+}
+
 class FavoriteItem extends StatefulWidget {
   void Function() onTap;
   FavCheckItem item;
+  Animation<double> animation;
+  void Function() onDismiss;
 
   FavoriteItem({
     Key key,
     this.onTap,
-    this.item
+    this.item,
+    this.animation,
+    this.onDismiss
   }) : super(key: key);
 
   @override
@@ -32,24 +40,37 @@ class FavoriteItem extends StatefulWidget {
 }
 
 class _FavoriteItemState extends State<FavoriteItem> {
+  String title;
+  String subtitle;
+  String picture;
+
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.item.item.title),
-      subtitle: Text(widget.item.item.subtitle),
-      leading: Image(
-        image: CacheImage(widget.item.item.picture),
-        fit: BoxFit.cover,
-        width: 56,
-        height: 56,
-        gaplessPlayback: true,
+    return SizeTransition(
+      sizeFactor: widget.animation,
+      child: Dismissible(
+        key: ObjectKey(widget.item),
+        child: ListTile(
+          title: Text(title),
+          subtitle: Text(subtitle),
+          leading: Image(
+            image: CacheImage(picture),
+            fit: BoxFit.cover,
+            width: 56,
+            height: 56,
+            gaplessPlayback: true,
+          ),
+          onTap: () {
+            setState(() {
+              widget.onTap();
+            });
+          },
+          trailing: widget.item.hasNew ? Icon(Icons.fiber_new, color: Colors.red,) : null,
+        ),
+        onDismissed: (direction) {
+          widget.onDismiss?.call();
+        },
       ),
-      onTap: () {
-        setState(() {
-          widget.onTap();
-        });
-      },
-      trailing: widget.item.hasNew ? Icon(Icons.fiber_new, color: Colors.red,) : null,
     );
   }
 
@@ -61,6 +82,9 @@ class _FavoriteItemState extends State<FavoriteItem> {
   void initState() {
     super.initState();
     widget.item.onStateChanged = onStateChanged;
+    title = widget.item.item.title;
+    subtitle = widget.item.item.subtitle;
+    picture = widget.item.item.picture;
   }
 
   @override
@@ -124,10 +148,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
   }
 
   void onRemoveItem(FavCheckItem item) async {
-    print("Remove!");
     int index = items.indexOf(item);
     if (index >= 0) {
-      items.removeAt(index);
+      setState(() {
+        items.removeAt(index);
+      });
       _listKey.currentState.removeItem(index, (context, animation) {
         return Container();
       }, duration: Duration(milliseconds: 0));
@@ -161,18 +186,18 @@ class _FavoritesPageState extends State<FavoritesPage> {
   }
 
   void reverseItem(FavCheckItem item, int index) {
-    if (index < items.length) {
-      items.insert(index, item);
-    } else {
-      index = items.length;
-      items.add(item);
-    }
-    print("reverse ${item.item.title}");
+    setState(() {
+      if (index < items.length) {
+        items.insert(index, item);
+      } else {
+        index = items.length;
+        items.add(item);
+      }
+    });
     _listKey.currentState.insertItem(index, duration: Duration(milliseconds: 300));
   }
 
   void removeItem(FavCheckItem item) {
-    print("remove ${item.item.title}");
     FavoritesManager().remove(item);
   }
 
@@ -183,20 +208,16 @@ class _FavoritesPageState extends State<FavoritesPage> {
       initialItemCount: items.length,
       itemBuilder: (context, index, animation) {
         FavCheckItem item = items[index];
-        return SizeTransition(
-          sizeFactor: animation,
-          child: Dismissible(
-            key: ObjectKey(item),
-            child: FavoriteItem(
-              item: item,
-              onTap: () {
-                itemClicked(index);
-              },
-            ),
-            onDismissed: (direction) {
-              onRemoveItem(item);
-            },
-          ),
+        return FavoriteItem(
+          key: _FavKey(item),
+          animation: animation,
+          item: item,
+          onTap: () {
+            itemClicked(index);
+          },
+          onDismiss: () {
+            onRemoveItem(item);
+          },
         );
       },
     );
@@ -210,7 +231,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   @override
   void dispose() {
-    print(snackBars.length);
     snackBars.forEach((element) {
       element.dismiss(false);
     });

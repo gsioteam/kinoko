@@ -44,6 +44,7 @@ class DownloadPictureItem {
       if (!canceled) {
         callback();
       }
+      return SynchronousFuture<Null>(null);
     });
   }
 

@@ -9,15 +9,12 @@ GlobalKey<_BetterSnackBarListState> _listKey = GlobalKey();
 Completer<_BetterSnackBarList> _listCompleter;
 
 class _BetterSnackBarItem extends StatefulWidget {
-  String title;
-  String subtitle;
-  Widget trailing;
+  BetterSnackBar data;
 
   _BetterSnackBarItem({
-    this.title,
-    this.subtitle,
-    this.trailing
-  });
+    Key key,
+    this.data
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _BetterSnackBarItemState();
@@ -25,34 +22,42 @@ class _BetterSnackBarItem extends StatefulWidget {
 }
 
 class _BetterSnackBarItemState extends State<_BetterSnackBarItem> {
+
   @override
   Widget build(BuildContext context) {
     List<Widget> list = [
       Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(widget.title, style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),),
-              Container(padding: EdgeInsets.only(top: 5),),
-              Text(widget.subtitle, style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),)
-            ],
-          )
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(widget.data.title, style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),),
+            Container(padding: EdgeInsets.only(top: 5),),
+            Text(widget.data.subtitle, style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),)
+          ],
+        )
       )
     ];
-    if (widget.trailing != null)
-      list.add(widget.trailing);
-    return Container(
-      color: Colors.red,
-      child: Padding(
-        padding: EdgeInsets.all(10),
-        child: Row(
-          children: list,
+    if (widget.data.trailing != null)
+      list.add(widget.data.trailing);
+    return SizeTransition(
+      sizeFactor: widget.data.animation,
+      child: Container(
+        color: Colors.red,
+        child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Row(
+            children: list,
+          ),
         ),
       ),
     );
   }
 
+  @override
+  void initState() {
+    super.initState();
+  }
 }
 
 class _BetterSnackBarList extends StatefulWidget {
@@ -69,52 +74,50 @@ class _BetterSnackBarList extends StatefulWidget {
 
 }
 
-class _BetterSnackBarListState extends State<_BetterSnackBarList> {
+class _BetterSnackBarListState extends State<_BetterSnackBarList> with TickerProviderStateMixin {
   List<BetterSnackBar> snackBars = [];
   GlobalKey<AnimatedListState> _key = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> children = [];
+    for (int i = 0, t = snackBars.length; i < t; ++i) {
+      BetterSnackBar snackBar = snackBars[i];
+      children.add(_BetterSnackBarItem(
+        key: ObjectKey(snackBar),
+        data: snackBar,
+      ));
+    }
     return Positioned(
       bottom: 0,
       left: 0,
       right: 0,
-      child: AnimatedList(
-        shrinkWrap: true,
-        key: _key,
-        itemBuilder: (context, index, animation) {
-          BetterSnackBar bar = snackBars[index];
-          return SizeTransition(
-            sizeFactor: animation,
-            child: bar._getWidget(context),
-          );
-        },
-        reverse: true,
-        initialItemCount: snackBars.length,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: children,
       )
     );
   }
 
   void add(BetterSnackBar snackBar) {
-    snackBars.insert(0, snackBar);
-    _key.currentState.insertItem(0, duration: Duration(milliseconds: 300));
+    setState(() {
+      snackBars.insert(0, snackBar);
+      snackBar.setup(this);
+      snackBar.controller.forward();
+    });
   }
 
-  void remove(BetterSnackBar snackBar) {
-    int index = snackBars.indexOf(snackBar);
-    if (index >= 0) {
-      snackBars.removeAt(index);
-      _key.currentState.removeItem(index, (context, animation) => SizeTransition(
-        sizeFactor: animation,
-        child: snackBar._getWidget(context),
-      ), duration: Duration(milliseconds: 300));
-    }
+  void remove(BetterSnackBar snackBar) async {
+    await snackBar.controller.reverse();
+    snackBar.destroy();
+    setState(() {
+      snackBars.remove(snackBar);
+    });
   }
 }
 
 class BetterSnackBar<T> {
   Widget trailing;
-  Widget _widget;
   Completer<T> _completer;
   Duration duration;
   Timer _timer;
@@ -172,14 +175,22 @@ class BetterSnackBar<T> {
     }
   }
 
-  Widget _getWidget(BuildContext context) {
-    if (_widget == null) {
-      _widget = _BetterSnackBarItem(
-        title: title,
-        subtitle: subtitle,
-        trailing: trailing,
-      );
-    }
-    return _widget;
+  AnimationController _controller;
+  Animation<double> _animation;
+  void setup(TickerProvider provider) {
+    _controller = AnimationController(vsync: provider, duration: Duration(milliseconds: 300));
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
+  }
+
+  Animation<double> get animation {
+    return _animation;
+  }
+
+  AnimationController get controller {
+    return _controller;
+  }
+
+  void destroy() {
+    _controller.dispose();
   }
 }

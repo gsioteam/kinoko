@@ -160,6 +160,11 @@ class _NeedRemove {
   _NeedRemove(this.mainData, this.downloadItem);
 }
 
+class _DownloadKey extends GlobalObjectKey {
+  _DownloadKey(Object value) : super(value);
+
+}
+
 class _DownloadPageState extends State<DownloadPage> {
   List<CellData> data;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
@@ -271,6 +276,7 @@ class _DownloadPageState extends State<DownloadPage> {
       case _CellType.Book: {
         BookData downloadData = cdata.data;
         return Column(
+          key: _DownloadKey(cdata),
           children: <Widget>[
             ListTile(
               title: Text(downloadData.bookInfo.title),
@@ -302,7 +308,7 @@ class _DownloadPageState extends State<DownloadPage> {
       case _CellType.Chapter: {
           DownloadQueueItem queueItem = cdata.data;
           return Dismissible(
-            key: ObjectKey(queueItem),
+            key: _DownloadKey(cdata),
             child: ChapterCell(
               queueItem,
               onTap: () {
