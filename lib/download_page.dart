@@ -10,7 +10,7 @@ import 'package:kinoko/utils/cached_picture_image.dart';
 import 'picture_viewer.dart';
 import 'utils/download_manager.dart';
 import 'localizations/localizations.dart';
-import 'package:flushbar/flushbar.dart';
+import 'widgets/better_snack_bar.dart';
 
 import 'widgets/home_widget.dart';
 
@@ -164,7 +164,7 @@ class _DownloadPageState extends State<DownloadPage> {
   List<CellData> data;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
   List<_NeedRemove> needRemove = List();
-  List<Flushbar<bool>> flushbars = List();
+  List<BetterSnackBar<bool>> snackBars = List();
 
   _DownloadPageState();
 
@@ -310,22 +310,20 @@ class _DownloadPageState extends State<DownloadPage> {
               },
             ),
             onDismissed: (DismissDirection direction) async {
-              Flushbar<bool> flushbar;
-              flushbar = Flushbar<bool>(
-                backgroundColor: Colors.redAccent,
+              BetterSnackBar<bool> snackBar;
+              snackBar = BetterSnackBar(
                 title: kt("confirm"),
-                message: kt("delete_item").replaceAll("{0}", queueItem.info.title).replaceAll("{1}", queueItem.item.title),
-                mainButton: FlatButton(
+                subtitle: kt("delete_item").replaceAll("{0}", queueItem.info.title).replaceAll("{1}", queueItem.item.title),
+                trailing: FlatButton(
                   child: Text(kt("undo"), style: Theme.of(context).textTheme.bodyText2.copyWith(color: Colors.white, fontWeight: FontWeight.bold),),
                   onPressed: () {
-                    flushbar.dismiss(true);
+                    snackBar.dismiss(true);
                   },
                 ),
                 duration: Duration(seconds: 5),
-                animationDuration: Duration(milliseconds: 300),
               );
 
-              flushbars.add(flushbar);
+              snackBars.add(snackBar);
 
               int index = data.indexOf(cdata);
               CellData mainData;
@@ -349,14 +347,14 @@ class _DownloadPageState extends State<DownloadPage> {
                 );
               });
 
-              bool result = await flushbar.show(context);
+              bool result = await snackBar.show(context);
               if (result == true) {
                 reverseItem(item);
               } else {
                 removeItem(item);
               }
 
-              flushbars.remove(flushbar);
+              snackBars.remove(snackBar);
             },
           );
         }
@@ -417,8 +415,8 @@ class _DownloadPageState extends State<DownloadPage> {
 
   @override
   void dispose() {
-    flushbars.forEach((element)=>element.dismiss(false));
-    flushbars.clear();
+    snackBars.forEach((element)=>element.dismiss(false));
+    snackBars.clear();
     super.dispose();
   }
 }

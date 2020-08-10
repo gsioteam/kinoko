@@ -36,7 +36,6 @@ dependencies:
   cache_image: "^1.0.5"
   fluttertoast: ^4.0.0
   photo_view: ^0.9.2
-  flushbar: ^1.10.4
   gesture_zoom_box: ^0.0.2
   cached_network_image: ^2.2.0+1
   scrollable_positioned_list: ^0.1.7

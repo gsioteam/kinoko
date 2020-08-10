@@ -1,7 +1,6 @@
 
 
 import 'package:cache_image/cache_image.dart';
-import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glib/core/array.dart';
@@ -16,17 +15,16 @@ import 'localizations/localizations.dart';
 import 'book_page.dart';
 import 'picture_viewer.dart';
 import 'utils/favorites_manager.dart';
+import 'widgets/better_snack_bar.dart';
 
 class FavoriteItem extends StatefulWidget {
   void Function() onTap;
-  void Function() onDismissed;
   FavCheckItem item;
 
   FavoriteItem({
     Key key,
     this.onTap,
-    this.item,
-    this.onDismissed
+    this.item
   }) : super(key: key);
 
   @override
@@ -36,28 +34,22 @@ class FavoriteItem extends StatefulWidget {
 class _FavoriteItemState extends State<FavoriteItem> {
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      key: ValueKey(widget.item),
-      child: ListTile(
-        title: Text(widget.item.item.title),
-        subtitle: Text(widget.item.item.subtitle),
-        leading: Image(
-          image: CacheImage(widget.item.item.picture),
-          fit: BoxFit.cover,
-          width: 56,
-          height: 56,
-          gaplessPlayback: true,
-        ),
-        onTap: () {
-          setState(() {
-            widget.onTap();
-          });
-        },
-        trailing: widget.item.hasNew ? Icon(Icons.fiber_new, color: Colors.red,) : null,
+    return ListTile(
+      title: Text(widget.item.item.title),
+      subtitle: Text(widget.item.item.subtitle),
+      leading: Image(
+        image: CacheImage(widget.item.item.picture),
+        fit: BoxFit.cover,
+        width: 56,
+        height: 56,
+        gaplessPlayback: true,
       ),
-      onDismissed: (direction) {
-        widget.onDismissed?.call();
+      onTap: () {
+        setState(() {
+          widget.onTap();
+        });
       },
+      trailing: widget.item.hasNew ? Icon(Icons.fiber_new, color: Colors.red,) : null,
     );
   }
 
@@ -96,7 +88,7 @@ class FavoritesPage extends HomeWidget {
 
 class _FavoritesPageState extends State<FavoritesPage> {
   List<FavCheckItem> items;
-  List<Flushbar<bool>> flushbars = List();
+  List<BetterSnackBar<bool>> snackBars = List();
   GlobalKey<AnimatedListState> _listKey = GlobalKey();
 
   itemClicked(int idx) async {
@@ -132,6 +124,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
   }
 
   void onRemoveItem(FavCheckItem item) async {
+    print("Remove!");
     int index = items.indexOf(item);
     if (index >= 0) {
       items.removeAt(index);
@@ -139,24 +132,23 @@ class _FavoritesPageState extends State<FavoritesPage> {
         return Container();
       }, duration: Duration(milliseconds: 0));
 
-      Flushbar<bool> flushbar;
-      flushbar = Flushbar<bool>(
-        backgroundColor: Colors.redAccent,
+      BetterSnackBar<bool> snackBar;
+      snackBar = BetterSnackBar<bool>(
         title: kt("confirm"),
-        message: kt("delete_item_2").replaceAll("{0}", item.item.title),
-        mainButton: FlatButton(
+        subtitle: kt("delete_item_2").replaceAll("{0}", item.item.title),
+        trailing: FlatButton(
           child: Text(kt("undo"), style: Theme.of(context).textTheme.bodyText2.copyWith(color: Colors.white, fontWeight: FontWeight.bold),),
           onPressed: () {
-            flushbar.dismiss(true);
+            snackBar.dismiss(true);
           },
         ),
-        duration: Duration(seconds: 5),
-        animationDuration: Duration(milliseconds: 300),
+        duration: Duration(seconds: 5)
       );
 
-      flushbars.add(flushbar);
 
-      bool result = await flushbar.show(context);
+      snackBars.add(snackBar);
+
+      bool result = await snackBar.show(context);
       print("dismiss ${item.item.title}");
       if (result == true) {
         reverseItem(item, index);
@@ -164,7 +156,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
         removeItem(item);
       }
 
-      flushbars.remove(flushbar);
+      snackBars.remove(snackBar);
     }
   }
 
@@ -190,15 +182,19 @@ class _FavoritesPageState extends State<FavoritesPage> {
       key: _listKey,
       initialItemCount: items.length,
       itemBuilder: (context, index, animation) {
+        FavCheckItem item = items[index];
         return SizeTransition(
           sizeFactor: animation,
-          child: FavoriteItem(
-            item: items[index],
-            onTap: () {
-              itemClicked(index);
-            },
-            onDismissed: () {
-              onRemoveItem(items[index]);
+          child: Dismissible(
+            key: ObjectKey(item),
+            child: FavoriteItem(
+              item: item,
+              onTap: () {
+                itemClicked(index);
+              },
+            ),
+            onDismissed: (direction) {
+              onRemoveItem(item);
             },
           ),
         );
@@ -214,11 +210,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   @override
   void dispose() {
-    print(flushbars.length);
-    flushbars.forEach((element) {
+    print(snackBars.length);
+    snackBars.forEach((element) {
       element.dismiss(false);
     });
-    flushbars.clear();
+    snackBars.clear();
     super.dispose();
   }
 }
