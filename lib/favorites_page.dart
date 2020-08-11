@@ -1,6 +1,6 @@
 
 
-import 'package:cache_image/cache_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glib/core/array.dart';
@@ -54,7 +54,7 @@ class _FavoriteItemState extends State<FavoriteItem> {
           title: Text(title),
           subtitle: Text(subtitle),
           leading: Image(
-            image: CacheImage(picture),
+            image: CachedNetworkImageProvider(picture),
             fit: BoxFit.cover,
             width: 56,
             height: 56,

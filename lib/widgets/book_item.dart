@@ -1,6 +1,6 @@
 
 
-import 'package:cache_image/cache_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glib/main/data_item.dart';
@@ -13,7 +13,7 @@ Widget makeBookItem(BuildContext context, DataItem item, void Function() onTap) 
       child: Row(
         children: <Widget>[
           Image(
-            image: CacheImage(item.picture),
+            image: CachedNetworkImageProvider(item.picture),
             width: 26,
             height: 26,
             gaplessPlayback: true,
@@ -28,7 +28,7 @@ Widget makeBookItem(BuildContext context, DataItem item, void Function() onTap) 
       title: Text(item.title),
       subtitle: Text(item.subtitle),
       leading: Image(
-        image: CacheImage(item.picture),
+        image: CachedNetworkImageProvider(item.picture),
         fit: BoxFit.cover,
         width: 56,
         height: 56,

@@ -1,7 +1,7 @@
 
 import 'dart:ui';
 
-import 'package:cache_image/cache_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -432,7 +432,7 @@ class _BookPageState extends State<BookPage> {
                     Image(
                       width: double.infinity,
                       height: double.infinity,
-                      image: CacheImage(data.picture),
+                      image: CachedNetworkImageProvider(data.picture),
                       gaplessPlayback: true,
                       fit: BoxFit.cover,
                     ),

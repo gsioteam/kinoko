@@ -1,5 +1,5 @@
 
-import 'package:cache_image/cache_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glib/main/context.dart';
@@ -283,7 +283,7 @@ class _DownloadPageState extends State<DownloadPage> {
               subtitle: Text(downloadData.bookInfo.subtitle),
               leading: Image(
                 key: ObjectKey(downloadData.bookInfo.picture),
-                image: CacheImage(downloadData.bookInfo.picture),
+                image: CachedNetworkImageProvider(downloadData.bookInfo.picture),
                 fit: BoxFit.cover,
                 width: 56,
                 height: 56,

@@ -1,7 +1,6 @@
 
 import 'dart:async';
 
-import 'package:cache_image/cache_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

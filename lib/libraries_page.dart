@@ -1,5 +1,5 @@
 
-import 'package:cache_image/cache_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -60,7 +60,7 @@ class _LibraryCellState extends State<LibraryCell> {
         return FileImage(icon);
       }
     }
-    return CacheImage("http://tinygraphs.com/squares/${generateMd5(library.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg");
+    return CachedNetworkImageProvider("http://tinygraphs.com/squares/${generateMd5(library.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg");
   }
 
   void installConfirm() {
