@@ -82,13 +82,11 @@ namespace gs {
             gc::Ref<GitTask> ref(this);
             const char *err = func(this);
             Ref<GitAction> action = this->action.lock();
-            if (err) {
-                LOG(i, "Git Error %s", err);
-                action->error = err;
-            } else {
-                LOG(i, "No error!");
-            }
             if (action) {
+                if (err) {
+                    action->error = err;
+                } else {
+                }
                 Platform::doOnMainThread(C([=](){
                     if (action->on_complete)
                         action->on_complete();

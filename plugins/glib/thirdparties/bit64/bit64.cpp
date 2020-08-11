@@ -55,12 +55,13 @@ void bit64_makeIndex() {
 }
 
 uint8_t bit64_hex64(int num) {
-    if (num >= 0 && num < 64) {
+    if (num >= 0 && num < bit64_SIZE) {
         if (bit64_map.c_map.size() == 0) {
             bit64_makeIndex();
         }
         return bit64_map.c_map[num];
     }
+    return 0;
 }
 
 char bit64_hex64rev(char ch) {
@@ -92,7 +93,7 @@ extern "C" unsigned long bit64_encode(const uint8_t *buffer, unsigned long buffe
         tmp = tmp | (b << tb);
         tb += 8;
         while (tb >= 6) {
-            uint8_t l = (uint8_t)(tmp & 63);
+            uint8_t l = (uint8_t)(tmp & (bit64_SIZE - 1));
             tmp = tmp >> 6;
             tb -= 6;
             l = bit64_hex64(l);
@@ -101,7 +102,7 @@ extern "C" unsigned long bit64_encode(const uint8_t *buffer, unsigned long buffe
     }
 
     while (tb > 0) {
-        uint8_t l = (uint8_t)(tmp & 63);
+        uint8_t l = (uint8_t)(tmp & (bit64_SIZE - 1));
         tmp = tmp >> 6;
         tb -= 6;
         l = bit64_hex64(l);

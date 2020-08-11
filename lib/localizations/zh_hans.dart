@@ -1,12 +1,12 @@
 const Map words = {
   "app_title": "木の子",
   "confirm": "请确认",
-  "install_confirm": "从 {url} 安装项目",
+  "install_confirm": "从 {url} 克隆项目",
   "yes": "是",
   "no": "否",
   "add": "添加",
-  "clone_project": "投影中...",
-  "not_installed": "未投影",
+  "clone_project": "克隆中...",
+  "not_installed": "未克隆",
   "select_main_project": "设置为主要项目",
   "new_project": "添加Git项目",
   "new_project_hint": "Git://...",
@@ -17,7 +17,7 @@ const Map words = {
   "chapters": "章节列表",
   "reverse_order": "逆序",
   "order": "正序",
-  "no_project_found": "沒有安裝這個項目",
+  "no_project_found": "沒有找到這個項目",
   "can_not_determine_the_context_type": "不能識別這個數據類型",
   "download_list": "下载列表",
   "delete_item": "删除 {0}({1})",
@@ -31,5 +31,6 @@ const Map words = {
   "no_prev_chapter": "沒有上一章",
   "no_next_chapter": "沒有下一章",
   "n_page": "{0} 頁",
-  "delete_item_2": "删除 {0}"
+  "delete_item_2": "删除 {0}",
+  "select_main_project_first": "请先选择一个项目"
 };

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:glib/core/core.dart';
+import 'package:glib/main/project.dart';
 import 'package:kinoko/favorites_page.dart';
 import 'book_list.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -324,6 +325,10 @@ class _HomePageState extends State<HomePage> {
   void Function() onRefresh;
   void Function() onFetch;
 
+  bool hasMainProject() {
+    return Project.getMainProject() != null;
+  }
+
   HomeWidget _getBody(BuildContext context) {
     switch (selected) {
       case 0: {
@@ -344,6 +349,13 @@ class _HomePageState extends State<HomePage> {
 
   void Function() _onTap(int idx) {
     return (){
+      if (idx == 0 && !hasMainProject()) {
+        Fluttertoast.showToast(
+          msg: kt("select_main_project_first"),
+          toastLength: Toast.LENGTH_LONG
+        );
+        idx = 3;
+      }
       if (selected != idx) {
         setState(() {
           selected = idx;
@@ -365,8 +377,8 @@ class _HomePageState extends State<HomePage> {
             HomeDrawer(this),
             ListTile(
               selected: selected == 0,
-              leading: Icon(Icons.collections_bookmark),
-              title: Text(kt("manga_home")),
+              leading: Icon(Icons.collections_bookmark, color: hasMainProject() ? null : Colors.black45,),
+              title: Text(kt("manga_home"), style: hasMainProject() ? null : TextStyle(color: Colors.black45),),
               onTap: _onTap(0),
             ),
             ListTile(
@@ -392,8 +404,19 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       appBar: NavigationBar(body.appBarData),
-      body: body,
+      body: NotificationListener<LibraryNotification>(
+        child: body,
+        onNotification: (noti) {
+          setState(() { });
+          return true;
+        },
+      ),
     );
   }
 
+  @override
+  void initState() {
+    super.initState();
+    selected = hasMainProject() ? 0 : 3;
+  }
 }

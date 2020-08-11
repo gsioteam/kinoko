@@ -18,6 +18,10 @@ import 'dart:io';
 import 'localizations/localizations.dart';
 import 'widgets/home_widget.dart';
 
+class LibraryNotification extends Notification {
+
+}
+
 class LibraryCell extends StatefulWidget {
 
   GitLibrary library;
@@ -107,7 +111,8 @@ class _LibraryCellState extends State<LibraryCell> {
       setState(() {
         r(project);
         project = Project.allocate(dirName);
-        selectConfirm();
+        if (repo.isOpen() && project.isValidated)
+          selectConfirm();
       });
     });
   }
@@ -117,6 +122,7 @@ class _LibraryCellState extends State<LibraryCell> {
   }
   
   void selectConfirm() {
+    BuildContext mainContext = context;
     showDialog(
       context: context,
       builder: (context) {
@@ -134,6 +140,7 @@ class _LibraryCellState extends State<LibraryCell> {
                 onPressed: (){
                   Navigator.of(context).pop();
                   selectMainProject();
+                  LibraryNotification().dispatch(mainContext);
                 },
                 child: Text(kt("yes"))
             )

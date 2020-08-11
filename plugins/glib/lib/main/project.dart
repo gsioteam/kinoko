@@ -16,7 +16,7 @@ class Project extends Base {
     super.allocate([path]);
   }
 
-  get isValidated => call("isValidated");
+  bool get isValidated => call("isValidated");
   get name => call("getName");
   get subtitle => call("getSubtitle");
   get url => call("getUrl");

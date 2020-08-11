@@ -71,6 +71,7 @@ add_library(
         src/shelf/utils/Bit64.cpp
         src/shelf/utils/Error.cpp
         src/shelf/utils/ScriptContext.cpp
+        src/shelf/utils/Secp256k1.cpp
 
         src/shelf/models/GitLibrary.cpp
         src/shelf/models/KeyValue.cpp
@@ -101,7 +102,7 @@ target_include_directories(
         PRIVATE
         thirdparties/iconv/include
         thirdparties/iconv/src
-        )
+)
 
 file(GLOB GUMBO_SRC thirdparties/gumbo/*.c)
 
@@ -125,6 +126,22 @@ add_library(
 
 add_subdirectory(thirdparties/libgit2)
 
+file(GLOB SECP_SRC thirdparties/secp256k1/src/*.c)
+
+add_library(
+        secp256k1
+        STATIC
+
+        ${SECP_SRC}
+)
+
+target_include_directories(
+        secp256k1
+        PUBLIC
+
+        thirdparties/secp256k1/include
+)
+
 target_link_libraries(
         glib
         PUBLIC
@@ -140,4 +157,5 @@ target_link_libraries(
         iconv
         gumbo
         gumbo_query
+        secp256k1
 )
