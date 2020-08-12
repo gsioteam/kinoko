@@ -60,6 +60,7 @@ add_library(
         src/shelf/utils/dart/DartRequest.cpp
         src/shelf/utils/dart/DartPlatform.cpp
         src/shelf/utils/JSON.cpp
+        src/shelf/utils/YAML.cpp
         src/shelf/utils/GitRepository.cpp
         src/shelf/utils/SharedData.cpp
         src/shelf/utils/Encoder.cpp
@@ -71,7 +72,6 @@ add_library(
         src/shelf/utils/Bit64.cpp
         src/shelf/utils/Error.cpp
         src/shelf/utils/ScriptContext.cpp
-        src/shelf/utils/Secp256k1.cpp
 
         src/shelf/models/GitLibrary.cpp
         src/shelf/models/KeyValue.cpp
@@ -126,21 +126,42 @@ add_library(
 
 add_subdirectory(thirdparties/libgit2)
 
-file(GLOB SECP_SRC thirdparties/secp256k1/src/*.c)
-
 add_library(
         secp256k1
         STATIC
 
-        ${SECP_SRC}
+        thirdparties/secp256k1/src/secp256k1.c
+)
+
+target_compile_definitions(
+        secp256k1
+        PRIVATE
+        -DHAVE_CONFIG_H
 )
 
 target_include_directories(
         secp256k1
-        PUBLIC
+        PRIVATE
 
-        thirdparties/secp256k1/include
+        thirdparties/secp256k1
 )
+
+add_subdirectory(thirdparties/libyaml)
+
+#file(GLOB YAML_SRC thirdparties/libyaml/src/*.c)
+#
+#add_library(
+#        yaml
+#        STATIC
+#
+#        ${YAML_SRC}
+#)
+#
+#target_include_directories(
+#        yaml
+#        PUBLIC
+#        thirdparties/libyaml/include
+#)
 
 target_link_libraries(
         glib
@@ -158,4 +179,5 @@ target_link_libraries(
         gumbo
         gumbo_query
         secp256k1
+        yaml
 )

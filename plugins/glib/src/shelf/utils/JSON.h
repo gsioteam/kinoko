@@ -13,8 +13,8 @@ namespace gs {
     CLASS_BEGIN_N(JSON, gc::Object)
 
     public:
-        METHOD static gc::Variant parse(const nlohmann::json &obj);
-        METHOD static nlohmann::json serialize(const gc::Variant &variant);
+        static gc::Variant parse(const nlohmann::json &obj);
+        static nlohmann::json serialize(const gc::Variant &variant);
 
 //        ON_LOADED_BEGIN(cls, gc::Object)
 //            ADD_METHOD(cls, JSON, parse);
