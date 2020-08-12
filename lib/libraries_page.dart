@@ -10,6 +10,7 @@ import 'package:crypto/crypto.dart';
 import 'package:glib/utils/bit64.dart';
 import 'package:glib/utils/git_repository.dart';
 import 'package:glib/main/project.dart';
+import 'package:glib/utils/request.dart';
 import 'package:kinoko/progress_dialog.dart';
 import 'package:kinoko/utils/progress_items.dart';
 import 'package:kinoko/widgets/spin_itim.dart';
@@ -17,6 +18,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'localizations/localizations.dart';
 import 'widgets/home_widget.dart';
+import 'widgets/better_refresh_indicator.dart';
+import 'package:http/http.dart' as http;
+
+const LibURL = "https://api.github.com/repos/gsioteam/env/issues/2/comments?per_page=40&page={0}";
 
 class LibraryNotification extends Notification {
 
@@ -156,7 +161,9 @@ class _LibraryCellState extends State<LibraryCell> {
       title: Text(library.url,),
       subtitle: Text(kt("not_installed")),
       leading: Image(
-        image: getIcon()
+        image: getIcon(),
+        width: 56,
+        height: 56,
       ),
       onTap: installConfirm,
     );
@@ -270,6 +277,8 @@ String generateMd5(String input) {
 
 class _LibrariesPageState extends State<LibrariesPage> {
   Array list;
+  BetterRefreshIndicatorController _controller;
+  int pageIndex = 0;
 
   void updateList() {
     setState(() {
@@ -278,13 +287,38 @@ class _LibrariesPageState extends State<LibrariesPage> {
     });
   }
 
+  void reload() async {
+    int page = 0;
+    _controller.startLoading();
+    try {
+      http.Request request = http.Request("GET", Uri.parse(LibURL.replaceAll("{0}", page.toString())));
+      request.headers["Accept"] = "application/vnd.github.v3+json";
+      http.StreamedResponse res = await request.send();
+      String result = await res.stream.bytesToString();
+      List<dynamic> json = jsonDecode(result);
+
+      for (int i = 0, t = json.length; i < t; ++i) {
+        Map<String, dynamic> item = json[i];
+
+      }
+    } catch (e) {
+
+    }
+    _controller.stopLoading();
+  }
+
+  void onRefresh() {
+    reload();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (list == null) {
       list = GitLibrary.allLibraries().control();
     }
 
-    return ListView.separated(
+    return BetterRefreshIndicator(
+      child: ListView.separated(
         itemBuilder: (context, idx) {
           return LibraryCell(list[idx]);
         },
@@ -292,12 +326,22 @@ class _LibrariesPageState extends State<LibrariesPage> {
           return Divider();
         },
         itemCount: list.length
+      ),
+      controller: _controller,
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = BetterRefreshIndicatorController();
+    _controller.onRefresh = onRefresh;
   }
 
   @override
   void dispose() {
     r(list);
     super.dispose();
+    _controller.onRefresh = null;
   }
 }

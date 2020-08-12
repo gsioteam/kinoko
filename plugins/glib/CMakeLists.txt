@@ -15,6 +15,7 @@ include_directories(
         thirdparties/libgit2/include
         thirdparties/v8/include
         thirdparties/
+        thirdparties/secp256k1/include
 )
 link_directories(
         thirdparties/mruby/lib/${ANDROID_ABI}
@@ -146,22 +147,28 @@ target_include_directories(
         thirdparties/secp256k1
 )
 
-add_subdirectory(thirdparties/libyaml)
+#add_subdirectory(thirdparties/libyaml)
 
-#file(GLOB YAML_SRC thirdparties/libyaml/src/*.c)
-#
-#add_library(
-#        yaml
-#        STATIC
-#
-#        ${YAML_SRC}
-#)
-#
-#target_include_directories(
-#        yaml
-#        PUBLIC
-#        thirdparties/libyaml/include
-#)
+file(GLOB YAML_SRC thirdparties/libyaml/src/*.c)
+
+add_library(
+        yaml
+        STATIC
+
+        ${YAML_SRC}
+)
+
+target_include_directories(
+        yaml
+        PUBLIC
+        thirdparties/libyaml/include
+)
+
+target_compile_definitions(
+        yaml
+        PRIVATE
+        -DHAVE_CONFIG_H=1
+)
 
 target_link_libraries(
         glib

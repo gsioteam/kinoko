@@ -39,6 +39,7 @@ dependencies:
   cached_network_image: ^2.2.0+1
   scrollable_positioned_list: ^0.1.7
   flutter_picker: ^1.1.5
+  http: ^0.12.1
 
 dev_dependencies:
   flutter_test:

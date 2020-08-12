@@ -6,6 +6,7 @@
 #define ANDROID_SHAREDATA_H
 
 #include <string>
+#include <vector>
 
 namespace gs {
     struct shared {
@@ -16,6 +17,8 @@ namespace gs {
         static std::string debug_path;
 
         static std::string repo_path(bool ignore_debug = false);
+
+        static const std::vector<uint8_t> public_key;
     };
 }
 
