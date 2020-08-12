@@ -28,6 +28,7 @@
 #include "models/KeyValue.h"
 #include "utils/ScriptContext.h"
 #include "models/CollectionData.h"
+#include "main/LibraryContext.h"
 
 using namespace gscript;
 using namespace gc;
@@ -59,6 +60,7 @@ void dart_setupLibrary(Dart_CallClass call_class, Dart_CallInstance call_instanc
     ClassDB::reg<gs::KeyValue>();
     ClassDB::reg<gs::ScriptContext>();
     ClassDB::reg<gs::CollectionData>();
+    ClassDB::reg<gs::LibraryContext>();
 
     DartScript::setup(call_class, call_instance, from_native);
 

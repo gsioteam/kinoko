@@ -16,6 +16,7 @@ include_directories(
         thirdparties/v8/include
         thirdparties/
         thirdparties/secp256k1/include
+        src/shelf/thirdparties/sha256
 )
 link_directories(
         thirdparties/mruby/lib/${ANDROID_ABI}
@@ -55,6 +56,7 @@ add_library(
         src/shelf/main/Context.cpp
         src/shelf/main/Project.cpp
         src/shelf/main/DataItem.cpp
+        src/shelf/main/LibraryContext.cpp
 
         src/shelf/thirdparties/sha1/sha1.c
 
@@ -147,7 +149,12 @@ target_include_directories(
         thirdparties/secp256k1
 )
 
-#add_subdirectory(thirdparties/libyaml)
+add_library(
+        sha256
+        STATIC
+
+        src/shelf/thirdparties/sha256/sha256.c
+)
 
 file(GLOB YAML_SRC thirdparties/libyaml/src/*.c)
 

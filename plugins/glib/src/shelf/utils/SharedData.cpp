@@ -17,3 +17,9 @@ std::string shared::repo_path(bool ignore_debug) {
 const std::string shared::MAIN_PROJECT_KEY = "MAIN_PROJECT";
 const std::string shared::HOME_PAGE_LIST = "HOME_PAGE_LIST:";
 const std::vector<uint8_t> shared::public_key{2,169,116,121,28,94,121,148,224,164,101,4,129,150,179,221,230,79,31,104,57,165,189,188,150,139,234,217,84,155,201,149,10,};
+
+std::time_t gs::getTimeStamp() {
+    std::chrono::time_point<std::chrono::system_clock,std::chrono::milliseconds> tp = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());//获取当前时间点
+    std::time_t timestamp =  tp.time_since_epoch().count(); //计算距离1970-1-1,00:00的时间长度
+    return timestamp;
+}

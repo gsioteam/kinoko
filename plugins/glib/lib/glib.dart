@@ -56,6 +56,7 @@ class Glib {
     KeyValue.reg();
     ScriptContext.reg();
     CollectionData.reg();
+    LibraryContext.reg();
 
     Pointer<Utf8> pstr = Utf8.toUtf8(root_path);
     postSetup(pstr);

@@ -11,10 +11,18 @@ class GitLibrary extends Base {
   static Array allLibraries() => Base.s_call(GitLibrary, "allLibraries");
 
   String get url => call("getUrl");
-  void set url(String v) => call("setUrl", argv:[v]);
+  set url(String v) => call("setUrl", argv:[v]);
 
   int get date => call("getDate");
-  void set date(int v) => call("setDate", argv:[v]);
+  set date(int v) => call("setDate", argv:[v]);
+
+  String get title => call("getTitle");
+  set title(String v) => call("setTitle", argv: [v]);
+
+  String get icon => call("getIcon");
+  set icon(String v) => call("setIcon", argv: [v]);
+
+  String get token => call("getToken");
 
   static bool insertLibrary(String url) => Base.s_call(GitLibrary, "insertLibrary");
 }

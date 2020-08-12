@@ -3,20 +3,12 @@
 //
 
 #include "GitLibrary.h"
-#include "../utils/YAML.h"
 #include "../utils/SharedData.h"
-#include <secp256k1.h>
 
 using namespace gs;
 using namespace gc;
 
 namespace gc {
-    std::time_t getTimeStamp()
-    {
-        std::chrono::time_point<std::chrono::system_clock,std::chrono::milliseconds> tp = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());//获取当前时间点
-        std::time_t timestamp =  tp.time_since_epoch().count(); //计算距离1970-1-1,00:00的时间长度
-        return timestamp;
-    }
 }
 
 gc::Array GitLibrary::allLibraries() {
@@ -44,16 +36,4 @@ bool GitLibrary::insertLibrary(const std::string &url) {
     lib->setDate(getTimeStamp());
     lib->save();
     return true;
-}
-
-gc::Ref<GitLibrary> GitLibrary::parseLibrary(const std::string &str, const std::string &prev) {
-    yaml data = yaml::parse(str);
-    if (data.is_map()) {
-        std::string token = data["token"];
-        std::string url = data["url"];
-        if (url.empty() || token.empty()) {
-            return nullptr;
-        }
-
-    }
 }

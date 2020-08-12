@@ -63,3 +63,17 @@ class Context extends Base {
     super.destroy();
   }
 }
+
+class LibraryContext extends Base {
+  static void reg() {
+    Base.reg(LibraryContext, "gs::LibraryContext", Base);
+  }
+
+  LibraryContext.allocate() {
+    super.allocate([]);
+  }
+
+  Array get data => call("getData");
+
+  static bool parseLibrary(String str, String prev) => Base.s_call(LibraryContext, "parseLibrary", argv: [str, prev??""]);
+}

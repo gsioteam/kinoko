@@ -16,6 +16,8 @@ namespace gs {
         DEFINE_STRING(icon, Icon);
         DEFINE_STRING(title, Title);
 
+        std::string token;
+
     public:
         static void registerFields() {
             Model::registerFields();
@@ -30,15 +32,24 @@ namespace gs {
 
         METHOD static gc::Array allLibraries();
         METHOD static bool insertLibrary(const std::string &url);
-        METHOD gc::Ref<GitLibrary> parseLibrary(const std::string &str, const std::string &prev = std::string());
+//        METHOD gc::Ref<GitLibrary> parseLibrary(const std::string &str, const std::string &prev = std::string());
+
+        METHOD const std::string &getToken() const {
+            return token;
+        }
+        METHOD void setToken(const std::string &token) {
+            this->token = token;
+        }
 
         ON_LOADED_BEGIN(cls, Model<GitLibrary>)
             ADD_PROPERTY_EX(cls, url, GitLibrary, getUrl, setUrl);
             ADD_PROPERTY_EX(cls, date, GitLibrary, getDate, setDate);
             ADD_PROPERTY_EX(cls, icon, GitLibrary, getIcon, setIcon);
             ADD_PROPERTY_EX(cls, title, GitLibrary, getTitle, setTitle);
+            ADD_PROPERTY_EX(cls, token, GitLibrary, setToken, setToken);
             ADD_METHOD(cls, GitLibrary, allLibraries);
             ADD_METHOD(cls, GitLibrary, insertLibrary);
+//            ADD_METHOD(cls, GitLibrary, parseLibrary);
         ON_LOADED_END
 
     CLASS_END

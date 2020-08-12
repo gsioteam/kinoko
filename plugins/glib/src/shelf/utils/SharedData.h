@@ -7,6 +7,8 @@
 
 #include <string>
 #include <vector>
+#include <ctime>
+#include <chrono>
 
 namespace gs {
     struct shared {
@@ -19,7 +21,11 @@ namespace gs {
         static std::string repo_path(bool ignore_debug = false);
 
         static const std::vector<uint8_t> public_key;
+
+
     };
+
+    std::time_t getTimeStamp();
 }
 
 

@@ -20,6 +20,7 @@ import 'localizations/localizations.dart';
 import 'widgets/home_widget.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:http/http.dart' as http;
+import 'package:glib/main/context.dart';
 
 const LibURL = "https://api.github.com/repos/gsioteam/env/issues/2/comments?per_page=40&page={0}";
 
@@ -276,14 +277,14 @@ String generateMd5(String input) {
 }
 
 class _LibrariesPageState extends State<LibrariesPage> {
-  Array list;
+  Array data;
+  LibraryContext ctx;
   BetterRefreshIndicatorController _controller;
   int pageIndex = 0;
+  String _currentToken;
 
   void updateList() {
     setState(() {
-      r(list);
-      list = GitLibrary.allLibraries().control();
     });
   }
 
@@ -297,10 +298,19 @@ class _LibrariesPageState extends State<LibrariesPage> {
       String result = await res.stream.bytesToString();
       List<dynamic> json = jsonDecode(result);
 
+      String token = null;
       for (int i = 0, t = json.length; i < t; ++i) {
         Map<String, dynamic> item = json[i];
-
+        String body = item["body"];
+        if (body != null) {
+          GitLibrary lib = GitLibrary.parseLibrary(body, token);
+          if (lib != null) {
+            list.add(lib);
+            token = lib.token;
+          }
+        }
       }
+      setState(() {});
     } catch (e) {
 
     }
@@ -336,11 +346,14 @@ class _LibrariesPageState extends State<LibrariesPage> {
     super.initState();
     _controller = BetterRefreshIndicatorController();
     _controller.onRefresh = onRefresh;
+    ctx = LibraryContext.allocate();
+    data = ctx.data.control();
   }
 
   @override
   void dispose() {
-    r(list);
+    r(data);
+    r(ctx);
     super.dispose();
     _controller.onRefresh = null;
   }
