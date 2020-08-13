@@ -90,7 +90,7 @@ class SplashScreen extends StatelessWidget {
         context: context,
         builder: (context) {
           return ProgressDialog(
-            title: "title",
+            title: kt(context, ""),
             item: item,
           );
         }

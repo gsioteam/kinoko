@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'dart:math';
+import 'localizations/localizations.dart';
 
 abstract class ProgressItem {
   String defaultText = "";
@@ -71,12 +72,10 @@ class _ProgressDialogState extends State<ProgressDialog> {
       this.setState(() {processText = text;});
     };
     item.onComplete = () {
-      print("complete");
       status = _Status.Done;
       Navigator.of(context).pop(ProgressResult.Success);
     };
     item.onFail = (String msg) {
-      print("fail " + msg);
       this.setState(() {
         status = _Status.Failed;
         processText = msg;
@@ -106,7 +105,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
         return MaterialButton(
           textColor: Theme.of(context).primaryColor,
           onPressed: widget.item.cancelable ? onCancel : null,
-          child: Text("Cancel"),
+          child: Text(kt("cancel")),
         );
       }
       case _Status.Failed: {
@@ -117,12 +116,12 @@ class _ProgressDialogState extends State<ProgressDialog> {
               MaterialButton(
                 textColor: Theme.of(context).primaryColor,
                 onPressed: onRetry,
-                child: Text("Retry"),
+                child: Text(kt("retry")),
               ),
               MaterialButton(
                 textColor: Theme.of(context).primaryColor,
                 onPressed: onCancel,
-                child: Text("Cancel"),
+                child: Text(kt("cancel")),
               )
             ],
           );

@@ -23,6 +23,7 @@ namespace gs {
         LibraryContext();
 
         METHOD bool parseLibrary(const std::string &body);
+        METHOD bool insertLibrary(const std::string &url);
 
         METHOD const gc::Array &getData() const {
             return data;
@@ -31,9 +32,13 @@ namespace gs {
             this->data = data;
         }
 
+        METHOD void reset();
+
         ON_LOADED_BEGIN(cls, gc::Object)
             ADD_PROPERTY_EX(cls, "data", LibraryContext, getData, setData);
             ADD_METHOD(cls, LibraryContext, parseLibrary);
+            ADD_METHOD(cls, LibraryContext, insertLibrary);
+            ADD_METHOD(cls, LibraryContext, reset);
         ON_LOADED_END
 
     CLASS_END

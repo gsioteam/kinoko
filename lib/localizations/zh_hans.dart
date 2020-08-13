@@ -7,7 +7,7 @@ const Map words = {
   "add": "添加",
   "clone_project": "克隆中...",
   "not_installed": "未克隆",
-  "select_main_project": "设置为主要项目",
+  "select_main_project": "设为主项目",
   "new_project": "添加Git项目",
   "new_project_hint": "Git://...",
   "add_project_failed": "没能添加，是否已经添加过了？",
@@ -32,5 +32,8 @@ const Map words = {
   "no_next_chapter": "沒有下一章",
   "n_page": "{0} 頁",
   "delete_item_2": "删除 {0}",
-  "select_main_project_first": "请先选择一个项目"
+  "select_main_project_first": "请先选择一个项目",
+  "bootstart": "启动中",
+  "cancel": "放弃",
+  "retry": "再试"
 };

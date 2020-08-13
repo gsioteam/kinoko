@@ -21,6 +21,7 @@ namespace gs {
         class _yaml {
             std::string key;
             yaml *_target;
+
         public:
             _yaml(const std::string &key, yaml *tar) : key(key), _target(tar) {
             }
@@ -45,11 +46,8 @@ namespace gs {
                 return (float)(this->operator yaml());
             }
 
-            operator const char *() const {
-                return (const char *)(this->operator yaml());
-            }
-            operator const std::string &() const {
-                return (const std::string &)(this->operator yaml());
+            operator std::string() const {
+                return this->operator yaml();
             }
         };
 
@@ -74,7 +72,7 @@ namespace gs {
         yaml &operator << (const yaml &val);
         _yaml operator[](const std::string &key);
         _yaml operator[](const char *key) {
-            return this->operator[](key);
+            return this->operator[](std::string(key));
         }
         size_t size() const;
 
@@ -97,8 +95,7 @@ namespace gs {
         operator long long() const;
         operator float() const;
 
-        operator const char *() const;
-        operator const std::string &() const;
+        operator std::string() const;
     };
 
     CLASS_BEGIN_N(YAML, gc::Object)

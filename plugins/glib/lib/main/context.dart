@@ -75,5 +75,6 @@ class LibraryContext extends Base {
 
   Array get data => call("getData");
 
-  static bool parseLibrary(String str, String prev) => Base.s_call(LibraryContext, "parseLibrary", argv: [str, prev??""]);
+  bool parseLibrary(String str) => call("parseLibrary", argv: [str]);
+  bool insertLibrary(String url) => call("insertLibrary", argv: [url]);
 }

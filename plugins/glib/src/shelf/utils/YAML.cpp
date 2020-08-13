@@ -341,14 +341,7 @@ yaml::operator float() const {
     return 0;
 }
 
-yaml::operator const char *() const {
-    if (type == Value) {
-        return value.c_str();
-    }
-    return nullptr;
-}
-
-yaml::operator const std::string &() const {
+yaml::operator std::string() const {
     if (type == Value) {
         return value;
     }

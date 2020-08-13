@@ -63,6 +63,10 @@ class _LibraryCellState extends State<LibraryCell> {
   }
 
   ImageProvider getIcon() {
+    String icon = library.icon;
+    if (icon != null) {
+      return CachedNetworkImageProvider(icon);
+    }
     if (project.isValidated) {
       String iconpath = project.fullpath + "/icon.png";
       File icon = new File(iconpath);
@@ -157,9 +161,11 @@ class _LibraryCellState extends State<LibraryCell> {
   }
 
   Widget buildUnkown(BuildContext context) {
+    String title = library.title;
+    if (title == null) title = library.url;
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(16, 6, 10, 6),
-      title: Text(library.url,),
+      title: Text(title,),
       subtitle: Text(kt("not_installed")),
       leading: Image(
         image: getIcon(),
@@ -179,9 +185,11 @@ class _LibraryCellState extends State<LibraryCell> {
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(16, 6, 10, 6),
       title: Text(project.name),
-      subtitle: Text(project.subtitle),
+      subtitle: Text("Ver. ${repo.localID()}"),
       leading: Image(
         image: getIcon(),
+        width: 56,
+        height: 56,
       ),
       trailing: Column(
         children: <Widget>[
@@ -211,26 +219,23 @@ class _LibraryCellState extends State<LibraryCell> {
 }
 
 class LibrariesPage extends HomeWidget {
-  _LibrariesPageState state;
   String _inputText;
+  bool Function(String) onInsert;
 
   @override
   String get title => "manage_projects";
 
+  LibrariesPage();
+
   @override
-  State<StatefulWidget> createState() {
-    state = _LibrariesPageState();
-    return state;
-  }
+  State<StatefulWidget> createState() => _LibrariesPageState();
 
   void textInput(String text) {
     _inputText = text;
   }
 
   void addProject(BuildContext context, String url) {
-    if (GitLibrary.insertLibrary(url)) {
-      state.updateList();
-    } else {
+    if (onInsert == null || !onInsert(url)) {
       Fluttertoast.showToast(
         msg: kt(context, "add_project_failed"),
         toastLength: Toast.LENGTH_SHORT,
@@ -250,17 +255,17 @@ class LibrariesPage extends HomeWidget {
                   title: Text(kt(context, "new_project")),
                   content: TextField(
                     decoration: InputDecoration(
-                        hintText: kt(context, "new_project_hint")
+                      hintText: kt(context, "new_project_hint")
                     ),
                     onChanged: textInput,
                   ),
                   actions: <Widget>[
                     FlatButton(
-                        onPressed: (){
-                          Navigator.of(context).pop();
-                          addProject(context, _inputText);
-                        },
-                        child: Text(kt(context, "add"))
+                      onPressed: (){
+                        Navigator.of(context).pop();
+                        addProject(context, _inputText);
+                      },
+                      child: Text(kt(context, "add"))
                     )
                   ],
                 );
@@ -283,11 +288,6 @@ class _LibrariesPageState extends State<LibrariesPage> {
   int pageIndex = 0;
   String _currentToken;
 
-  void updateList() {
-    setState(() {
-    });
-  }
-
   void reload() async {
     int page = 0;
     _controller.startLoading();
@@ -297,57 +297,70 @@ class _LibrariesPageState extends State<LibrariesPage> {
       http.StreamedResponse res = await request.send();
       String result = await res.stream.bytesToString();
       List<dynamic> json = jsonDecode(result);
+      bool needLoad = false;
 
-      String token = null;
       for (int i = 0, t = json.length; i < t; ++i) {
         Map<String, dynamic> item = json[i];
         String body = item["body"];
         if (body != null) {
-          GitLibrary lib = GitLibrary.parseLibrary(body, token);
-          if (lib != null) {
-            list.add(lib);
-            token = lib.token;
+          if (ctx.parseLibrary(body)) {
+            needLoad = true;
           }
         }
       }
-      setState(() {});
+      if (needLoad) setState(() {});
     } catch (e) {
 
     }
     _controller.stopLoading();
   }
 
-  void onRefresh() {
+  bool onRefresh() {
     reload();
+    return true;
+  }
+
+  bool insertLibrary(String url) {
+    if (ctx.insertLibrary(url)) {
+      setState(() { });
+      return true;
+    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (list == null) {
-      list = GitLibrary.allLibraries().control();
-    }
 
     return BetterRefreshIndicator(
       child: ListView.separated(
         itemBuilder: (context, idx) {
-          return LibraryCell(list[idx]);
+          return LibraryCell(data[idx]);
         },
         separatorBuilder: (context, idx) {
           return Divider();
         },
-        itemCount: list.length
+        itemCount: data.length
       ),
       controller: _controller,
     );
   }
 
   @override
+  void didUpdateWidget(LibrariesPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    oldWidget.onInsert = null;
+    widget.onInsert = insertLibrary;
+  }
+
+  @override
   void initState() {
     super.initState();
+    widget.onInsert = insertLibrary;
     _controller = BetterRefreshIndicatorController();
     _controller.onRefresh = onRefresh;
     ctx = LibraryContext.allocate();
     data = ctx.data.control();
+    reload();
   }
 
   @override
@@ -355,6 +368,7 @@ class _LibrariesPageState extends State<LibrariesPage> {
     r(data);
     r(ctx);
     super.dispose();
+    widget.onInsert = null;
     _controller.onRefresh = null;
   }
 }

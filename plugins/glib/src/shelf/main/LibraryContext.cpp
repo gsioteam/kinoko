@@ -21,7 +21,7 @@ bool LibraryContext::parseLibrary(const std::string &body) {
     yaml y_data = yaml::parse(body);
     if (y_data.is_map()) {
         std::string token = y_data["token"];
-        std::string url = y_data["url"];
+        std::string url = y_data["src"];
         if (url.empty() || token.empty()) {
             return false;
         }
@@ -44,6 +44,16 @@ bool LibraryContext::parseLibrary(const std::string &body) {
     return false;
 }
 
+bool LibraryContext::insertLibrary(const std::string &url) {
+    Ref<GitLibrary> lib = find(url);
+    if (!lib) {
+        lib = new GitLibrary;
+        data->push_back(lib);
+    }
+    lib->setDate(getTimeStamp());
+    lib->save();
+    return true;
+}
 
 bool LibraryContext::isMatch(const std::string &token, const std::string &url, const std::string &prev) {
     sha256_context sha256_ctx;
@@ -60,12 +70,22 @@ bool LibraryContext::isMatch(const std::string &token, const std::string &url, c
     if (!secp256k1_ec_pubkey_parse(secp256k1_ctx, &pubkey, shared::public_key.data(), shared::public_key.size())) {
         return false;
     }
+    uint8_t test[65];
+    size_t test_size = 65;
+    secp256k1_ec_pubkey_serialize(secp256k1_ctx, test, &test_size, &pubkey, SECP256K1_EC_UNCOMPRESSED);
     secp256k1_ecdsa_signature signature;
     size_t dec_size = bit64_decode_size(token.size());
-    if (dec_size != 64) {
+    if (dec_size != 64 && dec_size != 65) {
         return false;
     }
-    bit64_decode((const uint8_t *)token.data(), token.size(), signature.data);
+    uint8_t *buf = (uint8_t *)malloc(dec_size);
+    dec_size = bit64_decode((const uint8_t *)token.data(), token.size(), buf);
+    if (dec_size != 64) {
+        free(buf);
+        return false;
+    }
+    secp256k1_ecdsa_signature_parse_compact(secp256k1_ctx, &signature, buf);
+    free(buf);
     return secp256k1_ecdsa_verify(secp256k1_ctx, &signature, sha256_res, &pubkey);
 }
 
@@ -77,4 +97,8 @@ gc::Ref<GitLibrary> LibraryContext::find(const std::string &url) {
         }
     }
     return Ref<GitLibrary>::null();
+}
+
+void LibraryContext::reset() {
+    token.clear();
 }

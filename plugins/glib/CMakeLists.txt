@@ -194,4 +194,5 @@ target_link_libraries(
         gumbo_query
         secp256k1
         yaml
+        sha256
 )
