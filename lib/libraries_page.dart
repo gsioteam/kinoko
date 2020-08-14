@@ -310,7 +310,6 @@ class _LibrariesPageState extends State<LibrariesPage> {
       }
       if (needLoad) setState(() {});
     } catch (e) {
-
     }
     _controller.stopLoading();
   }
