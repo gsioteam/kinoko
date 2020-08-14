@@ -1,5 +1,3 @@
-const glib = require("./glib");
-
 
 module.exports = function(object) {
     if (typeof object === 'function') {

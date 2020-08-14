@@ -62,9 +62,7 @@ class ChapterCollection extends glib.Collection {
     }
 
     reload(_, cb) {
-        console.log("**start reload");
         this.loadProcess(this.info_data.link).then(function () {
-            console.log("**reload complete");
             cb.apply(null);
         }).catch(function (err) {
             if (err instanceof Error) 

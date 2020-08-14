@@ -1,8 +1,8 @@
 {
     "name": "Kukudm",
-    "icon": "https://wap.kukudm.com/images/head_logo.gif",
-    "url": "https://wap.kukudm.com/",
-    "index": "index.js",
+    "icon": "http://css99tel.cdndm5.com/v202004101051/dm5/images/header-logo.png",
+    "url": "http://www.dm5.cn/",
+    "index": "index.rb",
     "book": "book.js",
     "chapter": "chapter.js",
     "search": {
@@ -13,36 +13,14 @@
     },
     "categories": [
         {
-            "title": "推薦",
-            "id": "home",
-            "url": "https://wap.kukudm.com/",
-            "data": {}
-        },
-        {
             "title": "更新",
             "id": "update",
-            "url": "https://wap.kukudm.com/top100.htm",
-            "data": {}
+            "url": "http://www.dm5.cn/"
         },
         {
             "title": "日漫",
             "id": "japan",
             "url": "https://wap.kukudm.com/comictype/3_{0}.htm"
-        },
-        {
-            "title": "港漫",
-            "id": "hongkong",
-            "url": "https://wap.kukudm.com/comictype/5_{0}.htm"
-        },
-        {
-            "title": "国漫",
-            "id": "china",
-            "url": "https://wap.kukudm.com/comictype/30_{0}.htm"
-        },
-        {
-            "title": "更多",
-            "id": "more",
-            "url": "https://wap.kukudm.com/comictype/31_{0}.htm"
         }
     ]
 }

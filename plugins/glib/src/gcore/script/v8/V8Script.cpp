@@ -57,8 +57,7 @@ namespace gscript {
         std::string path;
         uint32_t id;
 
-        V8Module(v8::Isolate* isolate, v8::Local<v8::Object> m) : module(isolate, m), id(module_counter++) {
-        }
+        V8Module(v8::Isolate* isolate, v8::Local<v8::Object> m) : module(isolate, m), id(module_counter++) {}
     };
 
     class V8Container {

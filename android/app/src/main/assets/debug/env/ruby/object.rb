@@ -15,9 +15,9 @@ module GS
       native_class_call name, arg
     end
 
-    def self.create
-      obj = self.new
-      obj.native_initialize
+    def self.create *args
+      obj = self.new *args
+      obj.native_initialize *args
       obj
     end
   end

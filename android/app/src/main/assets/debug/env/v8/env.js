@@ -1,4 +1,3 @@
-const glib = require('./glib');
 
 global.console = {
     log() {

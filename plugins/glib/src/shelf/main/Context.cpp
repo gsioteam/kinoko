@@ -69,7 +69,28 @@ namespace gs {
         }
 
         void setup(const char *path, const gc::Variant &data) override{
+            script->runFile(path);
+            Variant var = script->runScript("$exports");
+            if (var.getTypeClass()->isTypeOf(gc::_Callback::getClass())) {
+                gc::Callback func = var;
+                Variant tar = func(data);
+                if (tar && tar.getTypeClass()->isTypeOf(Collection::getClass())) {
+                    target = tar;
+                    target->apply(KeepKey);
+                    setupTarget(target);
+                } else {
+                    LOG(w, "Failed to load script (%s)", path);
+                }
+            }
+        }
+
+        RubyContext() {
             script = new RubyScript();
+            string rb_root = shared::repo_path() + "/env/ruby";
+            script->setup(rb_root.c_str());
+        }
+        ~RubyContext() {
+            delete script;
         }
 
     CLASS_END

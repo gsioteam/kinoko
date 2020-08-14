@@ -56,17 +56,6 @@ const mrb_data_type *ruby_type() {
     return ruby_data_type;
 }
 
-mrb_value ruby_native_initialize(mrb_state *mrb, mrb_value obj) {
-    mrb_value val = mrb_iv_get(mrb, mrb_obj_value(mrb_class(mrb, obj)), sym_native_class);
-    if (!mrb_nil_p(val)) {
-        RubyClass *mcls = (RubyClass *)mrb_cptr(val);
-        RubyInstance *mins = (RubyInstance *)mcls->newInstance(NULL, 0);
-        mins->setScriptInstance(mrb_obj_ptr(obj));
-        struct RData* data = mrb_data_object_alloc(mrb, mrb->object_class, mins, ruby_type());
-        mrb_iv_set(mrb, obj, sym_native_instance, mrb_obj_value(data));
-    }
-    return obj;
-}
 
 
 mrb_value ruby_h2r(mrb_state *mrb, const gc::Variant &v) {
@@ -98,7 +87,7 @@ mrb_value ruby_h2r(mrb_state *mrb, const gc::Variant &v) {
         case gc::Variant::TypeReference: {
             const gc::Class *typeclass = v.getTypeClass();
             if (typeclass->isTypeOf(RubyNativeObject::getClass())) {
-                 return mrb_obj_value(v->cast_to<RubyNativeObject>()->getNative());
+                return mrb_obj_value(v->cast_to<RubyNativeObject>()->getNative());
             }
             RubyScript *script = (RubyScript*)mrb->ud;
             RubyClass *mcls = (RubyClass*)script->find(typeclass->getFullname());
@@ -202,12 +191,34 @@ gc::Variant ruby_r2h(mrb_state *mrb, mrb_value v) {
             }
             return map;
         }
-            
+
         default:
             // TODO hash proc
             return gc::Variant((void*)mrb_ptr(v));
     }
 }
+
+mrb_value ruby_native_initialize(mrb_state *mrb, mrb_value obj) {
+    mrb_value val = mrb_iv_get(mrb, mrb_obj_value(mrb_class(mrb, obj)), sym_native_class);
+    if (!mrb_nil_p(val)) {
+        RubyClass *mcls = (RubyClass *)mrb_cptr(val);
+        int count = mrb_get_argc(mrb);
+        gc::Variant *vs = new gc::Variant[count];
+        const gc::Variant **ps = (const gc::Variant **)malloc(count * sizeof(gc::Variant *));
+        for (int i = 0; i < count; ++i) {
+            vs[i] = ruby_r2h(mrb, mrb->c->stack[1 + i]);
+            ps[i] = &vs[i];
+        }
+        RubyInstance *mins = (RubyInstance *)mcls->newInstance(ps, count);
+        delete [] vs;
+        free(ps);
+        mins->setScriptInstance(mrb_obj_ptr(obj));
+        struct RData* data = mrb_data_object_alloc(mrb, mrb->object_class, mins, ruby_type());
+        mrb_iv_set(mrb, obj, sym_native_instance, mrb_obj_value(data));
+    }
+    return obj;
+}
+
 
 mrb_value ruby_native_class(mrb_state *mrb, mrb_value cls) {
     mrb_value name;
@@ -218,37 +229,6 @@ mrb_value ruby_native_class(mrb_state *mrb, mrb_value cls) {
         script->regClass(rcls, RSTRING_PTR(name));
     }
     return name;
-}
-
-mrb_value ruby_initializer(mrb_state *mrb, mrb_value ins) {
-    mrb_value val = mrb_iv_get(mrb, mrb_obj_value(mrb_class(mrb, ins)), sym_native_class);
-    if (!mrb_nil_p(val)) {
-        RubyClass *mcls = (RubyClass *)mrb_cptr(val);
-        RubyInstance *mins = (RubyInstance *)mcls->newInstance(NULL, 0);
-        mins->setScriptInstance(mrb_obj_ptr(ins));
-        struct RData* data = mrb_data_object_alloc(mrb, mrb->object_class, mins, ruby_type());
-        mrb_iv_set(mrb, ins, sym_native_instance, mrb_obj_value(data));
-        
-        const gc::Method *init = mcls->getNativeClass()->getInitializer();
-        if (init) {
-            int count = mrb_get_argc(mrb);
-            if (count > 0) {
-                gc::Variant *vs = new gc::Variant[count];
-                const gc::Variant **ps = (const gc::Variant **)malloc(count * sizeof(gc::Variant *));
-                for (int i = 0; i < count; ++i) {
-                    vs[i] = ruby_r2h(mrb, mrb->c->stack[1 + i]);
-                    ps[i] = &vs[i];
-                }
-                mrb_value ret = ruby_h2r(mrb, init->call(mins->getTarget().get(), ps, count));
-                delete [] vs;
-                free(ps);
-                return ret;
-            }else {
-                return ruby_h2r(mrb, init->call(mins->getTarget().get(), NULL, 0));
-            }
-        }
-    }
-    return mrb_nil_value();
 }
 
 mrb_value ruby_call_i(mrb_state *mrb, mrb_value ins) {
@@ -417,6 +397,9 @@ void RubyScript::_setup(const char *root) const {
     str += root;
     str += "']";
     mrb_load_string(mrb, str.c_str());
+    string path = root;
+    path += "/env.rb";
+    runFile(path.c_str());
 }
 
 void RubyScript::setup(const char *root) {
@@ -593,10 +576,6 @@ void RubyClass::bindScriptClass() {
             name.push_back('=');
             mrb_define_method(mrb, rcls, name.c_str(), &ruby_set_instance, MRB_ARGS_REQ(1));
         }
-    }
-    const gc::Method *init = hcls->getInitializer();
-    if (init) {
-        mrb_define_method(mrb, rcls, "initialize", &ruby_initializer, MRB_ARGS_REQ(init->getParamsCount()));
     }
 }
 

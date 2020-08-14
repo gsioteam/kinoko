@@ -1,0 +1,3 @@
+
+require 'object'
+require 'glib'

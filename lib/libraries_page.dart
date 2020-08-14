@@ -22,7 +22,8 @@ import 'widgets/better_refresh_indicator.dart';
 import 'package:http/http.dart' as http;
 import 'package:glib/main/context.dart';
 
-const LibURL = "https://api.github.com/repos/gsioteam/env/issues/2/comments?per_page=40&page={0}";
+const LibURL = "https://api.github.com/repos/gsioteam/env/issues/2/comments?per_page={1}&page={0}";
+const int per_page = 40;
 
 class LibraryNotification extends Notification {
 
@@ -287,28 +288,46 @@ class _LibrariesPageState extends State<LibrariesPage> {
   BetterRefreshIndicatorController _controller;
   int pageIndex = 0;
   String _currentToken;
+  bool hasMore = false;
+
+  Future<bool> requestPage(int page) async {
+    String url = LibURL.replaceAll("{0}", page.toString()).replaceAll("{1}", per_page.toString());
+    http.Request request = http.Request("GET", Uri.parse(url));
+    request.headers["Accept"] = "application/vnd.github.v3+json";
+    http.StreamedResponse res = await request.send();
+    String result = await res.stream.bytesToString();
+    List<dynamic> json = jsonDecode(result);
+    bool needLoad = false;
+
+    for (int i = 0, t = json.length; i < t; ++i) {
+      Map<String, dynamic> item = json[i];
+      String body = item["body"];
+      if (body != null) {
+        if (ctx.parseLibrary(body)) {
+          needLoad = true;
+        }
+      }
+    }
+    hasMore = json.length >= per_page;
+    pageIndex = page;
+    return needLoad;
+  }
 
   void reload() async {
     int page = 0;
     _controller.startLoading();
     try {
-      http.Request request = http.Request("GET", Uri.parse(LibURL.replaceAll("{0}", page.toString())));
-      request.headers["Accept"] = "application/vnd.github.v3+json";
-      http.StreamedResponse res = await request.send();
-      String result = await res.stream.bytesToString();
-      List<dynamic> json = jsonDecode(result);
-      bool needLoad = false;
+      if (await requestPage(page)) setState(() {});
+    } catch (e) {
+    }
+    _controller.stopLoading();
+  }
 
-      for (int i = 0, t = json.length; i < t; ++i) {
-        Map<String, dynamic> item = json[i];
-        String body = item["body"];
-        if (body != null) {
-          if (ctx.parseLibrary(body)) {
-            needLoad = true;
-          }
-        }
-      }
-      if (needLoad) setState(() {});
+  void loadMore() async {
+    int page = pageIndex + 1;
+    _controller.startLoading();
+    try {
+      if (await requestPage(page)) setState(() {});
     } catch (e) {
     }
     _controller.stopLoading();
@@ -327,18 +346,29 @@ class _LibrariesPageState extends State<LibrariesPage> {
     return false;
   }
 
+  bool onUpdateNotification(ScrollUpdateNotification notification) {
+    if (hasMore &&
+        notification.metrics.maxScrollExtent - notification.metrics.pixels < 20 &&
+        !_controller.loading) {
+        loadMore();
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-
     return BetterRefreshIndicator(
-      child: ListView.separated(
-        itemBuilder: (context, idx) {
-          return LibraryCell(data[idx]);
-        },
-        separatorBuilder: (context, idx) {
-          return Divider();
-        },
-        itemCount: data.length
+      child: NotificationListener<ScrollUpdateNotification>(
+        child: ListView.separated(
+            itemBuilder: (context, idx) {
+              return LibraryCell(data[idx]);
+            },
+            separatorBuilder: (context, idx) {
+              return Divider();
+            },
+            itemCount: data.length
+        ),
+        onNotification: onUpdateNotification,
       ),
       controller: _controller,
     );
