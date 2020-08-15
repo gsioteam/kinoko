@@ -177,6 +177,25 @@ target_compile_definitions(
         -DHAVE_CONFIG_H=1
 )
 
+file(GLOB ONIGMO_SRC thirdparties/onigmo-6.1.3/*.c thirdparties/onigmo-6.1.3/enc/*.c)
+
+add_library(
+        onigmo
+        STATIC
+        ${ONIGMO_SRC}
+)
+target_include_directories(
+        onigmo
+        PRIVATE
+        thirdparties/onigmo-6.1.3/
+        thirdparties/onigmo-6.1.3/enc/unicode
+)
+target_compile_definitions(
+        onigmo
+        PRIVATE
+        -DHAVE_CONFIG_H=1
+)
+
 target_link_libraries(
         glib
         PUBLIC
@@ -187,7 +206,6 @@ target_link_libraries(
         log
         v8.cr
         v8_libplatform.cr
-        mruby
         bit64
         iconv
         gumbo
@@ -195,4 +213,6 @@ target_link_libraries(
         secp256k1
         yaml
         sha256
+        mruby
+        onigmo
 )

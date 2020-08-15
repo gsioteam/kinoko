@@ -434,7 +434,8 @@ gc::Variant RubyScript::runFile(const char *filepath) const {
     mrb_value val = mrb_load_file(mrb, file);
     fclose(file);
     if (mrb->exc) {
-        mrb_p(mrb, mrb_obj_value(mrb->exc));
+        mrb_value val = mrb_funcall(mrb, mrb_obj_value(mrb->exc), "inspect", 0);
+        LOG(e, "%s", mrb_string_cstr(mrb, val));
         mrb->exc = NULL;
         return gc::Variant::null();
     }
