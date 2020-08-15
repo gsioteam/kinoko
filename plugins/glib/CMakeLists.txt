@@ -177,7 +177,7 @@ target_compile_definitions(
         -DHAVE_CONFIG_H=1
 )
 
-file(GLOB ONIGMO_SRC thirdparties/onigmo-6.1.3/*.c thirdparties/onigmo-6.1.3/enc/*.c)
+file(GLOB ONIGMO_SRC thirdparties/onigmo/*.c thirdparties/onigmo/enc/*.c)
 
 add_library(
         onigmo
@@ -187,8 +187,7 @@ add_library(
 target_include_directories(
         onigmo
         PRIVATE
-        thirdparties/onigmo-6.1.3/
-        thirdparties/onigmo-6.1.3/enc/unicode
+        thirdparties/onigmo/
 )
 target_compile_definitions(
         onigmo

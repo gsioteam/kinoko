@@ -65,22 +65,6 @@ class HomeCollection < Collection
   end 
 end
 
-$exports = GS::Callback.block do |info| 
-  let col;
-  let data = info.toObject();
-  switch (data.id) {
-    case 'home': {
-      col = HomeCollection.new(data);
-      break;
-    }
-    case 'update': {
-      col = UpdateCollection.new(data);
-      break;
-    }
-    default: {
-      col = OtherCollection.new(data);
-      break;
-    }
-  }
-  return col;
+$exports = GS::Callback.block do |info|
+  return HomeCollection.create info
 end

@@ -29,6 +29,9 @@ namespace gscript {
         std::string context_root;
         mrb_state *mrb;
 
+        static bool setup_handler;
+        static void printHandler(const char *str, size_t len);
+
         void _setup(const char *root) const;
 
 //        static mrb_value callFunction(struct mrb_state *mrb, mrb_value);
@@ -62,7 +65,6 @@ namespace gscript {
     };
     
     CLASS_BEGIN_N(RubyClass, gc::ScriptClass)
-        struct RClass *script_class;
         friend class RubyScript;
         
     protected:
@@ -70,7 +72,7 @@ namespace gscript {
         virtual void bindScriptClass();
     public:
         _FORCE_INLINE_ struct RClass *getRubyClass() const {
-            return script_class;
+            return (struct RClass *)getScriptClass();
         }
         
         virtual gc::Variant apply(const gc::StringName &name, const gc::Variant **params, int count) const;
@@ -96,20 +98,6 @@ namespace gscript {
         }
         
         virtual gc::Variant apply(const gc::StringName &name, const gc::Variant **params, int count);
-    CLASS_END
-    
-    CLASS_BEGIN_N(RubyNativeObject, gc::NativeObject)
-
-        mrb_state *mrb;
-    public:
-
-        virtual void missMethod(const gc::StringName &name, gc::Variant *result, const gc::Variant **params, int count);
-
-        RubyNativeObject() {};
-        ~RubyNativeObject();
-        RubyNativeObject(void *native, mrb_state *mrb);
-        virtual void setNative(void *native);
-
     CLASS_END
 }
 

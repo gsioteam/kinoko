@@ -1,7 +1,7 @@
 /*
 ** mruby - An embeddable Ruby implementation
 **
-** Copyright (c) mruby developers 2010-2019
+** Copyright (c) mruby developers 2010-2020
 **
 ** Permission is hereby granted, free of charge, to any person obtaining
 ** a copy of this software and associated documentation files (the
@@ -62,11 +62,27 @@
 #define mrb_assert_int_fit(t1,n,t2,max) ((void)0)
 #endif
 
-#if defined __STDC_VERSION__ && __STDC_VERSION__ >= 201112L
-#define mrb_static_assert(exp, str) _Static_assert(exp, str)
+#if (defined __cplusplus && __cplusplus >= 201103L) || \
+    (defined _MSC_VER) || \
+    (defined __GXX_EXPERIMENTAL_CXX0X__)  /* for old G++/Clang++ */
+# define mrb_static_assert(exp, str) static_assert(exp, str)
+#elif defined __STDC_VERSION__ && \
+        ((__STDC_VERSION__ >= 201112L) || \
+         (defined __GNUC__ && __GNUC__ * 100 + __GNUC_MINOR__ >= 406))
+# define mrb_static_assert(exp, str) _Static_assert(exp, str)
 #else
-#define mrb_static_assert(exp, str) mrb_assert(exp)
+# /* alternative implementation of static_assert() */
+# define _mrb_static_assert_cat0(a, b) a##b
+# define _mrb_static_assert_cat(a, b) _mrb_static_assert_cat0(a, b)
+# ifdef __COUNTER__
+#  define _mrb_static_assert_id(prefix) _mrb_static_assert_cat(prefix, __COUNTER__)
+# else
+#  define _mrb_static_assert_id(prefix) _mrb_static_assert_cat(prefix, __LINE__)
+# endif
+# define mrb_static_assert(exp, str) \
+   struct _mrb_static_assert_id(_mrb_static_assert_) { char x[(exp) ? 1 : -1]; }
 #endif
+#define mrb_static_assert1(exp) mrb_static_assert(exp, #exp)
 
 #include "mrbconf.h"
 
@@ -76,6 +92,7 @@
 #include <mruby/version.h>
 
 #ifndef MRB_WITHOUT_FLOAT
+#include <float.h>
 #ifndef FLT_EPSILON
 #define FLT_EPSILON (1.19209290e-07f)
 #endif
@@ -958,7 +975,20 @@ mrb_get_mid(mrb_state *mrb) /* get method symbol */
  */
 MRB_API mrb_int mrb_get_argc(mrb_state *mrb);
 
+/**
+ * Retrieve an array of arguments from mrb_state.
+ *
+ * Correctly handles *splat arguments.
+ */
 MRB_API mrb_value* mrb_get_argv(mrb_state *mrb);
+
+/**
+ * Retrieve the first and only argument from mrb_state.
+ * Raises ArgumentError unless the number of arguments is exactly one.
+ *
+ * Correctly handles *splat arguments.
+ */
+MRB_API mrb_value mrb_get_arg1(mrb_state *mrb);
 
 /* `strlen` for character string literals (use with caution or `strlen` instead)
     Adjacent string literals are concatenated in C/C++ in translation phase 6.
@@ -1238,6 +1268,7 @@ MRB_API void mrb_warn(mrb_state *mrb, const char *fmt, ...);
 MRB_API mrb_noreturn void mrb_bug(mrb_state *mrb, const char *fmt, ...);
 MRB_API void mrb_print_backtrace(mrb_state *mrb);
 MRB_API void mrb_print_error(mrb_state *mrb);
+MRB_API void mrb_set_print_handler(void(*handler)(const char *str, size_t len));
 /* function for `raisef` formatting */
 MRB_API mrb_value mrb_vformat(mrb_state *mrb, const char *format, va_list ap);
 

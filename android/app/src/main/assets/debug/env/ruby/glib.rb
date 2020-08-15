@@ -1,9 +1,10 @@
 require 'object'
 
+p "---- hello"
 module GS
 
   class Callback < GS::Object
-    native 'gc::Callback'
+    native 'gc::_Callback'
     
     def call *argv
       invoke argv
@@ -21,7 +22,11 @@ module GS
     attr_accessor :block
 
     def _invoke args
-      @block.call *args if @block
+      if @block 
+        arr = [];
+        args.each {|v| arr << v}
+        @block.call *arr
+      end
     end
     
   end
@@ -101,7 +106,7 @@ module GS
 
     def querySelector selector
       arr = query selector
-      if arr.size > 0 then arr[0] : nil
+      if arr.size > 0 then arr[0] else nil end
     end
 
     alias querySelectorAll query
@@ -129,7 +134,7 @@ module GS
     Header = 2
   end
 
-  class Error < GS:Object
+  class Error < GS::Object
     native 'gs::Error'
   end
 
