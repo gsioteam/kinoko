@@ -1,12 +1,12 @@
 
 class Collection < GS::Collection
   def initialize data
-    @url = data.url
+    @url = data[:url]
   end
 
   def fetch url
-    req = GS::Request.new 'GET', url
-    @callback = GS::Request.block do 
+    req = GS::Request.create 'GET', url
+    @callback = GS::Callback.block do 
       if req.getError
         yield GS::Error.create(302, "Request error " + req.getError)
       else
@@ -66,5 +66,5 @@ class HomeCollection < Collection
 end
 
 $exports = GS::Callback.block do |info|
-  return HomeCollection.create info
+  HomeCollection.create info
 end

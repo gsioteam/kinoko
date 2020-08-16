@@ -1,6 +1,5 @@
 require 'object'
 
-p "---- hello"
 module GS
 
   class Callback < GS::Object
@@ -23,9 +22,7 @@ module GS
 
     def _invoke args
       if @block 
-        arr = [];
-        args.each {|v| arr << v}
-        @block.call *arr
+        @block.call *args
       end
     end
     
