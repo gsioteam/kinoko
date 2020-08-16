@@ -91,7 +91,7 @@ mrb_value ruby_h2r(mrb_state *mrb, const gc::Variant &v) {
                 return mrb_str_new_cstr(mrb, str.c_str());
             }
             RubyScript *script = (RubyScript*)mrb->ud;
-            RubyClass *mcls = (RubyClass*)script->find(typeclass->getFullname());
+            RubyClass *mcls = (RubyClass*)script->find(typeclass);
             if (mcls) {
                 RubyInstance *mins = (RubyInstance*)mcls->get(v.ref());
                 if (mins) {

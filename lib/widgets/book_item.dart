@@ -16,7 +16,6 @@ Widget makeBookItem(BuildContext context, DataItem item, void Function() onTap) 
             image: CachedNetworkImageProvider(item.picture),
             width: 26,
             height: 26,
-            gaplessPlayback: true,
           ),
           Padding(padding: EdgeInsets.all(5)),
           Text(item.title, style: Theme.of(context).textTheme.subtitle1,)
@@ -32,7 +31,6 @@ Widget makeBookItem(BuildContext context, DataItem item, void Function() onTap) 
         fit: BoxFit.cover,
         width: 56,
         height: 56,
-        gaplessPlayback: true,
       ),
       onTap: onTap,
     );

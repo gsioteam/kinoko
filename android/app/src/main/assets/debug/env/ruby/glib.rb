@@ -77,7 +77,8 @@ module GS
   class Data < GS::Object
     native 'gc::Data'
 
-    def to_s coding
+    def to_s *args
+      coding = args[0]
       if coding then Encoder.decode(self, coding) else text end
     end
   end
@@ -88,6 +89,10 @@ module GS
 
   class Request < GS::Object
     native 'gs::Request'
+
+    def has_error
+      getError.length > 0
+    end
 
     Raw = 0,
     Mutilpart = 1
@@ -106,11 +111,21 @@ module GS
       if arr.size > 0 then arr[0] else nil end
     end
 
-    alias querySelectorAll query
-    alias text getText
-    alias tagName getTagName
-    alias parentElement parent
-    alias parentNode parent
+    def querySelectorAll selector
+      query selector
+    end
+    def text 
+      getText
+    end
+    def tagName 
+      getTagName
+    end
+    def parentElement 
+      parent
+    end
+    def parentNode 
+      parent
+    end
 
     def children
       unless _children
@@ -120,7 +135,11 @@ module GS
         end
       end
       _children
-    end 
+    end
+
+    def attr name
+      getAttribute name
+    end
   end
 
   class DataItem < GS::Object

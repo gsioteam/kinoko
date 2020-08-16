@@ -218,6 +218,7 @@ class Request extends Base {
       } else {
         http.StreamedResponse res = await request.send();
         if (_canceled) return;
+        print("Start ${request.url} ${_timeout}");
         downloadTotal = res.contentLength;
         downloadNow = 0;
         List<int> receiveBody = List();
@@ -226,7 +227,7 @@ class Request extends Base {
           receiveBody.addAll(value);
           if (onDownloadProgress != null) onDownloadProgress.invoke([downloadNow, downloadTotal]);
         });
-        await _subscription.asFuture().timeout(Duration(milliseconds: _timeout == null ? 30 : _timeout), onTimeout: () {
+        await _subscription.asFuture().timeout(Duration(seconds: _timeout == null ? 30 : _timeout), onTimeout: () {
           if (!_canceled) {
             throw new Exception("Timeout");
           }
@@ -236,6 +237,7 @@ class Request extends Base {
 
     } catch (e) {
       _error = e.toString();
+      print("Error ${_error}");
       if (onComplete != null) onComplete.invoke([]);
       else print("Error complete $onComplete  on ($this) " + _error);
       cancel();

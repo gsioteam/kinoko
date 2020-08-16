@@ -1,7 +1,15 @@
+module URI
+  class Parsed
+    def hostname
+      host
+    end
+  end
+end
 
 class PageURL
   def initialize url
     @uri = URI.parse url
+    p "init #{url} #{@uri}"
   end
 
   def origin

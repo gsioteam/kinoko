@@ -164,6 +164,10 @@ class GumboNode extends Object {
         }
         return this._children;
     }
+    
+    attr(name) {
+        return this.getAttribute(name)
+    }
 }
 GumboNode.reg();
 
