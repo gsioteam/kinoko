@@ -75,10 +75,10 @@ namespace gs {
         PROPERTY(data, getData, NULL);
 
         METHOD const gc::Variant &getInfoData() const {
-            return target->getInfoData();
+            return target ? target->getInfoData() : gc::Variant::null();
         }
         METHOD void setInfoData(const gc::Variant &info_data) {
-            target->setInfoData(info_data);
+            if (target) target->setInfoData(info_data);
         }
         PROPERTY(info_data, getInfoData, setInfoData);
 

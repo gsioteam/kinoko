@@ -40,11 +40,12 @@ class DownloadPictureItem {
       if (!canceled) {
         callback();
       }
-    }).catchError(() {
+    }).catchError((err) {
+      print("Download Error : ${err}");
       if (!canceled) {
         callback();
       }
-      return SynchronousFuture<Null>(null);
+      return err;
     });
   }
 

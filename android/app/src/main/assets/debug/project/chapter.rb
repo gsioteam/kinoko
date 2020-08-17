@@ -2,30 +2,72 @@
 class ChapterCollection < GS::Collection 
   
   ERROR = 1
-  DATA = 2
   SUCCESS = 3
+
+  BASE_URL = 'http://www.dm5.cn'
+  CHAPTER_PATH = '/chapterfun.ashx'
 
   def initialize data
     @url = data.link
     @env = GS::ScriptContext.create 'v8'
   end
 
-  def load_url url, state
+  def load_pages page, state, &block
+    url = "#{BASE_URL}#{CHAPTER_PATH}?cid=#{state[:cid]}&page=#{page+1}&language=1&gtk=6&_cid=#{state[:cid]}&_mid=#{state[:mid]}&_dt=#{GS::Encoder.urlEncode(state[:dt])}&_sign=#{state[:sign]}"
+        
+    req = GS::Request.create 'GET', url
+    req.setHeader 'Referer', BASE_URL
+    @callback = GS::Callback.block do 
+      if req.has_error
+        yield GS::Error.create(302, "Request error " + req.getError)
+      else
+        body = req.getResponseBody
+        text = body.to_s;
+
+        arr = @env.eval(text)
+        res = []
+        p "arr #{text} #{arr.size}"
+        arr.each_with_index do |img_url, index|
+          p "get #{img_url} at #{index}"
+          item = GS::DataItem.create 
+          item.picture = img_url
+          setDataAt item, page + index
+        end
+        p "test 1"
+        if page + arr.size >= state[:total]
+          yield nil
+        else
+          p "test 2"
+          load_pages page + arr.size, state, &block
+        end
+      end
+    end
+    req.setOnComplete @callback
+    req.start
+  end
+
+  def load_url url
     req = GS::Request.create 'GET', url
     @callback = GS::Callback.block do 
       if req.has_error
-        yield ERROR, GS::Error.create(302, "Request error " + req.getError)
+        yield GS::Error.create(302, "Request error " + req.getError)
       else
         body = req.getResponseBody
-        doc = GS::GumboNode.parse(body, 'gbk')
-        script = doc.querySelector('script:not([src])')
+        doc = GS::GumboNode.parse body
+        script = doc.querySelector 'script:not([src])'
+        @env.eval "var window={location:{}}; function reseturl(){}"
         @env.eval script.text
-        @page_count = @env.eval 'DM5_IMAGE_COUNT'
-        cid = @env.eval 'DM5_CID'
-        curl = @env.eval 'DM5_CURL_END'
-        sign = @env.eval 'DM5_VIEWSIGN'
-        p "pagecount #{@page_count} cid #{cid} curl #{curl}"
-
+        state = {
+          total: @env.eval('DM5_IMAGE_COUNT'),
+          cid: @env.eval('DM5_CID'),
+          curl: @env.eval('DM5_CURL_END'),
+          sign: @env.eval('DM5_VIEWSIGN'),
+          mid: @env.eval('COMIC_MID'),
+          dt: @env.eval('DM5_VIEWSIGN_DT')
+        }
+        load_pages 0, state do |error|
+          yield error
+        end
       end
     end
     req.setOnComplete @callback
@@ -33,7 +75,10 @@ class ChapterCollection < GS::Collection
   end
 
   def reload _, cb
-    load_url @url, {}
+    load_url @url do |error|
+      cb.call error
+    end
+    return true
   end
 
 end
