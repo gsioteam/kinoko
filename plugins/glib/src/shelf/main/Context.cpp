@@ -49,6 +49,7 @@ namespace gs {
                 Variant tar = func(data);
                 if (tar && tar.getTypeClass()->isTypeOf(Collection::getClass())) {
                     target = tar;
+                    target->setSettings(settings);
                     target->apply(KeepKey);
                     setupTarget(target);
                 } else {
@@ -76,6 +77,7 @@ namespace gs {
                 Variant tar = func(data);
                 if (tar && tar.getTypeClass()->isTypeOf(Collection::getClass())) {
                     target = tar;
+                    target->setSettings(settings);
                     target->apply(KeepKey);
                     setupTarget(target);
                 } else {
@@ -102,7 +104,7 @@ namespace gs {
     }
 }
 
-gc::Ref<Context> Context::create(const std::string &path, const Variant &data, ContextType type, const std::string &key) {
+gc::Ref<Context> Context::create(const std::string &path, const Variant &data, ContextType type, const std::string &key, const std::shared_ptr<Settings> &settings) {
     size_t idx = path.find_last_of('.');
     if (idx < path.size()) {
         std::string ext = path.substr(idx+1);
@@ -110,12 +112,14 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data, C
             JavaScriptContext *ctx = new JavaScriptContext;
             ctx->type = type;
             ctx->project_key = key;
+            ctx->settings = settings;
             ctx->setup(path.c_str(), data);
             return ctx;
         } else if (RubyContext::isSupport(ext)) {
             RubyContext *ctx = new RubyContext;
             ctx->type = type;
             ctx->project_key = key;
+            ctx->settings = settings;
             ctx->setup(path.c_str(), data);
             return ctx;
         }

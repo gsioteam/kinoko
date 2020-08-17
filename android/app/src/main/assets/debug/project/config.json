@@ -11,6 +11,7 @@
             "url": "https://so.kukudm.com/m_search.asp?kw={0}&page={1}"
         }
     },
+    "settings": "settings.rb",
     "categories": [
         {
             "title": "更新",

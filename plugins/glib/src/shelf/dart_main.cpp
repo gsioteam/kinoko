@@ -29,6 +29,7 @@
 #include "utils/ScriptContext.h"
 #include "models/CollectionData.h"
 #include "main/LibraryContext.h"
+#include "main/Settings.h"
 
 using namespace gscript;
 using namespace gc;
@@ -61,6 +62,8 @@ void dart_setupLibrary(Dart_CallClass call_class, Dart_CallInstance call_instanc
     ClassDB::reg<gs::ScriptContext>();
     ClassDB::reg<gs::CollectionData>();
     ClassDB::reg<gs::LibraryContext>();
+    ClassDB::reg<gs::LibraryContext>();
+    ClassDB::reg<gs::SettingItem>();
 
     DartScript::setup(call_class, call_instance, from_native);
 

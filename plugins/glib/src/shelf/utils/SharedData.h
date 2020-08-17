@@ -22,6 +22,8 @@ namespace gs {
 
         static const std::vector<uint8_t> public_key;
 
+        static const std::string SETTING_KEY;
+
 
     };
 

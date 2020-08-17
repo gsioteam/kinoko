@@ -11,6 +11,7 @@
 #include "../gs_define.h"
 
 namespace gs {
+    class Settings;
 
     CLASS_BEGIN_NV(Context, gc::Object)
 
@@ -20,7 +21,8 @@ namespace gs {
             Project = 0,
             Book = 1,
             Chapter = 2,
-            Search = 3
+            Search = 3,
+            Settings = 4
         ENUM_END
 
     protected:
@@ -32,6 +34,7 @@ namespace gs {
         ContextType type;
         bool first_enter = true;
         std::string project_key;
+        std::shared_ptr<Settings> settings;
 
         void setupTarget(const gc::Ref<Collection> &target);
         void saveTime(const std::string &key);
@@ -87,7 +90,7 @@ namespace gs {
         }
         PROPERTY(project_key, getProjectKey, NULL);
 
-        static gc::Ref<Context> create(const std::string &path, const gc::Variant &data, ContextType type, const std::string &key);
+        static gc::Ref<Context> create(const std::string &path, const gc::Variant &data, ContextType type, const std::string &key, const std::shared_ptr<Settings> &settings);
 
         METHOD static gc::Array searchKeys(const std::string &key, int limit);
         METHOD static void removeSearchKey(const std::string &key);

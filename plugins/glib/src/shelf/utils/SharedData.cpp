@@ -16,6 +16,7 @@ std::string shared::repo_path(bool ignore_debug) {
 
 const std::string shared::MAIN_PROJECT_KEY = "MAIN_PROJECT";
 const std::string shared::HOME_PAGE_LIST = "HOME_PAGE_LIST:";
+const std::string shared::SETTING_KEY = "SETTING:";
 const std::vector<uint8_t> shared::public_key{2,169,116,121,28,94,121,148,224,164,101,4,129,150,179,221,230,79,31,104,57,165,189,188,150,139,234,217,84,155,201,149,10,};
 
 std::time_t gs::getTimeStamp() {

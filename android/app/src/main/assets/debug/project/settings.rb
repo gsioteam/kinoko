@@ -1,0 +1,4 @@
+
+class Settings 
+
+end

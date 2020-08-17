@@ -8,11 +8,13 @@
 #include <core/Ref.h>
 #include <nlohmann/json.hpp>
 #include <core/Array.h>
+#include "Settings.h"
 #include "../gs_define.h"
 
 namespace gs {
     class Context;
     class DataItem;
+    class Settings;
 
     CLASS_BEGIN_N(Project, gc::Object)
 
@@ -33,6 +35,9 @@ namespace gs {
 
         gc::Array categories;
 
+        std::shared_ptr<Settings> settings;
+        std::string settings_path;
+
     public:
 
         METHOD void initialize(const std::string &path);
@@ -49,6 +54,7 @@ namespace gs {
         METHOD const gc::Array &getCategories() const {return categories;}
         METHOD const std::string &getFullpath() const {return path;}
         METHOD const std::string &getPath() const {return dir_name;}
+        METHOD const std::string &getSettingsPath() const {return settings_path;}
 
         METHOD static gc::Ref<Project> getMainProject();
         METHOD void setMainProject();
@@ -57,6 +63,7 @@ namespace gs {
         METHOD gc::Ref<Context> createBookContext(const gc::Ref<DataItem> &item);
         METHOD gc::Ref<Context> createChapterContext(const gc::Ref<DataItem> &item);
         METHOD gc::Ref<Context> createSearchContext();
+        METHOD gc::Ref<SettingsContext> createSettingsContext();
 
         ON_LOADED_BEGIN(cls, gc::Object)
             INITIALIZER(cls, Project, initialize);
@@ -71,6 +78,7 @@ namespace gs {
             ADD_METHOD(cls, Project, getCategories);
             ADD_METHOD(cls, Project, getFullpath);
             ADD_METHOD(cls, Project, getPath);
+            ADD_METHOD(cls, Project, getSettingsPath);
             ADD_METHOD(cls, Project, getMainProject);
             ADD_METHOD(cls, Project, setMainProject);
 

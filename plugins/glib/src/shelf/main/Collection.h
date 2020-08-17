@@ -12,12 +12,14 @@
 #include "../gs_define.h"
 
 namespace gs {
+    class Settings;
 
     CLASS_BEGIN_N(Collection, gc::Object)
 
         bool loading = false;
         gc::Array data;
         gc::Variant info_data;
+        std::shared_ptr<Settings> settings;
 
     public:
 
@@ -30,6 +32,10 @@ namespace gs {
         Collection() {}
 
         METHOD void initialize(gc::Variant info_data);
+
+        void setSettings(const std::shared_ptr<Settings> &settings) {
+            this->settings = settings;
+        }
 
         EVENT(bool, reload, gc::Map, gc::Callback);
         EVENT(bool, loadMore, gc::Callback);
@@ -61,8 +67,6 @@ namespace gs {
 
         ON_LOADED_BEGIN(cls, gc::Object)
             INITIALIZER(cls, Collection, initialize);
-//            ADD_METHOD(cls, Collection, reload);
-//            ADD_METHOD(cls, Collection, loadMore);
             ADD_METHOD(cls, Collection, setDataAt);
             ADD_METHOD(cls, Collection, appendData);
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Collection, getData), ADD_METHOD(cls, Collection, setData));

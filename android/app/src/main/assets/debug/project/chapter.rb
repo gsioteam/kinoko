@@ -26,18 +26,14 @@ class ChapterCollection < GS::Collection
 
         arr = @env.eval(text)
         res = []
-        p "arr #{text} #{arr.size}"
         arr.each_with_index do |img_url, index|
-          p "get #{img_url} at #{index}"
           item = GS::DataItem.create 
           item.picture = img_url
           setDataAt item, page + index
         end
-        p "test 1"
         if page + arr.size >= state[:total]
           yield nil
         else
-          p "test 2"
           load_pages page + arr.size, state, &block
         end
       end

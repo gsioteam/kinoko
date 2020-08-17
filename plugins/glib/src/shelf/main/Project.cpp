@@ -11,6 +11,8 @@
 #include "DataItem.h"
 #include "../models/KeyValue.h"
 #include <bit64/bit64.h>
+#include "Settings.h"
+
 extern "C" {
 #include <sha1.h>
 }
@@ -66,6 +68,14 @@ void Project::initialize(const std::string &path) {
             }
 
             validated = true;
+
+            if (config.contains("settings")) {
+                settings_path = config["settings"];
+                settings = std::shared_ptr<Settings>(new Settings(dir_name));
+                if (!settings->exist()) {
+
+                }
+            }
         } catch (exception &e) {
             LOG(e, "%s", e.what());
         }
@@ -88,17 +98,21 @@ void Project::setMainProject() {
 }
 
 gc::Ref<Context> Project::createIndexContext(const gc::Variant &data) {
-    return Context::create(getFullpath() + "/" + index, data, Context::Project, dir_name);
+    return Context::create(getFullpath() + "/" + index, data, Context::Project, dir_name, settings);
 }
 
 gc::Ref<Context> Project::createBookContext(const gc::Ref<DataItem> &item) {
-    return Context::create(getFullpath() + "/" + book, item, Context::Book, dir_name);
+    return Context::create(getFullpath() + "/" + book, item, Context::Book, dir_name, settings);
 }
 
 gc::Ref<Context> Project::createChapterContext(const gc::Ref<DataItem> &item) {
-    return Context::create(getFullpath() + "/" + chapter, item, Context::Chapter, dir_name);
+    return Context::create(getFullpath() + "/" + chapter, item, Context::Chapter, dir_name, settings);
 }
 
 gc::Ref<Context> Project::createSearchContext() {
-    return Context::create(getFullpath() + "/" + search, search_data, Context::Search, dir_name);
+    return Context::create(getFullpath() + "/" + search, search_data, Context::Search, dir_name, settings);
+}
+
+gc::Ref<SettingsContext> Project::createSettingsContext() {
+    return new SettingsContext(settings);
 }
