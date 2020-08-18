@@ -26,6 +26,7 @@ class Project extends Base {
   Array get categories => call("getCategories");
   get fullpath => call("getFullpath");
   get path => call("getPath");
+  String get settings_path => call("getSettingsPath");
 
   static Project getMainProject() => Base.s_call(Project, "getMainProject");
   void setMainProject() => call("setMainProject");
@@ -41,4 +42,5 @@ class Project extends Base {
   Context createBookContext(DataItem data) => call("createBookContext", argv: [data]);
   Context createChapterContext(DataItem data) => call("createChapterContext", argv: [data]);
   Context createSearchContext() => call("createSearchContext");
+  Context createSettingsContext() => call("createSettingsContext");
 }

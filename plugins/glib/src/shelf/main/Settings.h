@@ -12,10 +12,10 @@
 
 namespace gs {
     ENUM_BEGIN(SettingType)
-        Header,
-        Switch,
-        Input,
-        Options
+        SettingHeader,
+        SettingSwitch,
+        SettingInput,
+        SettingOptions
     ENUM_END
 
     class Settings {
@@ -82,7 +82,7 @@ namespace gs {
             ADD_PROPERTY_EX(cls, "default_value", SettingItem, getDefaultValue, setDefaultValue);
             ADD_PROPERTY_EX(cls, "data", SettingItem, getData, setData);
 
-            ADD_METHOD(cls, SettingItem, initialize);
+            ADD_METHOD_D(cls, SettingItem, initialize, gc::Variant::null(), gc::Variant::null());
         ON_LOADED_END
 
     CLASS_END

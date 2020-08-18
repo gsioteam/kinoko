@@ -3,6 +3,7 @@
 //
 
 #include "Collection.h"
+#include "Settings.h"
 
 using namespace gs;
 using namespace gc;
@@ -83,4 +84,12 @@ void Collection::appendData(const gc::Array &array) {
         data->push_back(array->get(i));
     }
     trigger(NOTIFICATION_dataChanged, Reload, array, o_size);
+}
+
+const gc::Variant & Collection::getSetting(const std::string &key) {
+    return settings->get(key);
+}
+
+void Collection::setSetting(const std::string &key, const gc::Variant &value) {
+    settings->set(key, value);
 }

@@ -63,7 +63,7 @@ namespace gs {
         METHOD gc::Ref<Context> createBookContext(const gc::Ref<DataItem> &item);
         METHOD gc::Ref<Context> createChapterContext(const gc::Ref<DataItem> &item);
         METHOD gc::Ref<Context> createSearchContext();
-        METHOD gc::Ref<SettingsContext> createSettingsContext();
+        METHOD gc::Ref<Context> createSettingsContext();
 
         ON_LOADED_BEGIN(cls, gc::Object)
             INITIALIZER(cls, Project, initialize);
@@ -86,6 +86,7 @@ namespace gs {
             ADD_METHOD(cls, Project, createBookContext);
             ADD_METHOD(cls, Project, createChapterContext);
             ADD_METHOD(cls, Project, createSearchContext);
+            ADD_METHOD(cls, Project, createSettingsContext);
         ON_LOADED_END
 
     CLASS_END

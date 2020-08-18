@@ -9,6 +9,7 @@ import 'package:glib/utils/git_repository.dart';
 import 'package:kinoko/book_list.dart';
 import 'package:glib/main/context.dart';
 import 'package:kinoko/search_page.dart';
+import 'package:kinoko/settings_page.dart';
 import 'widgets/home_widget.dart';
 import './configs.dart';
 
@@ -49,47 +50,66 @@ class CollectionsPage extends HomeWidget {
   @override
   List<Widget> buildActions(BuildContext context, void Function() changed) {
     Project project = ((key as GlobalKey).currentState as _CollectionsPageState)?.project;
-    String search = project?.search;
-    return (search == null || search.isEmpty) ? [] : [
-      IconButton(
-        key: searchKey,
-        icon: Icon(Icons.search),
-        onPressed: () async {
-          RenderObject object = searchKey.currentContext?.findRenderObject();
-          var translation = object?.getTransformTo(null)?.getTranslation();
-          var size = object?.semanticBounds?.size;
-          Offset center;
-          if (translation != null) {
-            double x = translation.x, y = translation.y;
-            if (size != null) {
-              x += size.width / 2;
-              y += size.height / 2;
-            }
-            center = Offset(x, y);
-          } else {
-            center = Offset(0, 0);
-          }
+    List<Widget> actions = [];
 
-          Project project = ((key as GlobalKey)?.currentState as _CollectionsPageState)?.project;
-          project?.control();
-          Context ctx = project?.createSearchContext()?.control();
-          await Navigator.of(context).push(PageRouteBuilder(
-            pageBuilder: (context, animation, secAnimation) {
-              return SearchPage(project, ctx);
-            },
-            transitionDuration: Duration(milliseconds: 300),
-            transitionsBuilder: (context, animation, secAnimation, child) {
-              return ClipOval(
-                clipper: _RectClipper(center, animation.value),
-                child: child,
-              );
+    String settings = project?.settings_path;
+    if (settings != null && settings.isNotEmpty) {
+      actions.add(
+        IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () async {
+              Context ctx = project.createSettingsContext().control();
+              await Navigator.of(context).push(MaterialPageRoute(builder: (_)=>SettingsPage(ctx)));
+              ctx.release();
             }
-          ));
-          ctx?.release();
-          project?.release();
-        }
-      )
-    ];
+        )
+      );
+    }
+
+    String search = project?.search;
+    if (search != null && search.isNotEmpty) {
+      actions.add(
+          IconButton(
+              key: searchKey,
+              icon: Icon(Icons.search),
+              onPressed: () async {
+                RenderObject object = searchKey.currentContext?.findRenderObject();
+                var translation = object?.getTransformTo(null)?.getTranslation();
+                var size = object?.semanticBounds?.size;
+                Offset center;
+                if (translation != null) {
+                  double x = translation.x, y = translation.y;
+                  if (size != null) {
+                    x += size.width / 2;
+                    y += size.height / 2;
+                  }
+                  center = Offset(x, y);
+                } else {
+                  center = Offset(0, 0);
+                }
+
+                Project project = ((key as GlobalKey)?.currentState as _CollectionsPageState)?.project;
+                project?.control();
+                Context ctx = project?.createSearchContext()?.control();
+                await Navigator.of(context).push(PageRouteBuilder(
+                    pageBuilder: (context, animation, secAnimation) {
+                      return SearchPage(project, ctx);
+                    },
+                    transitionDuration: Duration(milliseconds: 300),
+                    transitionsBuilder: (context, animation, secAnimation, child) {
+                      return ClipOval(
+                        clipper: _RectClipper(center, animation.value),
+                        child: child,
+                      );
+                    }
+                ));
+                ctx?.release();
+                project?.release();
+              }
+          )
+      );
+    }
+    return actions;
   }
 }
 

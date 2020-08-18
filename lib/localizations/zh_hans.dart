@@ -35,5 +35,6 @@ const Map words = {
   "select_main_project_first": "请先选择一个项目",
   "bootstart": "启动中",
   "cancel": "放弃",
-  "retry": "再试"
+  "retry": "再试",
+  "settings": "詳設細定"
 };

@@ -65,10 +65,14 @@ namespace gs {
         }
         PROPERTY(info_data, getInfoData, setInfoData);
 
+        METHOD const gc::Variant &getSetting(const std::string &key);
+        METHOD void setSetting(const std::string &key, const gc::Variant &value);
+
         ON_LOADED_BEGIN(cls, gc::Object)
             INITIALIZER(cls, Collection, initialize);
             ADD_METHOD(cls, Collection, setDataAt);
             ADD_METHOD(cls, Collection, appendData);
+            ADD_METHOD(cls, Collection, getSetting);
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Collection, getData), ADD_METHOD(cls, Collection, setData));
             ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Collection, getInfoData), ADD_METHOD(cls, Collection, setInfoData));
         ON_LOADED_END

@@ -17,13 +17,13 @@ namespace gs {
 
     public:
 
-        ENUM_BEGIN(ContextType)
+        enum ContextType {
             Project = 0,
             Book = 1,
             Chapter = 2,
             Search = 3,
-            Settings = 4
-        ENUM_END
+            Setting = 4
+        };
 
     protected:
         gc::Ref<Collection> target;
@@ -95,6 +95,13 @@ namespace gs {
         METHOD static gc::Array searchKeys(const std::string &key, int limit);
         METHOD static void removeSearchKey(const std::string &key);
 
+        METHOD gc::Variant getSetting(const std::string &key) {
+            return target->getSetting(key);
+        }
+        METHOD void setSetting(const std::string &key, gc::Variant &value) {
+            target->setSetting(key, value);
+        }
+
         ON_LOADED_BEGIN(cls, gc::Object)
             ADD_METHOD(cls, Context, setup);
             ADD_METHOD(cls, Context, isReady);
@@ -104,6 +111,8 @@ namespace gs {
             ADD_METHOD(cls, Context, exitView);
             ADD_METHOD(cls, Context, searchKeys);
             ADD_METHOD(cls, Context, removeSearchKey);
+            ADD_METHOD(cls, Context, getSetting);
+            ADD_METHOD(cls, Context, setSetting);
             ADD_PROPERTY(cls, "on_data_changed", NULL, ADD_METHOD(cls, Context, setOnDataChanged));
             ADD_PROPERTY(cls, "on_loading_status", NULL, ADD_METHOD(cls, Context, setOnLoadingStatus));
             ADD_PROPERTY(cls, "on_error", NULL, ADD_METHOD(cls, Context, setOnError));

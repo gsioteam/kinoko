@@ -25,6 +25,7 @@ import 'utils/bit64.dart';
 import 'utils/request.dart';
 import 'utils/script_context.dart';
 import 'main/collection_data.dart';
+import 'main/setting_item.dart';
 
 class Glib {
   static MethodChannel channel;
@@ -57,6 +58,7 @@ class Glib {
     ScriptContext.reg();
     CollectionData.reg();
     LibraryContext.reg();
+    SettingItem.reg();
 
     Pointer<Utf8> pstr = Utf8.toUtf8(root_path);
     postSetup(pstr);

@@ -57,7 +57,7 @@ add_library(
         src/shelf/main/Project.cpp
         src/shelf/main/DataItem.cpp
         src/shelf/main/LibraryContext.cpp
-        src/shelf/main/SettingsContext.cpp
+        src/shelf/main/Settings.cpp
 
         src/shelf/thirdparties/sha1/sha1.c
 

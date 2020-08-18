@@ -11,11 +11,11 @@
 #include "../gs_define.h"
 
 namespace gs {
-    ENUM_BEGIN(DataType)
+    enum DataType {
         Book = 0,
         Chapter = 1,
         Header = 2,
-    ENUM_END
+    };
 
     class CollectionData;
 

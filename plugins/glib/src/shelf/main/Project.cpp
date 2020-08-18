@@ -113,6 +113,6 @@ gc::Ref<Context> Project::createSearchContext() {
     return Context::create(getFullpath() + "/" + search, search_data, Context::Search, dir_name, settings);
 }
 
-gc::Ref<SettingsContext> Project::createSettingsContext() {
-    return new SettingsContext(settings);
+gc::Ref<Context> Project::createSettingsContext() {
+    return Context::create(getFullpath() + "/" + settings_path, gc::Variant::null(), Context::Setting, dir_name, settings);
 }

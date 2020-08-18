@@ -157,4 +157,13 @@ module GS
   class ScriptContext < GS::Object
     native 'gs::ScriptContext'
   end
+
+  class SettingItem < GS::Object
+    native 'gs::SettingItem'
+
+    Header = 0
+    Switch = 1
+    Input = 2
+    Options = 3
+  end
 end
