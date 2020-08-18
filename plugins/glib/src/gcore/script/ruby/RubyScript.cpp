@@ -444,6 +444,7 @@ void RubyScript::reset() {
     sym_native_instance = mrb_intern_cstr(mrb, "native_instance");
     mrb_define_class_method(mrb, mrb->object_class, "native", &ruby_native_class, MRB_ARGS_REQ(1));
     mrb_define_method(mrb, mrb->object_class, "native_call", &ruby_call_i, MRB_ARGS_REQ(2));
+
     if (!context_root.empty())
         _setup(context_root.c_str());
     regClass(mrb->object_class, gc::Object::getClass()->getFullname());

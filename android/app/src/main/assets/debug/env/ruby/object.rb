@@ -18,7 +18,6 @@ module GS
 
     def self.create *args
       obj = self.new *args
-      p "#{self} #{args.size}"
       obj.native_initialize args
       obj
     end

@@ -116,7 +116,7 @@ class _ChapterItemState extends State<ChapterItem> {
       children: <Widget>[
         ListTile(
           title: Text(widget.title),
-          subtitle: (widget.subtitle == null || widget.subtitle.length == 0) ? null : Text(widget.subtitle),
+          subtitle: (widget.subtitle == null || widget.subtitle.length == 0) ? null : Text(widget.subtitle, style: Theme.of(context).textTheme.caption.copyWith(fontSize: 8),),
           trailing:
           widget.downloadItem == null ?
           AnimatedOpacity(

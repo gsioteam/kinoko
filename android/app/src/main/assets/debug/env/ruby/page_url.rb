@@ -8,8 +8,8 @@ end
 
 class PageURL
   def initialize url
+    p "init #{url}"
     @uri = URI.parse url
-    p "init #{url} #{@uri}"
   end
 
   def origin

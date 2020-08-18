@@ -110,6 +110,7 @@ std::string gs::GumboNode::getText() {
     list<::GumboNode *> nodes;
     nodes.push_back(N);
     stringstream ss;
+    bool white_space = true;
 
     while (nodes.size() > 0) {
         auto n = nodes.front();
@@ -118,13 +119,21 @@ std::string gs::GumboNode::getText() {
         switch (n->type) {
             case GUMBO_NODE_TEXT: {
                 ss << n->v.text.text;
+                white_space = false;
                 break;
             }
             case GUMBO_NODE_WHITESPACE: {
-                ss << " ";
+                if (!white_space) {
+                    ss << " ";
+                    white_space = true;
+                }
                 break;
             }
             case GUMBO_NODE_ELEMENT: {
+                if (!white_space) {
+                    ss << " ";
+                    white_space = true;
+                }
                 GumboVector children = n->v.element.children;
                 for (int i = children.length - 1; i >= 0; --i) {
                     ::GumboNode *child = (::GumboNode *)children.data[i];
@@ -134,7 +143,9 @@ std::string gs::GumboNode::getText() {
             }
         }
     }
-    return ss.str();
+    string str = ss.str();
+    LOG(i, "Ou %s", str.c_str());
+    return str;
 }
 
 size_t gs::GumboNode::childCount() {
@@ -167,7 +178,9 @@ gc::Ref<gs::GumboNode> gs::GumboNode::parent() {
 std::string gs::GumboNode::getAttribute(const std::string &name) {
     if (n && N->type == GUMBO_NODE_ELEMENT) {
         GumboAttribute *attr = gumbo_get_attribute(&N->v.element.attributes, name.c_str());
-        return attr->value ? attr->value : string();
+        if (attr && attr->value) {
+            return attr->value;
+        }
     }
     return string();
 }

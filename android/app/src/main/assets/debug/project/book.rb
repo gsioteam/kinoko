@@ -29,12 +29,22 @@ class BookCollection < GS::Collection
       if error
         cb.call error
       else
-        links = doc.querySelectorAll '.view-win-list li > a'
+        info_data.summary = doc.querySelector('.detail-desc').text
+        info_data.subtitle = doc.querySelectorAll('.detail-main-info-author a').map{|a| a.text}.join(',')
+        links = doc.querySelectorAll '#tempc > ul > li > a'
         result = []
         links.each do |link|
           item = GS::DataItem.create 
           item.link = purl.href link.attr('href')
-          item.title = link.text.gsub(/ +/, ' ')
+          title = link.querySelector('.detail-list-2-info-title')
+          if title 
+            item.title = title.text.gsub(/ +/, ' ') 
+          else
+            item.title = link.text.gsub(/ +/, ' ')
+          end
+          if link.querySelector('.detail-list-2-info-right')
+            item.subtitle = 'VIP'
+          end
           result << item
         end
         setData result
