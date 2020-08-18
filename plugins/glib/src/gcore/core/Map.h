@@ -31,7 +31,7 @@ namespace gc {
         }
 
         METHOD _FORCE_INLINE_ void set(const std::string &key, const Variant &val) {
-            _map.insert({key, val});
+            _map[key] = val;
         }
 
         _FORCE_INLINE_ std::map<std::string, Variant>::iterator begin() {

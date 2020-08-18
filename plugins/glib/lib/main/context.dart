@@ -62,6 +62,9 @@ class Context extends Base {
     r(_on_error);
     super.destroy();
   }
+
+  dynamic getSetting(String key) => call("getSetting", argv: [key]);
+  void setSetting(String key, dynamic value) => call("setSetting", argv: [key, value]);
 }
 
 class LibraryContext extends Base {

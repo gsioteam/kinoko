@@ -20,6 +20,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Array data;
 
   Widget buildItem(BuildContext context, SettingItem item) {
+    print("Type ${item.type}");
+    String name = item.name;
     switch (item.type) {
       case SettingItem.Header: {
         return Container(
@@ -42,8 +44,12 @@ class _SettingsPageState extends State<SettingsPage> {
         return ListTile(
           title: Text(item.title),
           trailing: Switch(
-            value: false,
-            onChanged: (bool value) {  },
+            value: widget.context.getSetting(name) == true,
+            onChanged: (bool value) {
+              setState(() {
+                widget.context.setSetting(name, value);
+              });
+            },
           ),
         );
       }
@@ -69,10 +75,7 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView.separated(
           itemBuilder: (context, index) {
             SettingItem item = data[index];
-            print("Title ${item.title}");
-            return ListTile(
-              title: Text(kt(item.title)),
-            );
+            return buildItem(context, item);
           },
           separatorBuilder: (context, index)=> Divider(),
           itemCount: data.length

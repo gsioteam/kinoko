@@ -84,6 +84,9 @@ void _toNative(dynamic obj, Pointer<NativeTarget> ret) {
   } else if (obj is double) {
     nt.type = TypeDouble;
     nt.doubleValue = obj;
+  } else if (obj is bool) {
+    nt.type = TypeBoolean;
+    nt.intValue = obj ? 1 : 0;
   } else if (obj is Base) {
     nt.type = TypeObject;
     nt.intValue = obj._id;

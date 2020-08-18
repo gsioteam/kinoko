@@ -72,9 +72,9 @@ void Project::initialize(const std::string &path) {
             if (config.contains("settings")) {
                 settings_path = config["settings"];
                 settings = std::shared_ptr<Settings>(new Settings(dir_name));
-                if (!settings->exist()) {
-
-                }
+                Ref<Context> context = createSettingsContext();
+                context->enterView();
+                context->exitView();
             }
         } catch (exception &e) {
             LOG(e, "%s", e.what());

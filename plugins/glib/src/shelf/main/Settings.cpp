@@ -27,7 +27,7 @@ void Settings::load() {
     }
 }
 
-gc::Variant Settings::get(const std::string &key) {
+const gc::Variant &Settings::get(const std::string &key) {
     if (!init) {
         load();
         init = true;

@@ -11,6 +11,7 @@
 #include "../models/BookData.h"
 #include "DataItem.h"
 #include "../models/SearchData.h"
+#include "Settings.h"
 #include <sys/time.h>
 
 #include "../gs_define.h"
@@ -251,6 +252,17 @@ void Context::enterView() {
 
 void Context::exitView() {
     if (!isReady()) return;
+    if (type == Setting) {
+        Array arr = getData();
+        for (auto it = arr->begin(), _e = arr->end(); it != _e; ++it) {
+            Ref<SettingItem> item = *it;
+            if (item->getDefaultValue().getType() != Variant::TypeNull &&
+            settings->get(item->getName()).getType() == Variant::TypeNull) {
+                settings->set(item->getName(), item->getDefaultValue());
+            }
+        }
+        settings->save();
+    }
 }
 
 void Context::reload(gc::Map data) {
@@ -304,14 +316,17 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
     target->on(Collection::NOTIFICATION_reloadComplete, C([=]() {
         Ref<Context> that = weak.lock();
         if (that) {
-            if (that->type == Context::Chapter) {
-                Ref<DataItem> item = this->getInfoData();
-                if (item) {
-                    Ref<BookData> data = item->saveData(false);
-                    if (data) {
-                        data->setFlag(1);
-                        data->save();
+            switch (that->type) {
+                case Context::Chapter: {
+                    Ref<DataItem> item = this->getInfoData();
+                    if (item) {
+                        Ref<BookData> data = item->saveData(false);
+                        if (data) {
+                            data->setFlag(1);
+                            data->save();
+                        }
                     }
+                    break;
                 }
             }
             if (that->on_reload_complete) {

@@ -33,30 +33,22 @@ class HomeCollection < Collection
       if error
         cb.call error
       else
-        node = doc.querySelector '.index-title-select'
-        img_node = doc.querySelector '.index-title .index-title-logo'
-        titles = node.querySelectorAll 'li > a'
-        items = doc.querySelectorAll '.index-manga.index-update'
-        len = [titles.size, items.size].min
-
+        list = doc.querySelectorAll '.manga-list'
         result = []
-        len.times do |i|
+        list.each do |node|
           item = GS::DataItem.create
           item.type = GS::DataItem::Header
-          item.title = titles[i].text
-          item.picture = img_node.getAttribute 'src'
+          title = node.querySelector '.manga-list-title'
+          item.title = title.text.gsub('更多', '').strip
           result << item
-
-          item_node = items[i]
-          list_items = item_node.querySelectorAll '.mh-list .mh-item'
-          list_items.each do |list_item|
+          
+          book_nodes = node.querySelectorAll '.swiper-slide > li > a'
+          book_nodes.each do |book_node|
             item = GS::DataItem.create
-            style = list_item.querySelector('.mh-cover').getAttribute('style')
-            item.picture = style[/(?<=\()[^\)]+/]
-            link = list_item.querySelector('.mh-item-detali > .title a')
-            item.title = link.text
-            item.link = page_url.href link.getAttribute('href')
-            item.subtitle = list_item.querySelector('.mh-item-detali .chapter').text
+            item.link = page_url.href(book_node.attr 'href')
+            item.title = book_node.attr 'title'
+            item.picture = book_node.querySelector('img.manga-list-1-cover-img').attr(src)
+            item.subtitle = book_node.querySelector('.manga-list-1-tip').text
             result << item
           end
         end

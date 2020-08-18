@@ -31,7 +31,7 @@ namespace gs {
         bool exist() const;
 
         void load();
-        gc::Variant get(const std::string &key);
+        const gc::Variant &get(const std::string &key);
         void set(const std::string &key, const gc::Variant &value);
 
         void save();

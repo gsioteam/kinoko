@@ -95,10 +95,10 @@ namespace gs {
         METHOD static gc::Array searchKeys(const std::string &key, int limit);
         METHOD static void removeSearchKey(const std::string &key);
 
-        METHOD gc::Variant getSetting(const std::string &key) {
+        METHOD const gc::Variant &getSetting(const std::string &key) {
             return target->getSetting(key);
         }
-        METHOD void setSetting(const std::string &key, gc::Variant &value) {
+        METHOD void setSetting(const std::string &key, const gc::Variant &value) {
             target->setSetting(key, value);
         }
 

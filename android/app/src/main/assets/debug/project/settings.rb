@@ -10,5 +10,5 @@ class Settings < GS::Collection
 end
 
 $exports = GS::Callback.block do 
-  Settings.create
+  Settings.create {}
 end
