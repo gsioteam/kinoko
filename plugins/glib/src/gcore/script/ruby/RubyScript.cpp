@@ -472,13 +472,18 @@ void RubyScript::addEnvPath(const char *path) {
 
 gc::Variant RubyScript::runFile(const char *filepath) const {
     FILE *file = fopen(filepath, "rb");
-    mrb_value val = mrb_load_file(mrb, file);
-    fclose(file);
-    if (mrb->exc) {
-        mruby_print(mrb, mrb_obj_value(mrb->exc));
+    if (file) {
+        mrb_value val = mrb_load_file(mrb, file);
+        fclose(file);
+        if (mrb->exc) {
+            mruby_print(mrb, mrb_obj_value(mrb->exc));
+            return gc::Variant::null();
+        }
+        return ruby_r2h(mrb, val);
+    } else {
+        LOG(i, "Can not open %s", filepath);
         return gc::Variant::null();
     }
-    return ruby_r2h(mrb, val);
 }
 
 gc::Variant RubyScript::runScript(const char *script, const char *filename) const {

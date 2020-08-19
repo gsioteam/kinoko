@@ -309,6 +309,7 @@ gc::Ref<GitAction> GitRepository::fetch() {
         if (git_remote_fetch(repo->remote, nullptr, &ops, nullptr) != 0) {
             return (const char *)git_error_last()->message;
         }
+        LOG(i, "Fetch complete");
         return (const char *)nullptr;
     });
 }

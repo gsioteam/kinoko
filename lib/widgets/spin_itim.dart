@@ -3,36 +3,14 @@ import 'package:flutter/cupertino.dart';
 
 class SpinItem extends StatefulWidget {
   Widget child;
-  bool animated = false;
 
-  _SpinItemState state;
-
-  SpinItem({this.child, this.animated = false});
+  SpinItem({Key key, this.child,}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() {
-    return state = _SpinItemState();
-  }
-
-  void startAnimation() {
-    if (state != null) {
-      state.setState(() {
-        animated = true;
-      });
-    } else {
-      animated = true;
-    }
-  }
-
-  void stopAnimation() {
-    if (state != null) {
-      state.setState(() {animated = false;});
-    }else
-      animated = false;
-  }
+  State<StatefulWidget> createState() => SpinItemState();
 }
 
-class _SpinItemState extends State<SpinItem> with SingleTickerProviderStateMixin {
+class SpinItemState extends State<SpinItem> with SingleTickerProviderStateMixin {
 
   AnimationController animationController;
 
@@ -42,8 +20,7 @@ class _SpinItemState extends State<SpinItem> with SingleTickerProviderStateMixin
         vsync: this,
         duration: Duration(seconds: 1)
     );
-    if (this.widget.animated)
-      animationController.repeat();
+    super.initState();
   }
 
   @override
@@ -59,4 +36,18 @@ class _SpinItemState extends State<SpinItem> with SingleTickerProviderStateMixin
       },
     );
   }
+
+
+
+  void startAnimation() {
+    animationController.repeat();
+  }
+
+
+  void stopAnimation() {
+    animationController.stop();
+    animationController.reset();
+  }
+
+  bool get isLoading => animationController.isAnimating;
 }

@@ -27,6 +27,7 @@ bool LibraryContext::parseLibrary(const std::string &body) {
         }
 
         if (isMatch(token, url, this->token)) {
+            this->token = token;
             Ref<GitLibrary> lib = find(url);
             if (!lib) {
                 lib = new GitLibrary;
@@ -59,7 +60,10 @@ bool LibraryContext::isMatch(const std::string &token, const std::string &url, c
     sha256_context sha256_ctx;
     sha256_init(&sha256_ctx);
     if (!prev.empty()) {
-        sha256_hash(&sha256_ctx, (uint8_t *)prev.data(), prev.size());
+        b8_vector data;
+        data.resize(bit64_decode_size(prev.size()));
+        size_t d_size = bit64_decode((const uint8_t *)prev.data(), prev.size(), data.data());
+        sha256_hash(&sha256_ctx, data.data(), d_size);
     }
     sha256_hash(&sha256_ctx, (uint8_t *)url.data(), url.size());
     uint8_t sha256_res[32];

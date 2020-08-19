@@ -21,6 +21,8 @@ import 'widgets/home_widget.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:http/http.dart' as http;
 import 'package:glib/main/context.dart';
+import 'widgets/better_snack_bar.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 const LibURL = "https://api.github.com/repos/gsioteam/env/issues/2/comments?per_page={1}&page={0}";
 const int per_page = 40;
@@ -47,6 +49,7 @@ class _LibraryCellState extends State<LibraryCell> {
   GitRepository repo;
   Project project;
   String dirName;
+  GlobalKey<SpinItemState> _spinKey = GlobalKey();
 
   _LibraryCellState(this.library) {
     library.control();
@@ -177,12 +180,7 @@ class _LibraryCellState extends State<LibraryCell> {
     );
   }
 
-  SpinItem spinItem;
-
   Widget buildProject(BuildContext context) {
-    spinItem = SpinItem(
-      child: Icon(Icons.sync, color: Theme.of(context).primaryColor,),
-    );
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(16, 6, 10, 6),
       title: Text(project.name),
@@ -195,14 +193,33 @@ class _LibraryCellState extends State<LibraryCell> {
       trailing: Column(
         children: <Widget>[
           IconButton(
-            icon: spinItem,
+            icon: SpinItem(
+              child: Icon(Icons.sync, color: Theme.of(context).primaryColor,),
+              key: _spinKey,
+            ),
             onPressed: (){
-              spinItem.startAnimation();
+              if (_spinKey.currentState == null || _spinKey.currentState?.isLoading) return;
+              _spinKey.currentState?.startAnimation();
               GitAction action = repo.fetch();
               action.control();
               action.setOnComplete(() {
                 action.release();
-                spinItem.stopAnimation();
+                if (action.hasError()) {
+                  Fluttertoast.showToast(msg: action.getError(), toastLength: Toast.LENGTH_LONG);
+                  _spinKey.currentState?.stopAnimation();
+                  return;
+                }
+                if (repo.localID() != repo.highID()) {
+                  GitAction action = repo.checkout().control();
+                  action.setOnComplete(() {
+                    action.release();
+                    if (action.hasError()) {
+                      Fluttertoast.showToast(msg: action.getError(), toastLength: Toast.LENGTH_LONG);
+                    }
+                    _spinKey.currentState?.stopAnimation();
+                    setState(() { });
+                  });
+                }
               });
             },
           )
