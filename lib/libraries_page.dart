@@ -306,6 +306,7 @@ class _LibrariesPageState extends State<LibrariesPage> {
   int pageIndex = 0;
   String _currentToken;
   bool hasMore = false;
+  static DateTime lastUpdateTime;
 
   Future<bool> requestPage(int page) async {
     String url = LibURL.replaceAll("{0}", page.toString()).replaceAll("{1}", per_page.toString());
@@ -334,7 +335,10 @@ class _LibrariesPageState extends State<LibrariesPage> {
     int page = 0;
     _controller.startLoading();
     try {
-      if (await requestPage(page)) setState(() {});
+      if (await requestPage(page)) {
+        lastUpdateTime = DateTime.now();
+        setState(() {});
+      }
     } catch (e) {
     }
     _controller.stopLoading();
@@ -406,7 +410,8 @@ class _LibrariesPageState extends State<LibrariesPage> {
     _controller.onRefresh = onRefresh;
     ctx = LibraryContext.allocate();
     data = ctx.data.control();
-    reload();
+    if (lastUpdateTime == null || lastUpdateTime.add(Duration(minutes: 5)).isBefore(DateTime.now()))
+      reload();
   }
 
   @override
