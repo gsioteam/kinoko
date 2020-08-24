@@ -410,7 +410,8 @@ class _LibrariesPageState extends State<LibrariesPage> {
     _controller.onRefresh = onRefresh;
     ctx = LibraryContext.allocate();
     data = ctx.data.control();
-    if (lastUpdateTime == null || lastUpdateTime.add(Duration(minutes: 5)).isBefore(DateTime.now()))
+    if (lastUpdateTime == null ||
+        lastUpdateTime.add(Duration(minutes: 5)).isBefore(DateTime.now()))
       reload();
   }
 

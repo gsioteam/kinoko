@@ -1,41 +1,21 @@
 {
-    "name": "Kukudm",
-    "icon": "http://css99tel.cdndm5.com/v202004101051/dm5/images/header-logo.png",
-    "url": "http://www.dm5.cn/",
-    "index": "index.rb",
-    "book": "book.rb",
-    "chapter": "chapter.rb",
+    "name": "nhentai",
+    "icon": "https://static.nhentai.net/img/logo.090da3be7b51.svg",
+    "url": "https://nhentai.net/",
+    "index": "index.js",
+    "book": "book.js",
+    "chapter": "chapter.js",
     "search": {
-        "src": "search.rb",
+        "src": "search.js",
         "data": {
-            "url": "http://m.dm5.com/search?title={0}&language=1&page={1}"
+            "url": "https://so.kukudm.com/m_search.asp?kw={0}&page={1}"
         }
     },
     "categories": [
         {
-            "title": "更新",
-            "id": "update",
-            "url": "http://m.dm5.com/"
-        },
-        {
-            "title": "日韩",
-            "id": "japan",
-            "url": "http://m.dm5.com/dm5.ashx?pagesize={1}&pageindex={0}&sort=2&areaid=36&action=getclasscomics"
-        },
-        {
-            "title": "港台",
-            "id": "hongkong",
-            "url": "http://m.dm5.com/dm5.ashx?pagesize={1}&pageindex={0}&sort=2&areaid=35&action=getclasscomics"
-        },
-        {
-            "title": "大陆",
-            "id": "china",
-            "url": "http://m.dm5.com/dm5.ashx?pagesize={1}&pageindex={0}&sort=2&areaid=37&action=getclasscomics"
-        },
-        {
-            "title": "欧美",
-            "id": "europe",
-            "url": "http://m.dm5.com/dm5.ashx?pagesize={1}&pageindex={0}&sort=2&areaid=52&action=getclasscomics"
+            "title": "主頁",
+            "id": "home",
+            "url": "https://nhentai.net/?page={0}"
         }
     ]
 }

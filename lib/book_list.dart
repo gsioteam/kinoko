@@ -78,7 +78,7 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   Widget cellWithData(DataItem item, int idx) {
-    return makeBookItem(context, item, () {
+    return makeBookItem(context, widget.project, item, () {
       itemClicked(idx);
     });
   }
