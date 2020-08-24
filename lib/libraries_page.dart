@@ -198,7 +198,7 @@ class _LibraryCellState extends State<LibraryCell> {
               key: _spinKey,
             ),
             onPressed: (){
-              if (_spinKey.currentState == null || _spinKey.currentState?.isLoading) return;
+              if (_spinKey.currentState == null || _spinKey.currentState.isLoading) return;
               _spinKey.currentState?.startAnimation();
               GitAction action = repo.fetch();
               action.control();

@@ -20,7 +20,6 @@ class _SettingsPageState extends State<SettingsPage> {
   Array data;
 
   Widget buildItem(BuildContext context, SettingItem item) {
-    print("Type ${item.type}");
     String name = item.name;
     switch (item.type) {
       case SettingItem.Header: {
@@ -63,6 +62,7 @@ class _SettingsPageState extends State<SettingsPage> {
           title: Text(item.title)
         );
       }
+      default: return Container();
     }
   }
 
