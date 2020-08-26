@@ -45,7 +45,7 @@ namespace gc {
          */
         virtual ScriptClass *makeClass() const = 0;
 
-        virtual void defineFunction(const StringName &name, const Callback &function) = 0;
+//        virtual void defineFunction(const StringName &name, const Callback &function) = 0;
         /**
          * 当create是true的时候表明返回值是刚创建出来的
          * 这是需要做一些初始化操作,其中必须建立脚本类与中间
@@ -76,7 +76,7 @@ namespace gc {
 //         */
 //        virtual ScriptInstance *newBuff(const std::string &cls_name, Object *target, const Variant **params, int count) const = 0;
 
-        void addFunction(const StringName &name, const Callback &function);
+//        void addFunction(const StringName &name, const Callback &function);
 
         virtual gc::Variant runScript(const char *script, const char *filename = nullptr) const = 0;
         virtual gc::Variant runFile(const char *filepath) const;

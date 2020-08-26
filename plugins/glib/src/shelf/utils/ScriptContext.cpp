@@ -3,7 +3,15 @@
 //
 
 #include "ScriptContext.h"
+
+#ifdef __APPLE__
+#include <script/js_core/JSCoreScript.h>
+#endif
+
+#ifdef __ANDROID__
 #include <script/v8/V8Script.h>
+#endif
+
 #include <script/ruby/RubyScript.h>
 #include "SharedData.h"
 
@@ -20,7 +28,12 @@ namespace gs {
 void ScriptContext::initialize(const gc::StringName &type) {
     if (type == V8_KEY) {
         string v8_root = shared::repo_path() + "/env/v8";
+#ifdef __APPLE__
+        script = new JSCoreScript(v8_root.c_str());
+#endif
+#ifdef __ANDROID__
         script = new V8Script(v8_root.c_str());
+#endif
     } else if (type == RUBY_KEY) {
         script = new RubyScript();
     }

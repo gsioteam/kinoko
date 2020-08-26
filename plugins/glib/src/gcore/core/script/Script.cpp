@@ -78,9 +78,9 @@ Script::Script(const StringName &name) : name(name) {
     scripts.insert(this);
 }
 
-void Script::addFunction(const StringName &name, const gc::Callback &function) {
-    defineFunction(name, function);
-}
+//void Script::addFunction(const StringName &name, const gc::Callback &function) {
+////    defineFunction(name, function);
+//}
 
 gc::Variant Script::runFile(const char *filepath) const {
     FILE *file = fopen(filepath, "r");
@@ -152,9 +152,6 @@ ScriptInstance* ScriptClass::newInstance(const Variant **params, int count) {
     }
     LOG(w, "Wrong Class Type %s", cls ? cls->getName(): "null");
     return nullptr;
-}
-
-ScriptClass::~ScriptClass() {
 }
 
 ScriptInstance *ScriptClass::get(Object *target) const {
