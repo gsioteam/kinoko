@@ -44,3 +44,4 @@ app.*.map.json
 */android/.cxx
 plugins/glib/android/.cxx
 Podfile.lock
+plugins/glib/ios/lib

@@ -551,11 +551,24 @@ JSCoreScript::JSCoreScript(const char *dir) : gc::Script("jscore") {
 }
 
 Variant JSCoreScript::runScript(const char *script, const char *filename) const {
-    
+    NSURL *url = nil;
+    if (filename) {
+        url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:filename]];
+    }
+    if (script) {
+        JSValue *value = [CTX.context evaluateScript:[NSString stringWithUTF8String:script]
+                                       withSourceURL:url];
+        return toVariant(CTX.context.JSGlobalContextRef, value.JSValueRef);
+    }
+    return Variant::null();
 }
 
 Variant JSCoreScript::runFile(const char *filepath) const {
-    
+    if (filepath) {
+        JSValue *value = [CTX loadModuile:[NSString stringWithUTF8String:filepath]];
+        return toVariant(CTX.context.JSGlobalContextRef, value.JSValueRef);
+    }
+    return Variant::null();
 }
 
 JSCoreScript::~JSCoreScript() {

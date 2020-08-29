@@ -21,7 +21,6 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "iOS")
             thirdparties/mruby/lib/ios
     )
 endif()
-set(LIB_TYPE SHARED)
 
 if(HAS_64 EQUAL -1)
 
@@ -105,6 +104,7 @@ set(GLIB_SRC
         src/shelf/models/CollectionData.cpp
         src/shelf/models/SearchData.cpp
         src/shelf/glib.cpp
+        src/shelf/dart_main_ios.mm
 )
 
 set(GLIB_LIBS
@@ -130,8 +130,10 @@ set(GLIB_LIBS ${GLIB_LIBS}
         v8.cr
         v8_libplatform.cr
 )
+set(LIB_TYPE SHARED)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
-set(GLIB_SRC ${GLIB_SRC} src/shelf/dart_main_ios.mm)
+# set(GLIB_SRC ${GLIB_SRC} src/shelf/dart_main_ios.mm)
+set(LIB_TYPE STATIC)
 endif()
 
 add_library(
@@ -267,6 +269,12 @@ target_link_libraries(
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
-set_target_properties(glib PROPERTIES XCODE_ATTRIBUTE_ENABLE_BITCODE "NO")
-set_target_properties(core PROPERTIES CLANG_ENABLE_OBJC_ARC "YES")
+set_target_properties(glib 
+        PROPERTIES 
+        XCODE_ATTRIBUTE_ENABLE_BITCODE "NO"
+)
+set_target_properties(core 
+        PROPERTIES 
+        XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES"
+)
 endif()

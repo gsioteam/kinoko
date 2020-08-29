@@ -2,9 +2,17 @@
 // Created by gen on 8/25/20.
 //
 
-#ifndef ANDROID_GLIB_H
-#define ANDROID_GLIB_H
+#ifndef GLIB_H
+#define GLIB_H
 
-void initGlib();
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif //ANDROID_GLIB_H
+void initGlib(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif //GLIB_H

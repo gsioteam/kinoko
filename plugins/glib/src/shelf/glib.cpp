@@ -31,7 +31,7 @@
 
 using namespace gc;
 
-void initGlib() {
+extern "C" void initGlib() {
     ClassDB::reg<gc::_Map>();
     ClassDB::reg<gc::_Array>();
     ClassDB::reg<gc::_Callback>();
@@ -56,3 +56,5 @@ void initGlib() {
     ClassDB::reg<gs::LibraryContext>();
     ClassDB::reg<gs::SettingItem>();
 }
+
+

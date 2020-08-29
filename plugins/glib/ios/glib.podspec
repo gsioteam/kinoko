@@ -14,19 +14,21 @@ A new Flutter plugin.
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
   s.source_files = [
-    '../src/gcore/script/**/*', 
-    '../src/gcore/core/**/*',
-    '../src/gcore/shelf/**/*',
-    '../thirdparties/bit64/*',
-    '../thirdparties/gumbo/*',
-    '../thirdparties/gumbo-query/*',
+    'Classes/**/*.mm',
+    'Classes/**/*.m',
+    'Classes/**/*.h',
+    'include/*.h'
   ]
-  s.public_header_files = 'Classes/**/*.h'
+  s.public_header_files = [
+    'Classes/**/*.h',
+  ]
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
 
   s.static_framework = true
-  s.libraries = ['z']
+  s.vendored_libraries = Dir["lib/*.a"]
+  s.libraries = ['z', 'c++', 'iconv']
+  s.frameworks = 'JavaScriptCore'
 
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
