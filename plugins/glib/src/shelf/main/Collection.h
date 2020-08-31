@@ -20,6 +20,8 @@ namespace gs {
         gc::Array data;
         gc::Variant info_data;
         std::shared_ptr<Settings> settings;
+        std::string temp;
+        std::string item_temp;
 
     public:
 
@@ -68,6 +70,22 @@ namespace gs {
         METHOD const gc::Variant &getSetting(const std::string &key);
         METHOD void setSetting(const std::string &key, const gc::Variant &value);
 
+        METHOD const std::string &getTemp() const {
+            return temp;
+        }
+        METHOD void setTemp(const std::string &temp) {
+            this->temp = temp;
+        }
+        PROPERTY(temp, getTemp, setTemp);
+
+        METHOD const std::string &getItemTemp() const {
+            return item_temp;
+        }
+        METHOD void setItemTemp(const std::string &temp) {
+            item_temp = temp;
+        }
+        PROPERTY(item_temp, getItemTemp, setItemTemp);
+
         ON_LOADED_BEGIN(cls, gc::Object)
             INITIALIZER(cls, Collection, initialize);
             ADD_METHOD(cls, Collection, setDataAt);
@@ -75,6 +93,8 @@ namespace gs {
             ADD_METHOD(cls, Collection, getSetting);
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Collection, getData), ADD_METHOD(cls, Collection, setData));
             ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Collection, getInfoData), ADD_METHOD(cls, Collection, setInfoData));
+            ADD_PROPERTY(cls, "temp", ADD_METHOD(cls, Collection, getTemp), ADD_METHOD(cls, Collection, setTemp));
+            ADD_PROPERTY(cls, "item_temp", ADD_METHOD(cls, Collection, getItemTemp), ADD_METHOD(cls, Collection, setItemTemp));
         ON_LOADED_END
 
     CLASS_END

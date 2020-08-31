@@ -33,7 +33,7 @@ namespace gs {
         std::string search;
         gc::Variant search_data;
 
-        gc::Array categories;
+        gc::Array   categories;
 
         std::shared_ptr<Settings> settings;
         std::string settings_path;

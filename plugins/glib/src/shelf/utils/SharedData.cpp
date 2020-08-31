@@ -24,3 +24,10 @@ std::time_t gs::getTimeStamp() {
     std::time_t timestamp =  tp.time_since_epoch().count(); //计算距离1970-1-1,00:00的时间长度
     return timestamp;
 }
+
+std::string gs::calculatePath(const std::string &base_path, const std::string &src) {
+    int start = 0, end = 0;
+    while (true) {
+        end = src.find("/", start);
+    }
+}

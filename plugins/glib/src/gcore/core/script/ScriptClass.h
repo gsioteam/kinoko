@@ -42,7 +42,7 @@ namespace gc {
 
     public:
         _FORCE_INLINE_ ScriptClass() : cls(NULL), script(NULL) {}
-        _FORCE_INLINE_ virtual ~ScriptClass();
+        _FORCE_INLINE_ virtual ~ScriptClass() {}
 
         _FORCE_INLINE_ const Class *getNativeClass() const {
             return cls;

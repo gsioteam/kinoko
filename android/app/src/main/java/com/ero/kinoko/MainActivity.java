@@ -43,7 +43,7 @@ public class MainActivity extends FlutterActivity {
 
     private void copyDir(String path, String targetPath) throws IOException {
         AssetManager manager = getAssets();
-        String[] subpaths = new String[0];
+        String[] subpaths;
         try {
             subpaths = manager.list(path);
             if (subpaths != null && subpaths.length != 0) {

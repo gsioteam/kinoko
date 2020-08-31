@@ -24,10 +24,10 @@ namespace gs {
 
         static const std::string SETTING_KEY;
 
-
     };
 
     std::time_t getTimeStamp();
+    static std::string calculatePath(const std::string &base_path, const std::string &src);
 }
 
 

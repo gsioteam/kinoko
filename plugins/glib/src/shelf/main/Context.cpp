@@ -3,7 +3,14 @@
 //
 
 #include "Context.h"
+
+#ifdef __APPLE__
+#include <script/js_core/JSCoreScript.h>
+#endif
+#ifdef __ANDROID__
 #include <script/v8/V8Script.h>
+#endif
+
 #include <script/ruby/RubyScript.h>
 #include "../utils/SharedData.h"
 #include <core/Callback.h>
@@ -22,8 +29,51 @@ using namespace std;
 using namespace gc;
 
 namespace gs {
+    const std::string Context::_null;
     StringName KeepKey = "_keep";
 
+#ifdef __APPLE__
+
+    CLASS_BEGIN_N(JavaScriptContext, Context)
+
+        JSCoreScript *script;
+
+    public:
+        static bool isSupport(const std::string &ext) {
+            return ext == "js";
+        }
+
+        JavaScriptContext() {
+            string v8_root = shared::repo_path() + "/env/v8";
+            script = new JSCoreScript(v8_root.c_str());
+        }
+
+        ~JavaScriptContext() {
+            delete script;
+        }
+
+        void setup(const char *path, const gc::Variant &data) override {
+//            string target_path = shared::repo_path() + "/" + path;
+            Variant var = script->runFile(path);
+            if (var.getTypeClass()->isTypeOf(gc::_Callback::getClass())) {
+                gc::Callback func = var;
+                Variant tar = func(data);
+                if (tar && tar.getTypeClass()->isTypeOf(Collection::getClass())) {
+                    target = tar;
+                    target->setSettings(settings);
+                    target->apply(KeepKey);
+                    setupTarget(target);
+                } else {
+                    LOG(w, "Failed to load script (%s)", path);
+                }
+            }
+        }
+
+    CLASS_END
+
+#endif
+
+#ifdef __ANDROID__
     CLASS_BEGIN_N(JavaScriptContext, Context)
 
         V8Script *script;
@@ -60,6 +110,8 @@ namespace gs {
         }
 
     CLASS_END
+#endif
+    
 
     CLASS_BEGIN_N(RubyContext, Context)
 
@@ -114,6 +166,7 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data, C
             ctx->type = type;
             ctx->project_key = key;
             ctx->settings = settings;
+            ctx->dir_path = path.substr(0, idx);
             ctx->setup(path.c_str(), data);
             return ctx;
         } else if (RubyContext::isSupport(ext)) {
@@ -121,6 +174,7 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data, C
             ctx->type = type;
             ctx->project_key = key;
             ctx->settings = settings;
+            ctx->dir_path = path.substr(0, idx);
             ctx->setup(path.c_str(), data);
             return ctx;
         }
@@ -389,4 +443,14 @@ void Context::removeSearchKey(const std::string &key) {
             data->remove();
         }
     }
+}
+
+std::string Context::getTemp() const {
+    if (target) {
+        std::string temp = target->getTemp();
+        if (!temp.empty()) {
+
+        }
+    }
+    return _null;
 }
