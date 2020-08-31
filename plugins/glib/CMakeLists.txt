@@ -104,7 +104,6 @@ set(GLIB_SRC
         src/shelf/models/CollectionData.cpp
         src/shelf/models/SearchData.cpp
         src/shelf/glib.cpp
-        src/shelf/dart_main_ios.mm
 )
 
 set(GLIB_LIBS
@@ -124,16 +123,16 @@ set(GLIB_LIBS
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
-set(GLIB_SRC ${GLIB_SRC} src/shelf/dart_main_android.cpp)
-set(GLIB_LIBS ${GLIB_LIBS} 
+    set(GLIB_SRC ${GLIB_SRC} src/shelf/dart_main_android.cpp)
+    set(GLIB_LIBS ${GLIB_LIBS}
         log
         v8.cr
         v8_libplatform.cr
-)
-set(LIB_TYPE SHARED)
+    )
+    set(LIB_TYPE SHARED)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
-# set(GLIB_SRC ${GLIB_SRC} src/shelf/dart_main_ios.mm)
-set(LIB_TYPE STATIC)
+    set(GLIB_SRC ${GLIB_SRC} src/shelf/dart_main_ios.mm)
+    set(LIB_TYPE STATIC)
 endif()
 
 add_library(

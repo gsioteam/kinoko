@@ -65,6 +65,9 @@ class Context extends Base {
 
   dynamic getSetting(String key) => call("getSetting", argv: [key]);
   void setSetting(String key, dynamic value) => call("setSetting", argv: [key, value]);
+
+  String get temp => call("getTemp");
+  String get item_temp => call("getItemTemp");
 }
 
 class LibraryContext extends Base {

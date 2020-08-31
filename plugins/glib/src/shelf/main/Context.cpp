@@ -29,6 +29,7 @@ using namespace std;
 using namespace gc;
 
 namespace gs {
+    const std::string Context::_null;
     StringName KeepKey = "_keep";
 
 #ifdef __APPLE__
@@ -165,6 +166,7 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data, C
             ctx->type = type;
             ctx->project_key = key;
             ctx->settings = settings;
+            ctx->dir_path = path.substr(0, idx);
             ctx->setup(path.c_str(), data);
             return ctx;
         } else if (RubyContext::isSupport(ext)) {
@@ -172,6 +174,7 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data, C
             ctx->type = type;
             ctx->project_key = key;
             ctx->settings = settings;
+            ctx->dir_path = path.substr(0, idx);
             ctx->setup(path.c_str(), data);
             return ctx;
         }
@@ -440,4 +443,14 @@ void Context::removeSearchKey(const std::string &key) {
             data->remove();
         }
     }
+}
+
+std::string Context::getTemp() const {
+    if (target) {
+        std::string temp = target->getTemp();
+        if (!temp.empty()) {
+
+        }
+    }
+    return _null;
 }

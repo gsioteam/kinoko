@@ -14,6 +14,7 @@ namespace gs {
     class Settings;
 
     CLASS_BEGIN_NV(Context, gc::Object)
+        static const std::string _null;
 
     public:
 
@@ -31,6 +32,7 @@ namespace gs {
         gc::Callback on_loading_status;
         gc::Callback on_error;
         gc::Callback on_reload_complete;
+        std::string dir_path;
         ContextType type;
         bool first_enter = true;
         std::string project_key;
@@ -102,6 +104,11 @@ namespace gs {
             target->setSetting(key, value);
         }
 
+        METHOD std::string getTemp() const;
+        PROPERTY(temp, getTemp, NULL);
+        METHOD std::string getItemTemp() const;
+        PROPERTY(item_temp, getItemTemp, NULL);
+
         ON_LOADED_BEGIN(cls, gc::Object)
             ADD_METHOD(cls, Context, setup);
             ADD_METHOD(cls, Context, isReady);
@@ -120,6 +127,8 @@ namespace gs {
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Context, getData), NULL);
             ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Context, getInfoData), ADD_METHOD(cls, Context, setInfoData));
             ADD_PROPERTY(cls, "project_key", ADD_METHOD(cls, Context, getProjectKey), NULL);
+            ADD_PROPERTY(cls, "temp", ADD_METHOD(cls, Context, getTemp), NULL);
+            ADD_PROPERTY(cls, "item_temp", ADD_METHOD(cls, Context, getItemTemp), NULL);
         ON_LOADED_END
 
     CLASS_END
