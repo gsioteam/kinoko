@@ -44,6 +44,8 @@ namespace gs {
         gc::Array load(bool &update, int &flag);
         void save(const gc::Array &arr);
 
+        std::string readFile(const std::string &path) const;
+
     public:
 //        ~Context();
 

@@ -5,6 +5,7 @@
 #include "SharedData.h"
 
 using namespace gs;
+using namespace std;
 
 std::string shared::root_path;
 bool shared::is_debug_mode = false;
@@ -26,8 +27,23 @@ std::time_t gs::getTimeStamp() {
 }
 
 std::string gs::calculatePath(const std::string &base_path, const std::string &src) {
-    int start = 0, end = 0;
+    int start = 0, end;
+    string path = base_path;
     while (true) {
         end = src.find("/", start);
+        string seg = src.substr(start, end);
+        if (seg.empty() || seg == ".") {
+        }else if (seg == "..") {
+            int last = path.find_last_of("/");
+            if (last < 0) {
+                path = "";
+            } else {
+                path = path.substr(0, last - 1);
+            }
+        } else {
+            path += "/" + seg;
+        }
+        if (end < 0) break;
     }
+    return path[0] == '/' ? path : '/' + path;
 }

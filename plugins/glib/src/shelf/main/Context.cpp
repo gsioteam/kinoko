@@ -3,6 +3,7 @@
 //
 
 #include "Context.h"
+#include <fstream>
 
 #ifdef __APPLE__
 #include <script/js_core/JSCoreScript.h>
@@ -446,10 +447,28 @@ void Context::removeSearchKey(const std::string &key) {
 }
 
 std::string Context::getTemp() const {
-    if (target) {
-        std::string temp = target->getTemp();
-        if (!temp.empty()) {
+    if (target) return readFile(target->getTemp());
+    return _null;
+}
 
+std::string Context::getItemTemp() const {
+    if (target) return readFile(target->getItemTemp());
+    return _null;
+}
+
+std::string Context::readFile(const std::string &src) const {
+    if (!src.empty()) {
+        string path = calculatePath(dir_path, src);
+        FILE *file = fopen(path.c_str(), "r");
+        if (file) {
+#define BSIZE 4096
+            char buf[BSIZE];
+            size_t readed = 0;
+            stringstream ss;
+            while ((readed = fread(buf, 1, BSIZE, file)) > 0) {
+                ss.write(buf, readed);
+            }
+            return ss.str();
         }
     }
     return _null;

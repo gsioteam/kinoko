@@ -10,7 +10,6 @@ import 'package:crypto/crypto.dart';
 import 'package:glib/utils/bit64.dart';
 import 'package:glib/utils/git_repository.dart';
 import 'package:glib/main/project.dart';
-import 'package:glib/utils/request.dart';
 import 'package:kinoko/progress_dialog.dart';
 import 'package:kinoko/utils/progress_items.dart';
 import 'package:kinoko/widgets/spin_itim.dart';

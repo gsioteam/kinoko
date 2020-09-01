@@ -12,6 +12,7 @@ import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
+import 'package:xml_layout/xml_layout.dart';
 import 'configs.dart';
 import 'localizations/localizations.dart';
 import 'utils/download_manager.dart';
@@ -349,135 +350,145 @@ class _BookPageState extends State<BookPage> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    var data = widget.context.info_data;
-    if (!(data is DataItem)) {
-      return Container(
-        child: Text("Wrong type"),
-        color: Colors.red,
+    String temp = widget.context.temp;
+    if (temp.isEmpty) {
+      var data = widget.context.info_data;
+      if (!(data is DataItem)) {
+        return Container(
+          child: Text("Wrong type"),
+          color: Colors.red,
+        );
+      }
+
+      return Scaffold(
+        body: BetterRefreshIndicator(
+          child: CustomScrollView(
+            slivers: <Widget>[
+              SliverAppBar(
+                floating: true,
+                pinned: true,
+                backgroundColor: theme.primaryColor,
+                expandedHeight: 288.0,
+                bottom: PreferredSize(
+                    child: Container(
+                      height: 48,
+                      color: Colors.white,
+                      padding: EdgeInsets.only(left: 10, right: 10),
+                      child: Row(
+                        children: <Widget>[
+                          Icon(Icons.bookmark, color: theme.primaryColor, size: 14,),
+                          Text(kt("chapters")),
+                          Expanded(child: Container()),
+                          PopupMenuButton(
+                              onSelected: onOrderChanged,
+                              icon: Icon(Icons.sort, color: theme.primaryColor,),
+                              itemBuilder: (context) {
+                                return [
+                                  CheckedPopupMenuItem<int>(
+                                      value: R_ORDER,
+                                      checked: order_index == R_ORDER,
+                                      child: Text(kt("reverse_order"))
+                                  ),
+
+                                  CheckedPopupMenuItem<int>(
+                                      value: ORDER,
+                                      checked: order_index == ORDER,
+                                      child: Text(kt("order"))
+                                  )
+                                ];
+                              }
+                          ),
+                          BarItem(
+                            display: editing,
+                            child: IconButton(
+                                icon: Icon(Icons.clear),
+                                color: theme.primaryColor,
+                                onPressed: onCancelClicked
+                            ),
+                          ),
+                          BarItem(
+                            display: editing,
+                            child: IconButton(
+                                icon: Icon(Icons.check),
+                                color: theme.primaryColor,
+                                onPressed: onDownloadStartClicked
+                            ),
+                          ),
+                          BarItem(
+                            display: !editing,
+                            child: IconButton(
+                                icon: Icon(Icons.file_download),
+                                color: theme.primaryColor,
+                                onPressed: onDownloadClicked
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    preferredSize: Size(double.infinity, 48)
+                ),
+                flexibleSpace: FlexibleSpaceBar(
+                  title: buildTitle(data, theme),
+                  titlePadding: EdgeInsets.only(left: 20, bottom: 64),
+                  background: Stack(
+                    children: <Widget>[
+                      Image(
+                        width: double.infinity,
+                        height: double.infinity,
+                        image: CachedNetworkImageProvider(data.picture),
+                        gaplessPlayback: true,
+                        fit: BoxFit.cover,
+                      ),
+                      BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX:  4, sigmaY: 4),
+                        child: Container(
+                          color: Colors.black.withOpacity(0),
+                        ),
+                      ),
+                      Container(
+                        alignment: Alignment.bottomLeft,
+                        width: double.infinity,
+                        height: double.infinity,
+                        padding: EdgeInsets.fromLTRB(14, 10, 14, 58),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color.fromRGBO(0, 0, 0, 0.5), Color.fromRGBO(0, 0, 0, 0), Color.fromRGBO(0, 0, 0, 0.5)],
+                              stops: [0, 0.4, 1]
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: <Widget>[
+                  IconButton(
+                      icon: Icon(Icons.favorite),
+                      color: FavoritesManager().isFavorite(data) ? Colors.red : Colors.white,
+                      onPressed: favoriteClicked
+                  ),
+                ],
+              ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  createItem,
+                  childCount: chapters.length,
+                ),
+              )
+            ],
+          ),
+          controller: refreshController,
+        ),
+      );
+    } else {
+      return XmlLayout(
+        template: temp,
+        objects: {
+
+        },
       );
     }
-
-    return Scaffold(
-      body: BetterRefreshIndicator(
-        child: CustomScrollView(
-          slivers: <Widget>[
-            SliverAppBar(
-              floating: true,
-              pinned: true,
-              backgroundColor: theme.primaryColor,
-              expandedHeight: 288.0,
-              bottom: PreferredSize(
-                  child: Container(
-                    height: 48,
-                    color: Colors.white,
-                    padding: EdgeInsets.only(left: 10, right: 10),
-                    child: Row(
-                      children: <Widget>[
-                        Icon(Icons.bookmark, color: theme.primaryColor, size: 14,),
-                        Text(kt("chapters")),
-                        Expanded(child: Container()),
-                        PopupMenuButton(
-                          onSelected: onOrderChanged,
-                          icon: Icon(Icons.sort, color: theme.primaryColor,),
-                          itemBuilder: (context) {
-                            return [
-                              CheckedPopupMenuItem<int>(
-                                value: R_ORDER,
-                                checked: order_index == R_ORDER,
-                                child: Text(kt("reverse_order"))
-                              ),
-
-                              CheckedPopupMenuItem<int>(
-                                value: ORDER,
-                                checked: order_index == ORDER,
-                                child: Text(kt("order"))
-                              )
-                            ];
-                          }
-                        ),
-                        BarItem(
-                          display: editing,
-                          child: IconButton(
-                            icon: Icon(Icons.clear),
-                            color: theme.primaryColor,
-                            onPressed: onCancelClicked
-                          ),
-                        ),
-                        BarItem(
-                          display: editing,
-                          child: IconButton(
-                            icon: Icon(Icons.check),
-                            color: theme.primaryColor,
-                            onPressed: onDownloadStartClicked
-                          ),
-                        ),
-                        BarItem(
-                          display: !editing,
-                          child: IconButton(
-                              icon: Icon(Icons.file_download),
-                              color: theme.primaryColor,
-                              onPressed: onDownloadClicked
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  preferredSize: Size(double.infinity, 48)
-              ),
-              flexibleSpace: FlexibleSpaceBar(
-                title: buildTitle(data, theme),
-                titlePadding: EdgeInsets.only(left: 20, bottom: 64),
-                background: Stack(
-                  children: <Widget>[
-                    Image(
-                      width: double.infinity,
-                      height: double.infinity,
-                      image: CachedNetworkImageProvider(data.picture),
-                      gaplessPlayback: true,
-                      fit: BoxFit.cover,
-                    ),
-                    BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX:  4, sigmaY: 4),
-                      child: Container(
-                        color: Colors.black.withOpacity(0),
-                      ),
-                    ),
-                    Container(
-                      alignment: Alignment.bottomLeft,
-                      width: double.infinity,
-                      height: double.infinity,
-                      padding: EdgeInsets.fromLTRB(14, 10, 14, 58),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Color.fromRGBO(0, 0, 0, 0.5), Color.fromRGBO(0, 0, 0, 0), Color.fromRGBO(0, 0, 0, 0.5)],
-                            stops: [0, 0.4, 1]
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.favorite),
-                  color: FavoritesManager().isFavorite(data) ? Colors.red : Colors.white,
-                  onPressed: favoriteClicked
-                ),
-              ],
-            ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                createItem,
-                childCount: chapters.length,
-              ),
-            )
-          ],
-        ),
-        controller: refreshController,
-      ),
-    );
   }
 
   bool onPullDownRefresh() {
