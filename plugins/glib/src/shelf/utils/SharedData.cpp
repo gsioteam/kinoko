@@ -30,11 +30,11 @@ std::string gs::calculatePath(const std::string &base_path, const std::string &s
     int start = 0, end;
     string path = base_path;
     while (true) {
-        end = src.find("/", start);
+        end = src.find('/', start);
         string seg = src.substr(start, end);
         if (seg.empty() || seg == ".") {
         }else if (seg == "..") {
-            int last = path.find_last_of("/");
+            int last = path.find_last_of('/');
             if (last < 0) {
                 path = "";
             } else {

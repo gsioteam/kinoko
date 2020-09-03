@@ -1,7 +1,7 @@
 
 class ChapterCollection extends glib.Collection {
 
-    request(url, text) {
+    request(url) {
         return new Promise((resolve, reject) => {
             let req = glib.Request.new('GET', url);
             req.setCacheResponse(true);
@@ -11,7 +11,7 @@ class ChapterCollection extends glib.Collection {
                 } else {
                     let body = req.getResponseBody();
                     if (body) {
-                        let res = text ? body.text() : glib.GumboNode.parse(body, 'gbk');
+                        let res = glib.GumboNode.parse(body, 'gbk');
                         resolve(res);
                     } else {
                         reject(glib.Error.new(301, "Response null body"));
@@ -23,48 +23,36 @@ class ChapterCollection extends glib.Collection {
         });
     }
 
-    async loadProcess(url) {
-        let ctx = glib.ScriptContext.new('v8');
-        ctx.eval('document = {write: function(html) {return html;}};');
-        let cache = {}, count = 0;
-        
-        while (url) {
-            let purl = new PageURL(url);
-            let doc = await this.request(url);
-            let tags = doc.querySelectorAll('script[src]');
-            for (let tag of tags) {
-                let src = tag.getAttribute('src');
-                if (src.match(/^\/js/)) {
-                    let href = purl.href(src);
-                    if (!cache[href]) {
-                        cache[href] = true;
-                        let script = await this.request(href, true);
-                        console.log(`eval(${script})`);
-                        ctx.eval(script);
-                    }
+    reload(_, cb) {
+        let url = this.info_data.link;
+        this.request(url).then((doc) => {
+            let scripts = doc.querySelectorAll("script:not([src])");
+            let ctx = glib.ScriptContext.new('js');
+            ctx.eval("var window = {}");
+            for (let src of scripts) {
+                let script = src.text.trim();
+                if (script.match('JSON.parse')) {
+                    ctx.eval(script);
                 }
             }
-            try {
-                let script = doc.querySelector('script:not([src])');
-                let html = ctx.eval(script.text);
-                let doc2 = glib.GumboNode.parse2(html);
-                let link = doc2.querySelector('a');
+            let media_url = ctx.eval('window._reader.media_url');
+            let pages = ctx.eval('window._gallery.images.pages');
+            let media_id = ctx.eval('window._gallery.media_id');
+            let results = [];
+            for (let i = 0, t = pages.length; i < t; ++i) {
+                let page = pages[i];
                 let item = glib.DataItem.new();
-                item.picture = link.querySelector('img').getAttribute('src');
+                let ext;
+                switch (page.t) {
+                    case 'j': ext = 'jpg'; break;
+                    case 'p': ext = 'png'; break;
+                    default: ext = 'jpg'; break;
+                }
+                item.picture = media_url + 'galleries/' + media_id + '/' + (i + 1) + '.' + ext;
                 item.link = url;
-                url = purl.href(link.getAttribute('href'));
-                this.setDataAt(item, count);
-                count++;
-            }catch (e) {
-                break;
+                results.push(item);
             }
-        }
-    }
-
-    reload(_, cb) {
-        console.log("**start reload");
-        this.loadProcess(this.info_data.link).then(function () {
-            console.log("**reload complete");
+            this.setData(results);
             cb.apply(null);
         }).catch(function (err) {
             if (err instanceof Error) 

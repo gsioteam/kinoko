@@ -22,11 +22,12 @@ using namespace gscript;
 
 namespace gs {
     const StringName V8_KEY("v8");
+    const StringName JS_KEY("js");
     const StringName RUBY_KEY("ruby");
 }
 
 void ScriptContext::initialize(const gc::StringName &type) {
-    if (type == V8_KEY) {
+    if (type == V8_KEY || type == JS_KEY) {
         string v8_root = shared::repo_path() + "/env/v8";
 #ifdef __APPLE__
         script = new JSCoreScript(v8_root.c_str());

@@ -36,11 +36,13 @@ enum PictureFlipType {
 class PictureViewer extends StatefulWidget {
   Context context;
   Context Function(PictureFlipType) onChapterChanged;
+  int startPage;
   void Function(DataItem) onDownload;
 
   PictureViewer(this.context, {
     this.onChapterChanged,
-    this.onDownload
+    this.onDownload,
+    this.startPage
   });
 
   @override

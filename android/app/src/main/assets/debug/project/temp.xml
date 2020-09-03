@@ -7,4 +7,27 @@
         </AppBar>
     </attr:appBar>
 
+    <attr:body>
+        <GridView.count crossAxisCount="4" childAspectRatio="0.8">
+            <for array="${info_data.data.images}">
+                <MaterialButton>
+                    <attr:onPressed>
+                        <Function>
+                            <Call function="$openChapter">
+                                <Argument value="${chapters[0]}"/>
+                                <Argument value="$index"/>
+                            </Call>
+                        </Function>
+                    </attr:onPressed>
+                    <Image fit="cover">
+                        <attr:image>
+                            <CachedNetworkImageProvider>
+                                $item
+                            </CachedNetworkImageProvider>
+                        </attr:image>
+                    </Image>
+                </MaterialButton>
+            </for>
+        </GridView.count>
+    </attr:body>
 </Scaffold>

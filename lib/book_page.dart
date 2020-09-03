@@ -187,7 +187,7 @@ class _BookPageState extends State<BookPage> {
   BetterRefreshIndicatorController refreshController = BetterRefreshIndicatorController();
   Array chapters;
   bool editing = false;
-  int order_index = 0;
+  int orderIndex = 0;
 
   static const String ORDER_TYPE = "order";
 
@@ -195,25 +195,32 @@ class _BookPageState extends State<BookPage> {
   static const int R_ORDER = 0;
 
   Set<int> selected = Set();
-
-  Widget createItem(BuildContext context, int idx) {
-    if (order_index == ORDER) {
-      idx = chapters.length - idx - 1;
-    }
+  
+  Widget createItem(int idx) {
+    String temp = widget.context.item_temp;
     DataItem item = chapters[idx];
-    String subtitle = item.subtitle;
-    DownloadQueueItem downloadItem = DownloadManager().find(item);
+    if (temp.isEmpty) {
+      String subtitle = item.subtitle;
+      DownloadQueueItem downloadItem = DownloadManager().find(item);
 
-    return ChapterItem(
-      title: item.title,
-      subtitle: subtitle,
-      editing: editing,
-      selected: selected.contains(idx),
-      downloadItem: downloadItem,
-      onTap: () {
-        onSelectItem(idx);
-      },
-    );
+      return ChapterItem(
+        title: item.title,
+        subtitle: subtitle,
+        editing: editing,
+        selected: selected.contains(idx),
+        downloadItem: downloadItem,
+        onTap: () {
+          onSelectItem(idx);
+        },
+      );
+    } else {
+      return XmlLayout(
+        template: temp,
+        objects: {
+          "data": _itemMap(item)
+        },
+      );
+    }
   }
 
   Widget buildTitle(DataItem item, ThemeData theme) {
@@ -254,7 +261,7 @@ class _BookPageState extends State<BookPage> {
   onOrderChanged(int value) {
     setState(() {
       KeyValue.set(key(ORDER_TYPE),value.toString());
-      order_index = value;
+      orderIndex = value;
     });
   }
 
@@ -287,7 +294,7 @@ class _BookPageState extends State<BookPage> {
     });
   }
 
-  onSelectItem(int idx) async {
+  onSelectItem(int idx) {
     if (editing) {
       DataItem data = chapters[idx];
       if (data.isInCollection(collection_download)) {
@@ -303,50 +310,60 @@ class _BookPageState extends State<BookPage> {
     } else {
       int currentIndex = idx;
       DataItem data = chapters[currentIndex];
-      widget.project.control();
-      Context currentContext = widget.project.createChapterContext(data).control();
-      await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-        return PictureViewer(
-          currentContext,
-          onChapterChanged: (PictureFlipType flipType) {
-            // 倒序排序
-            if (flipType == PictureFlipType.Prev) {
-              if (currentIndex < chapters.length - 1) {
-                currentIndex++;
-                DataItem data = chapters[currentIndex];
-                r(currentContext);
-                currentContext = widget.project.createChapterContext(data).control();
-                return currentContext;
-              }
-            } else if (flipType == PictureFlipType.Next) {
-              if (currentIndex > 0) {
-                currentIndex--;
-                DataItem data = chapters[currentIndex];
-                r(currentContext);
-                currentContext = widget.project.createChapterContext(data).control();
-                return currentContext;
-              }
-            }
-            return null;
-          },
-          onDownload: (_item) {
-            DataItem dataItem = widget.context.info_data;
-            setState(() {
-              DownloadQueueItem item = DownloadManager().add(_item, BookInfo(
-                  title: dataItem.title,
-                  picture: dataItem.picture,
-                  link: dataItem.link,
-                  subtitle: dataItem.subtitle
-              ));
-              item.start();
-            });
-          },
-        );
-      }));
-      currentContext.release();
-      widget.project.release();
+      openChapter(data);
     }
   }
+
+  void openChapter(DataItem chapter, [int page]) async {
+    int currentIndex = chapters.indexOf(chapter);
+    widget.project.control();
+    Context currentContext = widget.project.createChapterContext(chapter).control();
+    await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+      return PictureViewer(
+        currentContext,
+        onChapterChanged: (PictureFlipType flipType) {
+          if (currentIndex < 0) return null;
+          // 倒序排序
+          if (flipType == PictureFlipType.Prev) {
+            if (currentIndex < chapters.length - 1) {
+              currentIndex++;
+              DataItem data = chapters[currentIndex];
+              r(currentContext);
+              currentContext = widget.project.createChapterContext(data).control();
+              return currentContext;
+            }
+          } else if (flipType == PictureFlipType.Next) {
+            if (currentIndex > 0) {
+              currentIndex--;
+              DataItem data = chapters[currentIndex];
+              r(currentContext);
+              currentContext = widget.project.createChapterContext(data).control();
+              return currentContext;
+            }
+          }
+          return null;
+        },
+        onDownload: (_item) {
+          DataItem dataItem = widget.context.info_data;
+          setState(() {
+            DownloadQueueItem item = DownloadManager().add(_item, BookInfo(
+                title: dataItem.title,
+                picture: dataItem.picture,
+                link: dataItem.link,
+                subtitle: dataItem.subtitle
+            ));
+            item.start();
+          });
+        },
+        startPage: page,
+      );
+    }));
+    currentContext.release();
+    widget.project.release();
+  }
+
+  XmlLayoutBuilder _xmlBuilder;
+  XmlLayoutBuilder get xmlBuilder => _xmlBuilder ?? (_xmlBuilder = XmlLayoutBuilder());
 
   @override
   Widget build(BuildContext context) {
@@ -387,13 +404,13 @@ class _BookPageState extends State<BookPage> {
                                 return [
                                   CheckedPopupMenuItem<int>(
                                       value: R_ORDER,
-                                      checked: order_index == R_ORDER,
+                                      checked: orderIndex == R_ORDER,
                                       child: Text(kt("reverse_order"))
                                   ),
 
                                   CheckedPopupMenuItem<int>(
                                       value: ORDER,
-                                      checked: order_index == ORDER,
+                                      checked: orderIndex == ORDER,
                                       child: Text(kt("order"))
                                   )
                                 ];
@@ -473,7 +490,12 @@ class _BookPageState extends State<BookPage> {
               ),
               SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  createItem,
+                  (context, idx) {
+                    if (orderIndex == ORDER) {
+                      idx = chapters.length - idx - 1;
+                    }
+                    return createItem(idx);
+                  },
                   childCount: chapters.length,
                 ),
               )
@@ -484,12 +506,25 @@ class _BookPageState extends State<BookPage> {
       );
     } else {
       DataItem info_data = widget.context.info_data;
-      return XmlLayout(
+      return xmlBuilder.build(
+        context,
         template: temp,
         objects: {
-          "info_data": {
-            "title": info_data.title,
-            "data": info_data.data
+          "info_data": _itemMap(info_data),
+          "chapters": chapters,
+          "openChapter": (List args) {
+            if (args.length >= 1) {
+              openChapter(args[0], args.length >= 2 ? args[1] : null);
+            }
+          },
+          "buildChapterItem": (List args) {
+            if (args.length >= 1) {
+              int idx = args[0];
+              return createItem(idx);
+            } else {
+              print("Wrong item $args");
+              return Container();
+            }
           }
         },
       );
@@ -551,7 +586,7 @@ class _BookPageState extends State<BookPage> {
     String order = KeyValue.get(key(ORDER_TYPE));
     if (order != null && !order.isEmpty) {
       try {
-        order_index = int.parse(order);
+        orderIndex = int.parse(order);
       } catch (e) { }
     }
     super.initState();
@@ -564,5 +599,17 @@ class _BookPageState extends State<BookPage> {
     widget.context.release();
     widget.project.release();
     super.dispose();
+  }
+
+  Map<String, dynamic> _itemMap(DataItem item) {
+    return {
+      "title": item.title,
+      "data": item.data,
+      "summary": item.summary,
+      "picture": item.picture,
+      "subtitle": item.subtitle,
+      "link": item.link,
+      "type": item.type
+    };
   }
 }
