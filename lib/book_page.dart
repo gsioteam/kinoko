@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:glib/core/array.dart';
 import 'package:glib/core/callback.dart';
 import 'package:glib/core/core.dart';
+import 'package:glib/core/data.dart';
 import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
@@ -482,10 +483,14 @@ class _BookPageState extends State<BookPage> {
         ),
       );
     } else {
+      DataItem info_data = widget.context.info_data;
       return XmlLayout(
         template: temp,
         objects: {
-
+          "info_data": {
+            "title": info_data.title,
+            "data": info_data.data
+          }
         },
       );
     }

@@ -167,7 +167,7 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data, C
             ctx->type = type;
             ctx->project_key = key;
             ctx->settings = settings;
-            ctx->dir_path = path.substr(0, idx);
+            ctx->dir_path = path.substr(0, path.find_last_of('/'));
             ctx->setup(path.c_str(), data);
             return ctx;
         } else if (RubyContext::isSupport(ext)) {

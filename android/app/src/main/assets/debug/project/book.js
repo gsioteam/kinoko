@@ -6,6 +6,10 @@ class BookCollection extends glib.Collection {
         this.url = data.link;
     }
 
+    initialize() {
+        this.temp = "temp.xml";
+    }
+
     fetch(url) {
         return new Promise((resolve, reject)=>{
             let req = glib.Request.new('GET', url);
@@ -30,18 +34,19 @@ class BookCollection extends glib.Collection {
         let purl = new PageURL(this.url);
         let info_data = this.info_data;
         this.fetch(this.url).then((doc) => {
-            let links = doc.querySelectorAll("#list > li > a");
-            let results = [];
-            info_data.subtitle = doc.querySelector('.sub_r > .txtItme').text;
-            info_data.summary = doc.querySelector('.txtDesc').text;
-            for (let i = 0, t = links.length; i < t; i++) {
-                let el = links[i];
-                let item = glib.DataItem.new();
-                item.link = purl.href(el.getAttribute('href'));
-                item.title = el.text;
-                results.push(item);
+            let imgs = doc.querySelectorAll("#thumbnail-container a.gallerythumb > img");
+            let images = [];
+            let item = glib.DataItem.new();
+            item.type = glib.DataItem.Type.Chapter;
+            item.url = this.url + '/1';
+            for (let i = 0, t = imgs.length; i < t; i++) {
+                let el = imgs[i];
+                images.push(el.attr('data-src'));
             }
-            this.setData(results);
+            info_data.data = {
+                images: images
+            };
+            this.setData([item]);
             cb.apply(null);
         }).catch(function(err) {
             if (err instanceof Error) 

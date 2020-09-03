@@ -27,7 +27,7 @@ namespace gs {
     };
 
     std::time_t getTimeStamp();
-    static std::string calculatePath(const std::string &base_path, const std::string &src);
+    std::string calculatePath(const std::string &base_path, const std::string &src);
 }
 
 

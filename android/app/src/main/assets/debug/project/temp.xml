@@ -1,0 +1,10 @@
+<Scaffold>
+    <attr:appBar>
+        <AppBar>
+            <attr:title>
+                <Text text="${info_data.title}"/>
+            </attr:title>
+        </AppBar>
+    </attr:appBar>
+
+</Scaffold>

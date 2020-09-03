@@ -20,7 +20,8 @@ gc::Ref<DataItem> DataItem::fromData(const gc::Ref<BookData> &data) {
         item->setPicture(data->getPicture());
         item->setLink(data->getLink());
         item->setType(data->getType());
-        item->setData(data->getData());
+        const string &jstr = data->getData();
+        if (!jstr.empty()) item->setData(JSON::parse(nlohmann::json::parse(jstr)));
         item->setProjectKey(data->getProjectKey());
     }
     return item;
@@ -71,7 +72,8 @@ gc::Array DataItem::fromJSON(const std::string &json) {
 //        SET("project_key", setProjectKey);
         item->setType(val["type"]);
         if (val.contains("data")) {
-            item->setData(JSON::parse(val["data"]));
+            string jstr = val["data"];
+            item->setData(JSON::parse(nlohmann::json::parse(jstr)));
         }
         arr.push_back(item);
     }
@@ -90,7 +92,7 @@ void DataItem::fill(const gc::Ref<BookData> &data) {
     if (dstr.empty()) {
         setData(Variant::null());
     } else {
-        setData(JSON::parse(dstr));
+        setData(JSON::parse(nlohmann::json::parse(dstr)));
     }
 }
 

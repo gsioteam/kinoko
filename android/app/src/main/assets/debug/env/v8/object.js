@@ -15,6 +15,7 @@ class Object {
         }
         let obj = new (Function.prototype.bind.apply(this, [null].concat(argv)));
         _newObject(obj, this.class_name, argv);
+        obj.initialize.apply(obj, argv);
 
         return obj;
     }
@@ -52,6 +53,8 @@ class Object {
             cache.splice(idx, 1);
         }
     }
+
+    initialize() {}
 }
 
 Object.reg();

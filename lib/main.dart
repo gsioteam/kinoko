@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:glib/core/core.dart';
 import 'package:glib/main/project.dart';
@@ -20,6 +21,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'widgets/home_widget.dart';
 import 'favorites_page.dart';
 import 'download_page.dart';
+import 'package:xml_layout/types/all.dart' as all_type;
+import 'package:xml_layout/xml_layout.dart';
 
 void main() {
   runApp(MainApp());
@@ -78,6 +81,13 @@ class SplashScreen extends StatelessWidget {
     await Glib.setup(dir.path);
     await fetchEnv(context);
     WidgetsBinding.instance.addObserver(_LifecycleEventHandler());
+    all_type.reg();
+    XmlLayout.reg(CachedNetworkImageProvider, (node, key) {
+      return CachedNetworkImageProvider(
+        node.text,
+        scale: node.s<double>("scale", 1)
+      );
+    });
   }
 
   void fetchEnv(BuildContext context) async {
