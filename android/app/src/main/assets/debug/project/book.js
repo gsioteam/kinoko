@@ -1,3 +1,4 @@
+const glib = require("../env/v8/glib");
 
 class BookCollection extends glib.Collection {
 
@@ -54,12 +55,31 @@ class BookCollection extends glib.Collection {
                 let children = tag.children();
                 let title;
                 for (let child of children) {
-                    
+                    if (child.type == glib.GumboNode.Type.Text) {
+                        let text = child.text.trim();
+                        if (text.length > 0) {
+                            title = text;
+                            break;
+                        }
+                    }
                 }
-                dataTags.push();
+                let links = [];
+                let tagLinks = tag.querySelectorAll('.tags > a.tag');
+                for (let link of tagLinks) {
+                    links.push({
+                        link: purl.href(link.attr('href')),
+                        name: link.querySelector('.name'),
+                        count: link.querySelector('.count')
+                    });
+                }
+                dataTags.push({
+                    title: title,
+                    links: links
+                });
             }
             info_data.data = {
-                images: images
+                images: images,
+                tags: dataTags
             };
             this.setData([item]);
             cb.apply(null);

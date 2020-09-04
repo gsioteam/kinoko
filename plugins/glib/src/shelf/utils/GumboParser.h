@@ -15,7 +15,7 @@ namespace gs {
     class Gumbo;
 
     ENUM_BEGIN(GumboType)
-        GumboDocument,
+        GumboDocument = 0,
         GumboElement,
         GumboText,
         GumboCData,
