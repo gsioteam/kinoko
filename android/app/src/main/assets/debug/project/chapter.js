@@ -25,6 +25,7 @@ class ChapterCollection extends glib.Collection {
 
     reload(_, cb) {
         let url = this.info_data.link;
+        console.log("start reload " + url);
         this.request(url).then((doc) => {
             let scripts = doc.querySelectorAll("script:not([src])");
             let ctx = glib.ScriptContext.new('js');
@@ -36,9 +37,10 @@ class ChapterCollection extends glib.Collection {
                 }
             }
             let media_url = ctx.eval('window._reader.media_url');
-            let pages = ctx.eval('window._gallery.images.pages');
+            let pages = ctx.eval('window._gallery.images.pages').toArray();
             let media_id = ctx.eval('window._gallery.media_id');
             let results = [];
+            console.log("Count " + pages.length);
             for (let i = 0, t = pages.length; i < t; ++i) {
                 let page = pages[i];
                 let item = glib.DataItem.new();
@@ -46,10 +48,13 @@ class ChapterCollection extends glib.Collection {
                 switch (page.t) {
                     case 'j': ext = 'jpg'; break;
                     case 'p': ext = 'png'; break;
+                    case 'g': ext = 'gif'; break;
                     default: ext = 'jpg'; break;
                 }
+                console.log("type " + page.t + " ext " + ext);
                 item.picture = media_url + 'galleries/' + media_id + '/' + (i + 1) + '.' + ext;
                 item.link = url;
+                console.log(item.picture);
                 results.push(item);
             }
             this.setData(results);

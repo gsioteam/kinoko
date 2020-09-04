@@ -38,7 +38,7 @@ class BookCollection extends glib.Collection {
             let images = [];
             let item = glib.DataItem.new();
             item.type = glib.DataItem.Type.Chapter;
-            item.url = this.url + '/1';
+            item.link = this.url + '/1';
             for (let i = 0, t = imgs.length; i < t; i++) {
                 let el = imgs[i];
                 images.push(el.attr('data-src'));
