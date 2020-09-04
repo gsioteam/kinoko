@@ -527,6 +527,9 @@ class _BookPageState extends State<BookPage> {
             }
           }
         },
+        apply: (String name, List args) {
+          return widget.context.applyFunction(name, args);
+        }
       );
     }
   }
@@ -568,6 +571,11 @@ class _BookPageState extends State<BookPage> {
     );
   }
 
+  dynamic onCall(String name, Array argv) {
+
+    return null;
+  }
+
   String key(String type) {
     return "$type:${widget.context.info_data.link}";
   }
@@ -579,6 +587,7 @@ class _BookPageState extends State<BookPage> {
     widget.context.on_data_changed = Callback.fromFunction(onDataChanged).release();
     widget.context.on_loading_status = Callback.fromFunction(onLoadingStatus).release();
     widget.context.on_error = Callback.fromFunction(onError).release();
+    widget.context.on_call = Callback.fromFunction(onCall).release();
     refreshController.onRefresh = onPullDownRefresh;
     widget.context.enterView();
     FavoritesManager().clearNew(widget.context.info_data);
@@ -612,4 +621,5 @@ class _BookPageState extends State<BookPage> {
       "type": item.type
     };
   }
+
 }

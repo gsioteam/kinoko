@@ -184,3 +184,7 @@ std::string gs::GumboNode::getAttribute(const std::string &name) {
     }
     return string();
 }
+
+gs::GumboType gs::GumboNode::getType() const {
+    return (gs::GumboType)N->type;
+}

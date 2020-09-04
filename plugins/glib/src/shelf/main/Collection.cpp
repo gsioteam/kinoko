@@ -15,6 +15,7 @@ DNOTIFICATION(Collection, dataChanged);
 DNOTIFICATION(Collection, loading);
 DNOTIFICATION(Collection, error);
 DNOTIFICATION(Collection, reloadComplete);
+DNOTIFICATION(Collection, callFunction);
 
 bool Collection::reload(const gc::Map &data) {
     if (loading) return false;
@@ -92,4 +93,11 @@ const gc::Variant & Collection::getSetting(const std::string &key) {
 
 void Collection::setSetting(const std::string &key, const gc::Variant &value) {
     settings->set(key, value);
+}
+
+gc::Variant Collection::call(const std::string &name, const gc::Array &args) {
+    if (on_call) {
+        return on_call(name, args);
+    }
+    return Variant::null();
 }

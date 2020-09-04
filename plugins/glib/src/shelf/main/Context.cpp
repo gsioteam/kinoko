@@ -389,6 +389,13 @@ void Context::setupTarget(const gc::Ref<Collection> &target) {
             }
         }
     }));
+    target->on_call = [=](const std::string &name, const gc::Array &args) {
+        Ref<Context> that = weak.lock();
+        if (that && that->on_call) {
+            return that->on_call(name, args);
+        }
+        return Variant::null();
+    };
 }
 
 gc::Array Context::searchKeys(const std::string &key, int limit) {
@@ -472,4 +479,15 @@ std::string Context::readFile(const std::string &src) const {
         }
     }
     return _null;
+}
+
+gc::Variant Context::applyFunction(const std::string &name, const gc::Array &args) {
+    if (target) {
+        pointer_vector ps;
+        for (auto it = args->begin(), _e = args->end(); it != _e; ++it) {
+            ps.push_back((void *)(&*it));
+        }
+        return target->apply(name.c_str(), ps);
+    }
+    return Variant::null();
 }

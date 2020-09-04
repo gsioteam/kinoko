@@ -68,6 +68,11 @@ class Context extends Base {
 
   String get temp => call("getTemp");
   String get item_temp => call("getItemTemp");
+
+  dynamic applyFunction(String name, Array args) => call("applyFunction", argv: [name, args]);
+
+  Callback get on_call => call("getOnCall");
+  set on_call(Callback v) => call("setOnCall", argv: [v]);
 }
 
 class LibraryContext extends Base {

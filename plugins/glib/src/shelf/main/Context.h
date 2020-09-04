@@ -32,6 +32,7 @@ namespace gs {
         gc::Callback on_loading_status;
         gc::Callback on_error;
         gc::Callback on_reload_complete;
+        gc::Callback on_call;
         std::string dir_path;
         ContextType type;
         bool first_enter = true;
@@ -111,6 +112,16 @@ namespace gs {
         METHOD std::string getItemTemp() const;
         PROPERTY(item_temp, getItemTemp, NULL);
 
+        METHOD gc::Variant applyFunction(const std::string &name, const gc::Array &args);
+
+        METHOD void setOnCall(const gc::Callback &on_call) {
+            this->on_call = on_call;
+        }
+        METHOD const gc::Callback &getOnCall() const {
+            return on_call;
+        }
+        PROPERTY(on_call, getOnCall, setOnCall);
+
         ON_LOADED_BEGIN(cls, gc::Object)
             ADD_METHOD(cls, Context, setup);
             ADD_METHOD(cls, Context, isReady);
@@ -122,10 +133,12 @@ namespace gs {
             ADD_METHOD(cls, Context, removeSearchKey);
             ADD_METHOD(cls, Context, getSetting);
             ADD_METHOD(cls, Context, setSetting);
+            ADD_METHOD(cls, Context, applyFunction);
             ADD_PROPERTY(cls, "on_data_changed", NULL, ADD_METHOD(cls, Context, setOnDataChanged));
             ADD_PROPERTY(cls, "on_loading_status", NULL, ADD_METHOD(cls, Context, setOnLoadingStatus));
             ADD_PROPERTY(cls, "on_error", NULL, ADD_METHOD(cls, Context, setOnError));
             ADD_PROPERTY(cls, "on_reload_complete", NULL, ADD_METHOD(cls, Context, setOnReloadComplete));
+            ADD_PROPERTY(cls, "on_call", ADD_METHOD(cls, Context, getOnCall), ADD_METHOD(cls, Context, setOnCall));
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Context, getData), NULL);
             ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Context, getInfoData), ADD_METHOD(cls, Context, setInfoData));
             ADD_PROPERTY(cls, "project_key", ADD_METHOD(cls, Context, getProjectKey), NULL);

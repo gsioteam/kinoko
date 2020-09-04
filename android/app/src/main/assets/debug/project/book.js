@@ -38,10 +38,25 @@ class BookCollection extends glib.Collection {
             let images = [];
             let item = glib.DataItem.new();
             item.type = glib.DataItem.Type.Chapter;
-            item.url = this.url + '/1';
+            item.link = this.url + '/1';
             for (let i = 0, t = imgs.length; i < t; i++) {
                 let el = imgs[i];
                 images.push(el.attr('data-src'));
+            }
+            info_data.picture = doc.querySelector('#cover img').attr('data-src');
+            let titles = doc.querySelectorAll('#info > .title');
+            info_data.title = titles[0].text
+            info_data.subtitle = titles[1].text;
+            let tags = doc.querySelectorAll('#tags .tag-container:not(.hidden)');
+            let dataTags = [];
+            for (let i = 0, t = tags.length; i < t; ++i) {
+                let tag = tags[i];
+                let children = tag.children();
+                let title;
+                for (let child of children) {
+                    
+                }
+                dataTags.push();
             }
             info_data.data = {
                 images: images

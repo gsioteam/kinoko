@@ -25,6 +25,8 @@ namespace gs {
 
     public:
 
+        std::function<gc::Variant(const std::string &name, const gc::Array &args)> on_call;
+
         ENUM_BEGIN(ChangeType)
             Reload = 1,
             Append = 2,
@@ -86,11 +88,14 @@ namespace gs {
         }
         PROPERTY(item_temp, getItemTemp, setItemTemp);
 
+        METHOD gc::Variant call(const std::string &name, const gc::Array &args);
+
         ON_LOADED_BEGIN(cls, gc::Object)
             INITIALIZER(cls, Collection, initialize);
             ADD_METHOD(cls, Collection, setDataAt);
             ADD_METHOD(cls, Collection, appendData);
             ADD_METHOD(cls, Collection, getSetting);
+            ADD_METHOD(cls, Collection, call);
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Collection, getData), ADD_METHOD(cls, Collection, setData));
             ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Collection, getInfoData), ADD_METHOD(cls, Collection, setInfoData));
             ADD_PROPERTY(cls, "temp", ADD_METHOD(cls, Collection, getTemp), ADD_METHOD(cls, Collection, setTemp));
