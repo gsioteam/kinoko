@@ -150,14 +150,14 @@ class _CollectionsPageState extends State<CollectionsPage> {
     return DefaultTabController(
       length: contexts.length,
       child: Scaffold(
-        appBar: AppBar(
+        appBar: tabs.length > 1 ? AppBar(
           elevation: 0,
           centerTitle: true,
           title: TabBar(
             tabs: tabs,
             isScrollable: true,
           ),
-        ),
+        ) : null,
         body: TabBarView(
           children: bodies
         ),

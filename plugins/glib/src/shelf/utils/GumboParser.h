@@ -14,6 +14,16 @@ namespace gs {
 
     class Gumbo;
 
+    ENUM_BEGIN(GumboType)
+        GumboDocument = 0,
+        GumboElement,
+        GumboText,
+        GumboCData,
+        GumboComment,
+        GumboWhiteSpace,
+        GumboTemplate
+    ENUM_END
+
     CLASS_BEGIN_NV(GumboNode, gc::Object)
 
         gc::Ref<Gumbo> gumbo;
@@ -36,6 +46,8 @@ namespace gs {
 
         METHOD std::string getAttribute(const std::string &name);
 
+        METHOD GumboType getType() const;
+
     protected:
         ON_LOADED_BEGIN(cls, gc::Object)
             ADD_METHOD_D(cls, GumboNode, parse, gc::Variant::null());
@@ -47,6 +59,7 @@ namespace gs {
             ADD_METHOD(cls, GumboNode, childCount);
             ADD_METHOD(cls, GumboNode, childAt);
             ADD_METHOD(cls, GumboNode, getAttribute);
+            ADD_METHOD(cls, GumboNode, getType);
         ON_LOADED_END
     CLASS_END
 

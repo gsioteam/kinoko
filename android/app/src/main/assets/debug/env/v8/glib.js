@@ -164,12 +164,25 @@ class GumboNode extends Object {
         }
         return this._children;
     }
+
+    get type() {
+        return this.getType();
+    }
     
     attr(name) {
         return this.getAttribute(name)
     }
 }
 GumboNode.reg();
+GumboNode.Type = {
+    Document: 0,
+    Element: 1,
+    Text: 2,
+    CData: 3,
+    Comment: 4,
+    WhiteSpace: 5,
+    Template: 6
+};
 
 class DataItem extends Object {
     static class_name = 'gs::DataItem';
