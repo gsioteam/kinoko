@@ -1,4 +1,3 @@
-const glib = require("../env/v8/glib");
 
 class BookCollection extends glib.Collection {
 
@@ -20,7 +19,7 @@ class BookCollection extends glib.Collection {
                 } else {
                     let body = req.getResponseBody();
                     if (body) {
-                        resolve(glib.GumboNode.parse(body, 'gbk'));
+                        resolve(glib.GumboNode.parse(body));
                     } else {
                         reject(glib.Error.new(301, "Response null body"));
                     }
@@ -52,7 +51,7 @@ class BookCollection extends glib.Collection {
             let dataTags = [];
             for (let i = 0, t = tags.length; i < t; ++i) {
                 let tag = tags[i];
-                let children = tag.children();
+                let children = tag.children;
                 let title;
                 for (let child of children) {
                     if (child.type == glib.GumboNode.Type.Text) {
@@ -65,12 +64,20 @@ class BookCollection extends glib.Collection {
                 }
                 let links = [];
                 let tagLinks = tag.querySelectorAll('.tags > a.tag');
+                console.log("size : " + tagLinks.length + "  title:" + title);
                 for (let link of tagLinks) {
-                    links.push({
-                        link: purl.href(link.attr('href')),
-                        name: link.querySelector('.name'),
-                        count: link.querySelector('.count')
-                    });
+                    try {
+                        let data = {
+                            link: purl.href(link.attr('href')),
+                            name: link.querySelector('.name').text,
+                        };
+                        console.log("push name " + data.name);
+                        let count = link.querySelector('.count');
+                        if (count) data.count = count.text;
+                        links.push(data);
+                    } catch (e) {
+                        console.log("Error : " + e.message);
+                    }
                 }
                 dataTags.push({
                     title: title,

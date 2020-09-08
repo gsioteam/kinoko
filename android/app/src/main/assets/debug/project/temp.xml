@@ -8,26 +8,70 @@
     </attr:appBar>
 
     <attr:body>
-        <GridView.count crossAxisCount="4" childAspectRatio="0.8">
-            <for array="${info_data.data.images}">
-                <MaterialButton>
-                    <attr:onPressed>
-                        <Function>
-                            <Call function="$openChapter">
-                                <Argument value="${chapters[0]}"/>
-                                <Argument value="$index"/>
-                            </Call>
-                        </Function>
-                    </attr:onPressed>
-                    <Image fit="cover">
-                        <attr:image>
-                            <CachedNetworkImageProvider>
-                                $item
-                            </CachedNetworkImageProvider>
-                        </attr:image>
-                    </Image>
-                </MaterialButton>
-            </for>
-        </GridView.count>
+        <CustomScrollView>
+            <SliverToBoxAdapter>
+                <Padding padding="all(10)">
+                    <Row>
+                        <Image width="90" height="120" fit="cover">
+                            <attr:image>
+                                <CachedNetworkImageProvider>${info_data.picture}</CachedNetworkImageProvider>
+                            </attr:image>
+                        </Image>
+                        <Expanded>
+                            <Column crossAxisAlignment="start">
+                                <Text>${info_data.title}</Text>
+                                <Text>${info_data.subtitle}</Text>
+
+                                <Column crossAxisAlignment="start">
+                                    <for array="${info_data.data.tags}">
+                                        <Text.rich>
+                                            <TextSpan>
+                                                <TextSpan text="${item.title}"></TextSpan>
+                                                <for array="${item.links}" item="link">
+                                                    <WidgetSpan>
+                                                        <Row>
+                                                            <Container padding="only(6,4,6,4)">
+                                                                <Text text="${link.name}"/>
+                                                            </Container>
+                                                            <Container padding="only(6,4,6,4)">
+                                                                <Text text="${link.name}"/>
+                                                            </Container>
+                                                        </Row>
+                                                    </WidgetSpan>
+                                                </for>
+                                            </TextSpan>
+                                        </Text.rich>
+                                    </for>
+                                </Column>
+                            </Column>
+                        </Expanded>
+                    </Row>
+                </Padding>
+                
+            </SliverToBoxAdapter>
+            <SliverGrid.count crossAxisCount="4" childAspectRatio="0.8">
+                <for array="${info_data.data.images}">
+                    <MaterialButton padding="zero">
+                        <attr:onPressed>
+                            <Function>
+                                <Call function="$openChapter">
+                                    <Argument value="${chapters[0]}"/>
+                                    <Argument value="$index"/>
+                                </Call>
+                            </Function>
+                        </attr:onPressed>
+                        <Container width="999" height="999">
+                            <Image fit="cover">
+                                <attr:image>
+                                    <CachedNetworkImageProvider>
+                                        $item
+                                    </CachedNetworkImageProvider>
+                                </attr:image>
+                            </Image>
+                        </Container>
+                    </MaterialButton>
+                </for>
+            </SliverGrid.count>
+        </CustomScrollView>
     </attr:body>
 </Scaffold>

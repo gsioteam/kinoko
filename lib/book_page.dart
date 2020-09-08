@@ -505,6 +505,11 @@ class _BookPageState extends State<BookPage> {
         ),
       );
     } else {
+//      var tar = Scaffold(
+//        appBar: AppBar(title: Text("test"),),
+//        body: Container(color: Colors.blue,),
+//      );
+//      return tar;
       DataItem info_data = widget.context.info_data;
       return xmlBuilder.build(
         context,

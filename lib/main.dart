@@ -88,6 +88,14 @@ class SplashScreen extends StatelessWidget {
         scale: node.s<double>("scale", 1)
       );
     });
+    XmlLayout.reg(FlatButton, (node, key) {
+      return FlatButton(
+        key: key,
+        onPressed: node.s<VoidCallback>("onPressed"),
+        child: node.child<Widget>(),
+        padding: EdgeInsets.zero,
+      );
+    });
   }
 
   void fetchEnv(BuildContext context) async {
@@ -106,7 +114,7 @@ class SplashScreen extends StatelessWidget {
         }
       );
       if (result != ProgressResult.Success) {
-        throw Exception("What the fuck!");
+        throw Exception("WTF?!");
       }
     } else {
     }

@@ -37,6 +37,7 @@ class _BookListPageState extends State<BookListPage> {
       builder: (context) => BookPage(ctx, widget.project)
     ));
     ctx.release();
+
   }
 
   bool onPullDownRefresh() {

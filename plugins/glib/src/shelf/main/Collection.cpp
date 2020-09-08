@@ -15,7 +15,6 @@ DNOTIFICATION(Collection, dataChanged);
 DNOTIFICATION(Collection, loading);
 DNOTIFICATION(Collection, error);
 DNOTIFICATION(Collection, reloadComplete);
-DNOTIFICATION(Collection, callFunction);
 
 bool Collection::reload(const gc::Map &data) {
     if (loading) return false;

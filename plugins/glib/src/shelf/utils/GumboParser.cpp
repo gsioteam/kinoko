@@ -143,9 +143,7 @@ std::string gs::GumboNode::getText() {
             }
         }
     }
-    string str = ss.str();
-    LOG(i, "Ou %s", str.c_str());
-    return str;
+    return ss.str();
 }
 
 size_t gs::GumboNode::childCount() {
