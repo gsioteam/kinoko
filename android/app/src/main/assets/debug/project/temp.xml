@@ -29,14 +29,38 @@
                                                 <TextSpan text="${item.title}"></TextSpan>
                                                 <for array="${item.links}" item="link">
                                                     <WidgetSpan>
-                                                        <Row>
-                                                            <Container padding="only(6,4,6,4)">
-                                                                <Text text="${link.name}"/>
-                                                            </Container>
-                                                            <Container padding="only(6,4,6,4)">
-                                                                <Text text="${link.name}"/>
-                                                            </Container>
-                                                        </Row>
+                                                        <Container margin="only(3,,3,)">
+                                                            <Row mainAxisSize="min">
+                                                                <Container padding="only(1,2,4,2)">
+                                                                    <Text text="${link.name}">
+                                                                        <attr:style>
+                                                                            <TextStyle color="white" fontSize="8"/>
+                                                                        </attr:style>
+                                                                    </Text>
+                                                                    <attr:decoration>
+                                                                        <BoxDecoration color="black" borderRadius="horizontal(circular(4), )">
+                                                                            <attr:boxShadow>
+                                                                                <BoxShadow color="black" blurRadius="3"/>
+                                                                            </attr:boxShadow>
+                                                                        </BoxDecoration>
+                                                                    </attr:decoration>
+                                                                </Container>
+                                                                <Container padding="only(4,2,1,2)">
+                                                                    <Text text="${link.count}">
+                                                                        <attr:style>
+                                                                            <TextStyle color="white" fontSize="8"/>
+                                                                        </attr:style>
+                                                                    </Text>
+                                                                    <attr:decoration>
+                                                                        <BoxDecoration color="grey" borderRadius="horizontal(,circular(4))">
+                                                                            <attr:boxShadow>
+                                                                                <BoxShadow color="grey" blurRadius="3"/>
+                                                                            </attr:boxShadow>
+                                                                        </BoxDecoration>
+                                                                    </attr:decoration>
+                                                                </Container>
+                                                            </Row>
+                                                        </Container>
                                                     </WidgetSpan>
                                                 </for>
                                             </TextSpan>

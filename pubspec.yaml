@@ -40,7 +40,7 @@ dependencies:
   scrollable_positioned_list: ^0.1.7
   flutter_picker: ^1.1.5
   http: ^0.12.1
-  xml_layout: ^0.2.14
+  xml_layout: ^0.2.15
 
 dev_dependencies:
 #  flutter_test:
