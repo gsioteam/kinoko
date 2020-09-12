@@ -18,6 +18,7 @@ import 'progress_dialog.dart';
 import 'utils/progress_items.dart';
 import 'localizations/localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'widgets/better_refresh_indicator.dart';
 import 'widgets/home_widget.dart';
 import 'favorites_page.dart';
 import 'download_page.dart';
@@ -96,6 +97,19 @@ class SplashScreen extends StatelessWidget {
         padding: EdgeInsets.zero,
       );
     });
+    XmlLayout.reg(BetterRefreshIndicator, (node, key) {
+      return BetterRefreshIndicator(
+        child: node.child<Widget>(),
+        displacement: node.s<double>("displacement", 40),
+        color: node.s<Color>("color"),
+        backgroundColor: node.s<Color>("backgroundColor"),
+        notificationPredicate: node.s<ScrollNotificationPredicate>("notificationPredicate", defaultScrollNotificationPredicate),
+        semanticsLabel: node.s<String>("semanticsLabel"),
+        semanticsValue: node.s<String>("semanticsValue"),
+        strokeWidth: node.s<double>("strokeWidth", 2),
+        controller: node.s<BetterRefreshIndicatorController>("controller"),
+      );
+    }, mode: XmlLayout.Element);
   }
 
   void fetchEnv(BuildContext context) async {

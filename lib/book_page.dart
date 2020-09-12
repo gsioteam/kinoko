@@ -195,7 +195,7 @@ class _BookPageState extends State<BookPage> {
   static const int R_ORDER = 0;
 
   Set<int> selected = Set();
-  
+
   Widget createItem(int idx) {
     String temp = widget.context.item_temp;
     DataItem item = chapters[idx];
@@ -530,7 +530,8 @@ class _BookPageState extends State<BookPage> {
               print("Wrong item $args");
               return Container();
             }
-          }
+          },
+          "refreshController": refreshController
         },
         apply: (String name, List args) {
           return widget.context.applyFunction(name, args);

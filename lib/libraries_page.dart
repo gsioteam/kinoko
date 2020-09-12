@@ -22,6 +22,7 @@ import 'package:http/http.dart' as http;
 import 'package:glib/main/context.dart';
 import 'widgets/better_snack_bar.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 
 const LibURL = "https://api.github.com/repos/gsioteam/env/issues/2/comments?per_page={1}&page={0}";
 const int per_page = 40;
@@ -68,7 +69,11 @@ class _LibraryCellState extends State<LibraryCell> {
   ImageProvider getIcon() {
     String icon = library.icon;
     if (icon != null) {
-      return CachedNetworkImageProvider(icon);
+      if (icon.contains(new RegExp(r"\.svg$", caseSensitive: false))) {
+        return Svg(icon);
+      } else {
+        return CachedNetworkImageProvider(icon);
+      }
     }
     if (project.isValidated) {
       String iconpath = project.fullpath + "/icon.png";

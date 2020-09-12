@@ -8,7 +8,7 @@
     "search": {
         "src": "search.js",
         "data": {
-            "url": "https://so.kukudm.com/m_search.asp?kw={0}&page={1}"
+            "url": "https://nhentai.net/search/?q={0}&page={1}}"
         }
     },
     "categories": [

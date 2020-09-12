@@ -74,6 +74,7 @@ class BookCollection extends glib.Collection {
                         console.log("push name " + data.name);
                         let count = link.querySelector('.count');
                         if (count) data.count = count.text;
+                        else data.count = '-'
                         links.push(data);
                     } catch (e) {
                         console.log("Error : " + e.message);

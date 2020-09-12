@@ -72,6 +72,7 @@ class _PictureViewerState extends State<PictureViewer> {
   String _directionKey;
   String _deviceKey;
   String _pageKey;
+  bool _firstTime = true;
 
   void onDataChanged(int type, Array data, int pos) {
     if (data != null) {
@@ -146,6 +147,11 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   Widget buildPager(BuildContext context) {
+    if (_firstTime && widget.startPage != null) {
+      photoController.index = math.max(math.min(widget.startPage, data.length - 1), 0);
+      index = photoController.index;
+    }
+    _firstTime = false;
     return PhotoList(
       itemCount: data.length,
       imageUrlProvider: (int index) {

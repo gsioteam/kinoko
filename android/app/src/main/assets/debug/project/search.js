@@ -1,32 +1,5 @@
 
-class Collection extends glib.Collection {
-
-    constructor(data) {
-        super();
-        this.url = data.url;
-    }
-
-    fetch(url) {
-        return new Promise((resolve, reject)=>{
-            let req = glib.Request.new('GET', url);
-            this.callback = glib.Callback.fromFunction(function() {
-                if (req.getError()) {
-                    reject(glib.Error.new(302, "Request error " + req.getError()));
-                } else {
-                    let body = req.getResponseBody();
-                    if (body) {
-                        resolve(glib.GumboNode.parse(body, 'gbk'));
-                    } else {
-                        reject(glib.Error.new(301, "Response null body"));
-                    }
-                }
-            });
-            req.setOnComplete(this.callback);
-            req.start();
-        });
-    }
-
-}
+const Collection = require('./collection');
 
 class SearchCollection extends Collection {
     
@@ -35,46 +8,57 @@ class SearchCollection extends Collection {
         this.page = 0;
     }
 
-    loadPage(url, func) {
+    async fetch(url)  {
+        console.log("Start " + url);
         let purl = new PageURL(url);
-        console.log("load " + url);
-        this.fetch(url).then((doc) => {
-            let results = [];
-            let boxes = doc.querySelectorAll('#classify_container > li');
-            console.log("loaded  " + boxes.length);
-            for (let box of boxes) {
-                let linkimg = box.querySelector('.ImgA');
+        let doc = await super.fetch(url);
+        let results = [];
+        let containers = doc.querySelectorAll('.index-container');
+        for (let container of containers) {
+            let header = container.querySelector('h2');
+            if (header) {
+                let head = glib.DataItem.new();
+                head.type = glib.DataItem.Type.Header;
+                head.picture = '/red-flag.png';
+                head.title = header.text.trim();
+                results.push(head);
+            }
+
+            let books = container.querySelectorAll('.gallery > a');
+            for (let book_elem of books) {
                 let item = glib.DataItem.new();
-                item.link = purl.href(linkimg.getAttribute('href'));
-                item.picture = purl.href(linkimg.querySelector('img').getAttribute('src'));
-                
-                item.title = box.querySelector('.txtA').text;
-                item.subtitle = box.querySelector('.info').text;
+                let title = book_elem.querySelector('.caption').text.trim();
+                let subtitle = title;
+                if (title.length > 20) {
+                    title = title.substr(0, 20) + '...';
+                }
+                item.type = glib.DataItem.Type.Book;
+                item.title = title;
+                item.subtitle = subtitle;
+                item.link = purl.href(book_elem.getAttribute('href'));
+                item.picture = purl.href(book_elem.querySelector('img').getAttribute('data-src'));
                 results.push(item);
             }
-            func(null, results);
-        }).catch(function(err) {
-            if (err instanceof Error) 
-                err = glib.Error.new(305, err.message);
-            func(err);
-        });
+        }
+        return results;
     }
 
-    makeUrl(key, page) {
-        return this.url.replace("{0}", glib.Encoder.urlEncodeWithEncoding(this.key, 'gbk')).replace("{1}", page + 1);
+    makeURL(key, page) {
+        return this.url.replace("{0}", glib.Encoder.urlEncode(this.key)).replace("{1}", page + 1);
     }
 
     reload(data, cb) {
+        console.log("What?");
         this.key = data.get("key") || this.key;
         let page = data.get("page") || 0;
         if (!this.key) return false;
-        let url = this.makeUrl(this.key, page);
-        console.log(url);
-        this.loadPage(url, (err, data) => {
-            if (!err) {
-                this.setData(data);
-                this.page = page;
-            }
+        this.fetch(this.makeURL(this.key, page)).then((results)=>{
+            this.page = page;
+            this.setData(results);
+            cb.apply(null);
+        }).catch(function(err) {
+            if (err instanceof Error) 
+                err = glib.Error.new(305, err.message);
             cb.apply(err);
         });
         return true;
@@ -82,13 +66,13 @@ class SearchCollection extends Collection {
 
     loadMore(cb) {
         let page = this.page + 1;
-        let url = this.makeUrl(this.key, page);
-        console.log("load more " + url);
-        this.loadPage(url, (err, data) => {
-            if (!err) {
-                this.appendData(data);
-                this.page = page;
-            }
+        this.fetch(this.makeURL(this.key, page)).then((results)=>{
+            this.page = page;
+            this.appendData(results);
+            cb.apply(null);
+        }).catch(function(err) {
+            if (err instanceof Error) 
+                err = glib.Error.new(305, err.message);
             cb.apply(err);
         });
         return true;
