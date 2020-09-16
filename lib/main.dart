@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:glib/core/core.dart';
+import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
 import 'package:kinoko/favorites_page.dart';
+import 'package:kinoko/utils/image_provider.dart';
 import 'book_list.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'collections_page.dart';
@@ -24,6 +26,7 @@ import 'favorites_page.dart';
 import 'download_page.dart';
 import 'package:xml_layout/types/all.dart' as all_type;
 import 'package:xml_layout/xml_layout.dart';
+import 'localizations/localizations.dart';
 
 void main() {
   runApp(MainApp());
@@ -158,11 +161,25 @@ class HomeDrawer extends StatefulWidget {
   }
 }
 
+class OvalClipper extends CustomClipper<Rect> {
+  @override
+  Rect getClip(Size size) {
+    return Rect.fromLTRB(0, 0, size.width, size.height);
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Rect> oldClipper) {
+    return false;
+  }
+
+}
+
 class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateMixin {
 
   AnimationController animationController;
   bool isFetch = false;
   bool isCheckout = false;
+  bool isDispose = false;
 
   void startFetch() {
     if (isFetch) return;
@@ -173,6 +190,7 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
     action.control();
     action.setOnComplete(() {
       action.release();
+      if (isDispose) return;
       this.setState(() {
         if (this.onRefresh != null) this.onRefresh();
         animationController.stop();
@@ -196,6 +214,7 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
     action.control();
     action.setOnComplete(() {
       action.release();
+      if (isDispose) return;
       this.setState(() {
         if (this.onRefresh != null) this.onRefresh();
         isCheckout = false;
@@ -212,79 +231,126 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
 
   @override
   void initState() {
+    super.initState();
+    widget.homeState.onRefresh = onRefresh;
+    widget.homeState.onFetch = startFetch;
     animationController = AnimationController(
         vsync: this,
         duration: Duration(seconds: 1)
     );
-//    animationController.repeat();
   }
 
-  List<Widget> getChildren() {
-    var repo = env_repo;
-    var lv = repo.localID(), hv = repo.highID();
-    return repo == null ? [] : [
+  @override
+  void didUpdateWidget(HomeDrawer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    oldWidget.homeState.onRefresh = null;
+    oldWidget.homeState.onFetch = null;
+    widget.homeState.onRefresh = onRefresh;
+    widget.homeState.onFetch = startFetch;
+  }
+
+  @override
+  void dispose() {
+    widget.homeState.onRefresh = null;
+    widget.homeState.onFetch = null;
+    animationController.dispose();
+    isDispose = true;
+    super.dispose();
+  }
+
+  ImageProvider getIcon(Project project) {
+    String icon = project?.icon;
+    if (icon != null) {
+      return makeImageProvider(icon);
+    }
+    if (project.isValidated) {
+      String iconpath = project.fullpath + "/icon.png";
+      File icon = new File(iconpath);
+      if (icon.existsSync()) {
+        return FileImage(icon);
+      }
+    }
+    return CachedNetworkImageProvider("http://tinygraphs.com/squares/${generateMd5(project.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg");
+  }
+
+  List<Widget> buildList(Project project) {
+    var lv = env_repo.localID(), hv = env_repo.highID();
+//    GitLibrary library = GitLibrary.findLibrary(env_repo);
+
+    return [
       Padding(
-        padding: EdgeInsets.only(top: 10, bottom: 5),
-        child: Text.rich(
-          TextSpan(
-            text: "准备就绪",
-            style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white),
-            children: [
-              TextSpan(
-                text: "  (${lv})",
-                style: Theme.of(context).textTheme.caption.copyWith(color: Colors.white)
-              )
-            ]
-          ),
+        padding: EdgeInsets.only(top: 5, bottom: 5),
+        child: Row(
+          children: [
+            ClipOval(
+              child: Container(
+                color: Colors.blueAccent,
+                child: Image(
+                  image: getIcon(project),
+                  fit: BoxFit.contain,
+                  width: 36,
+                  height: 36,
+                ),
+              ),
+              clipper: OvalClipper(),
+            ),
+            Padding(padding: EdgeInsets.only(left: 8)),
+            Text(project.name,
+                style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white)
+            )
+          ],
         ),
       ),
       Padding(
-        padding: EdgeInsets.only(top: 10, bottom: 10),
+        padding: EdgeInsets.only(top: 10, bottom: 5),
         child: Text(
-          "线上版本 ${hv}",
+          hv == lv ? "${kt("framework")}.$hv" : "${kt("framework")}.$hv ($lv)",
           style: Theme.of(context).textTheme.caption.copyWith(color: Colors.white),
         ),
       ),
       Row(
         children: <Widget>[
           IconButton(
-            icon: CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColorLight,
-              child: AnimatedBuilder(
-                animation: animationController,
-                child: Icon(Icons.sync, color: Theme.of(context).primaryColor,),
-                builder: (BuildContext context, Widget _widget) {
-                  return Transform.rotate(
-                    angle: animationController.value * -6.3,
-                    child: _widget,
-                  );
-                }
-              )
-            ),
-            onPressed: startFetch
+              icon: CircleAvatar(
+                  backgroundColor: Theme.of(context).primaryColorLight,
+                  child: AnimatedBuilder(
+                      animation: animationController,
+                      child: Icon(Icons.sync, color: Theme.of(context).primaryColor,),
+                      builder: (BuildContext context, Widget _widget) {
+                        return Transform.rotate(
+                          angle: animationController.value * -6.3,
+                          child: _widget,
+                        );
+                      }
+                  )
+              ),
+              onPressed: startFetch
           ),
           (lv == hv ? Container(): IconButton(
-            icon: CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColorLight,
-              child: Icon(Icons.get_app, color: Theme.of(context).primaryColor,),
-            ),
-            onPressed: isCheckout ? null:startCheckout
+              icon: CircleAvatar(
+                backgroundColor: Theme.of(context).primaryColorLight,
+                child: Icon(Icons.get_app, color: Theme.of(context).primaryColor,),
+              ),
+              onPressed: isCheckout ? null:startCheckout
           ))
         ],
       )
     ];
   }
 
+  List<Widget> getChildren() {
+    var project = Project.getMainProject();
+    return env_repo == null || project == null ? [] : buildList(project);
+  }
+
   @override
   Widget build(BuildContext context) {
-    this.widget.homeState.onRefresh = onRefresh;
-    widget.homeState.onFetch = startFetch;
-    return DrawerHeader(
+    return Container(
       decoration: BoxDecoration(
         color: Colors.blue,
       ),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,8 +361,11 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
   }
 
   void onRefresh() {
+    print("onRefresh");
     this.setState(() { });
   }
+
+
 }
 
 class NavigationController {

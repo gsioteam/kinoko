@@ -29,6 +29,7 @@ namespace gscript {
         void setValue(void *v) {
             value = v;
         }
+        void *getValue() const { return value; }
 
         virtual gc::Variant apply(const gc::StringName &name, const gc::Variant **params, int count);
 

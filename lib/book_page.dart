@@ -1,4 +1,5 @@
 
+import 'dart:collection';
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -13,6 +14,7 @@ import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
+import 'package:kinoko/collection_page.dart';
 import 'package:xml_layout/xml_layout.dart';
 import 'configs.dart';
 import 'localizations/localizations.dart';
@@ -22,6 +24,7 @@ import 'package:glib/main/error.dart' as glib;
 import 'picture_viewer.dart';
 import 'utils/book_info.dart';
 import 'utils/favorites_manager.dart';
+import 'utils/proxy_collections.dart';
 
 class BarItem extends StatefulWidget {
 
@@ -362,6 +365,22 @@ class _BookPageState extends State<BookPage> {
     widget.project.release();
   }
 
+  void openCollection(Map data, String title) async {
+    widget.project.control();
+    Context scriptContext = widget.project.createIndexContext(data).control();
+
+    await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+      return CollectionPage(
+        title: title,
+        context: scriptContext,
+        project: widget.project,
+      );
+    }));
+
+    scriptContext.release();
+    widget.project.release();
+  }
+
   XmlLayoutBuilder _xmlBuilder;
   XmlLayoutBuilder get xmlBuilder => _xmlBuilder ?? (_xmlBuilder = XmlLayoutBuilder());
 
@@ -505,18 +524,13 @@ class _BookPageState extends State<BookPage> {
         ),
       );
     } else {
-//      var tar = Scaffold(
-//        appBar: AppBar(title: Text("test"),),
-//        body: Container(color: Colors.blue,),
-//      );
-//      return tar;
       DataItem info_data = widget.context.info_data;
       return xmlBuilder.build(
         context,
         template: temp,
         objects: {
           "info_data": _itemMap(info_data),
-          "chapters": chapters,
+          "chapters": proxyObject(chapters),
           "openChapter": (List args) {
             if (args.length >= 1) {
               openChapter(args[0], args.length >= 2 ? args[1] : null);
@@ -529,6 +543,11 @@ class _BookPageState extends State<BookPage> {
             } else {
               print("Wrong item $args");
               return Container();
+            }
+          },
+          "openCollection": (List args) {
+            if (args.length >= 1) {
+              openCollection(args[0], args.length >= 2 ? args[1] : null);
             }
           },
           "refreshController": refreshController
@@ -607,19 +626,24 @@ class _BookPageState extends State<BookPage> {
     super.initState();
   }
 
+  AutoRelease data;
+
   @override
   void dispose() {
     widget.context.exitView();
     chapters.release();
     widget.context.release();
     widget.project.release();
+    data?.release();
     super.dispose();
   }
 
   Map<String, dynamic> _itemMap(DataItem item) {
+    data?.release();
+    data = item.data?.control();
     return {
       "title": item.title,
-      "data": item.data,
+      "data": proxyObject(data),
       "summary": item.summary,
       "picture": item.picture,
       "subtitle": item.subtitle,

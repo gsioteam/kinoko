@@ -1,7 +1,6 @@
 const Object = require('./object');
 
 class Callback extends Object {
-    static class_name = 'gc::_Callback';
 
     static fromFunction(func) {
         let cb = FunctionCallback.new();
@@ -18,6 +17,7 @@ class Callback extends Object {
     }
 }
 
+Callback.class_name = 'gc::_Callback';
 Callback.reg();
 
 class FunctionCallback extends Callback {
@@ -36,7 +36,6 @@ class FunctionCallback extends Callback {
 }
 
 class Array extends Object {
-    static class_name = 'gc::_Array';
 
     fill(arr) {
         this.resize(arr.length);
@@ -61,19 +60,19 @@ class Array extends Object {
         this.push_back(obj);
     }
 }
+Array.class_name = 'gc::_Array';
 Array.reg();
 
 class Map extends Object {
-    static class_name = 'gc::_Map';
 
     toObject() {
         return toObject(this);
     }
 }
+Map.class_name = 'gc::_Map';
 Map.reg();
 
 class Data extends Object {
-    static class_name = 'gc::Data';
 
     toString(code) {
         if (code) {
@@ -84,11 +83,12 @@ class Data extends Object {
     }
 }
 
+Data.class_name = 'gc::Data';
 Data.reg();
 
 class Request extends Object {
-    static class_name = 'gs::Request';
 }
+Request.class_name = 'gs::Request';
 Request.reg();
 Request.BodyType = {
     Raw: 0,
@@ -97,13 +97,13 @@ Request.BodyType = {
 };
 
 class Collection extends Object {
-    static class_name = 'gs::Collection';
 }
+Collection.class_name = 'gs::Collection';
 Collection.reg();
 
 class Encoder extends Object {
-    static class_name = 'gs::Encoder';
 }
+Encoder.class_name = 'gs::Encoder';
 Encoder.reg();
 
 function toObject(obj) {
@@ -127,7 +127,6 @@ function toObject(obj) {
 }
 
 class GumboNode extends Object {
-    static class_name = 'gs::GumboNode';
 
     
     querySelector(selector) {
@@ -173,6 +172,7 @@ class GumboNode extends Object {
         return this.getAttribute(name)
     }
 }
+GumboNode.class_name = 'gs::GumboNode';
 GumboNode.reg();
 GumboNode.Type = {
     Document: 0,
@@ -185,8 +185,8 @@ GumboNode.Type = {
 };
 
 class DataItem extends Object {
-    static class_name = 'gs::DataItem';
 }
+DataItem.class_name = 'gs::DataItem';
 DataItem.reg();
 DataItem.Type = {
     Book: 0,
@@ -195,13 +195,13 @@ DataItem.Type = {
 };
 
 class Error extends Object {
-    static class_name = 'gs::Error';
 }
+Error.class_name = 'gs::Error';
 Error.reg();
 
 class ScriptContext extends Object {
-    static class_name = 'gs::ScriptContext';
 }
+ScriptContext.class_name = 'gs::ScriptContext';
 ScriptContext.reg();
 
 module.exports = {

@@ -1,7 +1,6 @@
 let cache = [];
 
 class Object {
-    static class_name = 'gc::Object';
 
     static reg() {
         _registerClass(this, this.class_name);   
@@ -57,6 +56,7 @@ class Object {
     initialize() {}
 }
 
+Object.class_name = 'gc::Object';
 Object.reg();
 
 module.exports = Object;

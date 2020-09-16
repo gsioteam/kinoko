@@ -42,38 +42,48 @@
                                                 </TextSpan>
                                                 <for array="${item.links}" item="link">
                                                     <WidgetSpan>
-                                                        <Container margin="only(3,1,3,1)">
-                                                            <Row mainAxisSize="min">
-                                                                <Container padding="only(4,2,1,2)">
-                                                                    <Text text="${link.name}">
-                                                                        <attr:style>
-                                                                            <TextStyle color="white" fontSize="8"/>
-                                                                        </attr:style>
-                                                                    </Text>
-                                                                    <attr:decoration>
-                                                                        <BoxDecoration color="rgb(80,80,80)" borderRadius="horizontal(circular(4), )">
-                                                                            <attr:boxShadow>
-                                                                                <BoxShadow color="rgb(80,80,80)" blurRadius="1"/>
-                                                                            </attr:boxShadow>
-                                                                        </BoxDecoration>
-                                                                    </attr:decoration>
-                                                                </Container>
-                                                                <Container padding="only(1,2,4,2)">
-                                                                    <Text text="${link.count}">
-                                                                        <attr:style>
-                                                                            <TextStyle color="white" fontSize="8"/>
-                                                                        </attr:style>
-                                                                    </Text>
-                                                                    <attr:decoration>
-                                                                        <BoxDecoration color="grey" borderRadius="horizontal(,circular(4))">
-                                                                            <attr:boxShadow>
-                                                                                <BoxShadow color="grey" blurRadius="1"/>
-                                                                            </attr:boxShadow>
-                                                                        </BoxDecoration>
-                                                                    </attr:decoration>
-                                                                </Container>
-                                                            </Row>
-                                                        </Container>
+                                                        <MaterialButton padding="zero" height="0" minWidth="0" materialTapTargetSize="shrinkWrap">
+                                                            <attr:onPressed>
+                                                                <Function>
+                                                                    <Call function="$openCollection">
+                                                                        <Argument value="$link"/>
+                                                                        <Argument value="Tag: ${link.name}"/>
+                                                                    </Call>
+                                                                </Function>
+                                                            </attr:onPressed>
+                                                            <Container margin="only(3,1,3,1)">
+                                                                <Row mainAxisSize="min">
+                                                                    <Container padding="only(4,2,1,2)">
+                                                                        <Text text="${link.name}">
+                                                                            <attr:style>
+                                                                                <TextStyle color="white" fontSize="8"/>
+                                                                            </attr:style>
+                                                                        </Text>
+                                                                        <attr:decoration>
+                                                                            <BoxDecoration color="rgb(80,80,80)" borderRadius="horizontal(circular(4), )">
+                                                                                <attr:boxShadow>
+                                                                                    <BoxShadow color="rgb(80,80,80)" blurRadius="1"/>
+                                                                                </attr:boxShadow>
+                                                                            </BoxDecoration>
+                                                                        </attr:decoration>
+                                                                    </Container>
+                                                                    <Container padding="only(1,2,4,2)">
+                                                                        <Text text="${link.count}">
+                                                                            <attr:style>
+                                                                                <TextStyle color="white" fontSize="8"/>
+                                                                            </attr:style>
+                                                                        </Text>
+                                                                        <attr:decoration>
+                                                                            <BoxDecoration color="grey" borderRadius="horizontal(,circular(4))">
+                                                                                <attr:boxShadow>
+                                                                                    <BoxShadow color="grey" blurRadius="1"/>
+                                                                                </attr:boxShadow>
+                                                                            </BoxDecoration>
+                                                                        </attr:decoration>
+                                                                    </Container>
+                                                                </Row>
+                                                            </Container>
+                                                        </MaterialButton>
                                                     </WidgetSpan>
                                                 </for>
                                             </TextSpan>

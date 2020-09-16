@@ -37,3 +37,11 @@ bool GitLibrary::insertLibrary(const std::string &url) {
     lib->save();
     return true;
 }
+
+gc::Ref<GitLibrary> GitLibrary::findLibrary(const std::string &url) {
+    Array res = GitLibrary::query()->equal("url", url)->results();
+    if (res->size() > 0) {
+        return res->get(0);
+    }
+    return gc::Ref<GitLibrary>::null();
+}

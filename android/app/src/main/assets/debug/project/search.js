@@ -66,7 +66,9 @@ class SearchCollection extends Collection {
 
     loadMore(cb) {
         let page = this.page + 1;
-        this.fetch(this.makeURL(this.key, page)).then((results)=>{
+        let url = this.makeURL(this.key, page);
+        console.log(url);
+        this.fetch(url).then((results)=>{
             this.page = page;
             this.appendData(results);
             cb.apply(null);

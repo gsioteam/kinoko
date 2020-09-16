@@ -44,6 +44,8 @@ void Project::initialize(const std::string &path) {
             name = config["name"];
             url = config["url"];
             index = config["index"];
+            if (config.contains("icon"))
+                icon = config["icon"];
             if (config.contains("book"))
                 book = config["book"];
             if (config.contains("chapter"))

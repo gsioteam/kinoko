@@ -37,7 +37,7 @@ class GMap<V> extends Base with MapMixin<String, V> {
   @override
   Iterable<String> get keys {
     Array keys = call("keys");
-    Iterable.generate(keys.length, (i) {
+    return Iterable.generate(keys.length, (i) {
       return keys[i];
     });
   }

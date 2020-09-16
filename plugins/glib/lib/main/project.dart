@@ -12,21 +12,22 @@ class Project extends Base {
 
   Project();
 
-  Project.allocate(path) {
+  Project.allocate(String path) {
     super.allocate([path]);
   }
 
   bool get isValidated => call("isValidated");
-  get name => call("getName");
-  get subtitle => call("getSubtitle");
-  get url => call("getUrl");
-  get index => call("getIndex");
-  get book => call("getBook");
-  get search => call("getSearch");
+  String get name => call("getName");
+  String get subtitle => call("getSubtitle");
+  String get url => call("getUrl");
+  String get index => call("getIndex");
+  String get book => call("getBook");
+  String get search => call("getSearch");
   Array get categories => call("getCategories");
-  get fullpath => call("getFullpath");
-  get path => call("getPath");
+  String get fullpath => call("getFullpath");
+  String get path => call("getPath");
   String get settings_path => call("getSettingsPath");
+  String get icon => call("getIcon");
 
   static Project getMainProject() => Base.s_call(Project, "getMainProject");
   void setMainProject() => call("setMainProject");

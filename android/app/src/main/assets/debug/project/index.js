@@ -5,6 +5,7 @@ class HomeCollection extends Collection {
 
     constructor(data) {
         super(data);
+        console.log(JSON.stringify(data));
         this.page = 0;
     }
 

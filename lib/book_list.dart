@@ -16,8 +16,8 @@ import 'widgets/better_refresh_indicator.dart';
 import 'widgets/book_item.dart';
 
 class BookListPage extends StatefulWidget {
-  Project project;
-  Context context;
+  final Project project;
+  final Context context;
   BookListPage(this.project, this.context);
 
   @override

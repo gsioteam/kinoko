@@ -68,7 +68,7 @@ class BookCollection extends glib.Collection {
                 for (let link of tagLinks) {
                     try {
                         let data = {
-                            link: purl.href(link.attr('href')),
+                            url: purl.href(link.attr('href')),
                             name: link.querySelector('.name').text,
                         };
                         console.log("push name " + data.name);

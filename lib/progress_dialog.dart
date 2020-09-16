@@ -100,6 +100,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
   }
 
   Widget bottomButtons() {
+
     switch (status) {
       case _Status.Progress: {
         return MaterialButton(
@@ -168,7 +169,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
 
   @override
   Widget build(BuildContext context) {
-    double c_width = MediaQuery.of(context).size.width*0.8;
+    double c_width = MediaQuery.of(context).size.width*0.6;
     return WillPopScope(
         child: Dialog(
             child: Padding(
@@ -194,7 +195,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
                       ),
                       Container(
                         padding: EdgeInsets.only(left: 8),
-                        width: min(c_width, 260),
+                         width: min(c_width, 260),
                         child: Text(
                           processText,
                           softWrap: true,

@@ -20,9 +20,8 @@ import 'widgets/home_widget.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:http/http.dart' as http;
 import 'package:glib/main/context.dart';
-import 'widgets/better_snack_bar.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart';
+import 'utils/image_provider.dart';
 
 const LibURL = "https://api.github.com/repos/gsioteam/env/issues/2/comments?per_page={1}&page={0}";
 const int per_page = 40;
@@ -69,11 +68,7 @@ class _LibraryCellState extends State<LibraryCell> {
   ImageProvider getIcon() {
     String icon = library.icon;
     if (icon != null) {
-      if (icon.contains(new RegExp(r"\.svg$", caseSensitive: false))) {
-        return Svg(icon);
-      } else {
-        return CachedNetworkImageProvider(icon);
-      }
+      return makeImageProvider(icon);
     }
     if (project.isValidated) {
       String iconpath = project.fullpath + "/icon.png";
@@ -185,49 +180,56 @@ class _LibraryCellState extends State<LibraryCell> {
   }
 
   Widget buildProject(BuildContext context) {
+    List<InlineSpan> icons = [
+      TextSpan(text: project.name),
+    ];
+    if (project.path == KeyValue.get("MAIN_PROJECT")) {
+      icons.insert(0, WidgetSpan(child: Icon(Icons.arrow_right, color: Colors.blueAccent,)));
+    }
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(16, 6, 10, 6),
-      title: Text(project.name),
+      title: Text.rich(TextSpan(
+        children: icons
+      )),
       subtitle: Text("Ver. ${repo.localID()}"),
-      leading: Image(
-        image: getIcon(),
-        width: 56,
-        height: 56,
+      leading: Container(
+        child: Image(
+          image: getIcon(),
+          width: 56,
+          height: 56,
+        ),
+        color: Colors.black12,
       ),
-      trailing: Column(
-        children: <Widget>[
-          IconButton(
-            icon: SpinItem(
-              child: Icon(Icons.sync, color: Theme.of(context).primaryColor,),
-              key: _spinKey,
-            ),
-            onPressed: (){
-              if (_spinKey.currentState == null || _spinKey.currentState.isLoading) return;
-              _spinKey.currentState?.startAnimation();
-              GitAction action = repo.fetch();
-              action.control();
+      trailing: IconButton(
+        icon: SpinItem(
+          child: Icon(Icons.sync, color: Theme.of(context).primaryColor,),
+          key: _spinKey,
+        ),
+        onPressed: (){
+          if (_spinKey.currentState == null || _spinKey.currentState.isLoading) return;
+          _spinKey.currentState?.startAnimation();
+          GitAction action = repo.fetch();
+          action.control();
+          action.setOnComplete(() {
+            action.release();
+            if (action.hasError()) {
+              Fluttertoast.showToast(msg: action.getError(), toastLength: Toast.LENGTH_LONG);
+              _spinKey.currentState?.stopAnimation();
+              return;
+            }
+            if (repo.localID() != repo.highID()) {
+              GitAction action = repo.checkout().control();
               action.setOnComplete(() {
                 action.release();
                 if (action.hasError()) {
                   Fluttertoast.showToast(msg: action.getError(), toastLength: Toast.LENGTH_LONG);
-                  _spinKey.currentState?.stopAnimation();
-                  return;
                 }
-                if (repo.localID() != repo.highID()) {
-                  GitAction action = repo.checkout().control();
-                  action.setOnComplete(() {
-                    action.release();
-                    if (action.hasError()) {
-                      Fluttertoast.showToast(msg: action.getError(), toastLength: Toast.LENGTH_LONG);
-                    }
-                    _spinKey.currentState?.stopAnimation();
-                    setState(() { });
-                  });
-                }
+                _spinKey.currentState?.stopAnimation();
+                setState(() { });
               });
-            },
-          )
-        ],
+            }
+          });
+        },
       ),
       onTap: selectConfirm,
     );

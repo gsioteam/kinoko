@@ -8,7 +8,7 @@
     "search": {
         "src": "search.js",
         "data": {
-            "url": "https://nhentai.net/search/?q={0}&page={1}}"
+            "url": "https://nhentai.net/search/?q={0}&page={1}"
         }
     },
     "categories": [

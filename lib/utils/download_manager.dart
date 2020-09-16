@@ -115,7 +115,7 @@ class DownloadQueueItem {
   DownloadQueueItem._(this.data, this.item) {
     Array subitems = item.getSubItems();
     cacheKey = item.projectKey + "/" + Bit64.encodeString(item.link);
-    cacheManager = PictureCacheManager(cacheKey, maxAgeCacheObject: Duration(days: 365 * 99999));
+    cacheManager = PictureCacheManager(cacheKey, item);
     _total = subitems.length;
     if (state != DownloadState.AllComplete) {
       List<String> urls = [];

@@ -32,7 +32,7 @@ namespace gs {
 
         METHOD static gc::Array allLibraries();
         METHOD static bool insertLibrary(const std::string &url);
-//        METHOD gc::Ref<GitLibrary> parseLibrary(const std::string &str, const std::string &prev = std::string());
+        METHOD static gc::Ref<GitLibrary> findLibrary(const std::string &url);
 
         METHOD const std::string &getToken() const {
             return token;
@@ -49,7 +49,7 @@ namespace gs {
             ADD_PROPERTY_EX(cls, token, GitLibrary, setToken, setToken);
             ADD_METHOD(cls, GitLibrary, allLibraries);
             ADD_METHOD(cls, GitLibrary, insertLibrary);
-//            ADD_METHOD(cls, GitLibrary, parseLibrary);
+            ADD_METHOD(cls, GitLibrary, findLibrary);
         ON_LOADED_END
 
     CLASS_END

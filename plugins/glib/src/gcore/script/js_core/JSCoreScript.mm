@@ -23,6 +23,9 @@ const int JSCoreError = 2;
 @property (nonatomic) JSCoreScript *script;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, JSValue *> *modules;
 @property (nonatomic, strong) JSValue *convert;
+@property (nonatomic, strong) JSValue *privateKey;
+@property (nonatomic, strong) JSValue *creator;
+@property (nonatomic, strong) JSValue *getset;
 
 - (id)initWithScript:(JSCoreScript *)script;
 
@@ -38,6 +41,82 @@ namespace gscript {
         JSValueRef value;
         Variant variant;
     };
+
+    struct ContextInfo {
+        JSValueRef privateKey;
+        map<void*, JSClassRef> managedDataClasses;
+    };
+    map<JSContextRef, ContextInfo> contexts;
+
+    JSClassRef getDataClass(ContextInfo &ctx, void (*destroy)(JSObjectRef object)) {
+        auto it = ctx.managedDataClasses.find((void*)destroy);
+        if (it == ctx.managedDataClasses.end()) {
+            JSClassDefinition def = kJSClassDefinitionEmpty;
+            // def.initialize = onInit;
+            def.finalize = destroy;
+            JSClassRef cls = JSClassCreate(&def);
+            ctx.managedDataClasses[(void*)destroy] = cls;
+            return cls;
+        }
+        return it->second;
+    }
+
+    bool setPrivateData2(JSContextRef ctx, JSObjectRef object, void *data, void (*destroy)(JSObjectRef object) = nullptr) {
+        auto it = contexts.find(ctx);
+        if (it != contexts.end()) {
+            JSObjectRef tar = JSObjectMake(ctx, getDataClass(it->second, destroy), data);
+            if (tar) {
+                JSValueRef ex;
+                JSObjectSetPropertyForKey(ctx, object,
+                                          it->second.privateKey,
+                                          tar,
+                                          kJSPropertyAttributeNone,
+                                          &ex);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void removePrivateData(JSContextRef ctx, JSObjectRef object) {
+        auto it = contexts.find(ctx);
+        if (it != contexts.end()) {
+            JSValueRef ex;
+            JSObjectDeletePropertyForKey(ctx, object, it->second.privateKey, &ex);
+        }
+    }
+
+    void *getPrivateData(JSContextRef ctx, JSObjectRef object) {
+        auto it = contexts.find(ctx);
+        if (it != contexts.end()) {
+            JSValueRef ex;
+            JSValueRef res = JSObjectGetPropertyForKey(ctx, object, it->second.privateKey, &ex);
+            if (JSValueIsObject(ctx, res)) {
+                return JSObjectGetPrivate((JSObjectRef) res);
+            }
+        }
+        return nullptr;
+    }
+
+    void onInit(JSContextRef ctx, JSObjectRef object) {
+        NSLog(@"onInit");
+    }
+
+    void onDestroyInstance(JSObjectRef object) {
+        NSLog(@"onDestroyInstance");
+        JSCoreInstance *mins = (JSCoreInstance *)JSObjectGetPrivate(object);
+        if (mins) {
+            delete mins;
+        }
+    }
+
+    void onDestroyClass(JSObjectRef object) {
+        NSLog(@"onDestroyClass");
+        JSCoreClass *mcls = (JSCoreClass *)JSObjectGetPrivate(object);
+        if (mcls) {
+            delete mcls;
+        }
+    }
 
     JSCoreContext *ctx(JSCoreScript *script) {
         return (__bridge JSCoreContext *)script->getContext();
@@ -62,10 +141,10 @@ namespace gscript {
         } else if (JSValueIsString(ctx, value) || JSValueIsSymbol(ctx, value)) {
             JSStringRef jstr = JSValueToStringCopy(ctx, value, &exception);
             size_t str_size = JSStringGetMaximumUTF8CStringSize(jstr);
-            string str;
-            str.resize(str_size);
-            JSStringGetUTF8CString(jstr, (char *)str.data(), str.size());
-            ret = str;
+            char *cstr = (char *)malloc(str_size);
+            JSStringGetUTF8CString(jstr, cstr, str_size);
+            ret = cstr;
+            free(cstr);
             JSStringRelease(jstr);
         } else if (JSValueIsBoolean(ctx, value)) {
             ret = JSValueToBoolean(ctx, value);
@@ -97,13 +176,13 @@ namespace gscript {
             JSObjectRef obj = (JSObjectRef)value;
             if (JSObjectIsFunction(ctx, obj)) {
                 JSObjectRef globalObj = JSContextGetGlobalObject(ctx);
-                JSCoreScript *script = (JSCoreScript *)JSObjectGetPrivate(globalObj);
+                JSCoreScript *script = (JSCoreScript *)getPrivateData(ctx, globalObj);
                 JSCoreContext *context = gscript::ctx(script);
                 JSValue *func = [JSValue valueWithJSValueRef:obj inContext:context.context];
                 JSValue *cb = [context.convert callWithArguments:@[func]];
                 ret = toVariant(ctx, cb.JSValueRef);
             } else {
-                JSCoreInstance *ins = (JSCoreInstance *)JSObjectGetPrivate(obj);
+                JSCoreInstance *ins = (JSCoreInstance *)getPrivateData(ctx, obj);
                 if (ins) {
                     return ins->getTarget();
                 } else {
@@ -147,7 +226,7 @@ namespace gscript {
         return _toVariant(ctx, value, cache);
     }
 
-    JSValueRef toValue(JSContextRef ctx, const Variant &var) {
+    JSValueRef toValue(JSContextRef _ctx, const Variant &var) {
         switch (var.getType()) {
             case Variant::TypeChar:
             case Variant::TypeShort:
@@ -156,14 +235,14 @@ namespace gscript {
             case Variant::TypeLongLong:
             case Variant::TypeFloat:
             case Variant::TypeDouble:
-                return JSValueMakeNumber(ctx, var);
+                return JSValueMakeNumber(_ctx, var);
                 
             case Variant::TypeBool:
-                return JSValueMakeBoolean(ctx, var);
+                return JSValueMakeBoolean(_ctx, var);
             case Variant::TypeStringName: {
                 StringName name = var;
                 JSStringRef strref = JSStringCreateWithUTF8CString(name.str());
-                JSValueRef ret = JSValueMakeString(ctx, strref);
+                JSValueRef ret = JSValueMakeString(_ctx, strref);
                 JSStringRelease(strref);
                 return ret;
             }
@@ -171,83 +250,117 @@ namespace gscript {
                 const gc::Class* cls = var.getTypeClass();
                 if (cls->isTypeOf(gc::_String::getClass())) {
                     JSStringRef strref = JSStringCreateWithUTF8CString(var);
-                    JSValueRef ret = JSValueMakeString(ctx, strref);
+                    JSValueRef ret = JSValueMakeString(_ctx, strref);
                     JSStringRelease(strref);
                     return ret;
-                } else if (cls->isTypeOf(gc::_Array::getClass())) {
-                    Array arr = var;
-                    size_t len = arr->size();
-                    JSValueRef *arguments = (JSValueRef *)malloc(sizeof(const JSValueRef) * len);
-                    for (int i = 0; i < len; ++i) {
-                        arguments[i] = toValue(ctx, arr.at(i));
-                    }
-                    JSValueRef ex = nullptr;
-                    JSValueRef ret = JSObjectMakeArray(ctx, len, arguments, &ex);
-                    free(arguments);
-                    if (ex) {
-                        JSStringRef str = JSValueToStringCopy(ctx, ex, nullptr);
-                        char chs[256];
-                        JSStringGetUTF8CString(str, chs, 256);
-                        LOG(e, "%s", chs);
-                        JSStringRelease(str);
-                    }
-                    return ret;
-                } else if (cls->isTypeOf(gc::_Map::getClass())) {
-                    Map map = var;
-                    JSObjectRef obj = JSObjectMake(ctx, nullptr, nullptr);
-                    for (auto it = map->begin(), _e = map->end(); it != _e; ++it) {
-                        JSStringRef key = JSStringCreateWithUTF8CString(it->first.c_str());
-                        JSValueRef ex = nullptr;
-                        JSObjectSetPropertyForKey(ctx, obj,
-                                                  JSValueMakeString(ctx, key),
-                                                  toValue(ctx, it->second),
-                                                  kJSPropertyAttributeNone,
-                                                  &ex);
-                        JSStringRelease(key);
-
-                        if (ex) {
-                            JSStringRef str = JSValueToStringCopy(ctx, ex, nullptr);
-                            char chs[256];
-                            JSStringGetUTF8CString(str, chs, 256);
-                            LOG(e, "%s", chs);
-                            JSStringRelease(str);
+//                } else if (cls->isTypeOf(gc::_Array::getClass())) {
+//                    Array arr = var;
+//                    size_t len = arr->size();
+//                    JSValueRef *arguments = (JSValueRef *)malloc(sizeof(const JSValueRef) * len);
+//                    for (int i = 0; i < len; ++i) {
+//                        arguments[i] = toValue(ctx, arr.at(i));
+//                    }
+//                    JSValueRef ex = nullptr;
+//                    JSValueRef ret = JSObjectMakeArray(ctx, len, arguments, &ex);
+//                    free(arguments);
+//                    if (ex) {
+//                        JSStringRef str = JSValueToStringCopy(ctx, ex, nullptr);
+//                        char chs[256];
+//                        JSStringGetUTF8CString(str, chs, 256);
+//                        LOG(e, "%s", chs);
+//                        JSStringRelease(str);
+//                    }
+//                    return ret;
+//                } else if (cls->isTypeOf(gc::_Map::getClass())) {
+//                    Map map = var;
+//                    JSObjectRef obj = JSObjectMake(ctx, nullptr, nullptr);
+//                    for (auto it = map->begin(), _e = map->end(); it != _e; ++it) {
+//                        JSStringRef key = JSStringCreateWithUTF8CString(it->first.c_str());
+//                        JSValueRef ex = nullptr;
+//                        JSObjectSetPropertyForKey(ctx, obj,
+//                                                  JSValueMakeString(ctx, key),
+//                                                  toValue(ctx, it->second),
+//                                                  kJSPropertyAttributeNone,
+//                                                  &ex);
+//                        JSStringRelease(key);
+//
+//                        if (ex) {
+//                            JSStringRef str = JSValueToStringCopy(ctx, ex, nullptr);
+//                            char chs[256];
+//                            JSStringGetUTF8CString(str, chs, 256);
+//                            LOG(e, "%s", chs);
+//                            JSStringRelease(str);
+//                        }
+//                    }
+//
+//                    return obj;
+                } else {
+                    Ref<Object> obj = var;
+                    JSCoreScript *script = (JSCoreScript *)getPrivateData(_ctx, JSContextGetGlobalObject(_ctx));
+                    JSCoreInstance *mins = (JSCoreInstance *)obj->findScript(script->getName());
+                    if (mins) {
+                        return (JSValueRef)mins->getValue();
+                    } else {
+                        JSCoreClass *mcls = (JSCoreClass *)script->find(cls);
+                        if (mcls) {
+                            JSValueRef Class = (JSValueRef)mcls->getScriptClass();
+                            JSCoreContext *context = ctx(script);
+                            JSValue *nObj = [context.creator callWithArguments:@[[JSValue valueWithJSValueRef:Class inContext:context.context]]];
+                            if (nObj.isObject) {
+                                JSCoreInstance *mins = (JSCoreInstance *)mcls->create(var.get<Object>());
+                                mins->setValue((void *)nObj.JSValueRef);
+                                setPrivateData2(_ctx, (JSObjectRef)nObj.JSValueRef, mins, onDestroyInstance);
+                                return nObj.JSValueRef;
+                            }
+                            
                         }
                     }
-                    
-                    return obj;
-                } else {
-                    
                 }
             }
                 
-            default:
-                return JSValueMakeUndefined(ctx);
+            default: break;
         }
+        return JSValueMakeUndefined(_ctx);
     }
 
-    JSValueRef _printFunction(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
-        stringstream ss;
+    void printFunction(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception, stringstream &ss) {
         for (int i = 0; i < argumentCount; ++i) {
-            JSValueRef exception = nullptr;
-            JSStringRef jstr = JSValueToStringCopy(ctx, arguments[i], &exception);
+            JSStringRef jstr = JSValueToStringCopy(ctx, arguments[i], exception);
             if (!exception) {
                 char chs[CHS_SIZE];
                 if (i != 0) ss << "\n";
                 ss << JSStringGetUTF8CString(jstr, chs, CHS_SIZE);
             }
         }
-        void *data = JSObjectGetPrivate(function);
-        if (data == &JSCoreInfo)
-            NSLog(@"[I] %s", ss.str().c_str());
-        else if (data == &JSCoreWarn)
-            NSLog(@"[W] %s", ss.str().c_str());
-        else if (data == &JSCoreError)
-            NSLog(@"[E] %s", ss.str().c_str());
+    }
+
+    JSValueRef _printInfo(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
+        stringstream ss;
+        ss << "[I] ";
+        printFunction(ctx, function, thisObject, argumentCount, arguments, exception, ss);
+        std::string str = ss.str();
+        NSLog(@"%s", str.c_str());
+    }
+
+    JSValueRef _printWarn(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
+        stringstream ss;
+        ss << "[W] ";
+        printFunction(ctx, function, thisObject, argumentCount, arguments, exception, ss);
+        std::string str = ss.str();
+        NSLog(@"%s", str.c_str());
+    }
+
+    JSValueRef _printError(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
+        stringstream ss;
+        ss << "[E] ";
+        printFunction(ctx, function, thisObject, argumentCount, arguments, exception, ss);
+        std::string str = ss.str();
+        NSLog(@"%s", str.c_str());
     }
 
     JSValueRef _callStaticFunction(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
-        JSCoreClass *cls = (JSCoreClass *)JSObjectGetPrivate(thisObject);
-        const Method *method = (const Method *)JSObjectGetPrivate(function);
+        JSCoreClass *cls = (JSCoreClass *)getPrivateData(ctx, thisObject);
+        const Method *method = (const Method *)getPrivateData(ctx, function);
         
         Variant ret;
         if (argumentCount > 0) {
@@ -268,8 +381,8 @@ namespace gscript {
     }
 
     JSValueRef _callMenberFunction(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception) {
-        JSCoreInstance *mins = (JSCoreInstance *)JSObjectGetPrivate(thisObject);
-        const Method *method = (const Method *)JSObjectGetPrivate(function);
+        JSCoreInstance *mins = (JSCoreInstance *)getPrivateData(ctx, thisObject);
+        const Method *method = (const Method *)getPrivateData(ctx, function);
         
         Variant ret;
         if (argumentCount > 0) {
@@ -287,18 +400,6 @@ namespace gscript {
         }
         return toValue(ctx, ret);
     }
-
-    void onInit(JSContextRef ctx, JSObjectRef object) {
-        NSLog(@"on init");
-    }
-
-    void onDestroy(JSObjectRef object) {
-        NSLog(@"on des");
-        JSCoreInstance *mins = (JSCoreInstance *)JSObjectGetPrivate(object);
-        if (mins) {
-            delete mins;
-        }
-    }
 }
 
 @implementation JSCoreContext
@@ -311,45 +412,43 @@ namespace gscript {
         
         __weak JSCoreContext *that = self;
         _context = [[JSContext alloc] init];
+        _privateKey = [JSValue valueWithNewObjectInContext:_context];
+        JSContextRef ctx = _context.JSGlobalContextRef;
         
-        JSObjectSetPrivate((JSObjectRef)_context.globalObject.JSValueRef, script);
+        self.creator = [_context evaluateScript:@"(function(Cls) {return new Cls();})"];
+        self.getset = [_context evaluateScript:@"(function(propertype, name, getter, setter) { Object.defineProperty(propertype, name, {get: getter ? getter : undefined, set: setter ? setter : undefined, configurable: true}) })"];
         
-        JSClassDefinition definition = kJSClassDefinitionEmpty;
-        definition.initialize = onInit;
-        definition.finalize = onDestroy;
-        definition.className = "$Base";
-        JSClassRef clsRef = JSClassCreate(&definition);
-        JSObjectRef cus = JSObjectMakeConstructor(_context.JSGlobalContextRef, clsRef, nullptr);
+        contexts[ctx] = ContextInfo{
+            .privateKey = _privateKey.JSValueRef,
+        };
+        setPrivateData2(ctx, (JSObjectRef)_context.globalObject.JSValueRef, script);
         
-        [_context.globalObject setObject:[JSValue valueWithJSValueRef:cus inContext:_context]
-                       forKeyedSubscript:@"$Base"];
-        JSClassRelease(clsRef);
+        [_context setExceptionHandler:^(JSContext *context, JSValue *exception) {
+            NSLog(@"JavaScriptContext: \n%@", exception);
+        }];
         
         JSObjectRef func = JSObjectMakeFunctionWithCallback(_context.JSGlobalContextRef,
                                                             JSStringCreateWithUTF8CString("_printInfo"),
-                                                            _printFunction);
-        JSObjectSetPrivate(func, (void*)&JSCoreInfo);
+                                                            _printInfo);
         [_context.globalObject setObject:[JSValue valueWithJSValueRef:func inContext:_context]
                        forKeyedSubscript:@"_printInfo"];
         
         func = JSObjectMakeFunctionWithCallback(_context.JSGlobalContextRef,
-                                                JSStringCreateWithUTF8CString("_printInfo"),
-                                                _printFunction);
-        JSObjectSetPrivate(func, (void*)&JSCoreWarn);
+                                                JSStringCreateWithUTF8CString("_printWarn"),
+                                                _printWarn);
         [_context.globalObject setObject:[JSValue valueWithJSValueRef:func inContext:_context]
                        forKeyedSubscript:@"_printWarn"];
         
         func = JSObjectMakeFunctionWithCallback(_context.JSGlobalContextRef,
-                                                JSStringCreateWithUTF8CString("_printInfo"),
-                                                _printFunction);
-        JSObjectSetPrivate(func, (void*)&JSCoreError);
+                                                JSStringCreateWithUTF8CString("_printError"),
+                                                _printError);
         [_context.globalObject setObject:[JSValue valueWithJSValueRef:func inContext:_context]
                        forKeyedSubscript:@"_printError"];
         
         [_context.globalObject setObject:^(JSValue *Class, NSString *className) {
             JSCoreScript *script = that.script;
             if (script) {
-                script->regClass((__bridge void *)Class, className.UTF8String);
+                script->regClass((void *)Class.JSValueRef, className.UTF8String);
             }
         } forKeyedSubscript:@"_registerClass"];
         [_context.globalObject setObject:^(JSValue *target, NSString *className, JSValue *arr) {
@@ -370,8 +469,20 @@ namespace gscript {
             }
             return nil;
         } forKeyedSubscript:@"_callStatic"];
+        [_context evaluateScript:@"this.global = this;"];
     }
     return self;
+}
+
+- (void)dealloc {
+    auto it = contexts.find(_context.JSGlobalContextRef);
+    if (it != contexts.end()) {
+        map<void*, JSClassRef> &amap = it->second.managedDataClasses;
+        for (auto it = amap.begin(), _e = amap.end(); it != _e; ++it) {
+            JSClassRelease(it->second);
+        }
+        contexts.erase(it);
+    }
 }
 
 - (void)newObject:(JSValue *)target withClassName:(NSString *)className withArguments:(JSValue *)args {
@@ -396,22 +507,27 @@ namespace gscript {
     } else {
         mins = (JSCoreInstance *)mcls->newInstance(nullptr, 0);
     }
-    mins->setValue((__bridge void*)target);
-    JSObjectSetPrivate((JSObjectRef)target.JSValueRef, mins);
+    
+    mins->setValue((void*)target.JSValueRef);
+//    bool res = JSObjectSetPrivate((JSObjectRef)target.JSValueRef, mins);
+//    NSLog(@"new Object %@", res ? @"YES": @"NO");
+    setPrivateData2(ctx.JSGlobalContextRef, (JSObjectRef)target.JSValueRef, mins, onDestroyInstance);
 }
 
 - (void)destroyObject:(JSValue *)target {
-    JSCoreInstance *mins = (JSCoreInstance *)JSObjectGetPrivate((JSObjectRef)target.JSValueRef);
+    JSContext *ctx = [JSContext currentContext];
+    JSCoreInstance *mins = (JSCoreInstance *)getPrivateData(ctx.JSGlobalContextRef, (JSObjectRef)target.JSValueRef);
     if (mins) {
         delete mins;
-        JSObjectSetPrivate((JSObjectRef)target.JSValueRef, nullptr);
+        removePrivateData(_context.JSGlobalContextRef, (JSObjectRef)target.JSValueRef);
     }
 }
 
 - (JSValue *)call:(JSValue *)thisObject witName:(NSString *)name withArgs:(JSValue *)args {
     if (thisObject.isObject) {
+        JSContext *ctx = [JSContext currentContext];
         JSObjectRef obj = (JSObjectRef)thisObject.JSValueRef;
-        JSCoreInstance *mins = (JSCoreInstance *)JSObjectGetPrivate(obj);
+        JSCoreInstance *mins = (JSCoreInstance *)getPrivateData(ctx.JSGlobalContextRef, obj);
         
         if (mins) {
             Reference target = mins->getTarget();
@@ -437,8 +553,9 @@ namespace gscript {
 
 - (JSValue *)callStatic:(JSValue *)thisObject withName:(NSString *)name withArgs:(JSValue *)args {
     if (thisObject.isObject) {
+        JSContext *ctx = [JSContext currentContext];
         JSObjectRef obj = (JSObjectRef)thisObject.JSValueRef;
-        JSCoreClass *mcls = (JSCoreClass *)JSObjectGetPrivate(obj);
+        JSCoreClass *mcls = (JSCoreClass *)getPrivateData(ctx.JSGlobalContextRef, obj);
         
         if (mcls) {
             const Method *method = mcls->getNativeClass()->getMethod(name.UTF8String);
@@ -588,7 +705,7 @@ JSCoreClass::~JSCoreClass() {
 }
 
 gc::Variant JSCoreClass::apply(const gc::StringName &name, const gc::Variant **params, int count) const {
-    JSValue *Class = (__bridge JSValue *)getScriptClass();
+    JSValueRef Class = (JSValueRef)getScriptClass();
     NSMutableArray *arr = [NSMutableArray arrayWithCapacity:count];
     JSCoreScript *script = (JSCoreScript *)getScript();
     JSCoreContext *context = ctx(script);
@@ -596,7 +713,9 @@ gc::Variant JSCoreClass::apply(const gc::StringName &name, const gc::Variant **p
         JSValueRef value = toValue(context.context.JSGlobalContextRef, *params[i]);
         [arr addObject:[JSValue valueWithJSValueRef:value inContext:context.context]];
     }
-    JSValue *res = [Class invokeMethod:[NSString stringWithUTF8String:name.str()]
+    JSValue *_Cls = [JSValue valueWithJSValueRef:Class
+                                       inContext:context.context];
+    JSValue *res = [_Cls invokeMethod:[NSString stringWithUTF8String:name.str()]
                          withArguments:arr];
     return toVariant(context.context.JSGlobalContextRef, res.JSValueRef);
 }
@@ -607,14 +726,23 @@ ScriptInstance *JSCoreClass::makeInstance() const {
 
 void JSCoreClass::bindScriptClass() {
     JSCoreScript *script = (JSCoreScript *)getScript();
-    JSValue *Class = (__bridge JSValue *)getScriptClass();
+    JSObjectRef Class = (JSObjectRef)getScriptClass();
     const gc::Class *cls = getNativeClass();
 
+    JSValueRef ex;
     JSCoreContext *context = ctx(script);
-    JSObjectSetPrivate((JSObjectRef)Class.JSValueRef, this);
-    JSValue *prototype = [Class objectForKeyedSubscript:@"prototype"];
+    JSContextRef _ctx = context.context.JSGlobalContextRef;
+    setPrivateData2(_ctx, Class, this, onDestroyClass);
+    JSStringRef propertyKey = JSStringCreateWithUTF8CString("prototype");
+    JSValueRef prototypeRef = JSObjectGetProperty(_ctx, Class, propertyKey, &ex);
+    JSStringRelease(propertyKey);
+    JSValue *prototype = [JSValue valueWithJSValueRef:prototypeRef
+                                            inContext:context.context];
+    JSValue *_Class = [JSValue valueWithJSValueRef:Class
+                                         inContext:context.context];
     
-    pointer_map methods = cls->getMethods();
+    pointer_map func_cache;
+    const pointer_map &methods = cls->getMethods();
     for (auto it = methods.begin(); it != methods.end(); ++it) {
         StringName name(it->first);
         const Method *method = (const Method *)it->second;
@@ -624,8 +752,8 @@ void JSCoreClass::bindScriptClass() {
                 JSObjectRef func = JSObjectMakeFunctionWithCallback(context.context.JSGlobalContextRef,
                                                                     JSStringCreateWithUTF8CString(name.str()),
                                                                     _callStaticFunction);
-                JSObjectSetPrivate(func, (void *)method);
-                [Class setObject:[JSValue valueWithJSValueRef:func inContext:context.context]
+                setPrivateData2(_ctx, func, (void *)method);
+                [_Class setObject:[JSValue valueWithJSValueRef:func inContext:context.context]
                forKeyedSubscript:[NSString stringWithUTF8String:name.str()]];
                 break;
             }
@@ -634,13 +762,40 @@ void JSCoreClass::bindScriptClass() {
                 JSObjectRef func = JSObjectMakeFunctionWithCallback(context.context.JSGlobalContextRef,
                                                                     JSStringCreateWithUTF8CString(name.str()),
                                                                     _callMenberFunction);
-                JSObjectSetPrivate(func, (void *)method);
+                setPrivateData2(_ctx, func, (void *)method);
                 [prototype setObject:[JSValue valueWithJSValueRef:func inContext:context.context]
                    forKeyedSubscript:[NSString stringWithUTF8String:name.str()]];
+                func_cache[name] = func;
                 break;
             }
             default: break;
         }
+    }
+    
+    auto& properties = cls->getProperties();
+    for (auto it = properties.begin(), _e = properties.end(); it != _e; ++it) {
+        StringName name(it->first);
+        const Property *property = (const Property *)it->second;
+        JSObjectRef getter = nullptr, setter = nullptr;
+        if (property->getGetter()) {
+            auto it = func_cache.find(property->getGetter()->getName());
+            if (it != func_cache.end()) {
+                getter = (JSObjectRef)it->second;
+            }
+        }
+        if (property->getSetter()) {
+            auto it = func_cache.find(property->getSetter()->getName());
+            if (it != func_cache.end()) {
+                setter = (JSObjectRef)it->second;
+            }
+        }
+        
+        [context.getset callWithArguments:@[
+            prototype,
+            [NSString stringWithUTF8String:name.str()],
+            getter ? [JSValue valueWithJSValueRef:getter inContext:context.context] : [NSNull null],
+            setter ? [JSValue valueWithJSValueRef:setter inContext:context.context] : [NSNull null]
+        ]];
     }
 }
 
@@ -651,7 +806,7 @@ JSCoreInstance::~JSCoreInstance() {
 }
 
 Variant JSCoreInstance::apply(const StringName &name, const Variant **params, int count) {
-    JSValue *Obj = (__bridge JSValue *)value;
+    JSValueRef Obj = (JSValueRef)value;
     JSCoreScript *script = (JSCoreScript *)getScript();
     JSCoreContext *context = ctx(script);
     NSMutableArray *arr = [NSMutableArray arrayWithCapacity:count];
@@ -659,7 +814,9 @@ Variant JSCoreInstance::apply(const StringName &name, const Variant **params, in
         JSValueRef value = toValue(context.context.JSGlobalContextRef, *params[i]);
         [arr addObject:[JSValue valueWithJSValueRef:value inContext:context.context]];
     }
-    JSValue *res = [Obj invokeMethod:[NSString stringWithUTF8String:name.str()]
+    JSValue *_Obj = [JSValue valueWithJSValueRef:Obj
+                                      inContext:context.context];
+    JSValue *res = [_Obj invokeMethod:[NSString stringWithUTF8String:name.str()]
                          withArguments:arr];
     return toVariant(context.context.JSGlobalContextRef, res.JSValueRef);
 }

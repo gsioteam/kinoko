@@ -122,8 +122,7 @@ class _PictureViewerState extends State<PictureViewer> {
     if (_cacheManager == null) {
       DataItem item = widget.context.info_data;
       _cacheManager = PictureCacheManager(
-        cacheKey,
-        maxAgeCacheObject: item.isInCollection(collection_download) ? Duration(days: 365 * 99999) : Duration(days: 30)
+        cacheKey, item
       );
     }
     return _cacheManager;
@@ -385,7 +384,10 @@ class _PictureViewerState extends State<PictureViewer> {
                   TextSpan(
                     children: [
                       WidgetSpan(
-                        child: Padding(padding: EdgeInsets.only(right: 6), child: Icon(Icons.toc, color: Colors.white,size: 16,),),
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 6),
+                          child: Icon(Icons.toc, color: Colors.white,size: 16,),
+                        ),
                         alignment: PlaceholderAlignment.middle
                       ),
                       TextSpan(

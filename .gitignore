@@ -45,3 +45,5 @@ app.*.map.json
 plugins/glib/android/.cxx
 Podfile.lock
 plugins/glib/ios/lib
+android/app
+.last_build_id

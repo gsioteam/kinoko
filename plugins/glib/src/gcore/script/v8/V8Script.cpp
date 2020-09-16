@@ -756,16 +756,22 @@ v8::Local<v8::Value> V8Script::toValue(v8::Local<v8::Context> context, const gc:
                 string name = variant;
                 return v8::String::NewFromUtf8(isolate, name.c_str()).ToLocalChecked();
             }
-            V8Class *mcls = (V8Class *)script->find(clz);
-            if (mcls) {
-                v8::Local<v8::Function> v8Cls = mcls->getV8Class().Get(ISO);
-                v8::MaybeLocal<v8::Object> _nObj = v8Cls->NewInstance(context);
-                v8::Local<v8::Object> nObj;
-                if (_nObj.ToLocal(&nObj)) {
-                    V8Instance *mins = (V8Instance *)mcls->create(variant.get<Object>());
-                    mins->setScriptInstance(ISO, nObj);
-                    nObj->SetPrivate(context, c->native_key.Get(ISO), v8::External::New(ISO, (void *)mins));
-                    return nObj;
+            Ref<Object> obj = variant;
+            V8Instance *mins = (V8Instance *)obj->findScript(script->getName());
+            if (mins) {
+                return mins->getScriptInstance(isolate);
+            } else {
+                V8Class *mcls = (V8Class *)script->find(clz);
+                if (mcls) {
+                    v8::Local<v8::Function> v8Cls = mcls->getV8Class().Get(ISO);
+                    v8::MaybeLocal<v8::Object> _nObj = v8Cls->NewInstance(context);
+                    v8::Local<v8::Object> nObj;
+                    if (_nObj.ToLocal(&nObj)) {
+                        V8Instance *mins = (V8Instance *)mcls->create(variant.get<Object>());
+                        mins->setScriptInstance(ISO, nObj);
+                        nObj->SetPrivate(context, c->native_key.Get(ISO), v8::External::New(ISO, (void *)mins));
+                        return nObj;
+                    }
                 }
             }
         }

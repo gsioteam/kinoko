@@ -112,9 +112,11 @@ packages:
   flutter_svg_provider:
     dependency: "direct main"
     description:
-      name: flutter_svg_provider
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: "6745c23a0d8458e844f5215a703ea094fb4384b3"
+      url: "https://github.com/gsioteam/flutter_svg_provider.git"
+    source: git
     version: "0.1.6"
   flutter_web_plugins:
     dependency: transitive

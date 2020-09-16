@@ -24,6 +24,8 @@ namespace gs {
         std::string path;
         std::string dir_name;
 
+        std::string icon;
+
         std::string name;
         std::string subtitle;
         std::string url;
@@ -55,6 +57,7 @@ namespace gs {
         METHOD const std::string &getFullpath() const {return path;}
         METHOD const std::string &getPath() const {return dir_name;}
         METHOD const std::string &getSettingsPath() const {return settings_path;}
+        METHOD const std::string &getIcon() const {return icon;}
 
         METHOD static gc::Ref<Project> getMainProject();
         METHOD void setMainProject();
@@ -78,6 +81,7 @@ namespace gs {
             ADD_METHOD(cls, Project, getCategories);
             ADD_METHOD(cls, Project, getFullpath);
             ADD_METHOD(cls, Project, getPath);
+            ADD_METHOD(cls, Project, getIcon);
             ADD_METHOD(cls, Project, getSettingsPath);
             ADD_METHOD(cls, Project, getMainProject);
             ADD_METHOD(cls, Project, setMainProject);
