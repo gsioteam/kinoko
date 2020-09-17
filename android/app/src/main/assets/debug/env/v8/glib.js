@@ -22,6 +22,7 @@ Callback.reg();
 
 class FunctionCallback extends Callback {
     _invoke(argv) {
+        console.log("FunctionCallback 0");
         if (this.func) {
             let arr = [];
             for (let i = 0; i < argv.length; i++) {

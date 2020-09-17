@@ -6,7 +6,7 @@
 
 - (BOOL)application:(UIApplication *)application
 didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [GlibPlugin setDebugPath:[NSBundle.mainBundle pathForResource:@"debug" ofType:@""]];
+//    [GlibPlugin setDebugPath:[NSBundle.mainBundle pathForResource:@"debug" ofType:@""]];
     [GeneratedPluginRegistrant registerWithRegistry:self];
     // Override point for customization after application launch.
     

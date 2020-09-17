@@ -62,6 +62,7 @@ namespace gc {
         void removeScript(ScriptInstance *instance);
         void clearScripts();
         ScriptInstance *findScript(const StringName &name);
+        ScriptInstance *findScript(const Script *script);
 
         _FORCE_INLINE_ virtual int retain() {return ++count;}
         _FORCE_INLINE_ virtual int release() {return --count;}

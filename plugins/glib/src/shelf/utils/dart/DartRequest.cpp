@@ -4,6 +4,7 @@
 
 #include "DartRequest.h"
 #include "../Request.h"
+#include "../Platform.h"
 #include <script/dart/DartScript.h>
 
 using namespace gs;
@@ -34,7 +35,10 @@ namespace gs {
 
         ~RequestImp() {
             if (request) {
-                request->apply("release");
+                Ref<DartRequest> req = request;
+                Platform::doOnMainThread(C([=]() {
+                    req->apply("release");
+                }));
             }
         }
     };

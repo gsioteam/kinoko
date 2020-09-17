@@ -69,6 +69,7 @@ class FavCheckItem {
   }
 
   void checkNew(bool first) async {
+    // return null;
     Project project = Project.allocate(item.projectKey);
     if (!project.isValidated) {
       project.release();
@@ -76,8 +77,11 @@ class FavCheckItem {
     }
     DataItemType type = item.type;
     if (type == DataItemType.Book) {
+      print("checkNew 1");
       Context context = project.createBookContext(item).control();
+      print("checkNew 2");
       await _updateValue(first, project, context);
+      print("checkNew 3");
       context.release();
     }
     project.release();
@@ -123,19 +127,26 @@ class FavoritesManager {
   }
 
   void add(DataItem item) {
+    print("Add 0");
     if (!item.isInCollection(collection_mark)) {
+      print("Add 1");
       CollectionData data = item.saveToCollection(collection_mark, {
         "date": DateTime.now().toString()
       });
+      print("Add 3");
       if (data != null) {
         FavCheckItem checkItem = FavCheckItem(data.control(), item.control());
+        print("Add 4");
         items.add(checkItem);
+        print("Add 5");
         checkItem.checkNew(true);
+        print("Add 6");
       } else {
       }
     } else {
       print("${item.title} already added!");
     }
+    print("Add 7");
   }
 
   void remove(dynamic item) {

@@ -5,6 +5,8 @@
 #include "../script_define.h"
 
 namespace gscript {
+    class JSCoreItem;
+
     CLASS_BEGIN_N(JSCoreClass, gc::ScriptClass)
 
         virtual gc::ScriptInstance *makeInstance() const;
@@ -20,16 +22,14 @@ namespace gscript {
 
     CLASS_BEGIN_N(JSCoreInstance, gc::ScriptInstance)
     
-        void *value;
+        JSCoreItem *value = nullptr;
     
     public:
 
         ~JSCoreInstance();
 
-        void setValue(void *v) {
-            value = v;
-        }
-        void *getValue() const { return value; }
+        void setValue(JSCoreItem *v) { value = v; }
+        JSCoreItem *getValue() const { return value; }
 
         virtual gc::Variant apply(const gc::StringName &name, const gc::Variant **params, int count);
 

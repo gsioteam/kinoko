@@ -757,7 +757,7 @@ v8::Local<v8::Value> V8Script::toValue(v8::Local<v8::Context> context, const gc:
                 return v8::String::NewFromUtf8(isolate, name.c_str()).ToLocalChecked();
             }
             Ref<Object> obj = variant;
-            V8Instance *mins = (V8Instance *)obj->findScript(script->getName());
+            V8Instance *mins = (V8Instance *)obj->findScript(script);
             if (mins) {
                 return mins->getScriptInstance(isolate);
             } else {

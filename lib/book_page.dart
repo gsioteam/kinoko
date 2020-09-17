@@ -566,12 +566,17 @@ class _BookPageState extends State<BookPage> {
 
   void favoriteClicked() {
     setState(() {
+      print("favoriteClicked 1");
       DataItem data = widget.context.info_data;
+      print("favoriteClicked 2");
       if (FavoritesManager().isFavorite(data)) {
+        print("favoriteClicked 3");
         FavoritesManager().remove(data);
       } else {
+        print("favoriteClicked 4");
         FavoritesManager().add(data);
       }
+      print("favoriteClicked 5");
     });
   }
 

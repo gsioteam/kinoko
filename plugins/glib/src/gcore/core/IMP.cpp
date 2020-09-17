@@ -219,6 +219,16 @@ ScriptInstance* Object::findScript(const gc::StringName &name) {
     }
     return NULL;
 }
+ScriptInstance *Object::findScript(const Script *script) {
+    if (scripts_container) {
+        for (auto it = scripts_container->scripts.begin(), _e = scripts_container->scripts.end(); it != _e; ++it) {
+            if ((*it)->getScript() == script) {
+                return *it;
+            }
+        }
+    }
+    return NULL;
+}
 
 #ifdef USING_SCRIPT
 void Object::apply(const StringName &name, Variant *result, const Variant **params, int count) {
