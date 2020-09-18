@@ -139,6 +139,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
         return Container();
       }
     }
+    return null;
   }
 
   Widget makeIcon() {
@@ -165,6 +166,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
         );
       }
     }
+    return null;
   }
 
   @override

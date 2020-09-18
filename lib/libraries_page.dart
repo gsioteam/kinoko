@@ -20,7 +20,6 @@ import 'widgets/home_widget.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:http/http.dart' as http;
 import 'package:glib/main/context.dart';
-import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 import 'utils/image_provider.dart';
 
 const LibURL = "https://api.github.com/repos/gsioteam/env/issues/2/comments?per_page={1}&page={0}";
@@ -32,7 +31,7 @@ class LibraryNotification extends Notification {
 
 class LibraryCell extends StatefulWidget {
 
-  GitLibrary library;
+  final GitLibrary library;
 
   LibraryCell(this.library);
 
@@ -259,6 +258,9 @@ class LibrariesPage extends HomeWidget {
   }
 
   void addProject(BuildContext context, String url) {
+    if (url.isEmpty) {
+      return;
+    }
     if (onInsert == null || !onInsert(url)) {
       Fluttertoast.showToast(
         msg: kt(context, "add_project_failed"),
@@ -417,7 +419,9 @@ class _LibrariesPageState extends State<LibrariesPage> {
     ctx = LibraryContext.allocate();
     data = ctx.data.control();
     if (lastUpdateTime == null ||
-        lastUpdateTime.add(Duration(minutes: 5)).isBefore(DateTime.now()))
+        lastUpdateTime
+            .add(Duration(minutes: 5))
+            .isBefore(DateTime.now()))
       reload();
   }
 

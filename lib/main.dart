@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:glib/core/core.dart';
 import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
@@ -82,6 +84,8 @@ class SplashScreen extends StatelessWidget {
   Future<void> setup(BuildContext context) async {
     Directory dir = await platform.getApplicationSupportDirectory();
     share_cache["root_path"] = dir.path;
+
+    await showDisclaimer(context);
     await Glib.setup(dir.path);
     await fetchEnv(context);
     WidgetsBinding.instance.addObserver(_LifecycleEventHandler());
@@ -115,7 +119,7 @@ class SplashScreen extends StatelessWidget {
     }, mode: XmlLayout.Element);
   }
 
-  void fetchEnv(BuildContext context) async {
+  Future<void> fetchEnv(BuildContext context) async {
     env_repo = GitRepository.allocate("env");
     if (!env_repo.isOpen()) {
       GitItem item = GitItem.clone(env_repo, env_git_url);
@@ -134,6 +138,43 @@ class SplashScreen extends StatelessWidget {
         throw Exception("WTF?!");
       }
     } else {
+    }
+  }
+  
+  Future<void> showDisclaimer(BuildContext context) async {
+    String key = KeyValue.get(disclaimer_key);
+    if (key != "true") {
+      bool result = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            child: Container(
+              child: Column(
+                children: [
+                  Text(kt(context, "disclaimer")),
+                  Text(kt(context, "disclaimer_content")),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      MaterialButton(
+                        child: Text(kt(context, "ok")),
+                        onPressed: () {
+                          Navigator.of(context).pop(true);
+                        },
+                      )
+                    ],
+                  )
+                ],
+              ),
+            ),
+          );
+        }
+      );
+      if (result == true) {
+        KeyValue.set(disclaimer_key, "true");
+      } else {
+        SystemNavigator.pop();
+      }
     }
   }
 
@@ -236,7 +277,7 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
     widget.homeState.onFetch = startFetch;
     animationController = AnimationController(
         vsync: this,
-        duration: Duration(seconds: 1)
+        duration: Duration(seconds: 1),
     );
   }
 

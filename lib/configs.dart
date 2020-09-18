@@ -12,3 +12,5 @@ const String home_page_name = "home";
 const String direction_key = "direction";
 const String device_key = "device";
 const String page_key = "page";
+
+const String disclaimer_key = "disclaimer";
