@@ -197,7 +197,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
                       ),
                       Container(
                         padding: EdgeInsets.only(left: 8),
-                         width: min(c_width, 260),
+                        width: min(c_width, 260),
                         child: Text(
                           processText,
                           softWrap: true,

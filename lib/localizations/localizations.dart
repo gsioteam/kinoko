@@ -3,6 +3,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'zh_hans.dart' as zhHans;
+import 'zh_hant.dart' as zhHant;
+import 'en.dart' as en;
 
 class KinokoLocalizations {
   Map words;
@@ -18,7 +20,11 @@ class KinokoLocalizations {
 }
 
 class KinokoLocalizationsDelegate extends LocalizationsDelegate<KinokoLocalizations> {
-  static const List<String> supports = const <String>["zh", "en"];
+  static const List<Locale> supports = const <Locale>[
+    const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+    const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+    const Locale.fromSubtags(languageCode: 'en'),
+  ];
 
   const KinokoLocalizationsDelegate();
 
@@ -29,7 +35,25 @@ class KinokoLocalizationsDelegate extends LocalizationsDelegate<KinokoLocalizati
 
   @override
   Future<KinokoLocalizations> load(Locale locale) {
-    return SynchronousFuture<KinokoLocalizations>(KinokoLocalizations(zhHans.words, zhHans.words));
+    switch (locale.languageCode) {
+      case 'zh': {
+        if (locale.scriptCode == 'Hans') {
+          return get(zhHans.words);
+        } else if (locale.scriptCode == 'Hant') {
+          return get(zhHant.words);
+        } else {
+          return get(zhHant.words);
+        }
+        break;
+      }
+      default: {
+        return get(en.words);
+      }
+    }
+  }
+
+  Future<KinokoLocalizations> get(Map data) {
+    return SynchronousFuture<KinokoLocalizations>(KinokoLocalizations(data, data));
   }
 
   @override

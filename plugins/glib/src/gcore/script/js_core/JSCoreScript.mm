@@ -130,7 +130,7 @@ namespace gscript {
     }
 
     void onDestroyInstance(JSObjectRef object) {
-        NSLog(@"onDestroyInstance");
+//        NSLog(@"onDestroyInstance");
         JSCoreInstance *mins = (JSCoreInstance *)JSObjectGetPrivate(object);
         if (mins) {
             delete mins;
@@ -138,7 +138,7 @@ namespace gscript {
     }
 
     void onDestroyClass(JSObjectRef object) {
-        NSLog(@"onDestroyClass");
+//        NSLog(@"onDestroyClass");
 //        JSCoreClass *mcls = (JSCoreClass *)JSObjectGetPrivate(object);
 //        if (mcls) {
 //            delete mcls;

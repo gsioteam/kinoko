@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:gesture_zoom_box/gesture_zoom_box.dart';
 import 'package:glib/core/core.dart';
+import 'package:kinoko/picture_viewer.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -201,6 +202,7 @@ class _PhotoListState extends State<PhotoList> {
 
   Widget buildScrollable(BuildContext context) {
     if (widget.isHorizontal) {
+
       return PhotoViewGallery.builder(
         itemCount: widget.itemCount,
         pageController: widget.controller.pageController,

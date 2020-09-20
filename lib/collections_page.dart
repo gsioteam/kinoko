@@ -144,13 +144,17 @@ class _CollectionsPageState extends State<CollectionsPage> {
     List<Widget> bodies = [];
     for (int i = 0, t = contexts.length; i < t; ++i) {
       _CollectionData data = contexts[i];
-      tabs.add(Tab(text: data.title,));
+      tabs.add(Container(
+        child: Tab( text: data.title, ),
+        height: 36,
+      ));
       bodies.add(BookListPage(project, data.context));
     }
     return DefaultTabController(
       length: contexts.length,
       child: Scaffold(
         appBar: tabs.length > 1 ? AppBar(
+          toolbarHeight: 36,
           elevation: 0,
           centerTitle: true,
           title: TabBar(

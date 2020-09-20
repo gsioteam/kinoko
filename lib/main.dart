@@ -44,10 +44,7 @@ class MainApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: [
-        const Locale.fromSubtags(languageCode: "zh"),
-        const Locale.fromSubtags(languageCode: "en")
-      ],
+      supportedLocales: KinokoLocalizationsDelegate.supports,
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -85,8 +82,8 @@ class SplashScreen extends StatelessWidget {
     Directory dir = await platform.getApplicationSupportDirectory();
     share_cache["root_path"] = dir.path;
 
-    await showDisclaimer(context);
     await Glib.setup(dir.path);
+    await showDisclaimer(context);
     await fetchEnv(context);
     WidgetsBinding.instance.addObserver(_LifecycleEventHandler());
     all_type.reg();
@@ -149,14 +146,23 @@ class SplashScreen extends StatelessWidget {
         builder: (context) {
           return Dialog(
             child: Container(
+              padding: EdgeInsets.all(20),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(kt(context, "disclaimer")),
-                  Text(kt(context, "disclaimer_content")),
+                  Padding(padding: EdgeInsets.only(top: 10)),
+                  Container(
+                    width: double.infinity,
+                    child: Text(kt(context, "disclaimer"), style: Theme.of(context).textTheme.headline6, textAlign: TextAlign.center,),
+                  ),
+                  Padding(padding: EdgeInsets.only(top: 10)),
+                  Text(kt(context, "disclaimer_content"), style: Theme.of(context).textTheme.bodyText1,),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       MaterialButton(
+                        textColor: Theme.of(context).primaryColor,
                         child: Text(kt(context, "ok")),
                         onPressed: () {
                           Navigator.of(context).pop(true);
@@ -170,6 +176,7 @@ class SplashScreen extends StatelessWidget {
           );
         }
       );
+      print("result is $result");
       if (result == true) {
         KeyValue.set(disclaimer_key, "true");
       } else {
