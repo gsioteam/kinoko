@@ -104,7 +104,16 @@ class SplashScreen extends StatefulWidget {
 class SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
-    return Container(color: Colors.white,);
+    return Container(
+      color: Colors.white,
+      child: Center(
+        child: Image(
+          image: AssetImage("assets/logo.png"),
+          width: 160,
+          height: 60,
+        ),
+      ),
+    );
   }
 
   Future<void> setup(BuildContext context) async {
