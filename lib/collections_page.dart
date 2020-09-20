@@ -36,9 +36,7 @@ class _RectClipper extends CustomClipper<Rect> {
 }
 
 class CollectionsPage extends HomeWidget {
-  CollectionsPage() : super(key: GlobalKey()) {
-    this.title = "app_title";
-  }
+  CollectionsPage() : super(key: GlobalKey(), title: "app_title");
 
   @override
   State<StatefulWidget> createState() {

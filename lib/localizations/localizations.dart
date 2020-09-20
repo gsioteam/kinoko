@@ -6,6 +6,11 @@ import 'zh_hans.dart' as zhHans;
 import 'zh_hant.dart' as zhHant;
 import 'en.dart' as en;
 
+class LocaleChangedNotification extends Notification {
+  Locale locale;
+  LocaleChangedNotification(this.locale);
+}
+
 class KinokoLocalizations {
   Map words;
   Map total_words;
@@ -20,11 +25,11 @@ class KinokoLocalizations {
 }
 
 class KinokoLocalizationsDelegate extends LocalizationsDelegate<KinokoLocalizations> {
-  static const List<Locale> supports = const <Locale>[
-    const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
-    const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
-    const Locale.fromSubtags(languageCode: 'en'),
-  ];
+  static const Map<String, Locale> supports = const <String, Locale>{
+    "en": const Locale.fromSubtags(languageCode: 'en'),
+    "zh-hant": const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+    "zh-hans": const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans')
+  };
 
   const KinokoLocalizationsDelegate();
 

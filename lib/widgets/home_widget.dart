@@ -9,15 +9,15 @@ class AppBarData {
 }
 
 abstract class HomeWidget extends StatefulWidget {
-  HomeWidget({Key key}):super(key: key);
 
-  String title = "";
+  final AppBarData _appBarData;
+  final String title;
 
+  HomeWidget({Key key, this.title, AppBarData appBarData}) : _appBarData = appBarData, super(key: key);
 
-  AppBarData _appBarData;
   AppBarData get appBarData {
     if (_appBarData == null){
-      _appBarData = AppBarData(
+      return AppBarData(
         title: this.title,
         buildActions: buildActions
       );

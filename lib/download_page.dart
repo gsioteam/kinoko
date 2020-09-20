@@ -144,9 +144,7 @@ class _ChapterCellState extends State<ChapterCell> {
 }
 
 class DownloadPage extends HomeWidget {
-  DownloadPage() : super(key: GlobalKey<_DownloadPageState>()) {
-    this.title = "download_list";
-  }
+  DownloadPage() : super(key: GlobalKey<_DownloadPageState>(), title: "download_list");
 
   @override
   State<StatefulWidget> createState() => _DownloadPageState();

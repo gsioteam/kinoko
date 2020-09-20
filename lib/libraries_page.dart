@@ -169,10 +169,16 @@ class _LibraryCellState extends State<LibraryCell> {
       contentPadding: EdgeInsets.fromLTRB(16, 6, 10, 6),
       title: Text(title,),
       subtitle: Text(kt("not_installed")),
-      leading: Image(
-        image: getIcon(),
-        width: 56,
-        height: 56,
+      leading: Container(
+        child: Image(
+          image: getIcon(),
+          width: 56,
+          height: 56,
+        ),
+        decoration: BoxDecoration(
+            color: Color(0x1F999999),
+            borderRadius: BorderRadius.all(Radius.circular(4))
+        ),
       ),
       onTap: installConfirm,
     );
@@ -197,7 +203,10 @@ class _LibraryCellState extends State<LibraryCell> {
           width: 56,
           height: 56,
         ),
-        color: Colors.black12,
+        decoration: BoxDecoration(
+          color: Color(0x1F999999),
+          borderRadius: BorderRadius.all(Radius.circular(4))
+        ),
       ),
       trailing: IconButton(
         icon: SpinItem(

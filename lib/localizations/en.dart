@@ -45,5 +45,7 @@ The software itself does not provide comic services, please follow relevant laws
 
 The copyright of the downloadable comic resources provided by this software belongs to the original author. It is for learning and communication purposes only. Please copy and download the files in accordance with relevant national laws and regulations, and do not use them for other purposes without the authorization of the copyright owner; if disputes arise due to illegal use, all consequences shall be borne by the user.
   """,
-  "ok": "OK"
+  "ok": "OK",
+  "language": "Language",
+  "general": "General",
 };

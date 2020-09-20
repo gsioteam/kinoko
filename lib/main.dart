@@ -8,6 +8,7 @@ import 'package:glib/core/core.dart';
 import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
 import 'package:kinoko/favorites_page.dart';
+import 'package:kinoko/main_settings_page.dart';
 import 'package:kinoko/utils/image_provider.dart';
 import 'book_list.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -34,35 +35,51 @@ void main() {
   runApp(MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => MainAppState();
+}
+
+class MainAppState extends State<MainApp> {
+  Locale locale;
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      localizationsDelegates: [
-        const KinokoLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: KinokoLocalizationsDelegate.supports,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-        // This makes the visual density adapt to the platform that you run
-        // the app on. For desktop platforms, the controls will be smaller and
-        // closer together (more dense) than on mobile platforms.
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return NotificationListener<LocaleChangedNotification>(
+      child: MaterialApp(
+        localizationsDelegates: [
+          const KinokoLocalizationsDelegate(),
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        locale: locale,
+        supportedLocales: KinokoLocalizationsDelegate.supports.values,
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          // This is the theme of your application.
+          //
+          // Try running your application with "flutter run". You'll see the
+          // application has a blue toolbar. Then, without quitting the app, try
+          // changing the primarySwatch below to Colors.green and then invoke
+          // "hot reload" (press "r" in the console where you ran "flutter run",
+          // or simply save your changes to "hot reload" in a Flutter IDE).
+          // Notice that the counter didn't reset back to zero; the application
+          // is not restarted.
+          primarySwatch: Colors.blue,
+          // This makes the visual density adapt to the platform that you run
+          // the app on. For desktop platforms, the controls will be smaller and
+          // closer together (more dense) than on mobile platforms.
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: SplashScreen(),
       ),
-      home: SplashScreen(),
+      onNotification: (n) {
+        setState(() {
+          locale = n.locale;
+        });
+        return true;
+      },
     );
   }
 }
@@ -76,21 +93,37 @@ class _LifecycleEventHandler extends WidgetsBindingObserver {
   }
 }
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
+
+  @override
+  State<StatefulWidget> createState() {
+    return SplashScreenState();
+  }
+}
+
+class SplashScreenState extends State<SplashScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(color: Colors.white,);
+  }
 
   Future<void> setup(BuildContext context) async {
     Directory dir = await platform.getApplicationSupportDirectory();
     share_cache["root_path"] = dir.path;
 
     await Glib.setup(dir.path);
+    Locale locale = KinokoLocalizationsDelegate.supports[KeyValue.get(language_key)];
+    if (locale != null) {
+      LocaleChangedNotification(locale).dispatch(context);
+    }
     await showDisclaimer(context);
     await fetchEnv(context);
     WidgetsBinding.instance.addObserver(_LifecycleEventHandler());
     all_type.reg();
     XmlLayout.reg(CachedNetworkImageProvider, (node, key) {
       return CachedNetworkImageProvider(
-        node.text,
-        scale: node.s<double>("scale", 1)
+          node.text,
+          scale: node.s<double>("scale", 1)
       );
     });
     XmlLayout.reg(FlatButton, (node, key) {
@@ -122,14 +155,14 @@ class SplashScreen extends StatelessWidget {
       GitItem item = GitItem.clone(env_repo, env_git_url);
       item.cancelable = false;
       ProgressResult result = await showDialog<ProgressResult>(
-        barrierDismissible: false,
-        context: context,
-        builder: (context) {
-          return ProgressDialog(
-            title: kt(context, ""),
-            item: item,
-          );
-        }
+          barrierDismissible: false,
+          context: context,
+          builder: (context) {
+            return ProgressDialog(
+              title: kt(""),
+              item: item,
+            );
+          }
       );
       if (result != ProgressResult.Success) {
         throw Exception("WTF?!");
@@ -137,44 +170,44 @@ class SplashScreen extends StatelessWidget {
     } else {
     }
   }
-  
+
   Future<void> showDisclaimer(BuildContext context) async {
     String key = KeyValue.get(disclaimer_key);
     if (key != "true") {
       bool result = await showDialog<bool>(
-        context: context,
-        builder: (context) {
-          return Dialog(
-            child: Container(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(padding: EdgeInsets.only(top: 10)),
-                  Container(
-                    width: double.infinity,
-                    child: Text(kt(context, "disclaimer"), style: Theme.of(context).textTheme.headline6, textAlign: TextAlign.center,),
-                  ),
-                  Padding(padding: EdgeInsets.only(top: 10)),
-                  Text(kt(context, "disclaimer_content"), style: Theme.of(context).textTheme.bodyText1,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      MaterialButton(
-                        textColor: Theme.of(context).primaryColor,
-                        child: Text(kt(context, "ok")),
-                        onPressed: () {
-                          Navigator.of(context).pop(true);
-                        },
-                      )
-                    ],
-                  )
-                ],
+          context: context,
+          builder: (context) {
+            return Dialog(
+              child: Container(
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(padding: EdgeInsets.only(top: 10)),
+                    Container(
+                      width: double.infinity,
+                      child: Text(kt("disclaimer"), style: Theme.of(context).textTheme.headline6, textAlign: TextAlign.center,),
+                    ),
+                    Padding(padding: EdgeInsets.only(top: 10)),
+                    Text(kt("disclaimer_content"), style: Theme.of(context).textTheme.bodyText1,),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        MaterialButton(
+                          textColor: Theme.of(context).primaryColor,
+                          child: Text(kt("ok")),
+                          onPressed: () {
+                            Navigator.of(context).pop(true);
+                          },
+                        )
+                      ],
+                    )
+                  ],
+                ),
               ),
-            ),
-          );
-        }
+            );
+          }
       );
       print("result is $result");
       if (result == true) {
@@ -186,15 +219,15 @@ class SplashScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
     Future<void> future = setup(context);
     future.then((value) {
       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
-        settings: RouteSettings(name: home_page_name),
-        builder: (BuildContext context)=>HomePage()
+          settings: RouteSettings(name: home_page_name),
+          builder: (BuildContext context)=>HomePage()
       ), (route) => route.isCurrent);
     });
-    return Container(color: Colors.white,);
   }
 }
 
@@ -492,6 +525,9 @@ class _HomePageState extends State<HomePage> {
       case 3: {
         return LibrariesPage();
       }
+      case 4: {
+        return MainSettingsPage();
+      }
     }
     return null;
   }
@@ -522,6 +558,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       drawer: Drawer(
         child: ListView(
+          physics: ClampingScrollPhysics(),
           children: <Widget>[
             HomeDrawer(this),
             ListTile(
@@ -548,6 +585,13 @@ class _HomePageState extends State<HomePage> {
               leading: Icon(Icons.account_balance),
               title: Text(kt("manage_projects")),
               onTap: _onTap(3),
+            ),
+            Divider(),
+            ListTile(
+              selected: selected == 4,
+              leading: Icon(Icons.settings),
+              title: Text(kt("settings")),
+              onTap: _onTap(4),
             ),
           ],
         ),

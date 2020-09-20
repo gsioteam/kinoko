@@ -9,7 +9,7 @@ import 'package:glib/main/setting_item.dart';
 
 class SettingsPage extends StatefulWidget {
 
-  Context context;
+  final Context context;
   SettingsPage(this.context);
 
   @override

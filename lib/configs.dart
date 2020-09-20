@@ -14,3 +14,5 @@ const String device_key = "device";
 const String page_key = "page";
 
 const String disclaimer_key = "disclaimer";
+
+const String language_key = "language";
