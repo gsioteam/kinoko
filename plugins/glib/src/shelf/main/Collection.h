@@ -35,7 +35,7 @@ namespace gs {
 
         Collection() {}
 
-        METHOD void initialize(gc::Variant info_data);
+        METHOD void initialize(gc::Variant info_data = gc::Variant::null());
 
         void setSettings(const std::shared_ptr<Settings> &settings) {
             this->settings = settings;
@@ -71,6 +71,7 @@ namespace gs {
 
         METHOD const gc::Variant &getSetting(const std::string &key);
         METHOD void setSetting(const std::string &key, const gc::Variant &value);
+        METHOD void synchronizeSettings();
 
         METHOD const std::string &getTemp() const {
             return temp;
@@ -91,10 +92,12 @@ namespace gs {
         METHOD gc::Variant call(const std::string &name, const gc::Array &args);
 
         ON_LOADED_BEGIN(cls, gc::Object)
-            INITIALIZER(cls, Collection, initialize);
+            ADD_METHOD_D(cls, Collection, initialize, gc::Variant::null());
             ADD_METHOD(cls, Collection, setDataAt);
             ADD_METHOD(cls, Collection, appendData);
             ADD_METHOD(cls, Collection, getSetting);
+            ADD_METHOD(cls, Collection, setSetting);
+            ADD_METHOD(cls, Collection, synchronizeSettings);
             ADD_METHOD(cls, Collection, call);
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Collection, getData), ADD_METHOD(cls, Collection, setData));
             ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Collection, getInfoData), ADD_METHOD(cls, Collection, setInfoData));

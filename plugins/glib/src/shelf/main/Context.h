@@ -103,9 +103,7 @@ namespace gs {
         METHOD const gc::Variant &getSetting(const std::string &key) {
             return target->getSetting(key);
         }
-        METHOD void setSetting(const std::string &key, const gc::Variant &value) {
-            target->setSetting(key, value);
-        }
+        METHOD void setSetting(const std::string &key, const gc::Variant &value);
 
         METHOD std::string getTemp() const;
         PROPERTY(temp, getTemp, NULL);

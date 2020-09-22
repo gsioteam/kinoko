@@ -36,9 +36,13 @@ namespace gs {
         ~RequestImp() {
             if (request) {
                 Ref<DartRequest> req = request;
+#if defined(__ANDROID__)
+                req->apply("release");
+#else
                 Platform::doOnMainThread(C([=]() {
                     req->apply("release");
                 }));
+#endif
             }
         }
     };

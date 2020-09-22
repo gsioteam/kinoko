@@ -1,95 +1,39 @@
+const {Collection} = require('./collection');
 
-class BookCollection extends glib.Collection {
+class BookCollection extends Collection {
 
-    constructor(data) {
-        super();
-        this.url = data.link;
-    }
-
-    initialize() {
-        this.temp = "temp.xml";
-    }
-
-    fetch(url) {
-        return new Promise((resolve, reject)=>{
-            let req = glib.Request.new('GET', url);
-            this.callback = glib.Callback.fromFunction(function() {
-                if (req.getError()) {
-                    reject(glib.Error.new(302, "Request error " + req.getError()));
-                } else {
-                    let body = req.getResponseBody();
-                    if (body) {
-                        resolve(glib.GumboNode.parse(body));
-                    } else {
-                        reject(glib.Error.new(301, "Response null body"));
-                    }
-                }
-            });
-            req.setOnComplete(this.callback);
-            req.start();
-        });
-    }
-
-    reload(_, cb) {
-        let purl = new PageURL(this.url);
+    reload(data, cb) {
+        let url = this.url + '?waring=1';
+        console.log("Book url " + url);
+        let purl = new PageURL(url);
         let info_data = this.info_data;
-        this.fetch(this.url).then((doc) => {
-            let imgs = doc.querySelectorAll("#thumbnail-container a.gallerythumb > img");
-            let images = [];
-            let item = glib.DataItem.new();
-            item.type = glib.DataItem.Type.Chapter;
-            item.link = this.url + '/1';
-            for (let i = 0, t = imgs.length; i < t; i++) {
-                let el = imgs[i];
-                images.push(el.attr('data-src'));
-            }
-            info_data.picture = doc.querySelector('#cover img').attr('data-src');
-            let titles = doc.querySelectorAll('#info > .title');
-            info_data.title = titles[0].text
-            info_data.subtitle = titles[1].text;
-            let tags = doc.querySelectorAll('#tags .tag-container:not(.hidden)');
-            let dataTags = [];
-            for (let i = 0, t = tags.length; i < t; ++i) {
-                let tag = tags[i];
-                let children = tag.children;
-                let title;
-                for (let child of children) {
-                    if (child.type == glib.GumboNode.Type.Text) {
-                        let text = child.text.trim();
-                        if (text.length > 0) {
-                            title = text;
-                            break;
-                        }
-                    }
+        this.fetch(url).then((doc) => {
+            let h1 = doc.querySelector(".book-info h1");
+            console.log("mark 1");
+            info_data.title = h1.text.trim();
+            let infos = doc.querySelectorAll(".short-info p");
+            if (infos.length >= 2) 
+                info_data.subtitle = infos[0].text;
+            if (infos.length >= 1)
+                info_data.summary = infos[infos.length - 1].text;
+
+            let results = [];
+            let nodes = doc.querySelectorAll('.chapter-box > li');
+            for (let node of nodes) {
+                let anode = node.querySelector('div.chapter-name.long a');
+                let item = glib.DataItem.new();
+                item.type = glib.DataItem.Type.Chapter;
+                console.log("mark 4");
+                let name = anode.text.trim();
+                item.title = name.replace(/new$/, '');
+                if (name.match(/new$/)) {
+                    item.subtitle = 'new';
                 }
-                let links = [];
-                let tagLinks = tag.querySelectorAll('.tags > a.tag');
-                console.log("size : " + tagLinks.length + "  title:" + title);
-                for (let link of tagLinks) {
-                    try {
-                        let data = {
-                            url: purl.href(link.attr('href')),
-                            name: link.querySelector('.name').text,
-                        };
-                        console.log("push name " + data.name);
-                        let count = link.querySelector('.count');
-                        if (count) data.count = count.text;
-                        else data.count = '-'
-                        links.push(data);
-                    } catch (e) {
-                        console.log("Error : " + e.message);
-                    }
-                }
-                dataTags.push({
-                    title: title,
-                    links: links
-                });
+                item.link = anode.attr('href');
+                results.push(item);
             }
-            info_data.data = {
-                images: images,
-                tags: dataTags
-            };
-            this.setData([item]);
+            
+            this.setData(results);
             cb.apply(null);
         }).catch(function(err) {
             if (err instanceof Error) 

@@ -218,7 +218,6 @@ class Request extends Base {
       } else {
         http.StreamedResponse res = await request.send();
         if (_canceled) return;
-        print("Start ${request.url} ${_timeout}");
         downloadTotal = res.contentLength;
         downloadNow = 0;
         List<int> receiveBody = List();

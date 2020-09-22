@@ -7,7 +7,6 @@ class Object {
     }
 
     static new() {
-
         let argv = [];
         for (let i = 0, t = arguments.length; i < t; ++i) {
             argv.push(arguments[i]);

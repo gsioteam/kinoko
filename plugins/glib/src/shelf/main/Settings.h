@@ -12,7 +12,7 @@
 
 namespace gs {
     ENUM_BEGIN(SettingType)
-        SettingHeader,
+        SettingHeader = 0,
         SettingSwitch,
         SettingInput,
         SettingOptions

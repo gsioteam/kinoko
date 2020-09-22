@@ -1,21 +1,42 @@
 {
-    "name": "nhentai",
-    "icon": "https://static.nhentai.net/img/logo.090da3be7b51.svg",
-    "url": "https://nhentai.net/",
+    "name": "ninemanga",
+    "icon": "http://www.ninemanga.com/files/img/ninemanga.png",
+    "url": "http://www.ninemanga.com/",
     "index": "index.js",
     "book": "book.js",
     "chapter": "chapter.js",
     "search": {
         "src": "search.js",
         "data": {
-            "url": "https://nhentai.net/search/?q={0}&page={1}"
+            "url": "http://{0}.ninemanga.com/search/?wd={1}"
         }
     },
+    "settings": "settings.js",
     "categories": [
         {
-            "title": "主頁",
+            "title": "Home",
             "id": "home",
-            "url": "https://nhentai.net/?page={0}"
+            "url": "http://{0}.ninemanga.com/"
+        },
+        {
+            "title": "Latest Release",
+            "id": "last_release",
+            "url": "http://{0}.ninemanga.com/list/New-Update/"
+        },
+        {
+            "title": "Manga Directory",
+            "id": "manga_directory",
+            "url": "http://{0}.ninemanga.com/category/index_{1}.html"
+        },
+        {
+            "title": "Hot Manga",
+            "id": "hot_manga",
+            "url": "http://{0}.ninemanga.com/list/Hot-Book/"
+        },
+        {
+            "title": "New Manga",
+            "id": "new_manga",
+            "url": "http://{0}.ninemanga.com/list/New-Book/"
         }
     ]
 }

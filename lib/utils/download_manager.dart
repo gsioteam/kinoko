@@ -19,6 +19,12 @@ import 'package:glib/utils/bit64.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:math';
 import 'book_info.dart';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
+
+String generateMd5(String input) {
+  return md5.convert(utf8.encode(input)).toString();
+}
 
 enum DownloadState {
   None,
@@ -114,7 +120,7 @@ class DownloadQueueItem {
 
   DownloadQueueItem._(this.data, this.item) {
     Array subitems = item.getSubItems();
-    cacheKey = item.projectKey + "/" + Bit64.encodeString(item.link);
+    cacheKey = item.projectKey + "/" + generateMd5(item.link);
     cacheManager = PictureCacheManager(cacheKey, item);
     _total = subitems.length;
     if (state != DownloadState.AllComplete) {

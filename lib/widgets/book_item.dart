@@ -12,23 +12,28 @@ Widget makeBookItem(BuildContext context, Project project, DataItem item, void F
   if (item.type == DataItemType.Header) {
     ImageProvider provider;
     if (item.picture.isNotEmpty && item.picture[0] == "/") {
-      provider = FileImage(File(project.fullpath + item.picture));
-    }else {
+      File file = File(project.fullpath + item.picture);
+      if (file.existsSync()) {
+        provider = FileImage(file);
+      }
+    }else if (item.picture.isNotEmpty){
       provider = CachedNetworkImageProvider(item.picture);
     }
+    var children = <Widget>[];
+    if (provider != null) {
+      children.add(Image(
+        image: provider,
+        width: 26,
+        height: 26,
+      ));
+      children.add(Padding(padding: EdgeInsets.all(5)));
+    }
+    children.add(Text(item.title, style: Theme.of(context).textTheme.subtitle1,));
     return Container(
       padding: EdgeInsets.fromLTRB(5, 2, 5, 2),
       height: 30,
       child: Row(
-        children: <Widget>[
-          Image(
-            image: provider,
-            width: 26,
-            height: 26,
-          ),
-          Padding(padding: EdgeInsets.all(5)),
-          Text(item.title, style: Theme.of(context).textTheme.subtitle1,)
-        ],
+        children: children,
       ),
     );
   } else {

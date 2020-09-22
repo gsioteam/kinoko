@@ -1,65 +1,45 @@
+const {Collection} = require('./collection');
 
-class ChapterCollection extends glib.Collection {
+class ChapterCollection extends Collection {
 
-    request(url) {
-        return new Promise((resolve, reject) => {
-            let req = glib.Request.new('GET', url);
-            req.setCacheResponse(true);
-            this.callback = glib.Callback.fromFunction(function() {
-                if (req.getError()) {
-                    reject(glib.Error.new(302, "Request error " + req.getError()));
-                } else {
-                    let body = req.getResponseBody();
-                    if (body) {
-                        let res = glib.GumboNode.parse(body, 'gbk');
-                        resolve(res);
-                    } else {
-                        reject(glib.Error.new(301, "Response null body"));
-                    }
-                }
-            });
-            req.setOnComplete(this.callback);
-            req.start();
-        });
+    async request(root_url) {
+        let url = root_url.replace(/(-\d+)*\.html$/i, '-10-1.html');
+        let doc = await this.fetch(url);
+
+        let options = doc.querySelectorAll('select.sl-page option');
+        let urls = [];
+        for (let i = 1, t = options.length; i < t; i++) {
+            urls.push(root_url.replace(/(-\d+)*\.html$/i, `-10-${i+1}.html`));
+        }
+
+        let offset = 0;
+        offset = this.parseDoc(doc, root_url, offset);
+        for (let i = 0, t = urls.length; i < t; ++i) {
+            let url = urls[i];
+            let doc = await this.fetch(url);
+            offset = this.parseDoc(doc, root_url, offset);
+        }
+    }
+
+    parseDoc(doc, root_url, offset) {
+        let imgs = doc.querySelectorAll('.pic_box > img');
+        for (let i = 0, t = imgs.length; i < t; ++i) {
+            let img = imgs[i];
+            let item = glib.DataItem.new();
+            item.picture = img.attr('src');
+            console.log("parse "+item.picture);
+            let index = offset + i;
+            item.link = root_url.replace(/(-\d+)*\.html$/i, `-${index}.html`);
+            this.setDataAt(item, index);
+        }
+        return offset + imgs.length;
     }
 
     reload(_, cb) {
         let url = this.info_data.link;
-        console.log("start reload " + url);
-        this.request(url).then((doc) => {
-            let scripts = doc.querySelectorAll("script:not([src])");
-            let ctx = glib.ScriptContext.new('js');
-            ctx.eval("var window = {}");
-            for (let src of scripts) {
-                let script = src.text.trim();
-                if (script.match('JSON.parse')) {
-                    ctx.eval(script);
-                }
-            }
-            let media_url = ctx.eval('window._reader.media_url');
-            let pages = ctx.eval('window._gallery.images.pages').toArray();
-            let media_id = ctx.eval('window._gallery.media_id');
-            let results = [];
-            console.log("Count " + pages.length);
-            for (let i = 0, t = pages.length; i < t; ++i) {
-                let page = pages[i];
-                let item = glib.DataItem.new();
-                let ext;
-                switch (page.t) {
-                    case 'j': ext = 'jpg'; break;
-                    case 'p': ext = 'png'; break;
-                    case 'g': ext = 'gif'; break;
-                    default: ext = 'jpg'; break;
-                }
-                console.log("type " + page.t + " ext " + ext);
-                item.picture = media_url + 'galleries/' + media_id + '/' + (i + 1) + '.' + ext;
-                item.link = url;
-                console.log(item.picture);
-                results.push(item);
-            }
-            this.setData(results);
+        this.request(url).then(() => {
             cb.apply(null);
-        }).catch(function (err) {
+        }).catch((err) => {
             if (err instanceof Error) 
                 err = glib.Error.new(305, err.message);
             console.error(err.msg);

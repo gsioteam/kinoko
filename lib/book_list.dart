@@ -11,9 +11,11 @@ import 'package:glib/core/callback.dart';
 import 'package:glib/main/error.dart' as glib;
 import 'package:glib/main/project.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:xml_layout/xml_layout.dart';
 import 'book_page.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'widgets/book_item.dart';
+import 'utils/proxy_collections.dart';
 
 class BookListPage extends StatefulWidget {
   final Project project;
@@ -31,13 +33,16 @@ class _BookListPageState extends State<BookListPage> {
   bool cooldown = true;
   GlobalKey _nullKey = GlobalKey();
 
-  void itemClicked(int idx) async {
-    Context ctx = widget.project.createBookContext(books[idx]).control();
+  void itemClicked(int idx) {
+    openBook(books[idx]);
+  }
+
+  void openBook(DataItem item) async {
+    Context ctx = widget.project.createBookContext(item).control();
     await Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => BookPage(ctx, widget.project)
+        builder: (context) => BookPage(ctx, widget.project)
     ));
     ctx.release();
-
   }
 
   bool onPullDownRefresh() {
@@ -84,6 +89,23 @@ class _BookListPageState extends State<BookListPage> {
     });
   }
 
+  Widget buildItem(DataItem item, int idx) {
+    String itemTemp = widget.context.item_temp;
+    if (itemTemp != null) {
+      return cellWithData(item, idx);
+    } else {
+      return XmlLayout(
+        template: itemTemp,
+        objects: {
+          "data": _itemMap(item),
+          "onClick": () {
+            itemClicked(idx);
+          }
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return NotificationListener<ScrollUpdateNotification>(
@@ -103,49 +125,79 @@ class _BookListPageState extends State<BookListPage> {
   }
 
   Widget buildMain(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemBuilder: (BuildContext context, int idx) {
-            if (idx < books.length) {
-              DataItem book = books[idx];
-              return cellWithData(book, idx);
-            } else {
-              return Container(height: 10,);
-            }
-          },
-          separatorBuilder: (BuildContext context, int index) => const Divider(),
-          itemCount: books.length + 1,
-        ),
-        IgnorePointer(
-          child: AnimatedOpacity(
-            opacity: books.length == 0 ? 1 : 0,
-            duration: Duration(milliseconds: 300),
-            child: Center(
-              child: Text("No data!", style: TextStyle(
-                color: Color.fromRGBO(0xee, 0xee, 0xee, 1),
-                shadows: [
-                  Shadow(
-                    offset: Offset(-1, -1),
-                    blurRadius: 0,
-                    color: Colors.black26
-                  ),
-                  Shadow(
-                    offset: Offset(1, 1),
-                    blurRadius: 0,
-                    color: Colors.white
-                  )
-                ],
-                fontSize: 26,
-                fontFamily: "DancingScript",
-                fontWeight: FontWeight.bold
-              ),),
+    String temp = widget.context.temp;
+    if (temp.isEmpty) {
+      return Stack(
+        children: <Widget>[
+          ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemBuilder: (BuildContext context, int idx) {
+              if (idx < books.length) {
+                DataItem book = books[idx];
+                return cellWithData(book, idx);
+              } else {
+                return Container(height: 10,);
+              }
+            },
+            separatorBuilder: (BuildContext context, int index) => const Divider(),
+            itemCount: books.length + 1,
+          ),
+          IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: books.length == 0 ? 1 : 0,
+              duration: Duration(milliseconds: 300),
+              child: Center(
+                child: Text("No data!", style: TextStyle(
+                    color: Color.fromRGBO(0xee, 0xee, 0xee, 1),
+                    shadows: [
+                      Shadow(
+                          offset: Offset(-1, -1),
+                          blurRadius: 0,
+                          color: Colors.black26
+                      ),
+                      Shadow(
+                          offset: Offset(1, 1),
+                          blurRadius: 0,
+                          color: Colors.white
+                      )
+                    ],
+                    fontSize: 26,
+                    fontFamily: "DancingScript",
+                    fontWeight: FontWeight.bold
+                ),),
+              ),
             ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    } else {
+      dynamic info_data = widget.context.info_data;
+      return XmlLayout(
+        template: temp,
+        objects: {
+          "info_data": info_data,
+          "books": proxyObject(books),
+          "openBook": (List args) {
+            if (args.length >= 1) {
+              openBook(args[0]);
+            }
+          },
+          "buildChapterItem": (List args) {
+            if (args.length >= 1) {
+              int idx = args[0];
+              return cellWithData(books[idx], idx);
+            } else {
+              print("Wrong item $args");
+              return Container();
+            }
+          },
+          "refreshController": controller
+        },
+        apply: (String name, List args) {
+          return widget.context.applyFunction(name, args);
+        }
+      );
+    }
   }
 
   @override
@@ -156,6 +208,22 @@ class _BookListPageState extends State<BookListPage> {
     widget.context.exitView();
     books.release();
     widget.context.release();
+    data?.release();
     super.dispose();
+  }
+
+  DataItem data;
+  Map<String, dynamic> _itemMap(DataItem item) {
+    data?.release();
+    data = item.data?.control();
+    return {
+      "title": item.title,
+      "data": proxyObject(data),
+      "summary": item.summary,
+      "picture": item.picture,
+      "subtitle": item.subtitle,
+      "link": item.link,
+      "type": item.type
+    };
   }
 }

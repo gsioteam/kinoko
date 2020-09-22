@@ -176,8 +176,8 @@ class _ChapterItemState extends State<ChapterItem> {
 
 class BookPage extends StatefulWidget {
 
-  Context context;
-  Project project;
+  final Context context;
+  final Project project;
 
   BookPage(this.context, this.project);
 
@@ -220,7 +220,10 @@ class _BookPageState extends State<BookPage> {
       return XmlLayout(
         template: temp,
         objects: {
-          "data": _itemMap(item)
+          "data": _itemMap(item),
+          "onClick": () {
+            onSelectItem(idx);
+          }
         },
       );
     }
@@ -566,17 +569,12 @@ class _BookPageState extends State<BookPage> {
 
   void favoriteClicked() {
     setState(() {
-      print("favoriteClicked 1");
       DataItem data = widget.context.info_data;
-      print("favoriteClicked 2");
       if (FavoritesManager().isFavorite(data)) {
-        print("favoriteClicked 3");
         FavoritesManager().remove(data);
       } else {
-        print("favoriteClicked 4");
         FavoritesManager().add(data);
       }
-      print("favoriteClicked 5");
     });
   }
 

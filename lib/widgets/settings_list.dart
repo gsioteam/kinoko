@@ -8,6 +8,7 @@ import 'package:flutter_picker/flutter_picker.dart';
 enum SettingItemType {
   Header,
   Switch,
+  Input,
   Options
 }
 
@@ -65,7 +66,9 @@ class _SettingsListState extends State<SettingsList> {
 
   Widget buildStyleTrailing1(SettingItem item) {
     switch (item.type) {
-      case SettingItemType.Options: {
+      case SettingItemType.Options:
+      case SettingItemType.Input:
+        {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -76,7 +79,7 @@ class _SettingsListState extends State<SettingsList> {
       }
       case SettingItemType.Switch: {
         return Switch(
-          value: item.value,
+          value: item.value == true,
           onChanged: (value) {
             item.onChange?.call(value);
           }
@@ -127,7 +130,7 @@ class _SettingsListState extends State<SettingsList> {
       }
       case SettingItemType.Options: {
         return buildStyle1(item, () async {
-          String newValue = await pickerValue((item.data as List<OptionItem>).map<PickerItem<String>>((e) {
+          String newValue = await pickerValue((item.data as Iterable<OptionItem>).map<PickerItem<String>>((e) {
             return PickerItem<String>(
                 text: Text(e.text),
                 value: e.value
@@ -138,6 +141,13 @@ class _SettingsListState extends State<SettingsList> {
       }
       case SettingItemType.Switch: {
         return buildStyle1(item);
+      }
+      case SettingItemType.Input: {
+        return buildStyle1(item, () async {
+//          showDialog(
+//              context: context
+//          );
+        });
       }
       default: return null;
     }

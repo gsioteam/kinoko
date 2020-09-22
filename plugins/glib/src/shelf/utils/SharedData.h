@@ -24,6 +24,8 @@ namespace gs {
 
         static const std::string SETTING_KEY;
 
+        static const std::string UPDATE_KEY;
+
     };
 
     std::time_t getTimeStamp();

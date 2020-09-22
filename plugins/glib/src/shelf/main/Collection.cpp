@@ -87,11 +87,15 @@ void Collection::appendData(const gc::Array &array) {
 }
 
 const gc::Variant & Collection::getSetting(const std::string &key) {
-    return settings->get(key);
+    return settings ? settings->get(key) : Variant::null();
 }
 
 void Collection::setSetting(const std::string &key, const gc::Variant &value) {
-    settings->set(key, value);
+    if (settings) settings->set(key, value);
+}
+
+void Collection::synchronizeSettings() {
+    if (settings) settings->save();
 }
 
 gc::Variant Collection::call(const std::string &name, const gc::Array &args) {

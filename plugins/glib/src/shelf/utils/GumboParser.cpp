@@ -46,6 +46,19 @@ gc::Ref<gs::GumboNode> gs::GumboNode::parse(const gc::Ref<gc::Data> &data, const
     }
     b8_vector buf = buf_data->readAll();
     data->close();
+//    const char* str = (const char*)buf.data();
+//    string cppstr;
+//#define PRINT_SIZE 512
+//    cppstr.resize(PRINT_SIZE);
+//    size_t total = buf.size();
+//    for (size_t i = 0; i < total; i += PRINT_SIZE) {
+//        size_t  len = total - i;
+//        memcpy((char *)cppstr.data(), str + i, min((size_t)PRINT_SIZE, len));
+//        if (len < PRINT_SIZE) {
+//            cppstr[len] = 0;
+//        }
+//        LOG(i, "%ld:%s", i, cppstr.c_str());
+//    }
     Ref<Gumbo> gumbo(new_t(Gumbo, (const char*)buf.data(), buf.size()));
     gc::Ref<gs::GumboNode> node(new gs::GumboNode(gumbo));
     if (gumbo->output) {

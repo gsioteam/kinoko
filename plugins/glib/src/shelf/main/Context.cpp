@@ -282,7 +282,8 @@ void Context::save(const gc::Array &arr) {
 
 void Context::enterView() {
     if (!isReady()) return;
-    if (first_enter) {
+    bool forceUpdate = target->getSetting(shared::UPDATE_KEY);
+    if (first_enter || forceUpdate) {
         first_enter = false;
         bool update = false;
         int flag = 0;
@@ -294,13 +295,17 @@ void Context::enterView() {
             }
         }
         if (type == Chapter) {
-            if (flag == 0) {
+            if (flag == 0 || forceUpdate) {
                 reload();
             }
         } else if (type != Search) {
-            if (update || !data->size()) {
+            if (update || !data->size() || forceUpdate) {
                 reload();
             }
+        }
+        if (forceUpdate) {
+            target->setSetting(shared::UPDATE_KEY, false);
+            target->synchronizeSettings();
         }
     }
 }
@@ -490,4 +495,11 @@ gc::Variant Context::applyFunction(const std::string &name, const gc::Array &arg
         return target->apply(name.c_str(), ps);
     }
     return Variant::null();
+}
+
+void Context::setSetting(const std::string &key, const gc::Variant &value) {
+    if (type == ContextType::Setting) {
+        target->setSetting(shared::UPDATE_KEY, true);
+    }
+    target->setSetting(key, value);
 }

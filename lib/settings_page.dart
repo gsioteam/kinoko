@@ -6,6 +6,7 @@ import 'package:glib/core/array.dart';
 import 'package:glib/main/context.dart';
 import 'localizations/localizations.dart';
 import 'package:glib/main/setting_item.dart';
+import 'widgets/settings_list.dart' as setting;
 
 class SettingsPage extends StatefulWidget {
 
@@ -72,15 +73,49 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: Text(kt("settings")),
       ),
-      body: ListView.separated(
-          itemBuilder: (context, index) {
-            SettingItem item = data[index];
-            return buildItem(context, item);
-          },
-          separatorBuilder: (context, index)=> Divider(),
-          itemCount: data.length
+      body: setting.SettingsList(
+        items: buildItems(),
       ),
     );
+  }
+
+  List<setting.SettingItem> buildItems() {
+    List<setting.SettingItem> items = <setting.SettingItem>[];
+    int len = data.length;
+    for (int i = 0; i < len; ++i) {
+      SettingItem settingItem = data[i];
+      String name = settingItem.name;
+      items.add(setting.SettingItem(
+        setting.SettingItemType.values[settingItem.type],
+        settingItem.title,
+        value: widget.context.getSetting(name),
+        data: buildData(settingItem),
+        onChange: (value) {
+          setState(() {
+            widget.context.setSetting(name, value);
+          });
+        }
+      ));
+    }
+    return items;
+  }
+
+  dynamic buildData(SettingItem item) {
+    switch (item.type) {
+      case SettingItem.Input: {
+        return item.data;
+      }
+      case SettingItem.Options: {
+        Array arr = item.data;
+        return arr?.map((element) {
+          return setting.OptionItem(
+            element["name"],
+            element["value"]
+          );
+        })?.toList();
+      }
+      default: return null;
+    }
   }
 
   @override
