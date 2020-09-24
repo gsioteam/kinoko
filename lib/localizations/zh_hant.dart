@@ -48,4 +48,9 @@ const Map words = {
   "ok": "了解",
   "language": "語言",
   "general": "通常",
+  "credits": "貢獻者們",
+  "credits_content": """
+Liah(Icon) https://liah0227.itch.io/
+""",
+  "can_not_open": "不能開啟 {0}"
 };

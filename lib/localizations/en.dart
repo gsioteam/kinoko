@@ -6,7 +6,7 @@ const Map words = {
   "no": "No",
   "add": "Add",
   "clone_project": "Clone...",
-  "not_installed": "Not Clone",
+  "not_installed": "Not Cloned",
   "select_main_project": "Make main project",
   "new_project": "New Git project",
   "new_project_hint": "Git://...",
@@ -48,4 +48,9 @@ The copyright of the downloadable comic resources provided by this software belo
   "ok": "OK",
   "language": "Language",
   "general": "General",
+"credits": "Credits",
+"credits_content": """
+Liah(Icon) https://liah0227.itch.io/
+""",
+  "can_not_open": "Can`t open {0}"
 };
