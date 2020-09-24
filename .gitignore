@@ -48,3 +48,5 @@ plugins/glib/ios/lib
 .last_build_id
 *.apk
 output.json
+android/app/release
+android/app/profile
