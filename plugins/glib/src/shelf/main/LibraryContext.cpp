@@ -52,6 +52,7 @@ bool LibraryContext::insertLibrary(const std::string &url) {
     Ref<GitLibrary> lib = find(url);
     if (!lib) {
         lib = new GitLibrary;
+        lib->setUrl(url);
         data->push_back(lib);
     }
     lib->setDate(getTimeStamp());

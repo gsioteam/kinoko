@@ -66,7 +66,7 @@ class _LibraryCellState extends State<LibraryCell> {
 
   ImageProvider getIcon() {
     String icon = library.icon;
-    if (icon != null) {
+    if (icon != null && icon.isNotEmpty) {
       return makeImageProvider(icon);
     }
     if (project.isValidated) {
@@ -164,7 +164,7 @@ class _LibraryCellState extends State<LibraryCell> {
 
   Widget buildUnkown(BuildContext context) {
     String title = library.title;
-    if (title == null) title = library.url;
+    if (title == null || title.isEmpty) title = library.url;
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(16, 6, 10, 6),
       title: Text(title,),
