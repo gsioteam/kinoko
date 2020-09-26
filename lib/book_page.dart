@@ -28,8 +28,8 @@ import 'utils/proxy_collections.dart';
 
 class BarItem extends StatefulWidget {
 
-  bool display;
-  Widget child;
+  final bool display;
+  final Widget child;
 
   BarItem({
     this.display = false,
