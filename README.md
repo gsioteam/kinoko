@@ -14,9 +14,9 @@ Features:
 - Flip page by Volume key, which can be easily flip page with one hand.
 - Multiple browsing modes, turning pages horizontally or vertically.
 
-![Home](screenshots/home.jpeg)
-![Book](screenshots/book.jpeg)
-![Project Manager](screenshots/project_manager.jpeg)
-![Download](screenshots/download.jpeg)
-![Favorites](screenshots/favorites.jpeg)
-![Picture](screenshots/picture.jpeg)
+![Home](screenshots/home.jpg)
+![Book](screenshots/book.jpg)
+![Project Manager](screenshots/project_manager.jpg)
+![Download](screenshots/download.jpg)
+![Favorites](screenshots/favorites.jpg)
+![Picture](screenshots/picture.jpg)
