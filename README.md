@@ -1,16 +1,22 @@
 # kinoko
 
-Awsome manga reader.
+Awesome manga reader.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Load the online comic content supported by any plug-in project to provide a convenient online comic viewing experience.
 
-A few resources to get you started if this is your first Flutter project:
+Features:
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+- Plug-in support, using git to manage plug-ins, you can use the plug-ins provided by developers to browse the corresponding network resources, or enter any git address to load the plug-in.
+- Collect comics and add them to favorites for easy and quick viewing at any time.
+- Download comics, download to local, and browse at any time without internet.
+- Flip page by Volume key, which can be easily flip page with one hand.
+- Multiple browsing modes, turning pages horizontally or vertically.
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![Home](screenshots/home.jpeg)
+![Book](screenshots/book.jpeg)
+![Project Manager](screenshots/project_manager.jpeg)
+![Download](screenshots/download.jpeg)
+![Favorites](screenshots/favorites.jpeg)
+![Picture](screenshots/picture.jpeg)

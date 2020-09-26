@@ -28,17 +28,20 @@ bool LibraryContext::parseLibrary(const std::string &body) {
 
         if (isMatch(token, url, this->token)) {
             this->token = token;
-            Ref<GitLibrary> lib = find(url);
-            if (!lib) {
-                lib = new GitLibrary;
-                data->push_back(lib);
+            bool ignore = y_data["ignore"];
+            if (!ignore) {
+                Ref<GitLibrary> lib = find(url);
+                if (!lib) {
+                    lib = new GitLibrary;
+                    data->push_back(lib);
+                }
+                lib->setTitle(y_data["title"]);
+                lib->setDate(getTimeStamp());
+                lib->setUrl(url);
+                lib->setIcon(y_data["icon"]);
+                lib->setToken(token);
+                lib->save();
             }
-            lib->setTitle(y_data["title"]);
-            lib->setDate(getTimeStamp());
-            lib->setUrl(url);
-            lib->setIcon(y_data["icon"]);
-            lib->setToken(token);
-            lib->save();
             return true;
         }
     }
@@ -49,6 +52,7 @@ bool LibraryContext::insertLibrary(const std::string &url) {
     Ref<GitLibrary> lib = find(url);
     if (!lib) {
         lib = new GitLibrary;
+        lib->setUrl(url);
         data->push_back(lib);
     }
     lib->setDate(getTimeStamp());
