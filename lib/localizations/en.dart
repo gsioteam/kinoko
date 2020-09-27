@@ -52,5 +52,6 @@ The copyright of the downloadable comic resources provided by this software belo
 "credits_content": """
 Liah(Icon) https://liah0227.itch.io/
 """,
-  "can_not_open": "Can`t open {0}"
+  "can_not_open": "Can`t open {0}",
+  "no_main_project": "None",
 };

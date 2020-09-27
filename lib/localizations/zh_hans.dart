@@ -52,5 +52,6 @@ const Map words = {
   "credits_content": """
 Liah(Icon) https://liah0227.itch.io/
 """,
-  "can_not_open": "不能开启 {0}"
+  "can_not_open": "不能开启 {0}",
+  "no_main_project": "无项目"
 };

@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:firebase_core/firebase_core.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
@@ -119,6 +122,16 @@ class SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> setup(BuildContext context) async {
+    await Firebase.initializeApp();
+    if (kDebugMode) {
+      // Force disable Crashlytics collection while doing every day development.
+      // Temporarily toggle this to true if you want to test crash reporting in your app.
+      await FirebaseCrashlytics.instance
+          .setCrashlyticsCollectionEnabled(false);
+    } else {
+      // Handle Crashlytics enabled status when not in Debug,
+      // e.g. allow your users to opt-in to crash reporting.
+    }
     Directory dir = await platform.getApplicationSupportDirectory();
     share_cache["root_path"] = dir.path;
 
@@ -305,7 +318,7 @@ class SplashScreenState extends State<SplashScreen> {
 }
 
 class HomeDrawer extends StatefulWidget {
-  _HomePageState homeState;
+  final _HomePageState homeState;
 
   HomeDrawer(this.homeState);
 
@@ -494,7 +507,45 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
 
   List<Widget> getChildren() {
     var project = Project.getMainProject();
-    return env_repo == null || project == null ? [] : buildList(project);
+    if (env_repo == null || project == null) {
+      return [
+        Padding(
+          padding: EdgeInsets.only(top: 5, bottom: 5),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipOval(
+                child: Container(
+                  color: Colors.blueAccent,
+                  child: Image(
+                    image: CachedNetworkImageProvider("http://tinygraphs.com/squares/unkown?theme=bythepool&numcolors=3&size=180&fmt=jpg"),
+                    fit: BoxFit.contain,
+                    width: 36,
+                    height: 36,
+                  ),
+                ),
+                clipper: OvalClipper(),
+              ),
+              Padding(padding: EdgeInsets.only(left: 8)),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(kt("no_main_project"),
+                      style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white)
+                  ),
+                  Padding(padding: EdgeInsets.only(top: 5)),
+                  Text(kt("select_main_project_first"),
+                    style: Theme.of(context).textTheme.caption.copyWith(color: Colors.white),
+                  )
+                ],
+              )
+            ],
+          ),
+        )
+      ];
+    } else {
+      return buildList(project);
+    }
   }
 
   @override
