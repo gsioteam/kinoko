@@ -1,8 +1,8 @@
 # kinoko
 
-Awesome manga reader.
+Awesome manga reader. Kinoko app is published on [Google Play](https://play.google.com/store/apps/details?id=com.ero.kinoko)
 
-## Getting Started
+## Description
 
 Load the online comic content supported by any plug-in project to provide a convenient online comic viewing experience.
 
