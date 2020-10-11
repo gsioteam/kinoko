@@ -158,6 +158,7 @@ class _PictureViewerState extends State<PictureViewer> {
     }
     _firstTime = false;
     return PhotoList(
+      key: photoController?.key,
       itemCount: data.length,
       imageUrlProvider: (int index) {
         return (data[index] as DataItem).picture;
@@ -508,8 +509,14 @@ class _PictureViewerState extends State<PictureViewer> {
         widget.context = context;
         touch();
         setState(() {
-          photoController.jumpTo(math.max(data.length - 1, 0));
-          index = photoController.index;
+          index = math.max(data.length - 1, 0);
+          photoController?.dispose();
+          photoController  = PhotoController(
+              onPage: onPage,
+              index: index,
+              onOverBound: onOverBound
+          );
+          photoController.pageController.jumpToPage(index);
           if (!appBarDisplay) {
             appBarDisplay = true;
             willDismissAppBar();
@@ -527,8 +534,13 @@ class _PictureViewerState extends State<PictureViewer> {
         widget.context = context;
         touch();
         setState(() {
-          photoController.jumpTo(0);
-          index = photoController.index;
+          index = 0;
+          photoController?.dispose();
+          photoController  = PhotoController(
+              onPage: onPage,
+              index: index,
+              onOverBound: onOverBound
+          );
           if (!appBarDisplay) {
             appBarDisplay = true;
             willDismissAppBar();

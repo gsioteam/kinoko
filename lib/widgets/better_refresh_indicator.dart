@@ -19,7 +19,6 @@ class BetterRefreshIndicatorController {
 
   void startLoading() {
     if (!loading) {
-      print("[E]loading start");
       loading = true;
       key.currentState?.show();
     } else {
@@ -29,7 +28,6 @@ class BetterRefreshIndicatorController {
 
   void stopLoading() {
     if (loading) {
-      print("[E]loading stop");
       loading = false;
       completer.complete();
       completer = Completer<void>();

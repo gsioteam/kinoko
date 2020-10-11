@@ -130,7 +130,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
           return MaterialButton(
             textColor: Theme.of(context).primaryColor,
             onPressed: onRetry,
-            child: Text("Retry"),
+            child: Text(kt("retry")),
           );
         }
         break;

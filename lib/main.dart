@@ -62,19 +62,7 @@ class MainAppState extends State<MainApp> {
         supportedLocales: KinokoLocalizationsDelegate.supports.values,
         title: 'Flutter Demo',
         theme: ThemeData(
-          // This is the theme of your application.
-          //
-          // Try running your application with "flutter run". You'll see the
-          // application has a blue toolbar. Then, without quitting the app, try
-          // changing the primarySwatch below to Colors.green and then invoke
-          // "hot reload" (press "r" in the console where you ran "flutter run",
-          // or simply save your changes to "hot reload" in a Flutter IDE).
-          // Notice that the counter didn't reset back to zero; the application
-          // is not restarted.
           primarySwatch: Colors.blue,
-          // This makes the visual density adapt to the platform that you run
-          // the app on. For desktop platforms, the controls will be smaller and
-          // closer together (more dense) than on mobile platforms.
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         home: SplashScreen(),
@@ -123,15 +111,15 @@ class SplashScreenState extends State<SplashScreen> {
 
   Future<void> setup(BuildContext context) async {
     await Firebase.initializeApp();
-    if (kDebugMode) {
-      // Force disable Crashlytics collection while doing every day development.
-      // Temporarily toggle this to true if you want to test crash reporting in your app.
-      await FirebaseCrashlytics.instance
-          .setCrashlyticsCollectionEnabled(false);
-    } else {
-      // Handle Crashlytics enabled status when not in Debug,
-      // e.g. allow your users to opt-in to crash reporting.
-    }
+//    if (kDebugMode) {
+//      // Force disable Crashlytics collection while doing every day development.
+//      // Temporarily toggle this to true if you want to test crash reporting in your app.
+//      await FirebaseCrashlytics.instance
+//          .setCrashlyticsCollectionEnabled(false);
+//    } else {
+//      // Handle Crashlytics enabled status when not in Debug,
+//      // e.g. allow your users to opt-in to crash reporting.
+//    }
     Directory dir = await platform.getApplicationSupportDirectory();
     share_cache["root_path"] = dir.path;
 

@@ -72,8 +72,13 @@ gc::Array DataItem::fromJSON(const std::string &json) {
 //        SET("project_key", setProjectKey);
         item->setType(val["type"]);
         if (val.contains("data")) {
-            string jstr = val["data"];
-            item->setData(JSON::parse(nlohmann::json::parse(jstr)));
+            auto &data = val["data"];
+            if (data.is_string()) {
+                string jstr = val["data"];
+                item->setData(JSON::parse(nlohmann::json::parse(jstr)));
+            } else {
+                item->setData(JSON::parse(data));
+            }
         }
         arr.push_back(item);
     }

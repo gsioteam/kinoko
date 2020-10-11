@@ -26,6 +26,7 @@ class PhotoController {
   ItemPositionsListener _positionsListener;
   void Function(int) onPage;
   _PhotoListState state;
+  Key key = GlobalKey();
   void Function(BoundType) onOverBound;
   bool listen = true;
 
@@ -180,6 +181,7 @@ class PhotoList extends StatefulWidget {
   double appBarHeight;
 
   PhotoList({
+    Key key,
     this.isHorizontal = true,
     @required this.imageUrlProvider,
     this.onPageChanged,
@@ -187,7 +189,7 @@ class PhotoList extends StatefulWidget {
     this.controller,
     this.itemCount,
     this.appBarHeight = 0,
-  }) {
+  }) : super(key: key) {
     if (controller == null) {
       controller = PhotoController();
     }
@@ -202,30 +204,30 @@ class _PhotoListState extends State<PhotoList> {
 
   Widget buildScrollable(BuildContext context) {
     if (widget.isHorizontal) {
-
-      return PhotoViewGallery.builder(
+      return PageView.builder(
         itemCount: widget.itemCount,
-        pageController: widget.controller.pageController,
-        builder: (BuildContext context, int index) {
-          return PhotoViewGalleryPageOptions(
+        controller: widget.controller.pageController,
+        itemBuilder: (context, index) {
+          return PhotoView(
             imageProvider: CachedNetworkImageProvider(
                 widget.imageUrlProvider(index),
                 cacheManager: widget.cacheManager
             ),
             initialScale: PhotoViewComputedScale.contained,
+            gaplessPlayback: true,
+            loadingBuilder: (context, event) {
+              return Center(
+                child: SpinKitRing(
+                  lineWidth: 4,
+                  size: 36,
+                  color: Colors.white,
+                ),
+              );
+            },
           );
-        },
-        gaplessPlayback: true,
-        loadingBuilder: (context, event) {
-          return Center(
-            child: SpinKitRing(
-              lineWidth: 4,
-              size: 36,
-              color: Colors.white,
-            ),
-          );
-        },
+        }
       );
+
     } else {
       return ScrollablePositionedList.builder(
         padding: EdgeInsets.only(
