@@ -39,11 +39,12 @@ enum PictureFlipType {
   Prev
 }
 
+// ignore: must_be_immutable
 class PictureViewer extends StatefulWidget {
   Context context;
-  Context Function(PictureFlipType) onChapterChanged;
-  int startPage;
-  void Function(DataItem) onDownload;
+  final Context Function(PictureFlipType) onChapterChanged;
+  final int startPage;
+  final void Function(DataItem) onDownload;
 
   PictureViewer(this.context, {
     this.onChapterChanged,
@@ -155,6 +156,7 @@ class _PictureViewerState extends State<PictureViewer> {
     if (_firstTime && widget.startPage != null) {
       photoController.index = math.max(math.min(widget.startPage, data.length - 1), 0);
       index = photoController.index;
+      preloadQueue.offset = index;
     }
     _firstTime = false;
     return PhotoList(
@@ -465,6 +467,7 @@ class _PictureViewerState extends State<PictureViewer> {
     setState(() {
       this.index = index;
     });
+    preloadQueue.offset = index;
     KeyValue.set(_pageKey, index.toString());
   }
 
@@ -597,7 +600,7 @@ class _PictureViewerState extends State<PictureViewer> {
   void addToPreload(Array arr) {
     for (int i = 0 ,t = arr.length; i < t; ++i) {
       DataItem item = arr[i];
-      preloadQueue.add(DownloadPictureItem(item.picture, cacheManager));
+      preloadQueue.set(i, DownloadPictureItem(item.picture, cacheManager));
     }
   }
 }
