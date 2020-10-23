@@ -114,7 +114,7 @@ class _OverDragState extends State<OverDrag> {
   double _offset = 0;
   bool _isTouching = false;
 
-  void touchEnd() {
+  bool touchEnd() {
     if (_isTouching) {
       _isTouching = false;
       EdgeInsets padding = MediaQuery.of(context).padding;
@@ -152,7 +152,9 @@ class _OverDragState extends State<OverDrag> {
 
       _offset = 0;
       type = OverDragType.None;
+      return true;
     }
+    return false;
   }
 
   bool _onNotification(ScrollNotification scrollNotification) {
@@ -173,7 +175,6 @@ class _OverDragState extends State<OverDrag> {
               type = OverDragType.Up;
             }
           }
-          print("o ${scrollNotification.overscroll} ${type}");
         }
       } else {
         double delta = 0;
@@ -181,14 +182,12 @@ class _OverDragState extends State<OverDrag> {
           delta = scrollNotification.overscroll;
         } else if (scrollNotification is ScrollUpdateNotification) {
           if (scrollNotification.dragDetails == null) {
-            touchEnd();
-            return false;
+            return touchEnd();
           } else {
             delta = scrollNotification.scrollDelta;
           }
         } else if (scrollNotification is ScrollEndNotification) {
-          touchEnd();
-          return false;
+          return touchEnd();
         } else {
           return false;
         }

@@ -519,7 +519,7 @@ class _PictureViewerState extends State<PictureViewer> {
               index: index,
               onOverBound: onOverBound
           );
-          photoController.pageController.jumpToPage(index);
+          // photoController.pageController.jumpToPage(index);
           if (!appBarDisplay) {
             appBarDisplay = true;
             willDismissAppBar();
