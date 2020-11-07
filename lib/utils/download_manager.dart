@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:glib/core/callback.dart';
 import 'package:glib/core/core.dart';
 import 'package:glib/core/array.dart';
+import 'package:glib/core/gmap.dart';
 import 'package:glib/main/collection_data.dart';
 import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
@@ -21,6 +22,7 @@ import 'dart:math';
 import 'book_info.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'data_item_headers.dart';
 
 String generateMd5(String input) {
   return md5.convert(utf8.encode(input)).toString();
@@ -60,6 +62,13 @@ class DownloadPictureItem {
   }
 }
 
+class _DownloadCacheItem {
+  String url;
+  Map<String, String> headers;
+
+  _DownloadCacheItem(this.url, [this.headers]);
+}
+
 class DownloadQueueItem {
   CollectionData data;
   DataItem item;
@@ -69,7 +78,7 @@ class DownloadQueueItem {
   bool _picture_downloading = false;
   String cacheKey;
   void Function() onImageQueueClear;
-  List<String> urls = List();
+  List<_DownloadCacheItem> urls = List();
   int _total = 0;
   int _total2 = 0;
   int _loaded = 0;
@@ -124,10 +133,12 @@ class DownloadQueueItem {
     cacheManager = PictureCacheManager(cacheKey, item);
     _total = subitems.length;
     if (state != DownloadState.AllComplete) {
-      List<String> urls = [];
+      List<_DownloadCacheItem> urls = [];
       for (int i = 0, t = subitems.length; i < t; ++i) {
         DataItem item = subitems[i];
-        urls.add(item.picture);
+        urls.add(_DownloadCacheItem(
+          item.picture, item.headers
+        ));
       }
       _checkImages(urls);
       if (state == DownloadState.ListComplete) {
@@ -138,10 +149,10 @@ class DownloadQueueItem {
     }
   }
 
-  void _checkImages(List<String> urls) async {
+  void _checkImages(List<_DownloadCacheItem> urls) async {
     int count = 0;
-    for (String url in urls) {
-      FileInfo info = await cacheManager.getFileFromCache(url);
+    for (_DownloadCacheItem url in urls) {
+      FileInfo info = await cacheManager.getFileFromCache(url.url);
       if (info != null) {
         ++count;
         _loaded = count;
@@ -180,7 +191,7 @@ class DownloadQueueItem {
     return DownloadState.Unkown;
   }
 
-  void set state(DownloadState s) {
+  set state(DownloadState s) {
     switch (s) {
       case DownloadState.None: {
         data.flag = 0;
@@ -230,9 +241,21 @@ class DownloadQueueItem {
     return completer.future;
   }
 
-  void addToQueue(url, {Map<String, String> headers, bool force = false}) {
-    if (!urls.contains(url)) {
-      urls.add(url);
+  bool contains(String url) {
+    for (var item in urls) {
+      if (item.url == url) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void addToQueue(String url, {Map<String, String> headers, bool force = false}) {
+    if (!contains(url)) {
+      urls.add(_DownloadCacheItem(
+        url,
+        headers
+      ));
       _total2 = urls.length;
       onProgress?.call();
       DownloadPictureItem image = DownloadPictureItem(url, cacheManager, headers: headers);
@@ -258,7 +281,8 @@ class DownloadQueueItem {
     }).release();
     context.on_data_changed = Callback.fromFunction((int type, Array data, int idx) {
       for (int i = 0, t = data.length; i < t; ++i) {
-        addToQueue(data[i].picture);
+        DataItem dataItem = data[i];
+        addToQueue(dataItem.picture, headers: dataItem.headers);
       }
     }).release();
     context.enterView();

@@ -9,6 +9,7 @@ const String collection_mark = "mark";
 
 const String home_page_name = "home";
 
+const String last_chapter_key = "last-chapter";
 const String direction_key = "direction";
 const String device_key = "device";
 const String page_key = "page";

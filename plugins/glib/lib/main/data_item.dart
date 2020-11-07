@@ -1,5 +1,6 @@
 
 import 'package:glib/core/array.dart';
+import 'package:glib/core/data.dart';
 
 import '../core/core.dart';
 import 'collection_data.dart';
@@ -84,4 +85,7 @@ class DataItem extends Base {
   void removeFromCollection(String type) => call("removeFromCollection", argv: [type]);
 
   static DataItem fromCollectionData(CollectionData data) => Base.s_call(DataItem, "fromCollectionData", argv: [data]);
+
+  static String toJSON(Array items) => Base.s_call(DataItem, "toJSON", argv: [items]);
+  static Array fromJSON(String json) => Base.s_call(DataItem, "fromJSON", argv: [json]);
 }

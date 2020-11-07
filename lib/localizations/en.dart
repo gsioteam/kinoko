@@ -54,4 +54,6 @@ Liah(Icon) https://liah0227.itch.io/
 """,
   "can_not_open": "Can`t open {0}",
   "no_main_project": "None",
+  "remove_project": "Remove Project",
+  "would_remove_project": "Would you like to remove project({0})?"
 };

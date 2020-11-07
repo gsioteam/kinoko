@@ -34,8 +34,8 @@ namespace gs {
 
         static gc::Ref<DataItem> fromData(const gc::Ref<BookData> &data);
 
-        static std::string toJSON(const gc::Array &arr);
-        static gc::Array fromJSON(const std::string &j);
+        METHOD static std::string toJSON(const gc::Array &arr);
+        METHOD static gc::Array fromJSON(const std::string &j);
 
         void fill(const gc::Ref<BookData> &data);
         gc::Ref<BookData> saveData(bool save) const;
@@ -129,6 +129,8 @@ namespace gs {
             ADD_METHOD(cls, DataItem, isInCollection);
             ADD_METHOD(cls, DataItem, removeFromCollection);
             ADD_METHOD(cls, DataItem, fromCollectionData);
+            ADD_METHOD(cls, DataItem, toJSON);
+            ADD_METHOD(cls, DataItem, fromJSON);
         ON_LOADED_END
     CLASS_END
 }

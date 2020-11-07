@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:gesture_zoom_box/gesture_zoom_box.dart';
+import 'package:glib/core/core.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:math' as math;
@@ -18,13 +19,19 @@ enum BoundType {
   End
 }
 
+typedef WidgetBuilder = Widget Function(BuildContext);
+
 class PhotoImage extends StatefulWidget {
   final ImageProvider imageProvider;
   final double width;
+  final WidgetBuilder loadingWidget;
+  final WidgetBuilder errorWidget;
 
   PhotoImage({
     @required this.imageProvider,
-    this.width
+    this.width,
+    this.loadingWidget,
+    this.errorWidget
   });
 
   @override
@@ -36,29 +43,55 @@ class PhotoImageState extends State<PhotoImage> {
   ImageInfo _imageInfo;
   ImageStreamListener _imageStreamListener;
   ImageStream _imageStream;
+  bool _hasError = false;
 
   PhotoImageState() {
-    _imageStreamListener = ImageStreamListener(_getImage);
+    _imageStreamListener = ImageStreamListener(
+      _getImage,
+      onError: _getError
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    ui.Image image = _imageInfo?.image;
-    double width;
-    if (image != null) {
-      if (image.width / image.height < 1) {
-        width = widget.width;
+    if (_hasError) {
+      return Container(
+        width: widget.width,
+        child: Center(
+          child: widget.errorWidget?.call(context),
+        ),
+      );
+    } else {
+      ui.Image image = _imageInfo?.image;
+      double width;
+      if (image != null) {
+        if (image.width / image.height < 1) {
+          width = widget.width;
+        }
+        return RawImage(
+          image: _imageInfo?.image,
+          width: width,
+        );
+      } else {
+        return Container(
+          width: widget.width,
+          child: Center(
+            child: widget.loadingWidget?.call(context),
+          ),
+        );
       }
     }
-    return RawImage(
-      image: _imageInfo?.image,
-      width: width,
-    );
   }
 
   void _getImage(ImageInfo image, bool synchronousCall) {
     setState(() {
       _imageInfo = image;
+    });
+  }
+
+  void _getError(dynamic exception, StackTrace stackTrace) {
+    setState(() {
+      _hasError = true;
     });
   }
 
@@ -85,7 +118,7 @@ class PhotoImageState extends State<PhotoImage> {
     final ImageStream oldImageStream = _imageStream;
     _imageStream = widget.imageProvider.resolve(createLocalImageConfiguration(context));
     if (_imageStream.key != oldImageStream?.key) {
-
+      _hasError = false;
       oldImageStream?.removeListener(_imageStreamListener);
       _imageStream.addListener(_imageStreamListener);
     }
@@ -132,9 +165,10 @@ class PhotoController {
     }
     if (idx == null) {
       List<ItemPosition> list = positions.toList();
-      idx = list[list.length ~/ 2].index;
+      if (list.length > 0)
+        idx = list[list.length ~/ 2].index;
     }
-    if (index != idx) {
+    if (idx != null && index != idx) {
       index = idx;
       this.onPage?.call(index);
     }
@@ -262,10 +296,17 @@ class PhotoController {
   }
 }
 
+class PhotoInformation {
+  String url;
+  Map<String, String> headers;
+
+  PhotoInformation(this.url, [this.headers]);
+}
+
 class PhotoList extends StatefulWidget {
   final bool isHorizontal;
   final int itemCount;
-  final String Function(int index) imageUrlProvider;
+  final PhotoInformation Function(int index) imageUrlProvider;
   final void Function(int index) onPageChanged;
   final BaseCacheManager cacheManager;
   PhotoController controller;
@@ -299,14 +340,6 @@ class _PhotoListState extends State<PhotoList> {
 
   List<_PhotoInfo> photos = [];
 
-  List<Widget> horizontalChildren(int count, Widget Function(int) builder) {
-    List<Widget> list = [];
-    for (int i = 0; i < count; ++i) {
-      list.add(builder(i));
-    }
-    return list;
-  }
-
   Widget buildScrollable(BuildContext context) {
     if (widget.isHorizontal) {
       var media = MediaQuery.of(context);
@@ -322,9 +355,14 @@ class _PhotoListState extends State<PhotoList> {
         itemScrollController: widget.controller.scrollController,
         itemPositionsListener: widget.controller.positionsListener,
         itemBuilder: (context, index) {
+          PhotoInformation photoInformation = widget.imageUrlProvider(index);
           return Container(
             constraints: BoxConstraints(
               minWidth: media.size.width
+            ),
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              color: Colors.black
             ),
             padding: EdgeInsets.only(top: 2, bottom: 2),
             child: Center(
@@ -333,10 +371,21 @@ class _PhotoListState extends State<PhotoList> {
                 doubleTapScale: 2.0,
                 child: PhotoImage(
                   imageProvider: CachedNetworkImageProvider(
-                    widget.imageUrlProvider(index),
-                    cacheManager: widget.cacheManager
+                    photoInformation.url,
+                    cacheManager: widget.cacheManager,
+                    headers: photoInformation.headers,
                   ),
                   width: media.size.width,
+                  loadingWidget: (context) {
+                    return SpinKitRing(
+                      lineWidth: 4,
+                      size: 36,
+                      color: Colors.white,
+                    );
+                  },
+                  errorWidget: (context) {
+                    return Icon(Icons.broken_image);
+                  },
                 ),
               ),
             ),
@@ -353,13 +402,14 @@ class _PhotoListState extends State<PhotoList> {
         itemScrollController: widget.controller.scrollController,
         itemPositionsListener: widget.controller.positionsListener,
         itemBuilder: (context, index) {
+          PhotoInformation photoInformation = widget.imageUrlProvider(index);
           return Container(
             constraints: BoxConstraints(
-                minHeight: 560
+              minHeight: 560
             ),
             clipBehavior: Clip.hardEdge,
             decoration: BoxDecoration(
-                color: Colors.black
+              color: Colors.black
             ),
             padding: EdgeInsets.only(top: 2, bottom: 2),
             child: Center(
@@ -367,7 +417,8 @@ class _PhotoListState extends State<PhotoList> {
                 maxScale: 5.0,
                 doubleTapScale: 2.0,
                 child: CachedNetworkImage(
-                  imageUrl: widget.imageUrlProvider(index),
+                  imageUrl: photoInformation.url,
+                  httpHeaders: photoInformation.headers,
                   cacheManager: widget.cacheManager,
                   fit: BoxFit.fitWidth,
                   placeholder: (context, url) {
@@ -390,27 +441,38 @@ class _PhotoListState extends State<PhotoList> {
     }
   }
 
-  bool _onDragEnd(ScrollEndNotification notification) {
-    if (widget.isHorizontal) {
-      ItemPositionsListener positionsListener = widget.controller.positionsListener;
-      for (var pos in positionsListener.itemPositions.value) {
-        if (pos.index == widget.controller.index) {
-          if (pos.itemLeadingEdge > 0) {
-            Timer(Duration(milliseconds: 0), () {
-              widget.controller.scrollController.scrollTo(
-                  index: pos.index,
-                  duration: Duration(milliseconds: 200),
-                  alignment: 0
-              );
-            });
-          } else if (pos.itemTrailingEdge < 1) {
-            Timer(Duration(milliseconds: 0), () {
-              widget.controller.scrollController.scrollTo(
-                  index: pos.index,
-                  duration: Duration(milliseconds: 200),
-                  alignment: pos.itemLeadingEdge + (1 - pos.itemTrailingEdge)
-              );
-            });
+  bool isDrag = false;
+  bool _onScroll(ScrollNotification notification) {
+    if (notification is ScrollUpdateNotification) {
+      if (widget.isHorizontal) {
+        if (notification.dragDetails != null) isDrag = true;
+      }
+    } else if (notification is ScrollEndNotification) {
+      if (widget.isHorizontal) {
+        if (notification.dragDetails != null) isDrag = true;
+        if (!isDrag) return false;
+        isDrag = false;
+        ItemPositionsListener positionsListener = widget.controller.positionsListener;
+        for (var pos in positionsListener.itemPositions.value) {
+          if (pos.index == widget.controller.index) {
+            if (pos.itemLeadingEdge > 0) {
+              Timer(Duration(milliseconds: 0), () {
+                widget.controller.scrollController.scrollTo(
+                    index: pos.index,
+                    duration: Duration(milliseconds: 200),
+                    alignment: 0
+                );
+              });
+            } else if (pos.itemTrailingEdge < 1) {
+              Timer(Duration(milliseconds: 0), () {
+                print("Drag end");
+                widget.controller.scrollController.scrollTo(
+                    index: pos.index,
+                    duration: Duration(milliseconds: 200),
+                    alignment: pos.itemLeadingEdge + (1 - pos.itemTrailingEdge)
+                );
+              });
+            }
           }
         }
       }
@@ -420,7 +482,7 @@ class _PhotoListState extends State<PhotoList> {
 
   @override
   Widget build(BuildContext context) {
-    return NotificationListener<ScrollEndNotification>(
+    return NotificationListener<ScrollNotification>(
       child: OverDrag(
         child: buildScrollable(context),
         left: widget.isHorizontal,
@@ -444,7 +506,7 @@ class _PhotoListState extends State<PhotoList> {
           }
         },
       ),
-      onNotification: _onDragEnd,
+      onNotification: _onScroll,
     );
   }
 

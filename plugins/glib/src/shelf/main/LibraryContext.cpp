@@ -60,6 +60,20 @@ bool LibraryContext::insertLibrary(const std::string &url) {
     return true;
 }
 
+bool LibraryContext::removeLibrary(const std::string &url) {
+    if (data) {
+        for (int i = 0; i < data->size(); ++i) {
+            Ref<GitLibrary> lib = data->get(i);
+            if (lib->getUrl() == url) {
+                data->remove(lib);
+                lib->remove();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 bool LibraryContext::isMatch(const std::string &token, const std::string &url, const std::string &prev) {
     sha256_context sha256_ctx;
     sha256_init(&sha256_ctx);

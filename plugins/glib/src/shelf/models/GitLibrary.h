@@ -15,8 +15,7 @@ namespace gs {
         DEFINE_FIELD(long long, date, Date);
         DEFINE_STRING(icon, Icon);
         DEFINE_STRING(title, Title);
-
-        std::string token;
+        DEFINE_STRING(token, Token);
 
     public:
         static void registerFields() {
@@ -25,28 +24,22 @@ namespace gs {
             ADD_FILED(GitLibrary, date, Date, false);
             ADD_FILED(GitLibrary, icon, Icon, false);
             ADD_FILED(GitLibrary, title, Title, false);
+            ADD_FILED(GitLibrary, token, Token, false);
         }
         static float version() {
-            return 1;
+            return 2;
         }
 
         METHOD static gc::Array allLibraries();
         METHOD static bool insertLibrary(const std::string &url);
         METHOD static gc::Ref<GitLibrary> findLibrary(const std::string &url);
 
-        METHOD const std::string &getToken() const {
-            return token;
-        }
-        METHOD void setToken(const std::string &token) {
-            this->token = token;
-        }
-
         ON_LOADED_BEGIN(cls, Model<GitLibrary>)
             ADD_PROPERTY_EX(cls, url, GitLibrary, getUrl, setUrl);
             ADD_PROPERTY_EX(cls, date, GitLibrary, getDate, setDate);
             ADD_PROPERTY_EX(cls, icon, GitLibrary, getIcon, setIcon);
             ADD_PROPERTY_EX(cls, title, GitLibrary, getTitle, setTitle);
-            ADD_PROPERTY_EX(cls, token, GitLibrary, setToken, setToken);
+            ADD_PROPERTY_EX(cls, token, GitLibrary, getToken, setToken);
             ADD_METHOD(cls, GitLibrary, allLibraries);
             ADD_METHOD(cls, GitLibrary, insertLibrary);
             ADD_METHOD(cls, GitLibrary, findLibrary);

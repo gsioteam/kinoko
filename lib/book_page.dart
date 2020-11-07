@@ -137,7 +137,7 @@ class _ChapterItemState extends State<ChapterItem> {
           ),
           onTap: widget.onTap,
         ),
-        Divider(height: 3,)
+        Divider(height: 1,)
       ],
     );
   }
@@ -203,19 +203,30 @@ class _BookPageState extends State<BookPage> {
     String temp = widget.context.item_temp;
     DataItem item = chapters[idx];
     if (temp.isEmpty) {
-      String subtitle = item.subtitle;
-      DownloadQueueItem downloadItem = DownloadManager().find(item);
+      if (item.type != DataItemType.Header) {
+        String subtitle = item.subtitle;
+        DownloadQueueItem downloadItem = DownloadManager().find(item);
 
-      return ChapterItem(
-        title: item.title,
-        subtitle: subtitle,
-        editing: editing,
-        selected: selected.contains(idx),
-        downloadItem: downloadItem,
-        onTap: () {
-          onSelectItem(idx);
-        },
-      );
+        return ChapterItem(
+          title: item.title,
+          subtitle: subtitle,
+          editing: editing,
+          selected: selected.contains(idx),
+          downloadItem: downloadItem,
+          onTap: () {
+            onSelectItem(idx);
+          },
+        );
+      } else {
+        return Column(
+          children: [
+            ListTile(
+              title: Text(item.title),
+            ),
+            Divider(height: 3,)
+          ],
+        );
+      }
     } else {
       return XmlLayout(
         template: temp,
@@ -238,7 +249,7 @@ class _BookPageState extends State<BookPage> {
     ];
 
     String subtitle = item.subtitle;
-    if (subtitle != null && !subtitle.isEmpty) {
+    if (subtitle != null && subtitle.isNotEmpty) {
       spans.add(WidgetSpan(child: Padding(padding: EdgeInsets.only(top: 5),)));
       spans.add(TextSpan(
         text: "\n${item.subtitle}",
@@ -247,7 +258,7 @@ class _BookPageState extends State<BookPage> {
     }
 
     String summary = item.summary;
-    if (summary != null && !summary.isEmpty) {
+    if (summary != null && summary.isNotEmpty) {
       spans.add(WidgetSpan(child: Padding(padding: EdgeInsets.only(top: 5),)));
       spans.add(TextSpan(
         text: "\n${item.summary}",
@@ -320,28 +331,74 @@ class _BookPageState extends State<BookPage> {
     }
   }
 
-  void openChapter(DataItem chapter, [int page]) async {
+  String _lastChapterKey;
+  String _lastChapterValue;
+  String get lastChapterKey {
+    if (_lastChapterKey == null) {
+      DataItem bookItem = widget.context.info_data;
+      _lastChapterKey = "$last_chapter_key:${bookItem.projectKey}:${bookItem.link}";
+    }
+    return _lastChapterKey;
+  }
+
+  void _saveLastChapter(DataItem chapter) {
+    setState(() {
+      _lastChapterValue = DataItem.toJSON(Array.allocate([chapter]).release());
+      KeyValue.set(lastChapterKey, _lastChapterValue);
+    });
+  }
+
+  DataItem get lastChapter {
+    if (_lastChapterValue == null) {
+      _lastChapterValue = KeyValue.get(lastChapterKey);
+    }
+    if (_lastChapterValue != null && _lastChapterValue.isNotEmpty) {
+      Array items = DataItem.fromJSON(_lastChapterValue);
+      return items.length > 0 ? items.first : null;
+    }
+    return null;
+  }
+
+  int _findIndexOfChapter(String link) {
+    for (int i = 0, t = chapters.length; i < t; ++i) {
+      DataItem chapter = chapters[i];
+      if (link == chapter.link) {
+        return i;
+      }
+    }
+  }
+
+  void openChapter(DataItem chapter, [int page]) async {;
+    _saveLastChapter(chapter);
     int currentIndex = chapters.indexOf(chapter);
+    String link = chapter.link;
     widget.project.control();
     Context currentContext = widget.project.createChapterContext(chapter).control();
     await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
       return PictureViewer(
         currentContext,
         onChapterChanged: (PictureFlipType flipType) {
-          if (currentIndex < 0) return null;
+          if (currentIndex < 0) {
+            if ((currentIndex = _findIndexOfChapter(link)) < 0) return null;
+          }
           // 倒序排序
           if (flipType == PictureFlipType.Prev) {
             if (currentIndex < chapters.length - 1) {
               currentIndex++;
               DataItem data = chapters[currentIndex];
+              _saveLastChapter(data);
               r(currentContext);
               currentContext = widget.project.createChapterContext(data).control();
               return currentContext;
             }
           } else if (flipType == PictureFlipType.Next) {
+            if (currentIndex < 0) {
+              if ((currentIndex = _findIndexOfChapter(link)) < 0) return null;
+            }
             if (currentIndex > 0) {
               currentIndex--;
-              DataItem data = chapters[currentIndex];
+              DataItem data = chapters[currentIndex];;
+              _saveLastChapter(data);
               r(currentContext);
               currentContext = widget.project.createChapterContext(data).control();
               return currentContext;
@@ -387,6 +444,21 @@ class _BookPageState extends State<BookPage> {
   XmlLayoutBuilder _xmlBuilder;
   XmlLayoutBuilder get xmlBuilder => _xmlBuilder ?? (_xmlBuilder = XmlLayoutBuilder());
 
+  Widget makeLastChapter() {
+    DataItem item = lastChapter;
+    var theme = Theme.of(context);
+    return Visibility(
+      visible: item != null,
+      child: FlatButton(
+        padding: EdgeInsets.all(0),
+        onPressed: () {
+          openChapter(lastChapter);
+        },
+        child: Text("[${item?.title}]", style: theme.textTheme.bodyText2.copyWith(color: theme.primaryColor),),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
@@ -418,25 +490,26 @@ class _BookPageState extends State<BookPage> {
                         children: <Widget>[
                           Icon(Icons.bookmark, color: theme.primaryColor, size: 14,),
                           Text(kt("chapters")),
+                          makeLastChapter(),
                           Expanded(child: Container()),
                           PopupMenuButton(
-                              onSelected: onOrderChanged,
-                              icon: Icon(Icons.sort, color: theme.primaryColor,),
-                              itemBuilder: (context) {
-                                return [
-                                  CheckedPopupMenuItem<int>(
-                                      value: R_ORDER,
-                                      checked: orderIndex == R_ORDER,
-                                      child: Text(kt("reverse_order"))
-                                  ),
+                            onSelected: onOrderChanged,
+                            icon: Icon(Icons.sort, color: theme.primaryColor,),
+                            itemBuilder: (context) {
+                              return [
+                                CheckedPopupMenuItem<int>(
+                                    value: R_ORDER,
+                                    checked: orderIndex == R_ORDER,
+                                    child: Text(kt("reverse_order"))
+                                ),
 
-                                  CheckedPopupMenuItem<int>(
-                                      value: ORDER,
-                                      checked: orderIndex == ORDER,
-                                      child: Text(kt("order"))
-                                  )
-                                ];
-                              }
+                                CheckedPopupMenuItem<int>(
+                                    value: ORDER,
+                                    checked: orderIndex == ORDER,
+                                    child: Text(kt("order"))
+                                )
+                              ];
+                            }
                           ),
                           BarItem(
                             display: editing,
@@ -504,9 +577,9 @@ class _BookPageState extends State<BookPage> {
                 ),
                 actions: <Widget>[
                   IconButton(
-                      icon: Icon(Icons.favorite),
-                      color: FavoritesManager().isFavorite(data) ? Colors.red : Colors.white,
-                      onPressed: favoriteClicked
+                    icon: Icon(Icons.favorite),
+                    color: FavoritesManager().isFavorite(data) ? Colors.red : Colors.white,
+                    onPressed: favoriteClicked
                   ),
                 ],
               ),
@@ -621,7 +694,7 @@ class _BookPageState extends State<BookPage> {
     FavoritesManager().clearNew(widget.context.info_data);
     chapters = widget.context.data.control();
     String order = KeyValue.get(key(ORDER_TYPE));
-    if (order != null && !order.isEmpty) {
+    if (order != null && order.isNotEmpty) {
       try {
         orderIndex = int.parse(order);
       } catch (e) { }

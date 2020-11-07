@@ -33,7 +33,7 @@ class LibraryCell extends StatefulWidget {
 
   final GitLibrary library;
 
-  LibraryCell(this.library);
+  LibraryCell({Key key, this.library}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -74,6 +74,8 @@ class _LibraryCellState extends State<LibraryCell> {
       File icon = new File(iconpath);
       if (icon.existsSync()) {
         return FileImage(icon);
+      } else if (project.icon.isNotEmpty) {
+        return makeImageProvider(project.icon);
       }
     }
     return CachedNetworkImageProvider("http://tinygraphs.com/squares/${generateMd5(library.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg");
@@ -399,10 +401,57 @@ class _LibrariesPageState extends State<LibrariesPage> {
       child: NotificationListener<ScrollUpdateNotification>(
         child: ListView.separated(
             itemBuilder: (context, idx) {
-              return LibraryCell(data[idx]);
+              GitLibrary library = data[idx];
+              String token = library.token;
+              if (token.isEmpty) {
+                String url = library.url;
+                return Dismissible(
+                  key: GlobalObjectKey(url),
+                  background: Container(color: Colors.red,),
+                  child: LibraryCell(
+                    library: library,
+                  ),
+                  confirmDismiss: (_) async {
+                    bool result = await showDialog<bool>(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: Text(kt("remove_project")),
+                            content: Text(kt("would_remove_project").replaceFirst("{0}", url)),
+                            actions: [
+                              FlatButton(
+                                  onPressed: (){
+                                    Navigator.of(context).pop(true);
+                                  },
+                                  child: Text(kt("yes"))
+                              ),
+                              FlatButton(
+                                  onPressed: (){
+                                    Navigator.of(context).pop(false);
+                                  },
+                                  child: Text(kt("no"))
+                              ),
+                            ],
+                          );
+                        }
+                    );
+                    return result == true;
+                  },
+                  onDismissed: (_) {
+                    setState(() {
+                      ctx.removeLibrary(url);
+                    });
+                  },
+                );
+              } else {
+                return LibraryCell(
+                  key: GlobalObjectKey(token),
+                  library: library,
+                );
+              }
             },
             separatorBuilder: (context, idx) {
-              return Divider();
+              return Divider(height: 1,);
             },
             itemCount: data.length
         ),

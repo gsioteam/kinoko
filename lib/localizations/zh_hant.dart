@@ -53,5 +53,7 @@ const Map words = {
 Liah(Icon) https://liah0227.itch.io/
 """,
   "can_not_open": "不能開啟 {0}",
-  "no_main_project": "無項目"
+  "no_main_project": "無項目",
+  "remove_project": "移除項目",
+  "would_remove_project": "是否移除項目({0})?"
 };

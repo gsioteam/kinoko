@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:glib/core/array.dart';
 import 'package:glib/core/callback.dart';
+import 'package:glib/core/gmap.dart';
 import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
@@ -29,6 +30,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'utils/data_item_headers.dart';
 
 String generateMd5(String input) {
   return md5.convert(utf8.encode(input)).toString();
@@ -163,7 +165,8 @@ class _PictureViewerState extends State<PictureViewer> {
       key: photoController?.key,
       itemCount: data.length,
       imageUrlProvider: (int index) {
-        return (data[index] as DataItem).picture;
+        DataItem item = (data[index] as DataItem);
+        return PhotoInformation(item.picture, item.headers);
       },
       isHorizontal: isHorizontal,
       controller: photoController,
@@ -539,7 +542,7 @@ class _PictureViewerState extends State<PictureViewer> {
         setState(() {
           index = 0;
           photoController?.dispose();
-          photoController  = PhotoController(
+          photoController = PhotoController(
               onPage: onPage,
               index: index,
               onOverBound: onOverBound
@@ -600,7 +603,7 @@ class _PictureViewerState extends State<PictureViewer> {
   void addToPreload(Array arr) {
     for (int i = 0 ,t = arr.length; i < t; ++i) {
       DataItem item = arr[i];
-      preloadQueue.set(i, DownloadPictureItem(item.picture, cacheManager));
+      preloadQueue.set(i, DownloadPictureItem(item.picture, cacheManager, headers: item.headers));
     }
   }
 }
