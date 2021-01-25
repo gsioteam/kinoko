@@ -1,4 +1,5 @@
 const {Collection} = require('./collection');
+const {LZString} = require('./lzstring');
 
 class BookCollection extends Collection {
 
@@ -7,6 +8,16 @@ class BookCollection extends Collection {
 
         let doc = await super.fetch(url);
         let lists = doc.querySelectorAll('.chapter-list'), results = [];
+        if (lists.length === 0) {
+            let stateNode = doc.querySelector('#__VIEWSTATE');
+            if (stateNode) {
+                let ctx = glib.ScriptContext.new('v8');
+                ctx.eval(LZString);
+                let html = ctx.eval('LZString.decompressFromBase64("' + stateNode.attr('value') + '")');
+                doc = glib.GumboNode.parse2(html);
+                lists = doc.querySelectorAll('.chapter-list');
+            }
+        }
         for (let list of lists) {
             let ul_arr = list.querySelectorAll('ul').reverse();
             for (let ul of ul_arr) {

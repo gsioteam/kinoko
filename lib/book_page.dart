@@ -19,6 +19,7 @@ import 'package:xml_layout/xml_layout.dart';
 import 'configs.dart';
 import 'localizations/localizations.dart';
 import 'utils/download_manager.dart';
+import 'utils/history_manager.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:glib/main/error.dart' as glib;
 import 'picture_viewer.dart';
@@ -692,6 +693,7 @@ class _BookPageState extends State<BookPage> {
     refreshController.onRefresh = onPullDownRefresh;
     widget.context.enterView();
     FavoritesManager().clearNew(widget.context.info_data);
+    HistoryManager().insert(widget.context.info_data);
     chapters = widget.context.data.control();
     String order = KeyValue.get(key(ORDER_TYPE));
     if (order != null && order.isNotEmpty) {

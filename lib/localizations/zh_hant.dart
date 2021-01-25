@@ -13,6 +13,7 @@ const Map words = {
   "add_project_failed": "未能添加，是否已添加？",
   "manage_projects": "轄書齋",
   "manga_home": "漫畫之家",
+  "history": "雨跡雲蹤",
   "favorites": "收藏夾",
   "chapters": "章節列表",
   "reverse_order": "逆序",
@@ -24,6 +25,7 @@ const Map words = {
   "undo": "取消",
   "search": "尋幽覓勝",
   "horizo​​ntal_flip": "水平翻頁",
+  "horizontal_reverse": "水平逆向",
   "vertical_flip": "垂直翻頁",
   "portrait": "竪屏",
   "landscape": "橫屏",
@@ -55,5 +57,11 @@ Liah(Icon) https://liah0227.itch.io/
   "can_not_open": "不能開啟 {0}",
   "no_main_project": "無項目",
   "remove_project": "移除項目",
-  "would_remove_project": "是否移除項目({0})?"
+  "would_remove_project": "是否移除項目({0})?",
+  "no_card_found": "無外部存儲",
+  "no_permission": "無訪問權限",
+  "output_to": "導出到: {0}",
+  "directory_name": "文件夾",
+  "name_empty": "文件夾名不能為空",
+  "clear_history": "是否抹除历史?",
 };

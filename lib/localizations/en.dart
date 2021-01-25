@@ -14,6 +14,7 @@ const Map words = {
   "manage_projects": "Manage Projects",
   "manga_home": "Manga Home",
   "favorites": "Favorites",
+  "history": "History",
   "chapters": "Chapters",
   "reverse_order": "Reverse Order",
   "order": "Positive Order",
@@ -24,6 +25,7 @@ const Map words = {
   "undo": "Undo",
   "search": "Search",
   "horizontal_flip": "Horizontal Flip",
+  "horizontal_reverse": "Horizontal Reverse",
   "vertical_flip": "Vertical Flip",
   "portrait": "Portrait",
   "landscape": "Landscape",
@@ -55,5 +57,11 @@ Liah(Icon) https://liah0227.itch.io/
   "can_not_open": "Can`t open {0}",
   "no_main_project": "None",
   "remove_project": "Remove Project",
-  "would_remove_project": "Would you like to remove project({0})?"
+  "would_remove_project": "Would you like to remove project({0})?",
+  "no_card_found": "No SDCard found",
+  "no_permission": "No permission",
+  "output_to": "Export to: {0}",
+  "directory_name": "Directory name",
+  "name_empty": "Directory can not be empty",
+  "clear_history": "Would you like to clear the history?"
 };

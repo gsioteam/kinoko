@@ -9,6 +9,7 @@ class CollectionData extends Base {
   }
 
   static Array all(String type) => Base.s_call(CollectionData, "all", argv: [type]);
+  static Array findBy(String type, String sort, int page, int count) => Base.s_call(CollectionData, "findBy", argv: [type, sort, page, count]);
 
   void save() => call("save");
   void remove() => call("remove");

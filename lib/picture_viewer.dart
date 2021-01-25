@@ -31,6 +31,7 @@ import 'package:flutter_picker/flutter_picker.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'utils/data_item_headers.dart';
+import 'dart:ui' as ui;
 
 String generateMd5(String input) {
   return md5.convert(utf8.encode(input)).toString();
@@ -39,6 +40,45 @@ String generateMd5(String input) {
 enum PictureFlipType {
   Next,
   Prev
+}
+
+class HorizontalIconPainter extends CustomPainter {
+
+  final Color textColor;
+
+  HorizontalIconPainter(this.textColor);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    drawIcon(canvas, Icons.border_vertical, Rect.fromLTWH(0, 0, size.width, size.height));
+    canvas.translate(size.width, 0);
+    canvas.scale(-1, 1);
+    double inset = size.width * 0.05;
+    drawIcon(canvas, Icons.arrow_right_alt_sharp, Rect.fromLTWH(inset, inset, size.width - inset * 2, size.height - inset * 2));
+  }
+
+  void drawIcon(Canvas canvas, IconData icon, Rect rect) {
+    var builder = ui.ParagraphBuilder(ui.ParagraphStyle(
+      fontFamily: icon.fontFamily,
+    ))
+      ..pushStyle(ui.TextStyle(
+        color: textColor,
+        fontSize: rect.width
+      ))
+      ..addText(String.fromCharCode(icon.codePoint));
+    var para = builder.build();
+    para.layout(ui.ParagraphConstraints(width: rect.width));
+    canvas.drawParagraph(para, Offset(rect.left, rect.top));
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    if (oldDelegate is HorizontalIconPainter) {
+      return oldDelegate.textColor != textColor;
+    } else {
+      return true;
+    }
+  }
 }
 
 // ignore: must_be_immutable
@@ -60,6 +100,12 @@ class PictureViewer extends StatefulWidget {
   }
 }
 
+enum FlipType {
+  Horizontal,
+  HorizontalReverse,
+  Vertical,
+}
+
 class _PictureViewerState extends State<PictureViewer> {
 
   Array data;
@@ -75,7 +121,7 @@ class _PictureViewerState extends State<PictureViewer> {
   Timer _timer;
   PictureCacheManager _cacheManager;
   PhotoController photoController;
-  bool isHorizontal = false;
+  FlipType flipType = FlipType.Horizontal;
   bool isLandscape = false;
 
   String _directionKey;
@@ -168,7 +214,7 @@ class _PictureViewerState extends State<PictureViewer> {
         DataItem item = (data[index] as DataItem);
         return PhotoInformation(item.picture, item.headers);
       },
-      isHorizontal: isHorizontal,
+      flipType: flipType,
       controller: photoController,
       cacheManager: cacheManager,
       appBarHeight: appBarDisplay ? 44 : 0,
@@ -204,6 +250,7 @@ class _PictureViewerState extends State<PictureViewer> {
   @override
   Widget build(BuildContext context) {
     MediaQueryData media = MediaQuery.of(context);
+    double size = IconTheme.of(context).size;
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -249,10 +296,10 @@ class _PictureViewerState extends State<PictureViewer> {
                     }
                   ),
                   Expanded(
-                      child: Text(
-                        widget.context.info_data.title,
-                        style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white),
-                      )
+                    child: Text(
+                      widget.context.info_data.title,
+                      style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white),
+                    )
                   ),
                   PopupMenuButton(
                     icon: Icon(Icons.more_vert, color: Colors.white,),
@@ -261,9 +308,9 @@ class _PictureViewerState extends State<PictureViewer> {
                         PopupMenuItem(
                           child: FlatButton(
                             onPressed: () {
-                              if (!isHorizontal) {
+                              if (flipType != FlipType.Horizontal) {
                                 setState(() {
-                                  isHorizontal = true;
+                                  flipType = FlipType.Horizontal;
                                 });
                                 KeyValue.set(_directionKey, "horizontal");
                                 Navigator.of(context).pop();
@@ -278,15 +325,45 @@ class _PictureViewerState extends State<PictureViewer> {
                                 ),
                               ],
                             ),
-                            textColor: isHorizontal ? Colors.blue : Colors.black87,
+                            textColor: flipType != FlipType.Horizontal ? Colors.blue : Colors.black87,
                           ),
                         ),
                         PopupMenuItem(
                           child: FlatButton(
                             onPressed: () {
-                              if (isHorizontal) {
+                              if (flipType != FlipType.HorizontalReverse) {
                                 setState(() {
-                                  isHorizontal = false;
+                                  flipType = FlipType.HorizontalReverse;
+                                });
+                                KeyValue.set(_directionKey, "horizontal_reverse");
+                                Navigator.of(context).pop();
+                              }
+                            },
+                            child: Row(
+                              children: <Widget>[
+                                Container(
+                                  width: size,
+                                  height: size,
+                                  child: CustomPaint(
+                                    painter: HorizontalIconPainter(flipType != FlipType.HorizontalReverse ? Colors.blue : Colors.black87),
+                                    size: Size(size, size),
+                                  ),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.only(left: 20),
+                                  child: Text(kt("horizontal_reverse")),
+                                ),
+                              ],
+                            ),
+                            textColor: flipType != FlipType.HorizontalReverse ? Colors.blue : Colors.black87,
+                          ),
+                        ),
+                        PopupMenuItem(
+                          child: FlatButton(
+                            onPressed: () {
+                              if (flipType != FlipType.Vertical) {
+                                setState(() {
+                                  flipType = FlipType.Vertical;
                                 });
                                 KeyValue.set(_directionKey, "vertical");
                                 Navigator.of(context).pop();
@@ -301,7 +378,7 @@ class _PictureViewerState extends State<PictureViewer> {
                                 ),
                               ],
                             ),
-                            textColor: !isHorizontal ? Colors.blue : Colors.black87,
+                            textColor: flipType != FlipType.Vertical ? Colors.blue : Colors.black87,
                           ),
                         ),
                         PopupMenuDivider(),
@@ -423,9 +500,9 @@ class _PictureViewerState extends State<PictureViewer> {
                   style: TextStyle(
                     shadows: [
                       Shadow(
-                          color: Colors.black26,
-                          blurRadius: 2,
-                          offset: Offset(1, 1)
+                        color: Colors.black26,
+                        blurRadius: 2,
+                        offset: Offset(1, 1)
                       )
                     ]
                   ),
@@ -493,7 +570,23 @@ class _PictureViewerState extends State<PictureViewer> {
     _deviceKey = "$device_key:$key";
     _pageKey = "$page_key:$cacheKey";
     String direction = KeyValue.get(_directionKey);
-    isHorizontal = direction != "vertical";
+    switch (direction) {
+      case 'vertical': {
+        flipType = FlipType.Vertical;
+        break;
+      }
+      case 'horizontal': {
+        flipType = FlipType.Horizontal;
+        break;
+      }
+      case 'horizontal_reverse': {
+        flipType = FlipType.HorizontalReverse;
+        break;
+      }
+      default: {
+        flipType = FlipType.Horizontal;
+      }
+    }
     String device = KeyValue.get(_deviceKey);
     isLandscape = device == "landscape";
     String pageStr = KeyValue.get(_pageKey);

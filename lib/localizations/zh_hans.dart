@@ -13,6 +13,7 @@ const Map words = {
   "add_project_failed": "未能添加，是否已添加？",
   "manage_projects": "辖书斋",
   "manga_home": "漫畫之家",
+  "history": "雨迹云踪",
   "favorites": "收藏夾",
   "chapters": "章节列表",
   "reverse_order": "逆序",
@@ -24,6 +25,7 @@ const Map words = {
   "undo": "取消",
   "search": "寻幽觅胜",
   "horizontal_flip": "水平翻頁",
+  "horizontal_reverse": "水平逆向",
   "vertical_flip": "垂直翻頁",
   "portrait": "竪屏",
   "landscape": "橫屏",
@@ -36,7 +38,7 @@ const Map words = {
   "bootstart": "启动中",
   "cancel": "放弃",
   "retry": "再试",
-  "settings": "詳設細定",
+  "settings": "详设细定",
   "framework": "Framework",
   "disclaimer": "免责声明",
   "disclaimer_content": """
@@ -55,5 +57,11 @@ Liah(Icon) https://liah0227.itch.io/
   "can_not_open": "不能开启 {0}",
   "no_main_project": "无项目",
   "remove_project": "移除项目",
-  "would_remove_project": "是否移除项目({0})?"
+  "would_remove_project": "是否移除项目({0})?",
+  "no_card_found": "没找到外部存储",
+  "no_permission": "没有访问权限",
+  "output_to": "导出到: {0}",
+  "directory_name": "文件夹",
+  "name_empty": "文件夹名不能为空",
+  "clear_history": "是否抹除历史?",
 };

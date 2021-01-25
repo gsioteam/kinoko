@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
 import 'package:kinoko/favorites_page.dart';
+import 'package:kinoko/history_page.dart';
 import 'package:kinoko/main_settings_page.dart';
 import 'package:kinoko/utils/image_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -627,15 +628,18 @@ class _HomePageState extends State<HomePage> {
         return CollectionsPage();
       }
       case 1: {
-        return FavoritesPage();
+        return HistoryPage();
       }
       case 2: {
-        return DownloadPage();
+        return FavoritesPage();
       }
       case 3: {
-        return LibrariesPage();
+        return DownloadPage();
       }
       case 4: {
+        return LibrariesPage();
+      }
+      case 5: {
         return MainSettingsPage();
       }
     }
@@ -679,29 +683,35 @@ class _HomePageState extends State<HomePage> {
             ),
             ListTile(
               selected: selected == 1,
-              leading: Icon(Icons.favorite),
-              title: Text(kt("favorites")),
+              leading: Icon(Icons.history),
+              title: Text(kt("history")),
               onTap: _onTap(1),
             ),
             ListTile(
               selected: selected == 2,
-              leading: Icon(Icons.file_download),
-              title: Text(kt("download_list")),
+              leading: Icon(Icons.favorite),
+              title: Text(kt("favorites")),
               onTap: _onTap(2),
             ),
-            Divider(),
             ListTile(
               selected: selected == 3,
-              leading: Icon(Icons.account_balance),
-              title: Text(kt("manage_projects")),
+              leading: Icon(Icons.file_download),
+              title: Text(kt("download_list")),
               onTap: _onTap(3),
             ),
             Divider(),
             ListTile(
               selected: selected == 4,
+              leading: Icon(Icons.account_balance),
+              title: Text(kt("manage_projects")),
+              onTap: _onTap(4),
+            ),
+            Divider(),
+            ListTile(
+              selected: selected == 5,
               leading: Icon(Icons.settings),
               title: Text(kt("settings")),
-              onTap: _onTap(4),
+              onTap: _onTap(5),
             ),
           ],
         ),
@@ -720,6 +730,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    selected = hasMainProject() ? 0 : 3;
+    selected = hasMainProject() ? 0 : 4;
   }
 }

@@ -17,3 +17,5 @@ const String page_key = "page";
 const String disclaimer_key = "disclaimer";
 
 const String language_key = "language";
+
+const String history_key = "history";

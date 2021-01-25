@@ -1,4 +1,6 @@
 
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -11,8 +13,14 @@ import 'picture_viewer.dart';
 import 'utils/download_manager.dart';
 import 'localizations/localizations.dart';
 import 'widgets/better_snack_bar.dart';
+import 'package:folder_picker/folder_picker.dart';
 
 import 'widgets/home_widget.dart';
+import 'package:path_provider_ex/path_provider_ex.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:permission/permission.dart';
+import 'dart:math' as math;
+import 'package:path/path.dart' as path;
 
 class BookData {
   BookInfo bookInfo;
@@ -68,7 +76,114 @@ class _ChapterCellState extends State<ChapterCell> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Container(
-            child: queueItem.state == DownloadState.AllComplete ? null : (
+            child: queueItem.state == DownloadState.AllComplete ?
+            IconButton(
+              icon: Icon(Icons.save),
+              onPressed: () async {
+                var status = (await Permission.getPermissionsStatus([PermissionName.Storage])).first?.permissionStatus;
+                switch (status) {
+                  case PermissionStatus.allow:
+                    break;
+                  case PermissionStatus.notAgain: {
+                    Fluttertoast.showToast(
+                        msg: kt("no_permission")
+                    );
+                    return;
+                  }
+                  default: {
+                    var status = await Permission.requestSinglePermission(PermissionName.Storage);
+                    if (status != PermissionStatus.allow) {
+                      Fluttertoast.showToast(
+                          msg: kt("no_permission")
+                      );
+                      return;
+                    }
+                  }
+                }
+                var lists = await PathProviderEx.getStorageInfo();
+                var info = lists.last;
+                if (info != null) {
+                  Navigator.of(context).push<FolderPickerPage>(MaterialPageRoute(
+                      builder: (context) {
+                        return FolderPickerPage(
+                          action: (context, folder) async {
+                            DownloadQueueItem queueItem = widget.item;
+                            DataItem item = queueItem.item.control();
+                            String name = "${queueItem.info.title}";
+                            if (item.title.isNotEmpty) {
+                              name = name + "(${item.title})";
+                            }
+                            TextEditingController controller = TextEditingController(text: name);
+                            name = await showDialog<String>(
+                                context: context,
+                              builder: (context) {
+                                var theme = Theme.of(context);
+                                return AlertDialog(
+                                  title: Text(kt("directory_name")),
+                                  content: TextField(
+                                    controller: controller,
+                                    autofocus: true,
+                                  ),
+                                  actions: [
+                                    MaterialButton(
+                                      child: Text(kt("ok"), style: theme.textTheme.bodyText1.copyWith(color: theme.primaryColor),),
+                                      onPressed: () {
+                                        String text = controller.value.text;
+                                        if (text.isNotEmpty) {
+                                          Navigator.of(context).pop(text);
+                                        } else {
+                                          Fluttertoast.showToast(msg: kt("name_empty"), toastLength: Toast.LENGTH_SHORT);
+                                        }
+                                      }
+                                    )
+                                  ],
+                                );
+                              }
+                            );
+                            name = name.replaceAll("/", " ");
+                            Directory dir = Directory(folder.path + "/$name");
+                            if (!await dir.exists()) {
+                              dir.create();
+                            }
+
+                            var subtimes = item.getSubItems();
+                            List<String> urls = subtimes.map<String>((element) => element.picture).toList();
+                            int len = math.max(urls.length.toString().length, 4);
+
+                            for (int i = 0, t = urls.length; i < t; ++i) {
+                              var url = urls[i];
+                              var fileInfo = await queueItem.cacheManager.getFileFromCache(url);
+                              if (fileInfo != null) {
+                                String index = i.toString();
+                                for (int j = index.length; j < len; ++j) {
+                                  index = "0" + index;
+                                }
+
+                                await fileInfo.file.copy("${dir.path}/p_$index.${path.extension(url)}");
+                              } else {
+                                print("No output $url");
+                              }
+                            }
+                            item.release();
+                            Fluttertoast.showToast(
+                                msg: kt("output_to").replaceFirst("{0}", dir.path)
+                            );
+                            Navigator.of(context).pop();
+                          },
+                          rootDirectory: Directory(info.rootDir)
+                        );
+                      }
+                  ));
+                } else {
+                  Fluttertoast.showToast(
+                    msg: kt("no_card_found"),
+                    toastLength: Toast.LENGTH_LONG
+                  );
+                }
+              }
+            )
+                :
+            (
                 queueItem.downloading ?
                 IconButton(
                     icon: Icon(Icons.pause),
@@ -213,7 +328,7 @@ class _DownloadPageState extends State<DownloadPage> {
       case _CellType.Chapter: {
         DownloadQueueItem queueItem = cdata.data;
         DataItem item = queueItem.item;
-        Project project = Project.allocate(item.projectKey).control();
+        Project project = Project.allocate(item.projectKey);
         Context ctx = project.createChapterContext(item).control();
         await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
           return PictureViewer(

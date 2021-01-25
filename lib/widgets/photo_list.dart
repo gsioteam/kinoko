@@ -6,44 +6,85 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:gesture_zoom_box/gesture_zoom_box.dart';
-import 'package:glib/core/core.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:kinoko/picture_viewer.dart';
 import 'dart:math' as math;
 import 'over_drag.dart';
 import 'dart:ui' as ui;
+import 'package:vector_math/vector_math_64.dart' as m64;
 
 enum BoundType {
   Start,
   End
 }
 
+class _PageRange {
+  double start = 0;
+  double get length => 1;
+  double end = 1;
+  bool reverse = false;
+
+  static int ANIMATE = 1;
+  static int SET_START = 2;
+
+  bool arriveStart() => start <= 0;
+  bool arriveEnd() =>  start + length >= end;
+
+  List<void Function(double, int)> listeners = List();
+
+  void addListener(void Function(double, int) listener) {
+    listeners.add(listener);
+  }
+
+  void removeListener(void Function(double, int) listener) {
+    listeners.remove(listener);
+  }
+
+  void onOffset(double offset, int state) {
+    for (var ls in listeners) {
+      ls(offset, state);
+    }
+  }
+
+}
+
 typedef WidgetBuilder = Widget Function(BuildContext);
 
 class PhotoImage extends StatefulWidget {
   final ImageProvider imageProvider;
-  final double width;
+  final Size size;
+  final EdgeInsets padding;
   final WidgetBuilder loadingWidget;
   final WidgetBuilder errorWidget;
+  final _PageRange range;
+  final FlipType flipType;
+  final bool initFromEnd;
 
   PhotoImage({
     @required this.imageProvider,
-    this.width,
+    this.size,
+    this.padding,
     this.loadingWidget,
-    this.errorWidget
+    this.errorWidget,
+    @required this.range,
+    this.flipType,
+    this.initFromEnd = false
   });
 
   @override
   State<StatefulWidget> createState() => PhotoImageState();
 }
 
-class PhotoImageState extends State<PhotoImage> {
+class PhotoImageState extends State<PhotoImage> with TickerProviderStateMixin {
 
   ImageInfo _imageInfo;
   ImageStreamListener _imageStreamListener;
   ImageStream _imageStream;
   bool _hasError = false;
+
+  AnimationController controller;
+
+  Duration _duration = const Duration(milliseconds: 600);
 
   PhotoImageState() {
     _imageStreamListener = ImageStreamListener(
@@ -52,29 +93,212 @@ class PhotoImageState extends State<PhotoImage> {
     );
   }
 
+  void onOffset(double offset, int state) {
+    var range = widget.range;
+    double value;
+    if (state & _PageRange.SET_START == 0) {
+      switch (widget.flipType) {
+        case FlipType.Horizontal: {
+          double maxWidth = widget.size.width - widget.padding.left - widget.padding.right;
+          value = math.max(0, math.min(1, controller.value - (offset / maxWidth) / (range.end - range.length)));
+          break;
+        }
+        case FlipType.HorizontalReverse: {
+          double maxWidth = widget.size.width - widget.padding.left - widget.padding.right;
+          value = math.max(0, math.min(1, controller.value + (offset / maxWidth) / (range.end - range.length)));
+          break;
+        }
+        case FlipType.Vertical: {
+          double maxHeight = widget.size.height - widget.padding.top - widget.padding.bottom;
+          value = math.max(0, math.min(1, controller.value - (offset / maxHeight) / (range.end - range.length)));
+          break;
+        }
+      }
+    } else {
+      value = offset / (range.end - range.length);
+    }
+    if ((state & _PageRange.ANIMATE) != 0) {
+      controller.animateTo(value, duration: _duration, curve: Curves.easeOutCubic);
+    } else {
+      controller.value = value;
+    }
+  }
+
+  Offset _translation = Offset.zero;
+  double _scale = 1;
+
+  Offset _oldOffset = Offset.zero;
+  double _oldScale = 1;
+
+  Rect _imageRect;
+  Size _imageSize;
+
+  void _onScaleStart(ScaleStartDetails details) {
+    _oldOffset = details.focalPoint;
+    _oldScale = 1;
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    if (_imageRect != null) {
+      setState(() {
+        Offset offset = details.focalPoint - _oldOffset;
+        _translation += offset;
+        _oldOffset = details.focalPoint;
+        var disScale = details.scale / _oldScale;
+        var oldScale = _scale;
+        _scale *= disScale;
+        if (_scale < 1) {
+          _scale = 1;
+          disScale = _scale / oldScale;
+        } else if (_scale > 4) {
+          _scale = 4;
+          disScale = _scale / oldScale;
+        }
+        _oldScale = details.scale;
+
+        var offSize = _imageRect.size * (disScale - 1);
+        var dx = -_translation.dx, dy = -_translation.dy;
+        if (widget.flipType == FlipType.Vertical) {
+          dy += _imageRect.height * _oldScale * widget.range.start;
+        } else {
+          dx += _imageRect.width * _oldScale * widget.range.start;
+        }
+
+        dx += _imageSize.width / 2 * _oldScale;
+        dy += _imageSize.height / 2 * _oldScale;
+
+        var cSize = _imageRect.size * _oldScale;
+        _translation -= Offset(offSize.width * dx / cSize.width, offSize.height * dy / cSize.height);
+        clampImage();
+      });
+    }
+  }
+
+  void clampImage() {
+    double nx = _translation.dx, ny = _translation.dy;
+    if (nx > 0) {
+      nx = 0;
+    }
+    if (ny > 0) {
+      ny = 0;
+    }
+    var size = _imageRect.size * _scale;
+    if (nx < _imageSize.width - size.width) {
+      nx = _imageSize.width - size.width;
+    }
+    if (ny < _imageSize.height - size.height) {
+      ny = _imageSize.height - size.height;
+    }
+    _translation = Offset(nx, ny);
+  }
+
+  void _onScaleEnd(ScaleEndDetails details) {
+    if (_imageRect != null) {
+
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_hasError) {
       return Container(
-        width: widget.width,
         child: Center(
           child: widget.errorWidget?.call(context),
         ),
       );
     } else {
       ui.Image image = _imageInfo?.image;
-      double width;
+      double width, height;
       if (image != null) {
-        if (image.width / image.height < 1) {
-          width = widget.width;
+        double left = widget.padding.left, top = widget.padding.top,
+            maxWidth = widget.size.width - widget.padding.left - widget.padding.right,
+            maxHeight = widget.size.height - widget.padding.top - widget.padding.bottom;
+        switch (widget.flipType) {
+          case FlipType.Horizontal:
+          case FlipType.HorizontalReverse: {
+            if (image.width / image.height < 1) {
+              width = maxWidth;
+              height = maxWidth * image.height / image.width;
+              widget.range.end = 1;
+              widget.range.start = 0;
+            } else {
+              height = maxHeight - 60;
+              width = height * image.width / image.height;
+              widget.range.end = width / maxWidth;
+              widget.range.start = 0;
+            }
+            widget.range.reverse = widget.flipType == FlipType.HorizontalReverse;
+            break;
+          }
+          case FlipType.Vertical: {
+            width = maxWidth;
+            height = maxWidth * image.height / image.width;
+            widget.range.end = math.max(1, height / maxHeight);
+            widget.range.reverse = false;
+            break;
+          }
         }
-        return RawImage(
-          image: _imageInfo?.image,
-          width: width,
+
+        if (maxWidth > width) {
+          left = (maxWidth - width) / 2 + widget.padding.left;
+        }
+        if (maxHeight > height) {
+          top = (maxHeight - height) / 2 + widget.padding.top;
+        }
+
+        _imageRect = Rect.fromLTWH(left, top, width, height);
+        _imageSize = Size(widget.size.width - left * 2, widget.size.height - top * 2);
+
+        return GestureDetector(
+          onScaleStart: _onScaleStart,
+          onScaleUpdate: _onScaleUpdate,
+          onScaleEnd: _onScaleEnd,
+          child: AnimatedBuilder(
+            animation: controller,
+            builder: (context, child) {
+              var range = widget.range;
+              range.start = controller.value * (range.end - range.length);
+              double tLeft = left, tTop = top;
+              switch (widget.flipType) {
+                case FlipType.Horizontal: {
+                  tLeft -= range.start * maxWidth;
+                  break;
+                }
+                case FlipType.HorizontalReverse: {
+                  tLeft -= (range.end - range.length - range.start) * maxWidth;
+                  break;
+                }
+                case FlipType.Vertical: {
+                  tTop -= range.start * maxHeight;
+                  break;
+                }
+              }
+              return Stack(
+                children: [
+                  Positioned(
+                      left: tLeft,
+                      top: tTop,
+                      width: width,
+                      height: height,
+                      child: Transform(
+                        transform: Matrix4.translation(m64.Vector3(_translation.dx, _translation.dy, 0))
+                          ..scale(_scale, _scale),
+                        child: child,
+                      )
+                  )
+                ],
+              );
+            },
+            child: RawImage(
+              image: _imageInfo?.image,
+              width: width,
+            ),
+          ),
         );
+
       } else {
         return Container(
-          width: widget.width,
+          width: widget.size.width,
           child: Center(
             child: widget.loadingWidget?.call(context),
           ),
@@ -101,9 +325,23 @@ class PhotoImageState extends State<PhotoImage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    widget.range.addListener(onOffset);
+    controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300)
+    );
+
+    controller.value = widget.initFromEnd ? 1 : 0;
+  }
+
+  @override
   void dispose() {
+    controller.dispose();
     super.dispose();
     _imageStream?.removeListener(_imageStreamListener);
+    widget.range.removeListener(onOffset);
   }
 
   @override
@@ -111,6 +349,10 @@ class PhotoImageState extends State<PhotoImage> {
     super.didUpdateWidget(oldWidget);
     if (widget.imageProvider != oldWidget.imageProvider) {
       _updateImage();
+    }
+    if (widget.range != oldWidget.range) {
+      oldWidget.range.removeListener(onOffset);
+      widget.range.addListener(onOffset);
     }
   }
 
@@ -125,16 +367,54 @@ class PhotoImageState extends State<PhotoImage> {
   }
 }
 
+class _PageScrollPhysics extends PageScrollPhysics {
+  final PhotoController controller;
+  _PageScrollPhysics({ ScrollPhysics parent, this.controller }) : super(parent: parent);
+
+  @override
+  _PageScrollPhysics applyTo(ScrollPhysics ancestor) {
+    return _PageScrollPhysics(parent: buildParent(ancestor), controller: controller);
+  }
+
+  @override
+  double applyPhysicsToUserOffset(ScrollMetrics position, double offset) {
+    var page = controller.pageController.page;
+    var round = page.round();
+    var range = controller.getPageRange(round);
+    if (offset <= 0 && (page < round || (!range.reverse && range.arriveEnd() || range.reverse && range.arriveStart()))) {
+      return super.applyPhysicsToUserOffset(position, offset);
+    } else if (offset > 0 && (page > round || (!range.reverse && range.arriveStart() || range.reverse && range.arriveEnd()))) {
+      return super.applyPhysicsToUserOffset(position, offset);
+    } else {
+      range.onOffset(offset, 0);
+      return 0;
+    }
+  }
+
+  @override
+  Simulation createBallisticSimulation(ScrollMetrics position, double velocity) {
+    var range = controller.getPageRange(controller.pageController.page.round());
+    if (velocity > 0 && !range.arriveEnd()) {
+      range.onOffset(-velocity / 10, _PageRange.ANIMATE);
+      velocity = 0;
+    } else if (velocity < 0 && !range.arriveStart()) {
+      range.onOffset(-velocity / 10, _PageRange.ANIMATE);
+      velocity = 0;
+    }
+    return super.createBallisticSimulation(position, velocity);
+  }
+}
+
 class PhotoController {
   int index;
   PageController _pageController;
-  ItemScrollController _scrollController;
-  ItemPositionsListener _positionsListener;
+  _PageScrollPhysics _scrollPhysics;
   void Function(int) onPage;
   _PhotoListState state;
   Key key = GlobalKey();
   void Function(BoundType) onOverBound;
   bool listen = true;
+  Map<int, _PageRange> _ranges = new Map();
 
   static const Duration _duration = const Duration(milliseconds: 300);
 
@@ -153,76 +433,75 @@ class PhotoController {
     }
   }
 
-  onListScroll() {
-    if (!listen) return;
-    int idx;
-    Iterable<ItemPosition> positions = _positionsListener.itemPositions.value;
-    for (ItemPosition pos in positions) {
-      if (pos.itemLeadingEdge <= 0.5 && pos.itemTrailingEdge > 0.5) {
-        idx = pos.index;
-        break;
-      }
-    }
-    if (idx == null) {
-      List<ItemPosition> list = positions.toList();
-      if (list.length > 0)
-        idx = list[list.length ~/ 2].index;
-    }
-    if (idx != null && index != idx) {
-      index = idx;
-      this.onPage?.call(index);
-    }
-  }
-
   void dispose() {
     _pageController?.dispose();
   }
 
   void next() {
     if (state != null && state.widget != null) {
-      var idx = index;
-      double alignment = 0;
-      for (var pos in _positionsListener.itemPositions.value) {
-        if (pos.index == index) {
-          if (pos.itemTrailingEdge < 1.05) {
-            if (index >= state.widget.itemCount - 1) {
-              onOverBound?.call(BoundType.End);
-              return;
-            }
-            idx = index+1;
-            alignment = state.widget.isHorizontal ? 0 : 0.1;
-          } else {
-            double des = math.min(pos.itemTrailingEdge - 1, 1);
-            alignment = pos.itemLeadingEdge - des;
-          }
+      // var idx = index;
+      // double alignment = 0;
+      // for (var pos in _positionsListener.itemPositions.value) {
+      //   if (pos.index == index) {
+      //     if (pos.itemTrailingEdge < 1.05) {
+      //       if (index >= state.widget.itemCount - 1) {
+      //         onOverBound?.call(BoundType.End);
+      //         return;
+      //       }
+      //       idx = index+1;
+      //       alignment = state.widget.isHorizontal ? 0 : 0.1;
+      //     } else {
+      //       double des = math.min(pos.itemTrailingEdge - 1, 1);
+      //       alignment = pos.itemLeadingEdge - des;
+      //     }
+      //   }
+      // }
+      // index = idx;
+      // scrollController.scrollTo(index: index, alignment: alignment, duration: _duration, curve: Curves.easeOutCubic);
+      _PageRange range = getPageRange(pageController.page.round());
+      if (range.arriveEnd()) {
+        if (index >= state.widget.itemCount - 1) {
+          onOverBound?.call(BoundType.End);
+        } else {
+          _pageController.nextPage(duration: _duration, curve: Curves.easeInOutCubic);
         }
+      } else {
+        range.onOffset(math.min(range.start + range.length, range.end - range.length), _PageRange.ANIMATE | _PageRange.SET_START);
       }
-      index = idx;
-      scrollController.scrollTo(index: index, alignment: alignment, duration: _duration, curve: Curves.easeOutCubic);
     }
   }
 
   void prev() {
     if (state != null && state.widget != null) {
-      var idx = index;
-      double alignment = 0;
-      for (var pos in _positionsListener.itemPositions.value) {
-        if (pos.index == index) {
-          if (pos.itemLeadingEdge > -0.05) {
-            if (index <= 0) {
-              onOverBound?.call(BoundType.Start);
-              return;
-            }
-            idx = index;
-            alignment = state.widget.isHorizontal ? 1 : 0.9;
-          } else {
-            double des = math.min(-pos.itemLeadingEdge, 1);
-            alignment = pos.itemLeadingEdge + des;
-          }
+      // var idx = index;
+      // double alignment = 0;
+      // for (var pos in _positionsListener.itemPositions.value) {
+      //   if (pos.index == index) {
+      //     if (pos.itemLeadingEdge > -0.05) {
+      //       if (index <= 0) {
+      //         onOverBound?.call(BoundType.Start);
+      //         return;
+      //       }
+      //       idx = index;
+      //       alignment = state.widget.isHorizontal ? 1 : 0.9;
+      //     } else {
+      //       double des = math.min(-pos.itemLeadingEdge, 1);
+      //       alignment = pos.itemLeadingEdge + des;
+      //     }
+      //   }
+      // }
+      // index = idx;
+      // scrollController.scrollTo(index: index, alignment: alignment, duration: _duration, curve: Curves.easeOutCubic);
+      _PageRange range = getPageRange(pageController.page.round());
+      if (range.arriveStart()) {
+        if (index <= 0) {
+          onOverBound?.call(BoundType.Start);
+        } else {
+          _pageController.previousPage(duration: _duration, curve: Curves.easeInOutCubic);
         }
+      } else {
+        range.onOffset(math.max(0, range.start - range.length), _PageRange.ANIMATE | _PageRange.SET_START);
       }
-      index = idx;
-      scrollController.scrollTo(index: index, alignment: alignment, duration: _duration, curve: Curves.easeOutCubic);
     }
   }
 
@@ -231,10 +510,11 @@ class PhotoController {
       this.index = index;
       listen = false;
       // if (state.widget.isHorizontal) {
-      //   pageController.jumpToPage(index);
+        pageController.jumpToPage(index);
       // } else {
-        scrollController.jumpTo(index: this.index, alignment: state.widget.isHorizontal ? 0 : 0.1);
+      //   scrollController.jumpTo(index: this.index, alignment: state.widget.isHorizontal ? 0 : 0.1);
       // }
+
       listen = true;
     }
   }
@@ -244,9 +524,9 @@ class PhotoController {
       this.index = index;
       listen = false;
       // if (state.widget.isHorizontal) {
-      //   pageController.animateToPage(index, duration: Duration(milliseconds: 400), curve: Curves.easeInOutCubic);
+        pageController.animateToPage(index, duration: _duration, curve: Curves.easeInOutCubic);
       // } else {
-        scrollController.scrollTo(index: this.index, alignment: state.widget.isHorizontal ? 0 : 0.1, duration: Duration(milliseconds: 400), curve: Curves.easeInOutCubic);
+      //   scrollController.scrollTo(index: this.index, alignment: state.widget.isHorizontal ? 0 : 0.1, duration: Duration(milliseconds: 400), curve: Curves.easeInOutCubic);
       // }
       listen = true;
     }
@@ -265,34 +545,35 @@ class PhotoController {
       _pageController.dispose();
       _pageController = null;
     }
-    _scrollController = null;
-    if (_positionsListener != null) {
-      _positionsListener.itemPositions.removeListener(onListScroll);
-      _positionsListener = null;
-    }
+    _ranges.forEach((key, value) {
+      value.reverse = false;
+      value.start = 0;
+      value.end = 1;
+    });
   }
 
   PageController get pageController {
-    if (_pageController == null && state?.widget?.isHorizontal == true) {
+    if (_pageController == null) {
       _pageController = PageController(initialPage: index);
       _pageController.addListener(onPageScroll);
     }
     return _pageController;
   }
 
-  ItemScrollController get scrollController {
-    if (_scrollController == null) {
-      _scrollController = ItemScrollController();
+  _PageScrollPhysics get scrollPhysics {
+    if (_scrollPhysics == null) {
+      _scrollPhysics = _PageScrollPhysics(controller: this);
     }
-    return _scrollController;
+    return _scrollPhysics;
   }
 
-  ItemPositionsListener get positionsListener {
-    if (_positionsListener == null) {
-      _positionsListener = ItemPositionsListener.create();
-      _positionsListener.itemPositions.addListener(onListScroll);
+  _PageRange getPageRange(int index) {
+    if (_ranges.containsKey(index)) {
+      return _ranges[index];
+    } else {
+      _ranges[index] = _PageRange();
+      return _ranges[index];
     }
-    return _positionsListener;
   }
 }
 
@@ -304,7 +585,7 @@ class PhotoInformation {
 }
 
 class PhotoList extends StatefulWidget {
-  final bool isHorizontal;
+  final FlipType flipType;
   final int itemCount;
   final PhotoInformation Function(int index) imageUrlProvider;
   final void Function(int index) onPageChanged;
@@ -314,7 +595,7 @@ class PhotoList extends StatefulWidget {
 
   PhotoList({
     Key key,
-    this.isHorizontal = true,
+    this.flipType = FlipType.Horizontal,
     @required this.imageUrlProvider,
     this.onPageChanged,
     this.cacheManager,
@@ -341,172 +622,185 @@ class _PhotoListState extends State<PhotoList> {
   List<_PhotoInfo> photos = [];
 
   Widget buildScrollable(BuildContext context) {
-    if (widget.isHorizontal) {
-      var media = MediaQuery.of(context);
-      var padding = media.padding;
-      return ScrollablePositionedList.builder(
-        padding: EdgeInsets.only(
-          top: padding.top + 44,
-          bottom: padding.bottom
-        ),
-        scrollDirection: Axis.horizontal,
-        itemCount: widget.itemCount,
-        initialScrollIndex: widget.controller.index,
-        itemScrollController: widget.controller.scrollController,
-        itemPositionsListener: widget.controller.positionsListener,
-        itemBuilder: (context, index) {
-          PhotoInformation photoInformation = widget.imageUrlProvider(index);
-          return Container(
-            constraints: BoxConstraints(
-              minWidth: media.size.width
-            ),
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              color: Colors.black
-            ),
-            padding: EdgeInsets.only(top: 2, bottom: 2),
-            child: Center(
-              child: GestureZoomBox(
-                maxScale: 5.0,
-                doubleTapScale: 2.0,
-                child: PhotoImage(
-                  imageProvider: CachedNetworkImageProvider(
-                    photoInformation.url,
-                    cacheManager: widget.cacheManager,
-                    headers: photoInformation.headers,
-                  ),
-                  width: media.size.width,
-                  loadingWidget: (context) {
-                    return SpinKitRing(
-                      lineWidth: 4,
-                      size: 36,
-                      color: Colors.white,
-                    );
-                  },
-                  errorWidget: (context) {
-                    return Icon(Icons.broken_image);
-                  },
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    } else {
-      return ScrollablePositionedList.builder(
-        padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top + 44,
-        ),
-        initialScrollIndex: widget.controller.index,
-        initialAlignment: 0.1,
-        itemScrollController: widget.controller.scrollController,
-        itemPositionsListener: widget.controller.positionsListener,
-        itemBuilder: (context, index) {
-          PhotoInformation photoInformation = widget.imageUrlProvider(index);
-          return Container(
-            constraints: BoxConstraints(
-              minHeight: 560
-            ),
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              color: Colors.black
-            ),
-            padding: EdgeInsets.only(top: 2, bottom: 2),
-            child: Center(
-              child: GestureZoomBox(
-                maxScale: 5.0,
-                doubleTapScale: 2.0,
-                child: CachedNetworkImage(
-                  imageUrl: photoInformation.url,
-                  httpHeaders: photoInformation.headers,
-                  cacheManager: widget.cacheManager,
-                  fit: BoxFit.fitWidth,
-                  placeholder: (context, url) {
-                    return SpinKitRing(
-                      lineWidth: 4,
-                      size: 36,
-                      color: Colors.white,
-                    );
-                  },
-                  errorWidget: (context, url, error) {
-                    return Icon(Icons.broken_image);
-                  },
-                ),
-              ),
-            ),
-          );
-        },
-        itemCount: widget.itemCount,
-      );
-    }
-  }
+    var media = MediaQuery.of(context);
+    var padding = media.padding;
 
-  bool isDrag = false;
-  bool _onScroll(ScrollNotification notification) {
-    if (notification is ScrollUpdateNotification) {
-      if (widget.isHorizontal) {
-        if (notification.dragDetails != null) isDrag = true;
-      }
-    } else if (notification is ScrollEndNotification) {
-      if (widget.isHorizontal) {
-        if (notification.dragDetails != null) isDrag = true;
-        if (!isDrag) return false;
-        isDrag = false;
-        ItemPositionsListener positionsListener = widget.controller.positionsListener;
-        for (var pos in positionsListener.itemPositions.value) {
-          if (pos.index == widget.controller.index) {
-            if (pos.itemLeadingEdge > 0) {
-              Timer(Duration(milliseconds: 0), () {
-                widget.controller.scrollController.scrollTo(
-                    index: pos.index,
-                    duration: Duration(milliseconds: 200),
-                    alignment: 0
-                );
-              });
-            } else if (pos.itemTrailingEdge < 1) {
-              Timer(Duration(milliseconds: 0), () {
-                print("Drag end");
-                widget.controller.scrollController.scrollTo(
-                    index: pos.index,
-                    duration: Duration(milliseconds: 200),
-                    alignment: pos.itemLeadingEdge + (1 - pos.itemTrailingEdge)
-                );
-              });
-            }
-          }
+    AxisDirection axisDirection = widget.flipType != FlipType.Vertical ? AxisDirection.right : AxisDirection.down;
+    return Scrollable(
+        axisDirection: axisDirection,
+        controller: widget.controller.pageController,
+        physics: widget.controller.scrollPhysics,
+        viewportBuilder: (context, position) {
+          return Viewport(
+            offset: position,
+            axisDirection: axisDirection,
+            cacheExtent: 0.1,
+            slivers: [
+              SliverFillViewport(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    PhotoInformation photoInformation = widget.imageUrlProvider(index);
+                    return Container(
+                      clipBehavior: Clip.hardEdge,
+                      decoration: BoxDecoration(
+                        color: Colors.black
+                      ),
+                      child: Center(
+                        child: PhotoImage(
+                          imageProvider: CachedNetworkImageProvider(
+                            photoInformation.url,
+                            cacheManager: widget.cacheManager,
+                            headers: photoInformation.headers,
+                          ),
+                          size: media.size,
+                          flipType: widget.flipType,
+                          padding: padding.copyWith(
+                            top: padding.top + 44
+                          ),
+                          initFromEnd: index < widget.controller.index,
+                          loadingWidget: (context) {
+                            return SpinKitRing(
+                              lineWidth: 4,
+                              size: 36,
+                              color: Colors.white,
+                            );
+                          },
+                          errorWidget: (context) {
+                            return Icon(Icons.broken_image);
+                          },
+                          range: widget.controller.getPageRange(index),
+                        ),
+                      ),
+                    );
+                  },
+                    childCount: widget.itemCount
+                )
+              ),
+            ],
+          );
         }
-      }
-    }
-    return false;
+    );
+    // if (widget.isHorizontal) {
+    //   return ScrollablePositionedList.builder(
+    //     padding: EdgeInsets.only(
+    //       top: padding.top + 44,
+    //       bottom: padding.bottom
+    //     ),
+    //     scrollDirection: Axis.horizontal,
+    //     itemCount: widget.itemCount,
+    //     initialScrollIndex: widget.controller.index,
+    //     itemScrollController: widget.controller.scrollController,
+    //     itemPositionsListener: widget.controller.positionsListener,
+    //     itemBuilder: (context, index) {
+    //       PhotoInformation photoInformation = widget.imageUrlProvider(index);
+    //       return Container(
+    //         constraints: BoxConstraints(
+    //           minWidth: media.size.width
+    //         ),
+    //         clipBehavior: Clip.hardEdge,
+    //         decoration: BoxDecoration(
+    //           color: Colors.black
+    //         ),
+    //         padding: EdgeInsets.only(top: 2, bottom: 2),
+    //         child: Center(
+    //           child: GestureZoomBox(
+    //             maxScale: 5.0,
+    //             doubleTapScale: 2.0,
+    //             child: PhotoImage(
+    //               imageProvider: CachedNetworkImageProvider(
+    //                 photoInformation.url,
+    //                 cacheManager: widget.cacheManager,
+    //                 headers: photoInformation.headers,
+    //               ),
+    //               width: media.size.width,
+    //               loadingWidget: (context) {
+    //                 return SpinKitRing(
+    //                   lineWidth: 4,
+    //                   size: 36,
+    //                   color: Colors.white,
+    //                 );
+    //               },
+    //               errorWidget: (context) {
+    //                 return Icon(Icons.broken_image);
+    //               },
+    //             ),
+    //           ),
+    //         ),
+    //       );
+    //     },
+    //   );
+    // } else {
+    //   return ScrollablePositionedList.builder(
+    //     padding: EdgeInsets.only(
+    //         top: MediaQuery.of(context).padding.top + 44,
+    //     ),
+    //     initialScrollIndex: widget.controller.index,
+    //     initialAlignment: 0.1,
+    //     itemScrollController: widget.controller.scrollController,
+    //     itemPositionsListener: widget.controller.positionsListener,
+    //     itemBuilder: (context, index) {
+    //       PhotoInformation photoInformation = widget.imageUrlProvider(index);
+    //       return Container(
+    //         constraints: BoxConstraints(
+    //           minHeight: 560
+    //         ),
+    //         clipBehavior: Clip.hardEdge,
+    //         decoration: BoxDecoration(
+    //           color: Colors.black
+    //         ),
+    //         padding: EdgeInsets.only(top: 2, bottom: 2),
+    //         child: Center(
+    //           child: GestureZoomBox(
+    //             maxScale: 5.0,
+    //             doubleTapScale: 2.0,
+    //             child: CachedNetworkImage(
+    //               imageUrl: photoInformation.url,
+    //               httpHeaders: photoInformation.headers,
+    //               cacheManager: widget.cacheManager,
+    //               fit: BoxFit.fitWidth,
+    //               placeholder: (context, url) {
+    //                 return SpinKitRing(
+    //                   lineWidth: 4,
+    //                   size: 36,
+    //                   color: Colors.white,
+    //                 );
+    //               },
+    //               errorWidget: (context, url, error) {
+    //                 return Icon(Icons.broken_image);
+    //               },
+    //             ),
+    //           ),
+    //         ),
+    //       );
+    //     },
+    //     itemCount: widget.itemCount,
+    //   );
+    // }
   }
 
   @override
   Widget build(BuildContext context) {
-    return NotificationListener<ScrollNotification>(
-      child: OverDrag(
-        child: buildScrollable(context),
-        left: widget.isHorizontal,
-        right: widget.isHorizontal,
-        up: !widget.isHorizontal,
-        down: !widget.isHorizontal,
-        iconInsets: EdgeInsets.only(top: widget.appBarHeight),
-        onOverDrag: (OverDragType type) {
-          switch (type) {
-            case OverDragType.Up:
-            case OverDragType.Left: {
-              widget.controller?.onOverBound?.call(BoundType.Start);
-              break;
-            }
-            case OverDragType.Down:
-            case OverDragType.Right: {
-              widget.controller?.onOverBound?.call(BoundType.End);
-              break;
-            }
-            default: break;
+    return OverDrag(
+      child: buildScrollable(context),
+      left: widget.flipType != FlipType.Vertical,
+      right: widget.flipType != FlipType.Vertical,
+      up: widget.flipType == FlipType.Vertical,
+      down: widget.flipType == FlipType.Vertical,
+      iconInsets: EdgeInsets.only(top: widget.appBarHeight),
+      onOverDrag: (OverDragType type) {
+        switch (type) {
+          case OverDragType.Up:
+          case OverDragType.Left: {
+            widget.controller?.onOverBound?.call(BoundType.Start);
+            break;
           }
-        },
-      ),
-      onNotification: _onScroll,
+          case OverDragType.Down:
+          case OverDragType.Right: {
+            widget.controller?.onOverBound?.call(BoundType.End);
+            break;
+          }
+          default: break;
+        }
+      },
     );
   }
 
@@ -516,7 +810,7 @@ class _PhotoListState extends State<PhotoList> {
       oldWidget.controller._untouch();
       widget.controller._touch(this);
     }
-    if (widget.isHorizontal != oldWidget.isHorizontal) {
+    if (widget.flipType != oldWidget.flipType) {
       widget.controller.reset();
     }
     super.didUpdateWidget(oldWidget);
