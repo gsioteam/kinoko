@@ -36,13 +36,13 @@ class HistoryPage extends HomeWidget {
                   content: Text(kt(context, "clear_history")),
                   actions: [
                     FlatButton(
+                      child: Text(kt(context, "no")),
+                      onPressed: ()=> Navigator.of(context).pop(false),
+                    ),
+                    FlatButton(
                       child: Text(kt(context, "yes")),
                       onPressed:()=> Navigator.of(context).pop(true),
                     ),
-                    FlatButton(
-                      child: Text(kt(context, "no")),
-                      onPressed: ()=> Navigator.of(context).pop(false),
-                    )
                   ],
                 );
               }

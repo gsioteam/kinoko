@@ -1,50 +1,43 @@
 const {Collection} = require('./collection');
-const {LZString} = require('./lzstring');
 
 class ChapterCollection extends Collection {
 
-    async fetch(root_url) {
-        let doc = await super.fetch(root_url);
+    async request(root_url) {
+        let url = root_url.replace(/(-\d+)*\.html$/i, '-10-1.html');
+        let doc = await this.fetch(url);
 
-        let res_script;
-        let scripts = doc.querySelectorAll('script:not([src])');
-        for (let script of scripts) {
-            let text = script.text.trim();
-            if (text.match(/^window\[/)) {
-                res_script = text;
-                break;
-            }
+        let options = doc.querySelectorAll('select.sl-page option');
+        let urls = [];
+        for (let i = 1, t = options.length; i < t; i++) {
+            urls.push(root_url.replace(/(-\d+)*\.html$/i, `-10-${i+1}.html`));
         }
 
-        if (res_script) {
-            let ctx = glib.ScriptContext.new('v8');
-            ctx.eval(LZString);
-            ctx.eval("var window = global; var result; var SMH={imgData:function(data) {result=data;return {preInit: function(){return result;}}}}");
-            console.log(res_script);
-            let result = ctx.eval(res_script).toObject();
-            let host_url = "https://i.hamreus.com";
-
-            let results = [];
-            for (let file of result.files) {
-                let item = glib.DataItem.new();
-                item.picture = `${host_url}${result.path}${file}?e=${result.sl.e}&m=${result.sl.m}`;
-                item.link = root_url;
-                item.data = {
-                    headers: {
-                        referer: "https://www.manhuagui.com/"
-                    }
-                };
-                results.push(item);
-            }
-            return results;
-        } else {
-            return [];
+        let offset = 0;
+        offset = this.parseDoc(doc, root_url, offset);
+        for (let i = 0, t = urls.length; i < t; ++i) {
+            let url = urls[i];
+            let doc = await this.fetch(url);
+            offset = this.parseDoc(doc, root_url, offset);
         }
     }
 
+    parseDoc(doc, root_url, offset) {
+        let imgs = doc.querySelectorAll('.pic_box > img');
+        for (let i = 0, t = imgs.length; i < t; ++i) {
+            let img = imgs[i];
+            let item = glib.DataItem.new();
+            item.picture = img.attr('src');
+            console.log("parse "+item.picture);
+            let index = offset + i;
+            item.link = root_url.replace(/(-\d+)*\.html$/i, `-${index}.html`);
+            this.setDataAt(item, index);
+        }
+        return offset + imgs.length;
+    }
+
     reload(_, cb) {
-        this.fetch(this.url).then((results) => {
-            this.setData(results);
+        let url = this.info_data.link;
+        this.request(url).then(() => {
             cb.apply(null);
         }).catch((err) => {
             if (err instanceof Error) 

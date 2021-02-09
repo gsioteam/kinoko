@@ -421,15 +421,15 @@ class _LibrariesPageState extends State<LibrariesPage> {
                             actions: [
                               FlatButton(
                                   onPressed: (){
-                                    Navigator.of(context).pop(true);
-                                  },
-                                  child: Text(kt("yes"))
-                              ),
-                              FlatButton(
-                                  onPressed: (){
                                     Navigator.of(context).pop(false);
                                   },
                                   child: Text(kt("no"))
+                              ),
+                              FlatButton(
+                                  onPressed: (){
+                                    Navigator.of(context).pop(true);
+                                  },
+                                  child: Text(kt("yes"))
                               ),
                             ],
                           );

@@ -24,7 +24,7 @@ const Map words = {
   "delete_item": "刪除 {0}({1})",
   "undo": "取消",
   "search": "尋幽覓勝",
-  "horizo​​ntal_flip": "水平翻頁",
+  "horizontal_flip": "水平翻頁",
   "horizontal_reverse": "水平逆向",
   "vertical_flip": "垂直翻頁",
   "portrait": "竪屏",

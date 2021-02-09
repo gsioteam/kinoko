@@ -1,36 +1,42 @@
 {
-    "name": "manhuagui",
-    "icon": "https://cf.hamreus.com/images/mhg.png",
-    "url": "https://www.manhuagui.com/",
+    "name": "ninemanga",
+    "icon": "http://www.ninemanga.com/files/img/ninemanga.png",
+    "url": "http://www.ninemanga.com/",
     "index": "index.js",
     "book": "book.js",
     "chapter": "chapter.js",
     "search": {
         "src": "search.js",
         "data": {
-            "url": "https://www.manhuagui.com/s/{0}_p{1}.html"
+            "url": "https://{0}.ninemanga.com/search/?wd={1}"
         }
     },
+    "settings": "settings.js",
     "categories": [
         {
-            "title": "最新发布",
-            "id": "last",
-            "url": "https://www.manhuagui.com/list/index_p{0}.html"
+            "title": "Home",
+            "id": "home",
+            "url": "https://{0}.ninemanga.com/"
         },
         {
-            "title": "最新更新",
-            "id": "update",
-            "url": "https://www.manhuagui.com/list/update_p{0}.html"
+            "title": "Latest Release",
+            "id": "last_release",
+            "url": "https://{0}.ninemanga.com/list/New-Update/"
         },
         {
-            "title": "人气最旺",
-            "id": "hot",
-            "url": "https://www.manhuagui.com/list/view_p{0}.html"
+            "title": "Manga Directory",
+            "id": "manga_directory",
+            "url": "https://{0}.ninemanga.com/category/index_{1}.html"
         },
         {
-            "title": "评分最高",
-            "id": "rate",
-            "url": "https://www.manhuagui.com/list/rate_p{0}.html"
+            "title": "Hot Manga",
+            "id": "hot_manga",
+            "url": "https://{0}.ninemanga.com/list/Hot-Book/"
+        },
+        {
+            "title": "New Manga",
+            "id": "new_manga",
+            "url": "https://{0}.ninemanga.com/list/New-Book/"
         }
     ]
 }

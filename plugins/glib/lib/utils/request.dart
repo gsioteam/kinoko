@@ -134,6 +134,8 @@ class Request extends Base {
         break;
       }
     }
+
+    request.followRedirects = true;
     control();
   }
 
@@ -232,6 +234,12 @@ class Request extends Base {
           }
         });
         responseBody = Uint8List.fromList(receiveBody);
+
+        if (request.url.host == "en.ninemanga.com") {
+          print(request.headers);
+          String str = String.fromCharCodes(responseBody);
+          print(str);
+        }
       }
 
     } catch (e) {

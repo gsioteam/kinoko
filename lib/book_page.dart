@@ -448,15 +448,25 @@ class _BookPageState extends State<BookPage> {
   Widget makeLastChapter() {
     DataItem item = lastChapter;
     var theme = Theme.of(context);
-    return Visibility(
-      visible: item != null,
-      child: FlatButton(
-        padding: EdgeInsets.all(0),
-        onPressed: () {
-          openChapter(lastChapter);
-        },
-        child: Text("[${item?.title}]", style: theme.textTheme.bodyText2.copyWith(color: theme.primaryColor),),
-      ),
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.only(left: 5, right: 5),
+        alignment: Alignment.centerLeft,
+        child: Visibility(
+          visible: item != null,
+          child: FlatButton(
+            padding: EdgeInsets.all(0),
+            onPressed: () {
+              openChapter(lastChapter);
+            },
+            child: Text(
+              "[${item?.title}]",
+              style: theme.textTheme.bodyText2.copyWith(color: theme.primaryColor),
+              overflow: TextOverflow.ellipsis
+            ),
+          ),
+        ),
+      )
     );
   }
 
@@ -492,7 +502,7 @@ class _BookPageState extends State<BookPage> {
                           Icon(Icons.bookmark, color: theme.primaryColor, size: 14,),
                           Text(kt("chapters")),
                           makeLastChapter(),
-                          Expanded(child: Container()),
+                          // Expanded(child: Container()),
                           PopupMenuButton(
                             onSelected: onOrderChanged,
                             icon: Icon(Icons.sort, color: theme.primaryColor,),
