@@ -38,7 +38,7 @@ ScriptClass* Script::findOrCreate(const StringName &fullname, bool &create) {
 void Script::clear() {
     for (auto it = instances.begin(), _e = instances.end(); it != _e; ++it) {
         ScriptInstance *ins = (ScriptInstance *)*it;
-        ins->script = nullptr;
+        ins->removed = true;
         delete ins;
     }
     instances.clear();
@@ -211,6 +211,6 @@ ScriptInstance::~ScriptInstance() {
     if (single_class && cls) {
         delete cls;
     }
-    if (script) script->removeInstance(this);
+    if (!removed) script->removeInstance(this);
 }
 

@@ -11,6 +11,7 @@
 namespace gs {
     CLASS_BEGIN_N(ScriptContext, gc::Object)
 
+        long timer = 0;
         gc::Script *script = nullptr;
     public:
 

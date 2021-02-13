@@ -9,7 +9,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
 
     link_directories(
             thirdparties/mruby/lib/android/${ANDROID_ABI}
-            thirdparties/v8/${ANDROID_ABI}
+        #     thirdparties/v8/${ANDROID_ABI}
     )
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "iOS") 
     set(CMAKE_THREAD_LIBS_INIT "-lpthread")
@@ -33,7 +33,7 @@ include_directories(
         thirdparties/mruby/include
         thirdparties/include
         thirdparties/libgit2/include
-        thirdparties/v8/include
+        thirdparties/quickjs
         thirdparties/
         thirdparties/secp256k1/include
         thirdparties/sha256
@@ -50,7 +50,28 @@ set(CORE_SRC
         src/gcore/script/ruby/RubyScript.cpp
 )
 if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
-set(CORE_SRC ${CORE_SRC} src/gcore/script/v8/V8Script.cpp)
+# set(CORE_SRC ${CORE_SRC} src/gcore/script/v8/V8Script.cpp)
+set(CORE_SRC
+        ${CORE_SRC}
+        src/gcore/script/quickjs/QuickJSScript.cpp
+        src/gcore/script/quickjs/quickjs_ext.c
+        thirdparties/quickjs/libbf.c
+        thirdparties/quickjs/qjscalc.c
+        thirdparties/quickjs/libregexp.c
+        thirdparties/quickjs/libunicode.c
+        thirdparties/quickjs/cutils.c
+        )
+#set(CORE_SRC
+#
+#        ${CORE_SRC}
+#        src/gcore/script/quickjs/quickjs_ext.c
+#        src/gcore/script/quickjs/libbf.c
+#        src/gcore/script/quickjs/qjscalc.c
+#        src/gcore/script/quickjs/libregexp.c
+#        src/gcore/script/quickjs/libunicode.c
+#        src/gcore/script/quickjs/cutils.c
+#        )
+add_definitions(-DCONFIG_VERSION=\"qjs_u\" -DEMSCRIPTEN -DDUMP_LEAKS -DCONFIG_BIGNUM)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "iOS") 
 set(CORE_SRC ${CORE_SRC} src/gcore/script/js_core/JSCoreScript.mm)
 endif()
@@ -126,8 +147,8 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
     set(GLIB_SRC ${GLIB_SRC} src/shelf/dart_main_android.cpp)
     set(GLIB_LIBS ${GLIB_LIBS}
         log
-        v8.cr
-        v8_libplatform.cr
+#        v8.cr
+#        v8_libplatform.cr
     )
     set(LIB_TYPE SHARED)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "iOS")

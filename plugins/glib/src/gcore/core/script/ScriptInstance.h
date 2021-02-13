@@ -22,6 +22,7 @@ namespace gc {
      */
     CLASS_BEGIN_0_V(ScriptInstance)
     private:
+        bool removed = false;
         Reference target;
         Script *script;
         ScriptClass *cls;

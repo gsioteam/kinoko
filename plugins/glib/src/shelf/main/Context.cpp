@@ -5,11 +5,12 @@
 #include "Context.h"
 #include <fstream>
 
+#include "../utils/Platform.h"
 #ifdef __APPLE__
 #include <script/js_core/JSCoreScript.h>
 #endif
 #ifdef __ANDROID__
-#include <script/v8/V8Script.h>
+#include <script/quickjs/QuickJSScript.h>
 #endif
 
 #include <script/ruby/RubyScript.h>
@@ -77,7 +78,8 @@ namespace gs {
 #ifdef __ANDROID__
     CLASS_BEGIN_N(JavaScriptContext, Context)
 
-        V8Script *script;
+        QuickJSScript *script;
+        long timer = 0;
 
     public:
         static bool isSupport(const std::string &ext) {
@@ -86,10 +88,14 @@ namespace gs {
 
         JavaScriptContext() {
             string v8_root = shared::repo_path() + "/env/v8";
-            script = new V8Script(v8_root.c_str());
+            script = new QuickJSScript(v8_root.c_str());
+            timer = Platform::startTimer(C([=]() {
+                script->Step();
+            }), 0.05f, true);
         }
 
         ~JavaScriptContext() {
+            Platform::cancelTimer(timer);
             delete script;
         }
 
