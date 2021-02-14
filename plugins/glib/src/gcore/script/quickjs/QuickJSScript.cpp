@@ -342,6 +342,7 @@ gc::ScriptClass* QuickJSScript::makeClass() const {
 }
 
 gc::Variant QuickJSScript::runScript(const char *script, const char *filename) const {
+    if (filename == nullptr) filename = "<inline>";
     JSValue val = JS_Eval(context, script, strlen(script), filename, JS_EVAL_TYPE_GLOBAL);
     if (JS_IsException(val)) {
         JSValue ex = JS_GetException(context);

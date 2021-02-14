@@ -213,6 +213,25 @@ add_library(
         ${GUMBO_QUERY_SRC}
 )
 
+
+
+add_subdirectory(thirdparties/openssl)
+
+#set(OPENSSL_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/thirdparties/openssl/openssl)
+#set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT}/include)
+#if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
+#    set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT}/android/${ANDROID_ABI}/lib/libcrypto.a)
+#    set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT}/android/${ANDROID_ABI}/lib/libssl.a)
+#    set(OPENSSL_LIBRARIES ${OPENSSL_ROOT}/android/${ANDROID_ABI}/lib)
+#elseif(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
+#    set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT}/ios/lib/libcrypto.a)
+#    set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT}/ios/lib/libssl.a)
+#    set(OPENSSL_LIBRARIES ${OPENSSL_ROOT}/ios/lib)
+#    SET(GIT_USE_STAT_MTIMESPEC 1)
+#endif()
+
+set(OPENSSL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparties/openssl/include)
+
 add_subdirectory(thirdparties/libgit2)
 
 add_library(
