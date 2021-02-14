@@ -7,19 +7,12 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
     include(ndk-stl-config.cmake)
     string(FIND ${ANDROID_ABI} 64 HAS_64)
 
-    link_directories(
-            thirdparties/mruby/lib/android/${ANDROID_ABI}
-        #     thirdparties/v8/${ANDROID_ABI}
-    )
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "iOS") 
     set(CMAKE_THREAD_LIBS_INIT "-lpthread")
     set(CMAKE_HAVE_THREADS_LIBRARY 1)
     set(CMAKE_USE_WIN32_THREADS_INIT 0)
     set(CMAKE_USE_PTHREADS_INIT 1)
 
-    link_directories(
-            thirdparties/mruby/lib/ios
-    )
 endif()
 
 if(HAS_64 EQUAL -1)
@@ -83,6 +76,30 @@ add_library(
 
         # Provides a relative path to your source file(s).
         ${CORE_SRC}
+)
+
+file(GLOB_RECURSE MRUBY_SOURCES thirdparties/mruby/*.c)
+
+add_library(
+        mruby
+
+        STATIC
+
+        ${MRUBY_SOURCES}
+)
+
+target_compile_definitions(
+        mruby
+
+        PRIVATE -DHAVE_ONIGMO_H
+)
+target_include_directories(
+        mruby
+
+        PRIVATE
+
+        thirdparties/mruby/mrbgems/mruby-http/include
+        thirdparties/onigmo
 )
 
 add_library(
