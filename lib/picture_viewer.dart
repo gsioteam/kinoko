@@ -235,7 +235,7 @@ class _PictureViewerState extends State<PictureViewer> {
         value: i,
       ));
     }
-    print("Item length ${items.length}");
+
     new Picker(
       adapter: PickerDataAdapter<int>(
         data: items

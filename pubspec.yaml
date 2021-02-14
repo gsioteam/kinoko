@@ -44,8 +44,6 @@ dependencies:
   flutter_svg_provider:
     git: https://github.com/gsioteam/flutter_svg_provider.git
   url_launcher: ^5.4.2
-  firebase_core: ^0.5.0
-  firebase_crashlytics: ^0.2.0
   folder_picker:
     git: https://github.com/gsioteam/folder_picker.git
   path_provider_ex: ^1.0.1
