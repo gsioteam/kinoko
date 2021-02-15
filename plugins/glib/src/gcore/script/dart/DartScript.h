@@ -69,6 +69,8 @@ namespace gscript {
         static void destroy();
         static DartScript* instance();
 
+        static bool alive();
+
         gc::Variant runScript(const char *script, const char *filename = nullptr) const;
 
 

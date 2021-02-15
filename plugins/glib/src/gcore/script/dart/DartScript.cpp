@@ -170,6 +170,10 @@ void DartScript::destroy() {
     }
 }
 
+bool DartScript::alive() {
+    return ins;
+}
+
 DartScript* DartScript::instance() {
     return ins;
 }
@@ -199,6 +203,7 @@ gc::ScriptInstance* DartClass::create(gc::Object *target) const {
 }
 
 Variant DartClass::apply(const gc::StringName &name, const gc::Variant **argv, int length) const {
+    if (!DartScript::alive()) return Variant::null();
     vector<NativeTarget> pargv(length);
     pargv.resize(length);
     for (int i = 0; i < length; ++i) {
@@ -214,6 +219,7 @@ Variant DartClass::apply(const gc::StringName &name, const gc::Variant **argv, i
 }
 
 Variant DartInstance::apply(const gc::StringName &name, const gc::Variant **argv, int length) {
+    if (!DartScript::alive()) return Variant::null();
     vector<NativeTarget> pargv(length);
     pargv.resize(length);
     for (int i = 0; i < length; ++i) {
