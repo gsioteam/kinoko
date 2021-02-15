@@ -22,7 +22,6 @@ if (flutterVersionName == null) {
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'com.google.gms.google-services'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 //def keystoreProperties = new Properties()
@@ -35,6 +34,7 @@ android {
     compileSdkVersion 29
 
     lintOptions {
+        checkReleaseBuilds false
         disable 'InvalidPackage'
     }
 
@@ -65,6 +65,10 @@ android {
 //        }
 //    }
     buildTypes {
+        debug {
+            pseudoLocalesEnabled true
+        }
+
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
@@ -92,9 +96,4 @@ android {
 
 flutter {
     source '../..'
-}
-dependencies {
-    // add the Firebase SDK for Google Analytics
-    // add SDKs for any other desired Firebase products
-    // https://firebase.google.com/docs/android/setup#available-libraries
 }
