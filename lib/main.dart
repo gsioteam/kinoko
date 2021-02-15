@@ -29,7 +29,9 @@ import 'widgets/better_refresh_indicator.dart';
 import 'widgets/home_widget.dart';
 import 'favorites_page.dart';
 import 'download_page.dart';
-import 'package:xml_layout/types/all.dart' as all_type;
+import 'package:xml_layout/types/colors.dart' as colors;
+import 'package:xml_layout/types/icons.dart' as icons;
+import 'layout/all.xml_layout.dart' as all;
 import 'package:xml_layout/xml_layout.dart';
 import 'localizations/localizations.dart';
 import 'dart:math' as math;
@@ -130,14 +132,16 @@ class SplashScreenState extends State<SplashScreen> {
     await showDisclaimer(context);
     await fetchEnv(context);
     WidgetsBinding.instance.addObserver(_LifecycleEventHandler());
-    all_type.reg();
-    XmlLayout.reg(CachedNetworkImageProvider, (node, key) {
+    colors.register();
+    icons.register();
+    all.register();
+    XmlLayout.register("CachedNetworkImageProvider", (node, key) {
       return CachedNetworkImageProvider(
           node.text,
           scale: node.s<double>("scale", 1)
       );
     });
-    XmlLayout.reg(FlatButton, (node, key) {
+    XmlLayout.register("FlatButton", (node, key) {
       return FlatButton(
         key: key,
         onPressed: node.s<VoidCallback>("onPressed"),
@@ -145,7 +149,7 @@ class SplashScreenState extends State<SplashScreen> {
         padding: EdgeInsets.zero,
       );
     });
-    XmlLayout.reg(BetterRefreshIndicator, (node, key) {
+    XmlLayout.register("BetterRefreshIndicator", (node, key) {
       return BetterRefreshIndicator(
         child: node.child<Widget>(),
         displacement: node.s<double>("displacement", 40),
@@ -157,7 +161,7 @@ class SplashScreenState extends State<SplashScreen> {
         strokeWidth: node.s<double>("strokeWidth", 2),
         controller: node.s<BetterRefreshIndicatorController>("controller"),
       );
-    }, mode: XmlLayout.Element);
+    });
   }
 
   Future<void> fetchEnv(BuildContext context) async {
