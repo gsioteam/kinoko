@@ -1,0 +1,9 @@
+Load the online comic content supported by any plug-in project to provide a convenient online comic viewing experience.
+
+### Features:
+
+* Plug-in support, using git to manage plug-ins, you can use the plug-ins provided by developers to browse the corresponding network resources, or enter any git address to load the plug-in.
+* Collections, Add to favorites, easy and quick viewing at any time.
+* Download manga, download to local, and browse at any time without internet.
+* Volume keys can be used to turn pages, which can be easily turned with one hand.
+* Multiple browsing modes, turning pages horizontally or vertically.
