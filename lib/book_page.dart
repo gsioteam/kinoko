@@ -237,6 +237,9 @@ class _BookPageState extends State<BookPage> {
             onSelectItem(idx);
           }
         },
+        onUnkownElement: (node, key) {
+          print("Unkown type $node");
+        },
       );
     }
   }
@@ -641,6 +644,9 @@ class _BookPageState extends State<BookPage> {
         },
         apply: (String name, List args) {
           return widget.context.applyFunction(name, args);
+        },
+        onUnkownElement: (node, key) {
+          print("Unkown node ${node.name}");
         }
       );
     }

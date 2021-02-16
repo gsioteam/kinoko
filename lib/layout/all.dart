@@ -20,5 +20,23 @@ const List<Type> types = [
   Container,
   MaterialButton,
   AppBar,
-  Image
+  Image,
+  CustomScrollView,
+  SliverToBoxAdapter,
+  SliverGrid,
+  BoxDecoration,
+  BoxShadow,
+  Row,
+  EdgeInsets,
+  Expanded,
+  TextSpan,
+  WidgetSpan,
+  BorderRadius,
+  Radius,
 ];
+
+
+const Map<Type, Type> convertTypes = {
+  EdgeInsetsGeometry: EdgeInsets,
+  BorderRadiusGeometry: BorderRadius,
+};

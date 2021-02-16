@@ -162,6 +162,34 @@ class SplashScreenState extends State<SplashScreen> {
         controller: node.s<BetterRefreshIndicatorController>("controller"),
       );
     });
+    XmlLayout.register("Padding", (node, key) {
+      return Padding(
+        key: key,
+        padding: node.s<EdgeInsets>("padding"),
+        child: node.child<Widget>(),
+      );
+    });
+    XmlLayout.registerInline(EdgeInsets, "only", false, (node, method) {
+      return EdgeInsets.only(
+        left: double.tryParse(method[0]) ?? 0,
+        top: double.tryParse(method[1]) ?? 0,
+        right: double.tryParse(method[2]) ?? 0,
+        bottom: double.tryParse(method[3]) ?? 0,
+      );
+    });
+    XmlLayout.registerInline(EdgeInsets, "all", false, (node, method) {
+      return EdgeInsets.all(double.tryParse(method[0]) ?? 0);
+    });
+    XmlLayout.registerInline(Color, "rgb", false, (node, method) {
+      return Color.fromRGBO(int.tryParse(method[0]), int.tryParse(method[1]),
+          int.tryParse(method[2]), 1);
+    });
+    XmlLayout.registerInline(BorderRadius, "horizontal", false, (node, method) {
+      return BorderRadius.horizontal(
+        left: node.v<Radius>(method[0], Radius.zero),
+        right: node.v<Radius>(method[1], Radius.zero),
+      );
+    });
   }
 
   Future<void> fetchEnv(BuildContext context) async {
