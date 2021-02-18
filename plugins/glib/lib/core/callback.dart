@@ -1,5 +1,7 @@
 
 
+import 'dart:ffi';
+
 import 'core.dart';
 
 class Callback extends Base {
@@ -12,7 +14,7 @@ class Callback extends Base {
     return FunctionCallback.allocate(func);
   }
 
-  Callback(int ptr) : super() {
+  Callback(Pointer ptr) : super() {
     this.id = ptr;
   }
 
@@ -29,7 +31,7 @@ class FunctionCallback extends Callback {
     return Callback;
   }
 
-  FunctionCallback.allocate(this.function) : super(0) {
+  FunctionCallback.allocate(this.function) : super(null) {
     super.allocate([]);
     this.on("_invoke", _invoke);
   }

@@ -7,15 +7,15 @@ import 'gmap.dart';
 import 'dart:ffi';
 import 'binds.dart';
 
-Map<int, TypeInfo> _classDB = Map();
+Map<Pointer, TypeInfo> _classDB = Map();
 Map<Type, TypeInfo> _classRef = Map();
-Map<int, Base> _objectDB = Map<int, Base>();
+Map<Pointer, Base> _objectDB = Map<Pointer, Base>();
 
 class TypeInfo {
   Type type, superType;
-  int ptr;
+  Pointer ptr;
   Map<String, Function> functions = Map();
-  dynamic Function(int) constructor;
+  dynamic Function(Pointer) constructor;
 
   TypeInfo(this.type, this.ptr, this.superType);
 }
@@ -89,11 +89,11 @@ void _toNative(dynamic obj, Pointer<NativeTarget> ret) {
     nt.intValue = obj ? 1 : 0;
   } else if (obj is Base) {
     nt.type = TypeObject;
-    nt.intValue = obj._id;
+    nt.pointerValue = obj._id;
   } else if (obj is String) {
     nt.type = TypeString;
     Pointer<Utf8> utf8 = Utf8.toUtf8(obj);
-    nt.intValue = utf8.address;
+    nt.pointerValue = utf8;
     autorelease(utf8);
   } else if (obj is List) {
     Array arr = Array.allocate(obj);
@@ -109,7 +109,7 @@ void _toNative(dynamic obj, Pointer<NativeTarget> ret) {
     cb.release();
   } else if (obj is Pointer) {
     nt.type = TypePointer;
-    nt.intValue = obj.address;
+    nt.pointerValue = obj;
   } else {
     nt.type = 0;
   }
@@ -138,11 +138,11 @@ List<dynamic> _convertArgv(Pointer<NativeTarget> argv, int length) {
         break;
       }
       case TypeObject: {
-        ret = _objectDB[target.intValue];
+        ret = _objectDB[target.pointerValue];
         break;
       }
       case TypeString: {
-        ret = Utf8.fromUtf8(Pointer<Utf8>.fromAddress(target.intValue));
+        ret = Utf8.fromUtf8(Pointer<Utf8>.fromAddress(target.pointerValue.address));
         break;
       }
       case TypeBoolean: {
@@ -162,7 +162,7 @@ void autorelease<T extends NativeType>(Pointer<T> ptr) {
   AutoPointer<T>(ptr).release();
 }
 
-void _callClassFromNative(int ptr, Pointer<Utf8> name, Pointer<NativeTarget> argv, int length, Pointer<NativeTarget> result) {
+void _callClassFromNative(Pointer ptr, Pointer<Utf8> name, Pointer<NativeTarget> argv, int length, Pointer<NativeTarget> result) {
   String fun = Utf8.fromUtf8(name);
   try {
     TypeInfo type = _classDB[ptr];
@@ -174,11 +174,11 @@ void _callClassFromNative(int ptr, Pointer<Utf8> name, Pointer<NativeTarget> arg
       }
     }
   } catch (e) {
-    print("Call $fun failed : " + e.toString());
+    print("Call static $fun failed : " + e.toString());
   }
 }
 
-void _callInstanceFromNative(int ptr, Pointer<Utf8> name, Pointer<NativeTarget> argv, int length, Pointer<NativeTarget> result) {
+void _callInstanceFromNative(Pointer ptr, Pointer<Utf8> name, Pointer<NativeTarget> argv, int length, Pointer<NativeTarget> result) {
   String fun = Utf8.fromUtf8(name);
   try {
     Base ins = _objectDB[ptr];
@@ -189,7 +189,7 @@ void _callInstanceFromNative(int ptr, Pointer<Utf8> name, Pointer<NativeTarget> 
   }
 }
 
-int _createNativeTarget(int type, int ptr) {
+int _createNativeTarget(Pointer type, Pointer ptr) {
   var typeinfo = _classDB[type];
   if (typeinfo != null) {
     var cons = typeinfo.constructor;
@@ -216,7 +216,7 @@ Pointer<NativeFunction<CreateNative>> createNativeTarget = Pointer.fromFunction(
 class Base with AutoRelease {
 
   Map<String, Function> functions = Map();
-  int _id = 0;
+  Pointer _id;
   TypeInfo _type;
 
   dynamic call(String name, { argv: const <dynamic>[]}) {
@@ -283,13 +283,13 @@ class Base with AutoRelease {
     initialize();
   }
 
-  set id(int v) {
-    if (this._id == 0) {
+  set id(Pointer v) {
+    if (this._id == null) {
       this._id = v;
     }
   }
 
-  dynamic setID(int v) {
+  dynamic setID(Pointer v) {
     this.id = v;
     return this;
   }
@@ -312,8 +312,8 @@ class Base with AutoRelease {
       setupLibrary(callClassPointer, callInstancePointer, createNativeTarget);
     }
     Pointer<Utf8> pname = Utf8.toUtf8(name);
-    int handler = bindClass(pname);
-    if (handler != 0) {
+    Pointer handler = bindClass(pname);
+    if (handler.address != 0) {
       TypeInfo info = TypeInfo(type, handler, superType);
       _classDB[handler] = info;
       _classRef[type] = info;
@@ -325,10 +325,10 @@ class Base with AutoRelease {
   }
 
   void destroy() {
-    if (_id != 0) {
+    if (_id != null) {
       freeObject(_id);
       _objectDB.remove(_id);
-      _id = 0;
+      _id = null;
     }
   }
 }

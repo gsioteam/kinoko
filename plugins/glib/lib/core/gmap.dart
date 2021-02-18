@@ -1,5 +1,6 @@
 
 import 'dart:collection';
+import 'dart:ffi';
 
 import 'array.dart';
 
@@ -10,7 +11,7 @@ class GMap<V> extends Base with MapMixin<String, V> {
     Base.reg(GMap, "gc::_Map", Base).constructor = (ptr)=>GMap(ptr);
   }
 
-  GMap(int ptr) {
+  GMap(Pointer ptr) {
     this.id = ptr;
   }
 

@@ -223,7 +223,6 @@ Register register = Register(() {
         bottomNavigationBar: node.s<Widget>("bottomNavigationBar"),
         bottomSheet: node.s<Widget>("bottomSheet"),
         backgroundColor: node.s<Color>("backgroundColor"),
-        resizeToAvoidBottomPadding: node.s<bool>("resizeToAvoidBottomPadding"),
         resizeToAvoidBottomInset: node.s<bool>("resizeToAvoidBottomInset"),
         primary: node.s<bool>("primary", true),
         drawerDragStartBehavior: node.s<DragStartBehavior>(

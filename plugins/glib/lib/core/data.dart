@@ -27,7 +27,7 @@ class BufferData extends Data {
   }
 
   BufferData(id):super(id);
-  BufferData.allocate(TypedData.ByteBuffer buffer):super(0) {
+  BufferData.allocate(TypedData.ByteBuffer buffer):super(null) {
 
     int length = buffer.lengthInBytes;
     Pointer<Uint8> buf = allocate(count: length);

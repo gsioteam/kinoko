@@ -27,18 +27,19 @@ namespace gscript {
         uint8_t type = TypeNull;
         uint64_t int_value;
         double double_value;
+        void *pointer_value;
         uint8_t release = false;
 
         ~NativeTarget() {
             if (release) {
                 switch (type) {
                     case TypeString: {
-                        char *str = (char *)int_value;
+                        char *str = (char *)pointer_value;
                         free(str);
                         break;
                     }
                     case TypeObject: {
-                        Object *base = (Object *)int_value;
+                        Object *base = (Object *)pointer_value;
                         delete base;
                         break;
                     }
@@ -58,18 +59,18 @@ namespace gscript {
                 return target->double_value;
             }
             case TypeObject: {
-                DartInstance *instance = (DartInstance *)target->int_value;
+                DartInstance *instance = (DartInstance *)target->pointer_value;
                 return instance->getTarget();
             }
             case TypeString: {
-                const char *str = (const char *)target->int_value;
+                const char *str = (const char *)target->pointer_value;
                 return str;
             }
             case TypeBoolean: {
                 return (bool)target->int_value;
             }
             case TypePointer: {
-                return (void*)target->int_value;
+                return target->pointer_value;
             }
         }
         return Variant::null();
@@ -102,33 +103,32 @@ namespace gscript {
             case Variant::TypeStringName: {
                 StringName name = variant;
                 target->type = TypeString;
-                target->int_value = (uint64_t)name.str();
+                target->pointer_value = (void*)name.str();
                 break;
             }
             case Variant::TypeReference: {
                 const Class *cls = variant.getTypeClass();
                 if (cls->isTypeOf(_String::getClass())) {
                     const char *str = variant;
-                    target->type = TypeString;
                     int len = strlen(str);
                     char *cstr = (char *)malloc(len + 1);
                     strcpy(cstr, str);
                     cstr[len] = 0;
                     target->type = TypeString;
                     target->release = true;
-                    target->int_value = (uint64_t)cstr;
+                    target->pointer_value = (void *)cstr;
                 } else {
                     Ref<Object> obj = variant;
                     DartInstance *ins = (DartInstance *)obj->findScript(DartLanguage);
                     if (ins) {
                         target->type = TypeObject;
-                        target->int_value = (uint64_t)ins;
+                        target->pointer_value = ins;
                     } else {
                         const Class *cls = obj->getInstanceClass();
                         ins = (DartInstance *)DartScript::instance()->find(cls)->create(obj);
                         if (ins) {
                             target->type = TypeObject;
-                            target->int_value = (uint64_t)ins;
+                            target->pointer_value = ins;
                         }
                     }
                 }
@@ -136,7 +136,8 @@ namespace gscript {
             }
             case Variant::TypePointer: {
                 target->type = TypePointer;
-                target->int_value = (uint64_t)variant;
+                target->pointer_value = (void *)variant;
+                break;
             }
             default: {
                 target->type = TypeNull;
