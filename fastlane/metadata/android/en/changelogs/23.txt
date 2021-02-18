@@ -1,0 +1,1 @@
+- Fixed problem that app can not work on 32bit device

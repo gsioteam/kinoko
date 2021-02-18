@@ -1,0 +1,2 @@
+- Replace the JS engine reduce the apk size.
+- Fixed manga picture not display as fill.

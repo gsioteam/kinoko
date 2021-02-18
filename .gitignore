@@ -51,3 +51,4 @@ output.json
 android/app/release
 android/app/profile
 android/app/fdroid/release
+.gradle
