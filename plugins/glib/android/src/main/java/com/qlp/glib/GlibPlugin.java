@@ -2,6 +2,7 @@ package com.qlp.glib;
 
 import android.os.Handler;
 
+import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -23,6 +24,7 @@ public class GlibPlugin implements FlutterPlugin, MethodCallHandler {
     channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "glib");
     channel.setMethodCallHandler(this);
     handler = new Handler();
+    sendSignal();
     onAttached(this);
   }
 
@@ -54,7 +56,7 @@ public class GlibPlugin implements FlutterPlugin, MethodCallHandler {
     onDetached(this);
   }
 
-  private void sendSignal() {
+  public void sendSignal() {
     handler.post(new Runnable() {
       @Override
       public void run() {

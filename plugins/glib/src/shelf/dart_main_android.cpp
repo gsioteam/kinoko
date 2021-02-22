@@ -76,7 +76,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 extern "C" void Java_com_qlp_glib_GlibPlugin_onAttached(JNIEnv *env, jobject thiz, jobject channel) {
     flutter_channel = env->NewGlobalRef(channel);
     if (!invoke_method) {
-        invoke_method = env->GetMethodID(env->GetObjectClass(channel), "sendSignal", "()V");
+        invoke_method = env->GetMethodID(env->GetObjectClass(thiz), "sendSignal", "()V");
     }
 }
 

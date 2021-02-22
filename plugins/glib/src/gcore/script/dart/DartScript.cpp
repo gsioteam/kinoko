@@ -25,7 +25,7 @@ namespace gscript {
 
     struct NativeTarget {
         uint8_t type = TypeNull;
-        uint64_t int_value;
+        int64_t int_value;
         double double_value;
         void *pointer_value;
         uint8_t release = false;
