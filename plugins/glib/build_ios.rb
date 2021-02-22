@@ -52,6 +52,7 @@ def ex_lib path
     end
 end
 
+
 def main 
     dir = File.expand_path(File.dirname(__FILE__))
     
@@ -59,9 +60,14 @@ def main
 
     `cmake -G Xcode -B "#{dir}/build/ios" -DCMAKE_SYSTEM_NAME=iOS "#{dir}"`
     
-    `xcodebuild IPHONEOS_DEPLOYMENT_TARGET=8.0 -project "#{dir}/build/ios/glib.xcodeproj" -scheme glib -sdk iphoneos -configuration #{configuration} -UseModernBuildSystem=NO clean build CONFIGURATION_BUILD_DIR="#{dir}/build/lib/iphoneos"`
+    system_ops = {
+        err: $stderr,
+        out: $stdout
+    }
+
+    system("xcodebuild IPHONEOS_DEPLOYMENT_TARGET=8.0 -project \"#{dir}/build/ios/glib.xcodeproj\" -scheme glib -sdk iphoneos -configuration #{configuration} -UseModernBuildSystem=NO clean build CONFIGURATION_BUILD_DIR=\"#{dir}/build/lib/iphoneos\"", system_ops)
     
-    `xcodebuild IPHONEOS_DEPLOYMENT_TARGET=8.0 -project "#{dir}/build/ios/glib.xcodeproj" -scheme glib -sdk iphonesimulator -configuration #{configuration} -UseModernBuildSystem=NO clean build CONFIGURATION_BUILD_DIR="#{dir}/build/lib/iphonesimulator"`
+    system("xcodebuild IPHONEOS_DEPLOYMENT_TARGET=8.0 -project \"#{dir}/build/ios/glib.xcodeproj\" -scheme glib -sdk iphonesimulator -configuration #{configuration} -UseModernBuildSystem=NO clean build CONFIGURATION_BUILD_DIR=\"#{dir}/build/lib/iphonesimulator\" EXCLUDED_ARCHS=\"arm64\"", system_ops)
     
     iphoneos_dir = "#{dir}/build/lib/iphoneos" 
     iphonesimulator_dir = "#{dir}/build/lib/iphonesimulator" 
@@ -82,10 +88,10 @@ def main
     mkdir "#{dir}/ios/include"
     `lipo -create #{$dirs.keys.map{|d| "#{d}/ligglib_ios.a"}.join(' ')} -output #{dir}/ios/lib/libglib_ios.a`
 
-    FileUtils.cp "#{dir}/thirdparties/mruby/lib/ios/libmruby.a", "#{dir}/ios/lib/libmruby.a"
-    Dir["#{dir}/thirdparties/openssl/ios/lib/*.a"].each do |file|
-        FileUtils.cp file, "#{dir}/ios/lib/#{file[/[^\/]+$/]}"
-    end
+    # FileUtils.cp "#{dir}/thirdparties/mruby/lib/ios/libmruby.a", "#{dir}/ios/lib/libmruby.a"
+    # Dir["#{dir}/thirdparties/openssl/ios/lib/*.a"].each do |file|
+    #     FileUtils.cp file, "#{dir}/ios/lib/#{file[/[^\/]+$/]}"
+    # end
     FileUtils.cp "#{dir}/src/shelf/dart_main_ios.h", "#{dir}/ios/include/dart_main_ios.h"
 end
 

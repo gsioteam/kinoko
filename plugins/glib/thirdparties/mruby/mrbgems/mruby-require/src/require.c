@@ -12,7 +12,7 @@
 #include "mruby/proc.h"
 
 #include "opcode.h"
-#include "error.h"
+#include "mruby/error.h"
 
 #include <stdlib.h>
 #include <sys/stat.h>
