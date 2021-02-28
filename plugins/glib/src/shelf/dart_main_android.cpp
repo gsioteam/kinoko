@@ -30,8 +30,10 @@ void dart_setupLibrary(Dart_CallClass call_class, Dart_CallInstance call_instanc
 
     gs::DartPlatform::setSendSignal(C([](){
         JNIEnv *env = nullptr;
+        bool nthread = false;
         if (java_vm->GetEnv((void **) &env, JNI_VERSION_1_6) < 0) {
             java_vm->AttachCurrentThread(&env, NULL);
+            nthread = true;
         }
         if (env) {
             jstring signal = env->NewStringUTF("sendSignal");
@@ -39,6 +41,9 @@ void dart_setupLibrary(Dart_CallClass call_class, Dart_CallInstance call_instanc
             env->DeleteLocalRef(signal);
         } else {
             LOG(e, "Send signal error.");
+        }
+        if (nthread) {
+            java_vm->DetachCurrentThread();
         }
     }));
 }
