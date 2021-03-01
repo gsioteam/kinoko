@@ -28,14 +28,8 @@ import 'localizations/localizations.dart';
 import 'widgets/photo_list.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_picker/flutter_picker.dart';
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'utils/data_item_headers.dart';
 import 'dart:ui' as ui;
-
-String generateMd5(String input) {
-  return md5.convert(utf8.encode(input)).toString();
-}
 
 enum PictureFlipType {
   Next,
@@ -521,7 +515,7 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   void touch() {
-    cacheKey = widget.context.projectKey + "/" + generateMd5(widget.context.info_data.link);
+    cacheKey = PictureCacheManager.cacheKey(widget.context.info_data);
     preloadQueue = PreloadQueue();
     widget.context.control();
     widget.context.on_data_changed = Callback.fromFunction(onDataChanged).release();

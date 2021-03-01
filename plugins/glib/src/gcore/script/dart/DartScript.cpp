@@ -256,7 +256,8 @@ DartInstance* dart_createObject(DartClass *type, NativeTarget *argv, int32_t len
 
 DART_EXPORT
 void dart_freeObject(DartInstance* instance) {
-    delete instance;
+    if (DartScript::instance())
+        delete instance;
 }
 
 DART_EXPORT

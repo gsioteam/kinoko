@@ -63,5 +63,9 @@ Liah(Icon) https://liah0227.itch.io/
   "output_to": "Export to: {0}",
   "directory_name": "Directory name",
   "name_empty": "Directory can not be empty",
-  "clear_history": "Would you like to clear the history?"
+  "clear_history": "Would you like to clear the history?",
+  "download_size": "Download Size",
+  "cached_size": "Cached Size",
+  "clear_cache": "Would you like to clear cache?",
+  "clear": "Clear Cache",
 };

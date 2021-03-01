@@ -35,8 +35,8 @@ abstract class ProgressItem {
 }
 
 class ProgressDialog extends StatefulWidget {
-  String title;
-  ProgressItem item;
+  final String title;
+  final ProgressItem item;
 
   ProgressDialog({
     this.title,

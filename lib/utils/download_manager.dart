@@ -24,10 +24,6 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'data_item_headers.dart';
 
-String generateMd5(String input) {
-  return md5.convert(utf8.encode(input)).toString();
-}
-
 enum DownloadState {
   None,
   ListComplete,
@@ -129,7 +125,7 @@ class DownloadQueueItem {
 
   DownloadQueueItem._(this.data, this.item) {
     Array subitems = item.getSubItems();
-    cacheKey = item.projectKey + "/" + generateMd5(item.link);
+    cacheKey = PictureCacheManager.cacheKey(item);
     cacheManager = PictureCacheManager(cacheKey, item);
     _total = subitems.length;
     if (state != DownloadState.AllComplete) {

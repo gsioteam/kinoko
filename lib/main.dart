@@ -446,7 +446,7 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
 
   ImageProvider getIcon(Project project) {
     String icon = project?.icon;
-    if (icon != null) {
+    if (icon != null && icon.isNotEmpty) {
       return makeImageProvider(icon);
     }
     if (project.isValidated) {

@@ -64,4 +64,8 @@ Liah(Icon) https://liah0227.itch.io/
   "directory_name": "文件夹",
   "name_empty": "文件夹名不能为空",
   "clear_history": "是否抹除历史?",
+  "download_size": "下载空间",
+  "cached_size": "缓存空间",
+  "clear_cache": "清空缓存，请确认",
+  "clear": "清空缓存",
 };
