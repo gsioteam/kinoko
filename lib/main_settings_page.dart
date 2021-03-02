@@ -5,6 +5,7 @@ import 'package:glib/main/models.dart';
 import 'package:kinoko/configs.dart';
 import 'package:kinoko/utils/cached_picture_image.dart';
 import 'package:kinoko/utils/download_manager.dart';
+import 'package:kinoko/widgets/credits_dialog.dart';
 import 'package:kinoko/widgets/home_widget.dart';
 import 'localizations/localizations.dart';
 import 'progress_dialog.dart';
@@ -125,6 +126,14 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
             kt("download_size"),
             value: size == null ? "..." : _sizeString(size.cached)
         ),
+        SettingItem(
+          SettingItemType.Button,
+          kt("disclaimer"),
+          value: "",
+          data: () {
+            showCreditsDialog(context);
+          }
+        )
       ],
     );
   }

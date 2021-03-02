@@ -14,6 +14,7 @@ import 'package:kinoko/history_page.dart';
 import 'package:kinoko/main_settings_page.dart';
 import 'package:kinoko/utils/image_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:kinoko/widgets/credits_dialog.dart';
 import 'collections_page.dart';
 import 'configs.dart';
 import 'libraries_page.dart';
@@ -61,7 +62,7 @@ class MainAppState extends State<MainApp> {
         ],
         locale: locale,
         supportedLocales: KinokoLocalizationsDelegate.supports.values,
-        title: 'Flutter Demo',
+        title: 'Kinoko',
         theme: ThemeData(
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -217,104 +218,7 @@ class SplashScreenState extends State<SplashScreen> {
   Future<void> showDisclaimer(BuildContext context) async {
     String key = KeyValue.get(disclaimer_key);
     if (key != "true") {
-      String credits = kt("credits_content");
-      RegExp exp = RegExp(r"https?:\/\/[^ \n]+");
-      List<InlineSpan> children = [];
-      var matches = exp.allMatches(credits);
-      if (matches.length > 0) {
-        int offset = 0;
-        for (var match in matches) {
-          String link = match.group(0);
-          children.add(TextSpan(
-            text: credits.substring(offset, match.start)
-          ));
-          children.add(WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: IconButton(
-              icon: Icon(Icons.open_in_new),
-              color: Theme.of(context).primaryColor,
-              onPressed: () async {
-                if (await canLaunch(link)) {
-                  await launch(link);
-                } else {
-                  await Fluttertoast.showToast(msg: kt("can_not_open").replaceFirst("{0}", link));
-                }
-              }
-            )
-          ));
-          offset = match.end;
-        }
-        children.add(TextSpan(
-            text: credits.substring(offset)
-        ));
-      } else {
-        children.add(TextSpan(text: credits));
-      }
-      Text creditsContent = Text.rich(TextSpan(
-        children: children
-      ));
-      bool result = await showDialog<bool>(
-          context: context,
-          builder: (context) {
-            return Dialog(
-              child: Container(
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Padding(padding: EdgeInsets.only(top: 10)),
-                    Container(
-                      width: double.infinity,
-                      height: math.min(MediaQuery.of(context).size.height, 420),
-                      child: CustomScrollView(
-                        slivers: [
-                          SliverToBoxAdapter(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: double.infinity,
-                                  child: Text(kt("disclaimer"), style: Theme.of(context).textTheme.headline6,),
-                                ),
-                                Padding(padding: EdgeInsets.only(top: 10)),
-                                Text(kt("disclaimer_content"), style: Theme.of(context).textTheme.bodyText1,),
-                                Padding(padding: EdgeInsets.only(top: 10)),
-                                Container(
-                                  width: double.infinity,
-                                  child: Text(kt("credits"), style: Theme.of(context).textTheme.headline6,),
-                                ),
-                                Padding(padding: EdgeInsets.only(top: 10)),
-                                Container(
-                                  width: double.infinity,
-                                  child: creditsContent,
-                                )
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        MaterialButton(
-                          textColor: Theme.of(context).primaryColor,
-                          child: Text(kt("ok")),
-                          onPressed: () {
-                            Navigator.of(context).pop(true);
-                          },
-                        )
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            );
-          }
-      );
-      print("result is $result");
+      bool result = await showCreditsDialog(context);
       if (result == true) {
         KeyValue.set(disclaimer_key, "true");
       } else {
@@ -456,7 +360,7 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
         return FileImage(icon);
       }
     }
-    return CachedNetworkImageProvider("http://tinygraphs.com/squares/${generateMd5(project.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg");
+    return CachedNetworkImageProvider("https://www.tinygraphs.com/squares/${generateMd5(project.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg");
   }
 
   List<Widget> buildList(Project project) {
@@ -537,7 +441,7 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
                 child: Container(
                   color: Colors.blueAccent,
                   child: Image(
-                    image: CachedNetworkImageProvider("http://tinygraphs.com/squares/unkown?theme=bythepool&numcolors=3&size=180&fmt=jpg"),
+                    image: CachedNetworkImageProvider("https://www.tinygraphs.com/squares/unkown?theme=bythepool&numcolors=3&size=180&fmt=jpg"),
                     fit: BoxFit.contain,
                     width: 36,
                     height: 36,
@@ -685,7 +589,7 @@ class _HomePageState extends State<HomePage> {
           msg: kt("select_main_project_first"),
           toastLength: Toast.LENGTH_LONG
         );
-        idx = 3;
+        idx = 4;
       }
       if (selected != idx) {
         setState(() {

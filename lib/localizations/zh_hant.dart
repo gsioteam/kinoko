@@ -68,4 +68,6 @@ Liah(Icon) https://liah0227.itch.io/
   "cached_size": "緩存空間",
   "clear_cache": "清空緩存，請確認",
   "clear": "清空緩存",
+  "libraries_hit": "克隆並選擇壹個項目後即可開始瀏覽內容。",
+  "instructions": "說明",
 };

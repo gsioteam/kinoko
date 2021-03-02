@@ -264,6 +264,44 @@ class DownloadPage extends HomeWidget {
   @override
   State<StatefulWidget> createState() => _DownloadPageState();
 
+  // @override
+  // List<Widget> buildActions(BuildContext context, void Function() changed) {
+  //   return [
+  //     PopupMenuButton(
+  //       itemBuilder: (context) {
+  //         return [
+  //           PopupMenuItem(
+  //               child: Row(
+  //                 children: [
+  //                   Icon(Icons.assistant),
+  //                   Text(kt(context, "instructions"))
+  //                 ],
+  //               )
+  //           )
+  //         ];
+  //       },
+  //       onSelected: (v) {
+  //         showDialog(
+  //           context: context,
+  //           builder: (context) {
+  //             return AlertDialog(
+  //               title: Text(kt(context, "instructions")),
+  //               content: Text(kt(context, "")),
+  //               actions: [
+  //                 TextButton(
+  //                   onPressed: () {
+  //                     Navigator.of(context).pop();
+  //                   },
+  //                   child: Text(kt(context, "ok"))
+  //                 )
+  //               ],
+  //             );
+  //           }
+  //         );
+  //       },
+  //     ),
+  //   ];
+  // }
 }
 
 class _NeedRemove {

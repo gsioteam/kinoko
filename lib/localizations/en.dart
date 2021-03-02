@@ -68,4 +68,7 @@ Liah(Icon) https://liah0227.itch.io/
   "cached_size": "Cached Size",
   "clear_cache": "Would you like to clear cache?",
   "clear": "Clear Cache",
+  "libraries_hit": "Clone and select a project to main project, then enjoy manga!",
+  "instructions": "Instructions",
+  "download_instructions": "",
 };

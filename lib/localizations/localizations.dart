@@ -65,8 +65,8 @@ class KinokoLocalizationsDelegate extends LocalizationsDelegate<KinokoLocalizati
   bool shouldReload(LocalizationsDelegate old) => false;
 }
 
-String Function(String) lc(BuildContext ctx) {
-  KinokoLocalizations loc = Localizations.of<KinokoLocalizations>(ctx, KinokoLocalizations);
+String Function(String) lc(BuildContext context) {
+  KinokoLocalizations loc = Localizations.of<KinokoLocalizations>(context, KinokoLocalizations);
   return (String key)=>loc.get(key);
 }
 

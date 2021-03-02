@@ -78,7 +78,7 @@ class _LibraryCellState extends State<LibraryCell> {
         return makeImageProvider(project.icon);
       }
     }
-    return CachedNetworkImageProvider("http://tinygraphs.com/squares/${generateMd5(library.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg");
+    return CachedNetworkImageProvider("https://www.tinygraphs.com/squares/${generateMd5(library.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg");
   }
 
   void installConfirm() {
@@ -397,63 +397,83 @@ class _LibrariesPageState extends State<LibrariesPage> {
 
   @override
   Widget build(BuildContext context) {
+    var project = Project.getMainProject();
+    bool hasProject = project != null;
+
     return BetterRefreshIndicator(
       child: NotificationListener<ScrollUpdateNotification>(
         child: ListView.separated(
-            itemBuilder: (context, idx) {
-              GitLibrary library = data[idx];
-              String token = library.token;
-              if (token.isEmpty) {
-                String url = library.url;
-                return Dismissible(
-                  key: GlobalObjectKey(url),
-                  background: Container(color: Colors.red,),
-                  child: LibraryCell(
-                    library: library,
+          itemBuilder: (context, idx) {
+            if (!hasProject) {
+              if (idx == 0) {
+                return Container(
+                  color: Colors.lightGreenAccent,
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    kt("libraries_hit"),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyText1.copyWith(
+                      color: Colors.indigo
+                    ),
                   ),
-                  confirmDismiss: (_) async {
-                    bool result = await showDialog<bool>(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: Text(kt("remove_project")),
-                            content: Text(kt("would_remove_project").replaceFirst("{0}", url)),
-                            actions: [
-                              FlatButton(
-                                  onPressed: (){
-                                    Navigator.of(context).pop(false);
-                                  },
-                                  child: Text(kt("no"))
-                              ),
-                              FlatButton(
-                                  onPressed: (){
-                                    Navigator.of(context).pop(true);
-                                  },
-                                  child: Text(kt("yes"))
-                              ),
-                            ],
-                          );
-                        }
-                    );
-                    return result == true;
-                  },
-                  onDismissed: (_) {
-                    setState(() {
-                      ctx.removeLibrary(url);
-                    });
-                  },
                 );
               } else {
-                return LibraryCell(
-                  key: GlobalObjectKey(token),
-                  library: library,
-                );
+                --idx;
               }
-            },
-            separatorBuilder: (context, idx) {
-              return Divider(height: 1,);
-            },
-            itemCount: data.length
+            }
+            GitLibrary library = data[idx];
+            String token = library.token;
+            if (token.isEmpty) {
+              String url = library.url;
+              return Dismissible(
+                key: GlobalObjectKey(url),
+                background: Container(color: Colors.red,),
+                child: LibraryCell(
+                  library: library,
+                ),
+                confirmDismiss: (_) async {
+                  bool result = await showDialog<bool>(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text(kt("remove_project")),
+                        content: Text(kt("would_remove_project").replaceFirst("{0}", url)),
+                        actions: [
+                          FlatButton(
+                            onPressed: (){
+                              Navigator.of(context).pop(false);
+                            },
+                            child: Text(kt("no"))
+                          ),
+                          FlatButton(
+                            onPressed: (){
+                              Navigator.of(context).pop(true);
+                            },
+                            child: Text(kt("yes"))
+                          ),
+                        ],
+                      );
+                    }
+                  );
+                  return result == true;
+                },
+                onDismissed: (_) {
+                  setState(() {
+                    ctx.removeLibrary(url);
+                  });
+                },
+              );
+            } else {
+              return LibraryCell(
+                key: GlobalObjectKey(token),
+                library: library,
+              );
+            }
+          },
+          separatorBuilder: (context, idx) {
+            return Divider(height: 1,);
+          },
+          itemCount: hasProject ? data.length : data.length + 1
         ),
         onNotification: onUpdateNotification,
       ),
