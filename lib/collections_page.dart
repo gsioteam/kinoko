@@ -159,6 +159,7 @@ class _CollectionsPageState extends State<CollectionsPage> {
             tabs: tabs,
             isScrollable: true,
           ),
+          automaticallyImplyLeading: false,
         ) : null,
         body: TabBarView(
           children: bodies

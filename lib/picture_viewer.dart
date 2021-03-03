@@ -300,7 +300,7 @@ class _PictureViewerState extends State<PictureViewer> {
                     itemBuilder: (context) {
                       List<PopupMenuEntry> list = [
                         PopupMenuItem(
-                          child: FlatButton(
+                          child: TextButton(
                             onPressed: () {
                               if (flipType != FlipType.Horizontal) {
                                 setState(() {
@@ -323,7 +323,7 @@ class _PictureViewerState extends State<PictureViewer> {
                           ),
                         ),
                         PopupMenuItem(
-                          child: FlatButton(
+                          child: TextButton(
                             onPressed: () {
                               if (flipType != FlipType.HorizontalReverse) {
                                 setState(() {
@@ -353,7 +353,7 @@ class _PictureViewerState extends State<PictureViewer> {
                           ),
                         ),
                         PopupMenuItem(
-                          child: FlatButton(
+                          child: TextButton(
                             onPressed: () {
                               if (flipType != FlipType.Vertical) {
                                 setState(() {
@@ -377,7 +377,7 @@ class _PictureViewerState extends State<PictureViewer> {
                         ),
                         PopupMenuDivider(),
                         PopupMenuItem(
-                          child: FlatButton(
+                          child: TextButton(
                             onPressed: () {
                               if (isLandscape) {
                                 setState(() {
@@ -401,7 +401,7 @@ class _PictureViewerState extends State<PictureViewer> {
                           ),
                         ),
                         PopupMenuItem(
-                          child: FlatButton(
+                          child: TextButton(
                             onPressed: () {
                               if (!isLandscape) {
                                 setState(() {
@@ -429,7 +429,7 @@ class _PictureViewerState extends State<PictureViewer> {
                       if (widget.onDownload != null) {
                         list.add(PopupMenuDivider());
                         list.add(PopupMenuItem(
-                          child: FlatButton(
+                          child: TextButton(
                             onPressed: () {
                               widget.onDownload(widget.context.info_data);
                               Navigator.of(context).pop();
@@ -461,7 +461,7 @@ class _PictureViewerState extends State<PictureViewer> {
 
           Positioned(
             child: AnimatedOpacity(
-              child: FlatButton(
+              child: TextButton(
                 onPressed: showPagePicker,
                 child: Text.rich(
                   TextSpan(

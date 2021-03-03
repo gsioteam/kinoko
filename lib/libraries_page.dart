@@ -92,13 +92,13 @@ class _LibraryCellState extends State<LibraryCell> {
             softWrap: true,
           ),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
                 onPressed: (){
                   Navigator.of(context).pop();
                 },
                 child: Text(kt("no"))
             ),
-            FlatButton(
+            TextButton(
                 onPressed: (){
                   Navigator.of(context).pop();
                   install();
@@ -144,13 +144,13 @@ class _LibraryCellState extends State<LibraryCell> {
           title: Text(kt("confirm")),
           content: Text(kt("select_main_project")),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
                 onPressed: (){
                   Navigator.of(context).pop();
                 },
                 child: Text(kt("no"))
             ),
-            FlatButton(
+            TextButton(
                 onPressed: (){
                   Navigator.of(context).pop();
                   selectMainProject();
@@ -297,7 +297,7 @@ class LibrariesPage extends HomeWidget {
                     onChanged: textInput,
                   ),
                   actions: <Widget>[
-                    FlatButton(
+                    TextButton(
                       onPressed: (){
                         Navigator.of(context).pop();
                         addProject(context, _inputText);
@@ -439,13 +439,13 @@ class _LibrariesPageState extends State<LibrariesPage> {
                         title: Text(kt("remove_project")),
                         content: Text(kt("would_remove_project").replaceFirst("{0}", url)),
                         actions: [
-                          FlatButton(
+                          TextButton(
                             onPressed: (){
                               Navigator.of(context).pop(false);
                             },
                             child: Text(kt("no"))
                           ),
-                          FlatButton(
+                          TextButton(
                             onPressed: (){
                               Navigator.of(context).pop(true);
                             },

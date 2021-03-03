@@ -471,7 +471,7 @@ class _DownloadPageState extends State<DownloadPage> {
               snackBar = BetterSnackBar(
                 title: kt("confirm"),
                 subtitle: kt("delete_item").replaceAll("{0}", queueItem.info.title).replaceAll("{1}", queueItem.item.title),
-                trailing: FlatButton(
+                trailing: TextButton(
                   child: Text(kt("undo"), style: Theme.of(context).textTheme.bodyText2.copyWith(color: Colors.white, fontWeight: FontWeight.bold),),
                   onPressed: () {
                     snackBar.dismiss(true);

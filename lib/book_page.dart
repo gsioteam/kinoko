@@ -457,7 +457,7 @@ class _BookPageState extends State<BookPage> {
         alignment: Alignment.centerLeft,
         child: Visibility(
           visible: item != null,
-          child: FlatButton(
+          child: TextButton(
             padding: EdgeInsets.all(0),
             onPressed: () {
               openChapter(lastChapter);
