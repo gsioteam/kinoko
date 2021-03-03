@@ -458,7 +458,6 @@ class _BookPageState extends State<BookPage> {
         child: Visibility(
           visible: item != null,
           child: TextButton(
-            padding: EdgeInsets.all(0),
             onPressed: () {
               openChapter(lastChapter);
             },

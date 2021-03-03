@@ -319,7 +319,9 @@ class _PictureViewerState extends State<PictureViewer> {
                                 ),
                               ],
                             ),
-                            textColor: flipType != FlipType.Horizontal ? Colors.blue : Colors.black87,
+                            style: ButtonStyle(
+                              foregroundColor: MaterialStateProperty.all(flipType != FlipType.Horizontal ? Colors.blue : Colors.black87)
+                            ),
                           ),
                         ),
                         PopupMenuItem(
@@ -349,7 +351,9 @@ class _PictureViewerState extends State<PictureViewer> {
                                 ),
                               ],
                             ),
-                            textColor: flipType != FlipType.HorizontalReverse ? Colors.blue : Colors.black87,
+                            style: ButtonStyle(
+                                foregroundColor: MaterialStateProperty.all(flipType != FlipType.HorizontalReverse ? Colors.blue : Colors.black87)
+                            ),
                           ),
                         ),
                         PopupMenuItem(
@@ -372,7 +376,9 @@ class _PictureViewerState extends State<PictureViewer> {
                                 ),
                               ],
                             ),
-                            textColor: flipType != FlipType.Vertical ? Colors.blue : Colors.black87,
+                            style: ButtonStyle(
+                                foregroundColor: MaterialStateProperty.all(flipType != FlipType.Vertical ? Colors.blue : Colors.black87)
+                            ),
                           ),
                         ),
                         PopupMenuDivider(),
@@ -397,7 +403,9 @@ class _PictureViewerState extends State<PictureViewer> {
                                 ),
                               ],
                             ),
-                            textColor: !isLandscape ? Colors.blue : Colors.black87,
+                            style: ButtonStyle(
+                                foregroundColor: MaterialStateProperty.all(isLandscape ? Colors.blue : Colors.black87)
+                            ),
                           ),
                         ),
                         PopupMenuItem(
@@ -421,7 +429,9 @@ class _PictureViewerState extends State<PictureViewer> {
                                 ),
                               ],
                             ),
-                            textColor: isLandscape ? Colors.blue : Colors.black87,
+                            style: ButtonStyle(
+                                foregroundColor: MaterialStateProperty.all(!isLandscape ? Colors.blue : Colors.black87)
+                            ),
                           ),
                         ),
                       ];

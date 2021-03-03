@@ -143,7 +143,7 @@ class SplashScreenState extends State<SplashScreen> {
       );
     });
     XmlLayout.register("FlatButton", (node, key) {
-      return TextButton(
+      return FlatButton(
         key: key,
         onPressed: node.s<VoidCallback>("onPressed"),
         child: node.child<Widget>(),
