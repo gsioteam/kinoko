@@ -24,6 +24,12 @@ class SpinItemState extends State<SpinItem> with SingleTickerProviderStateMixin 
   }
 
   @override
+  void dispose() {
+    animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: animationController,
@@ -36,8 +42,6 @@ class SpinItemState extends State<SpinItem> with SingleTickerProviderStateMixin 
       },
     );
   }
-
-
 
   void startAnimation() {
     animationController.repeat();

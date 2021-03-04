@@ -237,6 +237,9 @@ class _LibraryCellState extends State<LibraryCell> {
                 _spinKey.currentState?.stopAnimation();
                 setState(() { });
               });
+            } else {
+              _spinKey.currentState?.stopAnimation();
+              setState(() { });
             }
           });
         },
