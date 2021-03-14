@@ -70,4 +70,5 @@ Liah(Icon) https://liah0227.itch.io/
   "clear": "清空缓存",
   "libraries_hit": "克隆并选择一个项目后即可开始浏览内容。",
   "instructions": "说明",
+  "lang": "zh_hans",
 };

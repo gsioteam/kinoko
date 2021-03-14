@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.2.6+28
+version: 1.2.7+30
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -40,16 +40,17 @@ dependencies:
   scrollable_positioned_list: ^0.1.7
   flutter_picker: ^1.1.5
   http: ^0.12.1
-  xml_layout: ^1.0.7
+  xml_layout: ^1.1.2
   flutter_svg_provider:
     git:
       url: https://github.com/gsioteam/flutter_svg_provider.git
       ref: 6675ea2d0ea021c1acf3d267a154027879bb42a5
-  url_launcher: ^5.4.2
+  url_launcher: ^6.0.2
   folder_picker:
     git: https://github.com/gsioteam/folder_picker.git
   path_provider_ex: ^1.0.1
-  permission: ^0.1.7
+  permission_handler: ^6.1.0
+  markdown_widget: ^1.2.6
 
 dev_dependencies:
 #  flutter_test:
@@ -73,6 +74,9 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/logo.png
+    - assets/fav/
+    - assets/download/
+    - assets/picture/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

@@ -508,13 +508,14 @@ class NavigationController {
   }
 }
 
+class AppStatusNotification extends Notification {
+}
+
 class NavigationBar extends StatefulWidget implements PreferredSizeWidget {
 
-  NavigationController controller;
+  final NavigationController controller;
 
-  NavigationBar(AppBarData appBarData) {
-    controller = NavigationController(appBarData);
-  }
+  NavigationBar(AppBarData appBarData) : controller = NavigationController(appBarData);
 
   @override
   State<StatefulWidget> createState() => _NavigationBarState();
@@ -653,9 +654,9 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       appBar: NavigationBar(body.appBarData),
-      body: NotificationListener<LibraryNotification>(
+      body: NotificationListener<AppStatusNotification>(
         child: body,
-        onNotification: (noti) {
+        onNotification: (_) {
           setState(() { });
           return true;
         },

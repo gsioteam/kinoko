@@ -82,19 +82,24 @@ class _HistoryPageState extends State<HistoryPage> {
       itemBuilder: (context, index) {
         HistoryItem item = items[index];
         DataItem data = item.item;
-        return ListTile(
-          title: Text(data.title),
-          subtitle: Text(data.subtitle),
-          leading: Image(
-            image: CachedNetworkImageProvider(data.picture),
-            fit: BoxFit.cover,
-            width: 56,
-            height: 56,
-            gaplessPlayback: true,
-          ),
-          onTap: () {
-            enterPage(item);
-          },
+        return Column(
+          children: [
+            ListTile(
+              title: Text(data.title),
+              subtitle: Text(data.subtitle),
+              leading: Image(
+                image: CachedNetworkImageProvider(data.picture),
+                fit: BoxFit.cover,
+                width: 56,
+                height: 56,
+                gaplessPlayback: true,
+              ),
+              onTap: () {
+                enterPage(item);
+              },
+            ),
+            Divider(height: 1,)
+          ],
         );
       }
     );

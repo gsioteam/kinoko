@@ -6,9 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
+import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
 import 'package:kinoko/utils/book_info.dart';
 import 'package:kinoko/utils/cached_picture_image.dart';
+import 'configs.dart';
+import 'main.dart';
 import 'picture_viewer.dart';
 import 'utils/download_manager.dart';
 import 'localizations/localizations.dart';
@@ -18,9 +21,11 @@ import 'package:folder_picker/folder_picker.dart';
 import 'widgets/home_widget.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:permission/permission.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:math' as math;
 import 'package:path/path.dart' as path;
+
+import 'widgets/instructions_dialog.dart';
 
 class BookData {
   BookInfo bookInfo;
@@ -72,6 +77,7 @@ class _ChapterCellState extends State<ChapterCell> {
         },
       );
     } else {
+      const double IconSize = 24;
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -80,19 +86,14 @@ class _ChapterCellState extends State<ChapterCell> {
             IconButton(
               icon: Icon(Icons.save),
               onPressed: () async {
-                var status = (await Permission.getPermissionsStatus([PermissionName.Storage])).first?.permissionStatus;
+
+                var status = await Permission.storage.status;
                 switch (status) {
-                  case PermissionStatus.allow:
+                  case PermissionStatus.granted:
                     break;
-                  case PermissionStatus.notAgain: {
-                    Fluttertoast.showToast(
-                        msg: kt("no_permission")
-                    );
-                    return;
-                  }
                   default: {
-                    var status = await Permission.requestSinglePermission(PermissionName.Storage);
-                    if (status != PermissionStatus.allow) {
+                    var status = await Permission.storage.request();
+                    if (status != PermissionStatus.granted) {
                       Fluttertoast.showToast(
                           msg: kt("no_permission")
                       );
@@ -158,8 +159,8 @@ class _ChapterCellState extends State<ChapterCell> {
                                 for (int j = index.length; j < len; ++j) {
                                   index = "0" + index;
                                 }
-
-                                await fileInfo.file.copy("${dir.path}/p_$index.${path.extension(url)}");
+                                var uri = Uri.parse(url);
+                                await fileInfo.file.copy("${dir.path}/p_$index${path.extension(uri.path)}");
                               } else {
                                 print("No output $url");
                               }
@@ -185,21 +186,48 @@ class _ChapterCellState extends State<ChapterCell> {
                 :
             (
                 queueItem.downloading ?
-                IconButton(
-                    icon: Icon(Icons.pause),
-                    onPressed: () {
-                      setState(() {
-                        queueItem.stop();
-                      });
-                    }
-                ):
-                IconButton(
-                    icon: Icon(Icons.play_arrow),
-                    onPressed: () {
-                      setState(() {
-                        queueItem.start();
-                      });
-                    }
+                MaterialButton(
+                  padding: EdgeInsets.only(left: 8, right: 8),
+                  minWidth: IconSize,
+                  child: Container(
+                    width: IconSize,
+                    height: IconSize,
+                    child: Icon(Icons.pause, size: 14, color: Colors.black54),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(IconSize/2)),
+                        border: Border.all(
+                          color: Colors.black54,
+                          width: 2,
+                        )
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      queueItem.stop();
+                    });
+                  },
+                ) :
+                MaterialButton(
+                  padding: EdgeInsets.only(left: 8, right: 8),
+                  minWidth: IconSize,
+                  child: Container(
+                    width: IconSize,
+                    height: IconSize,
+                    child: Icon(Icons.play_arrow, size: 14, color: Colors.black54),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(IconSize/2)),
+                        border: Border.all(
+                          color: Colors.black54,
+                          width: 2,
+                        )
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      errorStr = null;
+                      queueItem.start();
+                    });
+                  }
                 )
             ),
           ),
@@ -215,15 +243,22 @@ class _ChapterCellState extends State<ChapterCell> {
     DownloadQueueItem queueItem = widget.item;
     DataItem item = queueItem.item;
     ThemeData theme = Theme.of(context);
-    return Container(
-      color: Colors.grey.withOpacity(0.1),
-      padding: EdgeInsets.only(left: 10, right: 10),
-      child: ListTile(
-        title: Text(item.title),
-        subtitle: Text("(${queueItem.loaded}/${queueItem.total})", style: theme.textTheme.caption,),
-        trailing: extendButtons(context, queueItem),
-        onTap: widget.onTap,
-      ),
+    return Column(
+      children: [
+        Container(
+          color: Colors.grey.withOpacity(0.1),
+          padding: EdgeInsets.only(left: 10, right: 10),
+          child: ListTile(
+            title: Text(item.title),
+            subtitle: errorStr == null ?
+            Text("(${queueItem.loaded}/${queueItem.total})", style: theme.textTheme.caption,) :
+            Text(errorStr, style: theme.textTheme.caption.copyWith(color: theme.errorColor),),
+            trailing: extendButtons(context, queueItem),
+            onTap: widget.onTap,
+          ),
+        ),
+        Divider(height: 1,)
+      ],
     );
   }
 
@@ -258,50 +293,30 @@ class _ChapterCellState extends State<ChapterCell> {
   }
 }
 
+
 class DownloadPage extends HomeWidget {
+  final GlobalKey iconKey = GlobalKey();
   DownloadPage() : super(key: GlobalKey<_DownloadPageState>(), title: "download_list");
 
   @override
   State<StatefulWidget> createState() => _DownloadPageState();
 
-  // @override
-  // List<Widget> buildActions(BuildContext context, void Function() changed) {
-  //   return [
-  //     PopupMenuButton(
-  //       itemBuilder: (context) {
-  //         return [
-  //           PopupMenuItem(
-  //               child: Row(
-  //                 children: [
-  //                   Icon(Icons.assistant),
-  //                   Text(kt(context, "instructions"))
-  //                 ],
-  //               )
-  //           )
-  //         ];
-  //       },
-  //       onSelected: (v) {
-  //         showDialog(
-  //           context: context,
-  //           builder: (context) {
-  //             return AlertDialog(
-  //               title: Text(kt(context, "instructions")),
-  //               content: Text(kt(context, "")),
-  //               actions: [
-  //                 TextButton(
-  //                   onPressed: () {
-  //                     Navigator.of(context).pop();
-  //                   },
-  //                   child: Text(kt(context, "ok"))
-  //                 )
-  //               ],
-  //             );
-  //           }
-  //         );
-  //       },
-  //     ),
-  //   ];
-  // }
+  @override
+  List<Widget> buildActions(BuildContext context, void Function() changed) {
+    bool has = KeyValue.get("$viewed_key:download") == "true";
+    return [
+      IconButton(
+        key: iconKey,
+        onPressed: () {
+          showInstructionsDialog(context, 'assets/download',
+            entry: kt(context, 'lang'),
+          );
+        },
+        icon: Icon(Icons.help_outline),
+        color: has ? Colors.white : Colors.transparent,
+      ),
+    ];
+  }
 }
 
 class _NeedRemove {
@@ -513,6 +528,7 @@ class _DownloadPageState extends State<DownloadPage> {
 
               snackBars.remove(snackBar);
             },
+            background: Container(color: Colors.red,),
           );
         }
     }
@@ -568,6 +584,25 @@ class _DownloadPageState extends State<DownloadPage> {
     }
 
     super.initState();
+
+    if (KeyValue.get("$viewed_key:download") != "true") {
+      Future.delayed(Duration(milliseconds: 300)).then((value) async {
+        await showInstructionsDialog(context, 'assets/download',
+            entry: kt('lang'),
+            onPop: () async {
+              final renderObject = widget.iconKey.currentContext.findRenderObject();
+              Rect rect = renderObject?.paintBounds;
+              var translation = renderObject?.getTransformTo(null)?.getTranslation();
+              if (rect != null && translation != null) {
+                return rect.shift(Offset(translation.x, translation.y));
+              }
+              return null;
+            }
+        );
+        KeyValue.set("$viewed_key:download", "true");
+        AppStatusNotification().dispatch(context);
+      });
+    }
   }
 
   @override

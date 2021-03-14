@@ -18,6 +18,7 @@ import 'package:kinoko/collection_page.dart';
 import 'package:xml_layout/xml_layout.dart';
 import 'configs.dart';
 import 'localizations/localizations.dart';
+import 'main.dart';
 import 'utils/download_manager.dart';
 import 'utils/history_manager.dart';
 import 'widgets/better_refresh_indicator.dart';
@@ -26,6 +27,7 @@ import 'picture_viewer.dart';
 import 'utils/book_info.dart';
 import 'utils/favorites_manager.dart';
 import 'utils/proxy_collections.dart';
+import 'widgets/instructions_dialog.dart';
 
 class BarItem extends StatefulWidget {
 
@@ -358,7 +360,13 @@ class _BookPageState extends State<BookPage> {
     }
     if (_lastChapterValue != null && _lastChapterValue.isNotEmpty) {
       Array items = DataItem.fromJSON(_lastChapterValue);
-      return items.length > 0 ? items.first : null;
+      if (items.isNotEmpty) {
+        DataItem item = items.first;
+        if (item.projectKey.isEmpty)
+          item.projectKey = widget.context.projectKey;
+        return item;
+      }
+      return null;
     }
     return null;
   }
@@ -717,6 +725,25 @@ class _BookPageState extends State<BookPage> {
       } catch (e) { }
     }
     super.initState();
+
+    // if (KeyValue.get("$viewed_key:book") != "true") setState(() {
+    //   Future.delayed(Duration(seconds: 1)).then((value) async {
+    //     await showInstructionsDialog(context, 'assets/book',
+    //         entry: kt('lang'),
+    //         onPop: () async {
+    //           final renderObject = iconKey.currentContext.findRenderObject();
+    //           Rect rect = renderObject?.paintBounds;
+    //           var translation = renderObject?.getTransformTo(null)?.getTranslation();
+    //           if (rect != null && translation != null) {
+    //             return rect.shift(Offset(translation.x, translation.y));
+    //           }
+    //           return null;
+    //         }
+    //     );
+    //     KeyValue.set("$viewed_key:book", "true");
+    //     AppStatusNotification().dispatch(context);
+    //   });
+    // });
   }
 
   AutoRelease data;

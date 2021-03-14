@@ -6,8 +6,10 @@ import 'package:flutter/widgets.dart';
 import 'package:glib/core/array.dart';
 import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
+import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
 import 'configs.dart';
+import 'main.dart';
 import 'widgets/home_widget.dart';
 import 'widgets/book_item.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -16,6 +18,7 @@ import 'book_page.dart';
 import 'picture_viewer.dart';
 import 'utils/favorites_manager.dart';
 import 'widgets/better_snack_bar.dart';
+import 'widgets/instructions_dialog.dart';
 
 class _FavKey extends GlobalObjectKey {
   _FavKey(value) : super(value);
@@ -50,22 +53,28 @@ class _FavoriteItemState extends State<FavoriteItem> {
       sizeFactor: widget.animation,
       child: Dismissible(
         key: ObjectKey(widget.item),
-        child: ListTile(
-          title: Text(title),
-          subtitle: Text(subtitle),
-          leading: Image(
-            image: CachedNetworkImageProvider(picture),
-            fit: BoxFit.cover,
-            width: 56,
-            height: 56,
-            gaplessPlayback: true,
-          ),
-          onTap: () {
-            setState(() {
-              widget.onTap();
-            });
-          },
-          trailing: widget.item.hasNew ? Icon(Icons.fiber_new, color: Colors.red,) : null,
+        background: Container(color: Colors.red,),
+        child: Column(
+          children: [
+            ListTile(
+              title: Text(title),
+              subtitle: Text(subtitle),
+              leading: Image(
+                image: CachedNetworkImageProvider(picture),
+                fit: BoxFit.cover,
+                width: 56,
+                height: 56,
+                gaplessPlayback: true,
+              ),
+              onTap: () {
+                setState(() {
+                  widget.onTap();
+                });
+              },
+              trailing: widget.item.hasNew ? Icon(Icons.fiber_new, color: Colors.red,) : null,
+            ),
+            Divider(height: 1,)
+          ],
         ),
         onDismissed: (direction) {
           widget.onDismiss?.call();
@@ -101,12 +110,32 @@ class _FavoriteItemState extends State<FavoriteItem> {
 }
 
 class FavoritesPage extends HomeWidget {
+
+  final GlobalKey iconKey = GlobalKey();
+
   @override
   String get title => "favorites";
 
   @override
   State<StatefulWidget> createState() {
     return _FavoritesPageState();
+  }
+
+  @override
+  List<Widget> buildActions(BuildContext context, void Function() changed) {
+    bool has = KeyValue.get("$viewed_key:fav") == "true";
+    return [
+      IconButton(
+        key: iconKey,
+        onPressed: () {
+          showInstructionsDialog(context, 'assets/fav',
+            entry: kt(context, 'lang'),
+          );
+        },
+        icon: Icon(Icons.help_outline),
+        color: has ? Colors.white : Colors.transparent,
+      ),
+    ];
   }
 }
 
@@ -227,6 +256,26 @@ class _FavoritesPageState extends State<FavoritesPage> {
   void initState() {
     items = List<FavCheckItem>.from(FavoritesManager().items);
     super.initState();
+
+    if (KeyValue.get("$viewed_key:fav") != "true") {
+      Future.delayed(Duration(milliseconds: 300)).then((value) async {
+         await showInstructionsDialog(context, 'assets/fav',
+            entry: kt('lang'),
+            onPop: () async {
+              final renderObject = widget.iconKey.currentContext.findRenderObject();
+              Rect rect = renderObject?.paintBounds;
+              var translation = renderObject?.getTransformTo(null)?.getTranslation();
+              if (rect != null && translation != null) {
+                return rect.shift(Offset(translation.x, translation.y));
+              }
+              return null;
+            }
+        );
+         KeyValue.set("$viewed_key:fav", "true");
+         AppStatusNotification().dispatch(context);
+      });
+    }
+
   }
 
   @override

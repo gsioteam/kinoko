@@ -71,4 +71,5 @@ Liah(Icon) https://liah0227.itch.io/
   "libraries_hit": "Clone and select a project to main project, then enjoy manga!",
   "instructions": "Instructions",
   "download_instructions": "",
+  "lang": "en",
 };

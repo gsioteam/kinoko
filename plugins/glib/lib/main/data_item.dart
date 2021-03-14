@@ -38,6 +38,7 @@ class DataItem extends Base {
   set data(v) => call("setData", argv: [v]);
   
   String get projectKey => call("getProjectKey");
+  set projectKey(String v) => call("setProjectKey", argv: [v]);
 
   DataItemType get type {
     int type = call("getType");

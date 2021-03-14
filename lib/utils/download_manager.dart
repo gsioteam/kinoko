@@ -262,7 +262,7 @@ class DownloadQueueItem {
       queue.add(image);
       checkImageQueue();
     } else {
-      print("not add ${url}");
+      print("not add $url");
     }
   }
 
@@ -308,7 +308,7 @@ class DownloadQueueItem {
       } else {
         _loaded = max(_loaded, _loaded2);
         _loaded2 = 0;
-        List<String> tmp = List<String>.from(urls);
+        var tmp = List.from(urls.map((e) => e.url));
         urls.clear();
         queue.clear();
         tmp.forEach((url) {
@@ -331,6 +331,7 @@ class DownloadQueueItem {
       context = null;
     }
     project.release();
+    return true;
   }
 
   void start() async {

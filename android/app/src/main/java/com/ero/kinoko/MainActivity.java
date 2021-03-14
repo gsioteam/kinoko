@@ -90,7 +90,6 @@ public class MainActivity extends FlutterActivity {
         });
     }
 
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (handleVolumeButton) {

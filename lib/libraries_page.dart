@@ -16,6 +16,7 @@ import 'package:kinoko/widgets/spin_itim.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'localizations/localizations.dart';
+import 'main.dart';
 import 'widgets/home_widget.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:http/http.dart' as http;
@@ -24,10 +25,6 @@ import 'utils/image_provider.dart';
 
 const LibURL = "https://api.github.com/repos/gsioteam/env/issues/2/comments?per_page={1}&page={0}";
 const int per_page = 40;
-
-class LibraryNotification extends Notification {
-
-}
 
 class LibraryCell extends StatefulWidget {
 
@@ -154,7 +151,7 @@ class _LibraryCellState extends State<LibraryCell> {
                 onPressed: (){
                   Navigator.of(context).pop();
                   selectMainProject();
-                  LibraryNotification().dispatch(mainContext);
+                  AppStatusNotification().dispatch(mainContext);
                 },
                 child: Text(kt("yes"))
             )

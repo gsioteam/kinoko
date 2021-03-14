@@ -57,7 +57,7 @@ Future<bool> showCreditsDialog(BuildContext context) async {
                 Padding(padding: EdgeInsets.only(top: 10)),
                 Container(
                   width: double.infinity,
-                  height: math.min(MediaQuery.of(context).size.height, 420),
+                  height: math.min(MediaQuery.of(context).size.height * 0.6, 420),
                   child: CustomScrollView(
                     slivers: [
                       SliverToBoxAdapter(

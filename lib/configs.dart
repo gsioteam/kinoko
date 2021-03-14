@@ -19,3 +19,5 @@ const String disclaimer_key = "disclaimer";
 const String language_key = "language";
 
 const String history_key = "history";
+
+const String viewed_key = "viewed";

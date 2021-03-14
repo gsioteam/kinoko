@@ -19,12 +19,14 @@ import 'package:glib/main/error.dart' as glib;
 import 'package:glib/utils/bit64.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'main.dart';
 import 'utils/download_manager.dart';
 import 'utils/preload_queue.dart';
 import 'dart:math' as math;
 import 'package:gesture_zoom_box/gesture_zoom_box.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'localizations/localizations.dart';
+import 'widgets/instructions_dialog.dart';
 import 'widgets/photo_list.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_picker/flutter_picker.dart';
@@ -117,6 +119,9 @@ class _PictureViewerState extends State<PictureViewer> {
   PhotoController photoController;
   FlipType flipType = FlipType.Horizontal;
   bool isLandscape = false;
+
+  GlobalKey iconKey = GlobalKey();
+  GlobalKey<PopupMenuButtonState> menuKey = GlobalKey();
 
   String _directionKey;
   String _deviceKey;
@@ -296,6 +301,7 @@ class _PictureViewerState extends State<PictureViewer> {
                     )
                   ),
                   PopupMenuButton(
+                    key: menuKey,
                     icon: Icon(Icons.more_vert, color: Colors.white,),
                     itemBuilder: (context) {
                       List<PopupMenuEntry> list = [
@@ -320,7 +326,7 @@ class _PictureViewerState extends State<PictureViewer> {
                               ],
                             ),
                             style: ButtonStyle(
-                              foregroundColor: MaterialStateProperty.all(flipType != FlipType.Horizontal ? Colors.blue : Colors.black87)
+                              foregroundColor: MaterialStateProperty.all(flipType != FlipType.Horizontal ? Colors.black87 : Colors.blue)
                             ),
                           ),
                         ),
@@ -341,7 +347,7 @@ class _PictureViewerState extends State<PictureViewer> {
                                   width: size,
                                   height: size,
                                   child: CustomPaint(
-                                    painter: HorizontalIconPainter(flipType != FlipType.HorizontalReverse ? Colors.blue : Colors.black87),
+                                    painter: HorizontalIconPainter(flipType != FlipType.HorizontalReverse ? Colors.black87 : Colors.blue),
                                     size: Size(size, size),
                                   ),
                                 ),
@@ -352,7 +358,7 @@ class _PictureViewerState extends State<PictureViewer> {
                               ],
                             ),
                             style: ButtonStyle(
-                                foregroundColor: MaterialStateProperty.all(flipType != FlipType.HorizontalReverse ? Colors.blue : Colors.black87)
+                                foregroundColor: MaterialStateProperty.all(flipType != FlipType.HorizontalReverse ? Colors.black87 : Colors.blue)
                             ),
                           ),
                         ),
@@ -377,7 +383,7 @@ class _PictureViewerState extends State<PictureViewer> {
                               ],
                             ),
                             style: ButtonStyle(
-                                foregroundColor: MaterialStateProperty.all(flipType != FlipType.Vertical ? Colors.blue : Colors.black87)
+                                foregroundColor: MaterialStateProperty.all(flipType != FlipType.Vertical ? Colors.black87 : Colors.blue)
                             ),
                           ),
                         ),
@@ -404,7 +410,7 @@ class _PictureViewerState extends State<PictureViewer> {
                               ],
                             ),
                             style: ButtonStyle(
-                                foregroundColor: MaterialStateProperty.all(isLandscape ? Colors.blue : Colors.black87)
+                                foregroundColor: MaterialStateProperty.all(isLandscape ? Colors.black87 : Colors.blue)
                             ),
                           ),
                         ),
@@ -430,7 +436,7 @@ class _PictureViewerState extends State<PictureViewer> {
                               ],
                             ),
                             style: ButtonStyle(
-                                foregroundColor: MaterialStateProperty.all(!isLandscape ? Colors.blue : Colors.black87)
+                                foregroundColor: MaterialStateProperty.all(!isLandscape ? Colors.black87 : Colors.blue)
                             ),
                           ),
                         ),
@@ -456,6 +462,31 @@ class _PictureViewerState extends State<PictureViewer> {
                           ),
                         ));
                       }
+                      list.addAll([
+                        PopupMenuDivider(),
+                        PopupMenuItem(
+                          child: TextButton(
+                              onPressed: () {
+                                showInstructionsDialog(context, 'assets/picture',
+                                  entry: kt('lang'),
+                                  iconColor: Theme.of(context).primaryColor,
+                                );
+                              },
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.help_outline,
+                                    key: iconKey,
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.only(left: 20),
+                                    child: Text(kt("instructions")),
+                                  ),
+                                ],
+                              )
+                          ),
+                        ),
+                      ]);
                       return list;
                     }
                   )
@@ -680,6 +711,29 @@ class _PictureViewerState extends State<PictureViewer> {
     channel.invokeMethod("start");
     channel.setMethodCallHandler(onVolumeButtonClicked);
     super.initState();
+
+    if (KeyValue.get("$viewed_key:picture") != "true") {
+      Future.delayed(Duration(milliseconds: 300)).then((value) async {
+        await showInstructionsDialog(context, 'assets/picture',
+          entry: kt('lang'),
+          iconColor: Theme.of(context).primaryColor,
+          onPop: () async {
+            menuKey.currentState.showButtonMenu();
+            await Future.delayed(Duration(milliseconds: 300));
+            final renderObject = iconKey.currentContext.findRenderObject();
+            Rect rect = renderObject?.paintBounds;
+            var translation = renderObject?.getTransformTo(null)?.getTranslation();
+            if (rect != null && translation != null) {
+              return rect.shift(Offset(translation.x, translation.y));
+            }
+            return null;
+          }
+        );
+        KeyValue.set("$viewed_key:picture", "true");
+        if (menuKey.currentState.mounted)
+          Navigator.of(menuKey.currentContext).pop();
+      });
+    }
   }
 
   @override

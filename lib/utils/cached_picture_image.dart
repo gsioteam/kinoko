@@ -28,7 +28,7 @@ class PictureCacheManager extends BaseCacheManager {
     Duration maxAgeCacheObject
   }) : super(
     key,
-    maxAgeCacheObject: maxAgeCacheObject
+    maxAgeCacheObject: maxAgeCacheObject,
   );
 
   factory PictureCacheManager(String key, DataItem item) {
