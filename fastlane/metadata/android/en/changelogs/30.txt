@@ -1,0 +1,5 @@
+- Fixed no permission when export manga.
+- Fixed name problem when export manga.
+- Optimization  UI.
+- Added some instructions.
+- Fixed can not resume download.
