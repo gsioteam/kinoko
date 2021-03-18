@@ -24,13 +24,15 @@ void setupLibrary(CallClass call_class, CallInstance call_instance, CreateFromNa
     initGlib();
     
     DartScript::setup((Dart_CallClass)call_class, (Dart_CallInstance)call_instance, (Dart_CreateFromNative)from_native);
-    
+    Platform::setup();
+
     onSendSignal = on_send_signal;
     DartPlatform::setSendSignal(C([]() {
         onSendSignal();
     }));
 }
 void destroyLibrary() {
+    Platform::clear();
     DartScript::destroy();
 }
 void postSetup(const char *path) {

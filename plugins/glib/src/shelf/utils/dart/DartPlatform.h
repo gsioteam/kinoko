@@ -23,6 +23,10 @@ namespace gs {
 
         DartPlatform();
 
+        ~DartPlatform() {
+            LOG(i, "close Platform");
+        }
+
         bool isMainThread() {
             return main_thread == pthread_self();
         }
@@ -30,6 +34,9 @@ namespace gs {
         static void setSendSignal(const gc::Callback &sendSignal) {
             DartPlatform::sendSignal = sendSignal;
         }
+
+        static void setup();
+        static void clear();
 
     CLASS_END
 }

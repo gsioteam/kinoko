@@ -50,6 +50,7 @@ void dart_setupLibrary(Dart_CallClass call_class, Dart_CallInstance call_instanc
 
 DART_EXPORT
 void dart_destroyLibrary() {
+    Platform::clear();
     DartScript::destroy();
 }
 
@@ -59,7 +60,7 @@ void dart_postSetup(const char *path) {
     gs::db::setup(new_t(gs::SQLite, shared::root_path + "/db.sql"));
     GitRepository::setup(shared::root_path);
 
-    gs::DartPlatform::instance();
+    Platform::setup();
 }
 
 DART_EXPORT

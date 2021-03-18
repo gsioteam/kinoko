@@ -16,13 +16,11 @@ std::mutex Platform::mtx;
 
 namespace gs {
     gc::Wk<DartPlatform> DartPlatform::share_instance;
-    std::mutex DartPlatform::mtx;
 
     long timer_count = 1;
     std::mutex timer_mutex;
 
-    gc::Ref<DartPlatform> DartPlatform::instance() {
-        mtx.lock();
+    void DartPlatform::setup() {
         Ref<DartPlatform> ins = share_instance.lock();
         if (!ins) {
             ScriptClass *cls = DartScript::instance()->find(DartPlatform::getClass());
@@ -31,8 +29,14 @@ namespace gs {
             ins->apply("control");
             share_instance = ins.get();
         }
-        mtx.unlock();
-        return ins;
+    }
+
+    void DartPlatform::clear() {
+        share_instance = nullptr;
+    }
+
+    gc::Ref<DartPlatform> DartPlatform::instance() {
+        return share_instance.lock();
     }
 
     DartPlatform::DartPlatform() {
@@ -46,6 +50,7 @@ long Platform::startTimer(const gc::Callback &callback, float time, bool repeat)
     timer_mutex.unlock();
 
     Ref<DartPlatform> platform = DartPlatform::instance();
+    if (!platform) return 0;
     if (platform->isMainThread()) {
         Variant v1(callback), v2(time), v3(repeat), v4(id);
         platform->apply("startTimer", pointer_vector{&v1, &v2, &v3, &v4});
@@ -60,6 +65,7 @@ long Platform::startTimer(const gc::Callback &callback, float time, bool repeat)
 
 void Platform::cancelTimer(long timer) {
     Ref<DartPlatform> platform = DartPlatform::instance();
+    if (!platform) return;
     if (platform->isMainThread()) {
         Variant v1(timer);
         platform->apply("cancelTimer", pointer_vector{&v1});
@@ -73,7 +79,16 @@ void Platform::cancelTimer(long timer) {
 
 void Platform::sendSignal() {
     Ref<DartPlatform> platform = DartPlatform::instance();
+    if (!platform) return;
     if (platform->sendSignal) {
         platform->sendSignal();
     }
+}
+
+void Platform::clear() {
+    DartPlatform::clear();
+}
+
+void Platform::setup() {
+    DartPlatform::setup();
 }

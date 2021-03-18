@@ -36,6 +36,9 @@ namespace gs {
 
         static long startTimer(const gc::Callback &callback, float time, bool repeat = false);
         static void cancelTimer(long timer);
+
+        static void setup();
+        static void clear();
     };
 }
 
