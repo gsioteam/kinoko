@@ -45,7 +45,7 @@ class DownloadPictureItem {
         callback();
       }
     }).catchError((err) {
-      print("Download Error : ${err}");
+      print("Download Error : $err");
       if (!canceled) {
         callback();
       }
@@ -288,7 +288,7 @@ class DownloadQueueItem {
   }
 
   Future<bool> main() async {
-    Project project = Project.allocate(item.projectKey);
+    Project project = Project.allocate(item.projectKey).release();
 
     if (!project.isValidated) {
       onError?.call("can not find the item.");

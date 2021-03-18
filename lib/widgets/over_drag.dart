@@ -5,8 +5,8 @@ import 'dart:math' as math;
 
 class TransformWidget extends StatefulWidget {
 
-  Widget child;
-  Offset translate;
+  final Widget child;
+  final Offset translate;
 
   TransformWidget({
     Key key,
