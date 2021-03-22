@@ -28,6 +28,7 @@ import 'utils/book_info.dart';
 import 'utils/favorites_manager.dart';
 import 'utils/proxy_collections.dart';
 import 'widgets/instructions_dialog.dart';
+import 'widgets/source_page.dart';
 
 class BarItem extends StatefulWidget {
 
@@ -247,11 +248,35 @@ class _BookPageState extends State<BookPage> {
   }
 
   Widget buildTitle(DataItem item, ThemeData theme) {
+    String link = item.link;
     List<InlineSpan> spans = [
       TextSpan(
         text: item.title,
         style: theme.textTheme.headline2.copyWith(color: Colors.white, fontSize: 14),
       ),
+      WidgetSpan(
+        alignment: PlaceholderAlignment.middle,
+        child: TextButton(
+          style: ButtonStyle(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            padding: MaterialStateProperty.all(EdgeInsets.only(left: 4, right: 4, top: 1, bottom: 1)),
+            minimumSize: MaterialStateProperty.all(Size.zero),
+          ),
+          child: Text(
+            "[${kt("source")}]",
+            style: TextStyle(
+                fontSize: 6
+            ),
+          ),
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+              return SourcePage(
+                url: link,
+              );
+            }));
+          },
+        )
+      )
     ];
 
     String subtitle = item.subtitle;

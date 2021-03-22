@@ -468,7 +468,8 @@ class PhotoController {
           _pageController.nextPage(duration: _duration, curve: Curves.easeInOutCubic);
         }
       } else {
-        range.onOffset(math.min(range.start + range.length, range.end - range.length), _PageRange.ANIMATE | _PageRange.SET_START);
+        var len = range.length * 0.8;
+        range.onOffset(math.min(range.start + len, range.end - len), _PageRange.ANIMATE | _PageRange.SET_START);
       }
     }
   }
@@ -502,7 +503,8 @@ class PhotoController {
           _pageController.previousPage(duration: _duration, curve: Curves.easeInOutCubic);
         }
       } else {
-        range.onOffset(math.max(0, range.start - range.length), _PageRange.ANIMATE | _PageRange.SET_START);
+        var len = range.length * 0.8;
+        range.onOffset(math.max(0, range.start - len), _PageRange.ANIMATE | _PageRange.SET_START);
       }
     }
   }

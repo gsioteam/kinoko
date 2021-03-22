@@ -1,45 +1,77 @@
-const {Collection} = require('./collection');
 
-class ChapterCollection extends Collection {
+class ChapterCollection extends glib.Collection {
 
-    async request(root_url) {
-        let url = root_url.replace(/(-\d+)*\.html$/i, '-10-1.html');
-        let doc = await this.fetch(url);
-
-        let options = doc.querySelectorAll('select.sl-page option');
-        let urls = [];
-        for (let i = 1, t = options.length; i < t; i++) {
-            urls.push(root_url.replace(/(-\d+)*\.html$/i, `-10-${i+1}.html`));
-        }
-
-        let offset = 0;
-        offset = this.parseDoc(doc, root_url, offset);
-        for (let i = 0, t = urls.length; i < t; ++i) {
-            let url = urls[i];
-            let doc = await this.fetch(url);
-            offset = this.parseDoc(doc, root_url, offset);
-        }
+    request(url, text) {
+        return new Promise((resolve, reject) => {
+            let req = glib.Request.new('GET', url);
+            req.setCacheResponse(true);
+            req.setTimeout(10000);
+            this.callback = glib.Callback.fromFunction(function() {
+                if (req.getError()) {
+                    reject(glib.Error.new(302, "Request error " + req.getError()));
+                } else {
+                    let body = req.getResponseBody();
+                    if (body) {
+                        let res = text ? body.text() : glib.GumboNode.parse(body, 'gbk');
+                        resolve(res);
+                    } else {
+                        reject(glib.Error.new(301, "Response null body"));
+                    }
+                }
+            });
+            req.setOnComplete(this.callback);
+            req.start();
+        });
     }
 
-    parseDoc(doc, root_url, offset) {
-        let imgs = doc.querySelectorAll('.pic_box > img');
-        for (let i = 0, t = imgs.length; i < t; ++i) {
-            let img = imgs[i];
-            let item = glib.DataItem.new();
-            item.picture = img.attr('src');
-            console.log("parse "+item.picture);
-            let index = offset + i;
-            item.link = root_url.replace(/(-\d+)*\.html$/i, `-${index}.html`);
-            this.setDataAt(item, index);
+    async loadProcess(url) {
+        let ctx = glib.ScriptContext.new('v8');
+        ctx.eval('document = {write: function(html) {return html;}};');
+        let cache = {}, count = 0;
+        
+        while (url) {
+            let purl = new PageURL(url);
+            let doc = await this.request(url);
+            let tags = doc.querySelectorAll('script[src]');
+            for (let tag of tags) {
+                let src = tag.getAttribute('src');
+                if (src.match(/^\/js/)) {
+                    let href = purl.href(src);
+                    if (!cache[href]) {
+                        cache[href] = true;
+                        try {
+                            let script = await this.request(href, true);
+                            console.log(`eval(${script})`);
+                            ctx.eval(script);
+                        } catch (e) {
+                            // ignore
+                        }
+                    }
+                }
+            }
+            try {
+                let script = doc.querySelector('script:not([src])');
+                let html = ctx.eval(script.text);
+                let doc2 = glib.GumboNode.parse2(html);
+                let link = doc2.querySelector('a');
+                let item = glib.DataItem.new();
+                item.picture = link.querySelector('img').getAttribute('src');
+                item.link = url;
+                url = purl.href(link.getAttribute('href'));
+                this.setDataAt(item, count);
+                count++;
+            }catch (e) {
+                break;
+            }
         }
-        return offset + imgs.length;
     }
 
     reload(_, cb) {
-        let url = this.info_data.link;
-        this.request(url).then(() => {
+        console.log("**start reload");
+        this.loadProcess(this.info_data.link).then(function () {
+            console.log("**reload complete");
             cb.apply(null);
-        }).catch((err) => {
+        }).catch(function (err) {
             if (err instanceof Error) 
                 err = glib.Error.new(305, err.message);
             console.error(err.msg);

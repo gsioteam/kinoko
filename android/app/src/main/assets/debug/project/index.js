@@ -1,17 +1,67 @@
 
-const {ParsedCollection, ParsedDesktopCollection, Collection} = require('./collection');
+class Collection extends glib.Collection {
 
-class NoPageCollection extends ParsedCollection {
-
-    makeURL() {
-        let lang = this.getSetting('language');
-        return this.url.replace('{0}', lang);
+    constructor(data) {
+        super();
+        this.url = data.url;
     }
 
+    fetch(url) {
+        return new Promise((resolve, reject)=>{
+            let req = glib.Request.new('GET', url);
+            this.callback = glib.Callback.fromFunction(function() {
+                if (req.getError()) {
+                    reject(glib.Error.new(302, "Request error " + req.getError()));
+                } else {
+                    let body = req.getResponseBody();
+                    if (body) {
+                        resolve(glib.GumboNode.parse(body, 'gbk'));
+                    } else {
+                        reject(glib.Error.new(301, "Response null body"));
+                    }
+                }
+            });
+            req.setOnComplete(this.callback);
+            req.start();
+        });
+    }
+
+}
+
+class HomeCollection extends Collection {
+
     reload(_, cb) {
-        let url = this.makeURL();
-        console.log(url);
-        this.fetch(url).then((results)=>{
+        let purl = new PageURL(this.url);
+        console.log("start request");
+        this.fetch(this.url).then((doc)=>{
+            console.log("complete request");
+            let results = [];
+            let boxes = doc.querySelectorAll('.imgBox');
+            for (let box of boxes) {
+                let subhead = box.querySelector('.Sub_H2');
+                if (subhead) {
+                    let head = glib.DataItem.new();
+                    head.type = glib.DataItem.Type.Header;
+                    let icon = subhead.querySelector('.icon img');
+                    if (icon) {
+                        head.picture = purl.href(icon.getAttribute('src'));
+                    }
+                    let label = subhead.querySelector('.Title');
+                    if (label) {
+                        head.title = label.text;
+                    }
+                    results.push(head);
+                }
+                let books = box.querySelectorAll('ul > li');
+                for (let book_elem of books) {
+                    let item = glib.DataItem.new();
+                    item.title = book_elem.querySelector('a.txtA').text;
+                    item.subtitle = book_elem.querySelector('.info').text;
+                    item.link = purl.href(book_elem.querySelector('a.ImgA').getAttribute('href'));
+                    item.picture = purl.href(book_elem.querySelector('a.ImgA > img').getAttribute('src'));
+                    results.push(item);
+                }
+            }
             this.setData(results);
             cb.apply(null);
         }).catch(function(err) {
@@ -23,37 +73,28 @@ class NoPageCollection extends ParsedCollection {
     }
 };
 
-class PageCollection extends ParsedDesktopCollection {
-    constructor(data) {
-        super(data);
-        this.page = 0;
-    }
+class UpdateCollection extends Collection {
 
-
-    makeURL(page) {
-        let lang = this.getSetting('language');
-        return this.url.replace('{0}', lang).replace('{1}', page + 1);
-    }
-
-    reload(data, cb) {
-        let page = data["page"] || 0;
-        this.fetch(this.makeURL(page)).then((results)=>{
-            this.page = page;
+    reload(_, cb) {
+        let purl = new PageURL(this.url);
+        this.fetch(this.url).then((doc) => {
+            let results = [];
+            let boxes = doc.querySelectorAll('.UpdateList .itemBox');
+            for (let box of boxes) {
+                let linkimg = box.querySelector('.itemImg a');
+                let item = glib.DataItem.new();
+                item.title = linkimg.getAttribute('title');
+                item.link = purl.href(linkimg.getAttribute('href'));
+                item.picture = purl.href(linkimg.querySelector('img').getAttribute('src'));
+                let items = box.querySelectorAll('.itemTxt > .txtItme');
+                let summary = [];
+                for (const elem of items) {
+                    summary.push(elem.text);
+                }
+                item.subtitle = summary.join('|');
+                results.push(item);
+            }
             this.setData(results);
-            cb.apply(null);
-        }).catch(function(err) {
-            if (err instanceof Error) 
-                err = glib.Error.new(305, err.message);
-            cb.apply(err);
-        });
-        return true;
-    }
-
-    loadMore(cb) {
-        let page = this.page + 1;
-        this.fetch(this.makeURL(page)).then((results)=> {
-            this.page = page;
-            this.appendData(results);
             cb.apply(null);
         }).catch(function(err) {
             if (err instanceof Error) 
@@ -64,66 +105,58 @@ class PageCollection extends ParsedDesktopCollection {
     }
 }
 
-class HomeCollection extends Collection {
-    async fetch(url) {
-        let doc = await super.fetch(url);
-        let tabs = doc.querySelectorAll('nav.mid-menu .change_tab');
-        let contents = doc.querySelectorAll('ul.tab_content');
+class OtherCollection extends Collection {
+    constructor(data) {
+        super(data);
+        this.page = 0;
+    }
 
-        let results = [];
-
-        for (let i = 0, t = tabs.length; i < t; ++i) {
-            let tab = tabs[i];
-            let header = glib.DataItem.new();
-            header.type = glib.DataItem.Type.Header;
-            header.title = tab.text;
-            results.push(header);
-
-            let tab_content = contents[i];
-            let books = tab_content.querySelectorAll('li a');
-            for (let link of books) {
+    loadPage(url, func) {
+        let purl = new PageURL(url);
+        console.log("load " + url);
+        this.fetch(url).then((doc) => {
+            let results = [];
+            let boxes = doc.querySelectorAll('#classify_container > li');
+            console.log("loaded  " + boxes.length);
+            for (let box of boxes) {
+                let linkimg = box.querySelector('.ImgA');
                 let item = glib.DataItem.new();
-                item.type = glib.DataItem.Type.Book;
-                item.title = link.attr('title');
-                item.link = link.attr('href');
-                item.picture = link.querySelector('img').attr('src');
+                item.link = purl.href(linkimg.getAttribute('href'));
+                item.picture = purl.href(linkimg.querySelector('img').getAttribute('src'));
+                
+                item.title = box.querySelector('.txtA').text;
+                item.subtitle = box.querySelector('.info').text;
                 results.push(item);
             }
-        }
-
-        let box = doc.querySelector('.middle-box');
-        console.log(box);
-        let header = glib.DataItem.new();
-        header.type = glib.DataItem.Type.Header;
-        header.title = box.querySelector('h1').text.trim();
-        results.push(header);
-
-        let nodes = box.querySelectorAll('dl');
-        for (let node of nodes) {
-            let item = glib.DataItem.new();
-            item.type = glib.DataItem.Type.Book;
-            let link = node.querySelector('.book-list a');
-            item.link = link.attr('href');
-            item.title = link.querySelector('b').text;
-            item.subtitle = node.querySelector('.book-list > i').text;
-            item.picture = node.querySelector('dt img').attr('src');
-            results.push(item);
-        }
-        return results;
-    }
-
-    makeURL() {
-        let lang = this.getSetting('language');
-        return this.url.replace('{0}', lang);
-    }
-
-    reload(_, cb) {
-        this.fetch(this.makeURL()).then((results)=>{
-            this.setData(results);
-            cb.apply(null);
+            func(null, results);
         }).catch(function(err) {
             if (err instanceof Error) 
                 err = glib.Error.new(305, err.message);
+            func(err);
+        });
+    }
+
+    reload(_, cb) {
+        let url = this.url.replace("{0}", 1);
+        this.loadPage(url, (err, data) => {
+            if (!err) {
+                this.setData(data);
+                this.page = 0;
+            }
+            cb.apply(err);
+        });
+        return true;
+    } 
+
+    loadMore(cb) {
+        let page = this.page + 1;
+        let url = this.url.replace("{0}", page + 1);
+        console.log("load more " + url);
+        this.loadPage(url, (err, data) => {
+            if (!err) {
+                this.appendData(data);
+                this.page = page;
+            }
             cb.apply(err);
         });
         return true;
@@ -131,16 +164,21 @@ class HomeCollection extends Collection {
 }
 
 module.exports = function(info) {
+    let col;
     let data = info.toObject();
     switch (data.id) {
         case 'home': {
-            return HomeCollection.new(data);
+            col = HomeCollection.new(data);
+            break;
         }
-        case 'manga_directory': {
-            return PageCollection.new(data);
+        case 'update': {
+            col = UpdateCollection.new(data);
+            break;
         }
         default: {
-            return NoPageCollection.new(data);
+            col = OtherCollection.new(data);
+            break;
         }
     }
+    return col;
 };

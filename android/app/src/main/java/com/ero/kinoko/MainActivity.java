@@ -21,7 +21,7 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
 public class MainActivity extends FlutterActivity {
-    final boolean is_debug = false;
+    final boolean is_debug = true;
     private final String CHANNEL = "com.ero.kinoko/volume_button";
     boolean handleVolumeButton = false;
     MethodChannel channel;

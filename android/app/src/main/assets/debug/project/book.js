@@ -1,38 +1,46 @@
-const {Collection} = require('./collection');
 
-class BookCollection extends Collection {
+class BookCollection extends glib.Collection {
 
-    reload(data, cb) {
-        let url = this.url + '?waring=1';
-        console.log("Book url " + url);
-        let purl = new PageURL(url);
-        let info_data = this.info_data;
-        this.fetch(url).then((doc) => {
-            let h1 = doc.querySelector(".book-info h1");
-            console.log("mark 1");
-            info_data.title = h1.text.trim();
-            let infos = doc.querySelectorAll(".short-info p");
-            if (infos.length >= 2) 
-                info_data.subtitle = infos[0].text;
-            if (infos.length >= 1)
-                info_data.summary = infos[infos.length - 1].text;
+    constructor(data) {
+        super();
+        this.url = data.link;
+    }
 
-            let results = [];
-            let nodes = doc.querySelectorAll('.chapter-box > li');
-            for (let node of nodes) {
-                let anode = node.querySelector('div.chapter-name.long a');
-                let item = glib.DataItem.new();
-                item.type = glib.DataItem.Type.Chapter;
-                console.log("mark 4");
-                let name = anode.text.trim();
-                item.title = name.replace(/new$/, '');
-                if (name.match(/new$/)) {
-                    item.subtitle = 'new';
+    fetch(url) {
+        return new Promise((resolve, reject)=>{
+            let req = glib.Request.new('GET', url);
+            this.callback = glib.Callback.fromFunction(function() {
+                if (req.getError()) {
+                    reject(glib.Error.new(302, "Request error " + req.getError()));
+                } else {
+                    let body = req.getResponseBody();
+                    if (body) {
+                        resolve(glib.GumboNode.parse(body, 'gbk'));
+                    } else {
+                        reject(glib.Error.new(301, "Response null body"));
+                    }
                 }
-                item.link = anode.attr('href');
+            });
+            req.setOnComplete(this.callback);
+            req.start();
+        });
+    }
+
+    reload(_, cb) {
+        let purl = new PageURL(this.url);
+        let info_data = this.info_data;
+        this.fetch(this.url).then((doc) => {
+            let links = doc.querySelectorAll("#list > li > a");
+            let results = [];
+            info_data.subtitle = doc.querySelector('.sub_r > .txtItme').text;
+            info_data.summary = doc.querySelector('.txtDesc').text;
+            for (let i = 0, t = links.length; i < t; i++) {
+                let el = links[i];
+                let item = glib.DataItem.new();
+                item.link = purl.href(el.getAttribute('href'));
+                item.title = el.text;
                 results.push(item);
             }
-            
             this.setData(results);
             cb.apply(null);
         }).catch(function(err) {

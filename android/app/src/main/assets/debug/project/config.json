@@ -1,42 +1,48 @@
 {
-    "name": "ninemanga",
-    "icon": "http://www.ninemanga.com/files/img/ninemanga.png",
-    "url": "http://www.ninemanga.com/",
+    "name": "Kukudm",
+    "icon": "https://wap.kukudm.com/images/head_logo.gif",
+    "url": "https://wap.kukudm.com/",
     "index": "index.js",
     "book": "book.js",
     "chapter": "chapter.js",
     "search": {
         "src": "search.js",
         "data": {
-            "url": "https://{0}.ninemanga.com/search/?wd={1}"
+            "url": "https://so.kukudm.com/m_search.asp?kw={0}&page={1}"
         }
     },
-    "settings": "settings.js",
     "categories": [
         {
-            "title": "Home",
+            "title": "推薦",
             "id": "home",
-            "url": "https://{0}.ninemanga.com/"
+            "url": "https://wap.kukudm.com/",
+            "data": {}
         },
         {
-            "title": "Latest Release",
-            "id": "last_release",
-            "url": "https://{0}.ninemanga.com/list/New-Update/"
+            "title": "更新",
+            "id": "update",
+            "url": "https://wap.kukudm.com/top100.htm",
+            "data": {}
         },
         {
-            "title": "Manga Directory",
-            "id": "manga_directory",
-            "url": "https://{0}.ninemanga.com/category/index_{1}.html"
+            "title": "日漫",
+            "id": "japan",
+            "url": "https://wap.kukudm.com/comictype/3_{0}.htm"
         },
         {
-            "title": "Hot Manga",
-            "id": "hot_manga",
-            "url": "https://{0}.ninemanga.com/list/Hot-Book/"
+            "title": "港漫",
+            "id": "hongkong",
+            "url": "https://wap.kukudm.com/comictype/5_{0}.htm"
         },
         {
-            "title": "New Manga",
-            "id": "new_manga",
-            "url": "https://{0}.ninemanga.com/list/New-Book/"
+            "title": "国漫",
+            "id": "china",
+            "url": "https://wap.kukudm.com/comictype/30_{0}.htm"
+        },
+        {
+            "title": "更多",
+            "id": "more",
+            "url": "https://wap.kukudm.com/comictype/31_{0}.htm"
         }
     ]
 }

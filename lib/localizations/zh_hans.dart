@@ -71,4 +71,6 @@ Liah(Icon) https://liah0227.itch.io/
   "libraries_hit": "克隆并选择一个项目后即可开始浏览内容。",
   "instructions": "说明",
   "lang": "zh_hans",
+  "source": "来源",
+  "source_description": "资源来源，请复制、下载者遵循国家相关法律、法规。",
 };

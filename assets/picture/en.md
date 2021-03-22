@@ -12,6 +12,11 @@ Almost same as `Horizontal Flip`, but flip right to left when view a two page pi
 
 Layout pictures from up to down.
 
+- Volume Button 
+
+  1. Volume+: Previous Page
+  2. Volume-: Next Page
+
 - Page Jump
 
 Click the `Page Number` to jump to specific page.

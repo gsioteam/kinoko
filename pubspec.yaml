@@ -51,6 +51,7 @@ dependencies:
   path_provider_ex: ^1.0.1
   permission_handler: ^6.1.0
   markdown_widget: ^1.2.6
+  webview_flutter: '>=2.0.0'
 
 dev_dependencies:
 #  flutter_test:

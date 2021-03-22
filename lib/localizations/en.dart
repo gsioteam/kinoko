@@ -72,4 +72,6 @@ Liah(Icon) https://liah0227.itch.io/
   "instructions": "Instructions",
   "download_instructions": "",
   "lang": "en",
+  "source": "Source",
+  "source_description": "The source page, Please copy and download the files in accordance with relevant national laws and regulations.",
 };
