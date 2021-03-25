@@ -51,9 +51,9 @@ android {
             stl = 'c++_shared'
             abiFilters = [
                     'arm64-v8a',
-//                    'x86_64',
+                    'x86_64',
                     'armeabi-v7a',
-//                    'x86'
+                    'x86'
             ]
         }
     }

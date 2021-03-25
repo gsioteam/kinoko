@@ -1,0 +1,4 @@
+- Reduce the move distance when flip by volume button.
+- Added illustrate of volume button.
+- Added a source button on manga title.
+- Fixed a crash bug.
