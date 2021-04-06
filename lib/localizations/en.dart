@@ -7,7 +7,7 @@ const Map words = {
   "add": "Add",
   "clone_project": "Clone...",
   "not_installed": "Not Cloned",
-  "select_main_project": "Make main project",
+  "select_main_project": "Make as main project",
   "new_project": "New Git project",
   "new_project_hint": "Git://...",
   "add_project_failed": "Can not add，Maybe it be added already？",

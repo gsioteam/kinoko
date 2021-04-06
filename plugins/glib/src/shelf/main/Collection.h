@@ -89,6 +89,8 @@ namespace gs {
         }
         PROPERTY(item_temp, getItemTemp, setItemTemp);
 
+        METHOD static std::string getLanguage();
+
         METHOD gc::Variant call(const std::string &name, const gc::Array &args);
 
         ON_LOADED_BEGIN(cls, gc::Object)
@@ -99,6 +101,7 @@ namespace gs {
             ADD_METHOD(cls, Collection, setSetting);
             ADD_METHOD(cls, Collection, synchronizeSettings);
             ADD_METHOD(cls, Collection, call);
+            ADD_METHOD(cls, Collection, getLanguage);
             ADD_PROPERTY(cls, "data", ADD_METHOD(cls, Collection, getData), ADD_METHOD(cls, Collection, setData));
             ADD_PROPERTY(cls, "info_data", ADD_METHOD(cls, Collection, getInfoData), ADD_METHOD(cls, Collection, setInfoData));
             ADD_PROPERTY(cls, "temp", ADD_METHOD(cls, Collection, getTemp), ADD_METHOD(cls, Collection, setTemp));

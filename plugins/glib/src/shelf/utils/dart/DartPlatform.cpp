@@ -92,3 +92,10 @@ void Platform::clear() {
 void Platform::setup() {
     DartPlatform::setup();
 }
+
+std::string Platform::getLanguage() {
+    Ref<DartPlatform> platform = DartPlatform::instance();
+    Variant res;
+    platform->apply("getLanguage", &res);
+    return res;
+}

@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:glib/core/array.dart';
 import 'package:glib/core/callback.dart';
@@ -410,6 +411,8 @@ class _BookPageState extends State<BookPage> {
     int currentIndex = chapters.indexOf(chapter);
     String link = chapter.link;
     widget.project.control();
+
+    Future.delayed(Duration(milliseconds: 100)).then((value) => SystemChrome.setEnabledSystemUIOverlays([]));
     Context currentContext = widget.project.createChapterContext(chapter).control();
     await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
       return PictureViewer(
@@ -460,6 +463,8 @@ class _BookPageState extends State<BookPage> {
     }));
     currentContext.release();
     widget.project.release();
+
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
   }
 
   void openCollection(Map data, String title) async {
@@ -523,6 +528,7 @@ class _BookPageState extends State<BookPage> {
           child: CustomScrollView(
             slivers: <Widget>[
               SliverAppBar(
+                brightness: Brightness.dark,
                 floating: true,
                 pinned: true,
                 backgroundColor: theme.primaryColor,

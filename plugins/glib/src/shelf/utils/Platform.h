@@ -39,6 +39,8 @@ namespace gs {
 
         static void setup();
         static void clear();
+
+        static std::string getLanguage();
     };
 }
 

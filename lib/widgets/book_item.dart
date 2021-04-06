@@ -11,13 +11,15 @@ import 'package:glib/main/project.dart';
 Widget makeBookItem(BuildContext context, Project project, DataItem item, void Function() onTap) {
   if (item.type == DataItemType.Header) {
     ImageProvider provider;
+    String picture;
     if (item.picture.isNotEmpty && item.picture[0] == "/") {
       File file = File(project.fullpath + item.picture);
       if (file.existsSync()) {
         provider = FileImage(file);
       }
     }else if (item.picture.isNotEmpty){
-      provider = CachedNetworkImageProvider(item.picture);
+      picture = item.picture;
+      provider = CachedNetworkImageProvider(picture);
     }
     var children = <Widget>[];
     if (provider != null) {

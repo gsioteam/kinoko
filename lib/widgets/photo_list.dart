@@ -190,6 +190,7 @@ class PhotoImageState extends State<PhotoImage> with TickerProviderStateMixin {
       ny = _imageSize.height - size.height;
     }
     _translation = Offset(nx, ny);
+    print("$_translation - ${_imageSize} $size" );
   }
 
   void _onScaleEnd(ScaleEndDetails details) {
@@ -627,7 +628,6 @@ class _PhotoListState extends State<PhotoList> {
 
   Widget buildScrollable(BuildContext context) {
     var media = MediaQuery.of(context);
-    var padding = media.padding;
 
     AxisDirection axisDirection = widget.flipType != FlipType.Vertical ? AxisDirection.right : AxisDirection.down;
     return Scrollable(
@@ -657,9 +657,7 @@ class _PhotoListState extends State<PhotoList> {
                           ),
                           size: media.size,
                           flipType: widget.flipType,
-                          padding: padding.copyWith(
-                            top: padding.top + 44
-                          ),
+                          padding: EdgeInsets.zero,
                           initFromEnd: index < widget.controller.index,
                           loadingWidget: (context) {
                             return SpinKitRing(

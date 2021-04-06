@@ -5,7 +5,6 @@ class ChapterCollection extends glib.Collection {
         return new Promise((resolve, reject) => {
             let req = glib.Request.new('GET', url);
             req.setCacheResponse(true);
-            req.setTimeout(10000);
             this.callback = glib.Callback.fromFunction(function() {
                 if (req.getError()) {
                     reject(glib.Error.new(302, "Request error " + req.getError()));
@@ -39,13 +38,9 @@ class ChapterCollection extends glib.Collection {
                     let href = purl.href(src);
                     if (!cache[href]) {
                         cache[href] = true;
-                        try {
-                            let script = await this.request(href, true);
-                            console.log(`eval(${script})`);
-                            ctx.eval(script);
-                        } catch (e) {
-                            // ignore
-                        }
+                        let script = await this.request(href, true);
+                        console.log(`eval(${script})`);
+                        ctx.eval(script);
                     }
                 }
             }
@@ -56,11 +51,12 @@ class ChapterCollection extends glib.Collection {
                 let link = doc2.querySelector('a');
                 let item = glib.DataItem.new();
                 item.picture = link.querySelector('img').getAttribute('src');
+                console.log('pic : ' + item.picture);
                 item.link = url;
                 url = purl.href(link.getAttribute('href'));
                 this.setDataAt(item, count);
                 count++;
-            }catch (e) {
+            } catch (e) {
                 break;
             }
         }

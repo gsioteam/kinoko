@@ -19,12 +19,6 @@
             "data": {}
         },
         {
-            "title": "更新",
-            "id": "update",
-            "url": "https://wap.kukudm.com/top100.htm",
-            "data": {}
-        },
-        {
             "title": "日漫",
             "id": "japan",
             "url": "https://wap.kukudm.com/comictype/3_{0}.htm"

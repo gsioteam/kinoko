@@ -5,6 +5,10 @@ import 'package:flutter/widgets.dart';
 import 'zh_hans.dart' as zhHans;
 import 'zh_hant.dart' as zhHant;
 import 'en.dart' as en;
+import 'es.dart' as es;
+import 'ru.dart' as ru;
+import 'de.dart' as de;
+import 'it.dart' as it;
 
 class LocaleChangedNotification extends Notification {
   Locale locale;
@@ -28,7 +32,11 @@ class KinokoLocalizationsDelegate extends LocalizationsDelegate<KinokoLocalizati
   static const Map<String, Locale> supports = const <String, Locale>{
     "en": const Locale.fromSubtags(languageCode: 'en'),
     "zh-hant": const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
-    "zh-hans": const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans')
+    "zh-hans": const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+    "es": const Locale.fromSubtags(languageCode: 'es'),
+    "ru": const Locale.fromSubtags(languageCode: 'ru'),
+    "it": const Locale.fromSubtags(languageCode: 'it'),
+    "de": const Locale.fromSubtags(languageCode: 'de')
   };
 
   const KinokoLocalizationsDelegate();
@@ -51,6 +59,14 @@ class KinokoLocalizationsDelegate extends LocalizationsDelegate<KinokoLocalizati
         }
         break;
       }
+      case 'es':
+        return get(es.words);
+      case 'ru':
+        return get(ru.words);
+      case 'it':
+        return get(it.words);
+      case 'de':
+        return get(de.words);
       default: {
         return get(en.words);
       }

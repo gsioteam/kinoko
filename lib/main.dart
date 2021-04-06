@@ -34,9 +34,7 @@ import 'package:xml_layout/types/colors.dart' as colors;
 import 'package:xml_layout/types/icons.dart' as icons;
 import 'layout/all.xml_layout.dart' as all;
 import 'package:xml_layout/xml_layout.dart';
-import 'localizations/localizations.dart';
-import 'dart:math' as math;
-import 'package:url_launcher/url_launcher.dart';
+import 'package:glib/utils/platform.dart' as glib;
 
 void main() {
   runApp(MainApp());
@@ -76,6 +74,19 @@ class MainAppState extends State<MainApp> {
         return true;
       },
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    glib.Platform.onGetLanguage = () {
+      if (locale.scriptCode != null) {
+        return "${locale.languageCode}-${locale.scriptCode}";
+      } else {
+        return locale.languageCode;
+      }
+    };
   }
 }
 
@@ -436,6 +447,7 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
           padding: EdgeInsets.only(top: 5, bottom: 5),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
             children: [
               ClipOval(
                 child: Container(
@@ -450,17 +462,20 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
                 clipper: OvalClipper(),
               ),
               Padding(padding: EdgeInsets.only(left: 8)),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(kt("no_main_project"),
-                      style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white)
-                  ),
-                  Padding(padding: EdgeInsets.only(top: 5)),
-                  Text(kt("select_main_project_first"),
-                    style: Theme.of(context).textTheme.caption.copyWith(color: Colors.white),
-                  )
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(kt("no_main_project"),
+                        style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white)
+                    ),
+                    Padding(padding: EdgeInsets.only(top: 5)),
+                    Text(kt("select_main_project_first"),
+                      style: Theme.of(context).textTheme.caption.copyWith(color: Colors.white),
+                      softWrap: true,
+                    )
+                  ],
+                ),
               )
             ],
           ),
@@ -528,6 +543,7 @@ class _NavigationBarState extends State<NavigationBar> {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      brightness: Brightness.dark,
       title: Text(kt(widget.controller.title)),
       elevation: 0,
       actions: widget.controller.buildActions(context, onReload),

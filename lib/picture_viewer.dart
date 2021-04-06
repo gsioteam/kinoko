@@ -189,14 +189,20 @@ class _PictureViewerState extends State<PictureViewer> {
     );
   }
 
+  void setAppBarDisplay(display) {
+    setState(() {
+      appBarDisplay = display;
+      // SystemChrome.setEnabledSystemUIOverlays(display ? SystemUiOverlay.values : []);
+    });
+
+  }
+
   void onTapScreen() {
     if (_timer != null) {
       _timer.cancel();
       _timer = null;
     }
-    setState(() {
-      appBarDisplay = !appBarDisplay;
-    });
+    setAppBarDisplay(!appBarDisplay);
   }
 
   Widget buildPager(BuildContext context) {
@@ -222,9 +228,7 @@ class _PictureViewerState extends State<PictureViewer> {
 
   void showPagePicker() {
     if (!appBarDisplay) {
-      setState(() {
-        appBarDisplay = true;
-      });
+      setAppBarDisplay(true);
       return;
     }
     List<PickerItem<int>> items = [];
@@ -251,6 +255,9 @@ class _PictureViewerState extends State<PictureViewer> {
     MediaQueryData media = MediaQuery.of(context);
     double size = IconTheme.of(context).size;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
+      extendBody: true,
+      backgroundColor: Colors.black,
       body: Stack(
         children: <Widget>[
           Listener(
@@ -653,6 +660,7 @@ class _PictureViewerState extends State<PictureViewer> {
           // photoController.pageController.jumpToPage(index);
           if (!appBarDisplay) {
             appBarDisplay = true;
+            // SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
             willDismissAppBar();
           }
         });
@@ -677,6 +685,7 @@ class _PictureViewerState extends State<PictureViewer> {
           );
           if (!appBarDisplay) {
             appBarDisplay = true;
+            // SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
             willDismissAppBar();
           }
         });
@@ -690,9 +699,7 @@ class _PictureViewerState extends State<PictureViewer> {
 
   willDismissAppBar() {
     _timer = Timer(Duration(seconds: 4), () {
-      setState(() {
-        appBarDisplay = false;
-      });
+      setAppBarDisplay(false);
     });
   }
 
@@ -749,6 +756,7 @@ class _PictureViewerState extends State<PictureViewer> {
     ]);
     channel?.invokeMethod("stop");
     super.dispose();
+    // SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
   }
 
   void addToPreload(Array arr) {

@@ -4,6 +4,7 @@
 
 #include "Collection.h"
 #include "Settings.h"
+#include "../utils/Platform.h"
 
 using namespace gs;
 using namespace gc;
@@ -103,4 +104,8 @@ gc::Variant Collection::call(const std::string &name, const gc::Array &args) {
         return on_call(name, args);
     }
     return Variant::null();
+}
+
+std::string Collection::getLanguage() {
+    return Platform::getLanguage();
 }

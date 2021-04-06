@@ -41,12 +41,14 @@ class Platform extends Base {
   }
 
   Map<int, TimerInfo> timers = Map();
+  static String Function() onGetLanguage;
 
   initialize() {
     super.initialize();
     on("startTimer", startTimer);
     on("cancelTimer", cancelTimer);
     on("control", control);
+    on("getLanguage", getLanguage);
   }
 
   startTimer(Callback callback, double time, bool repeat, int id) {
@@ -73,5 +75,9 @@ class Platform extends Base {
 
   onRelease(int id) {
     timers.remove(id);
+  }
+
+  String getLanguage() {
+    return onGetLanguage?.call();
   }
 }

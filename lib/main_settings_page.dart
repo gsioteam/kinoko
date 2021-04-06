@@ -77,6 +77,10 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
             OptionItem("English", "en"),
             OptionItem("中文(繁體)", "zh-hant"),
             OptionItem("中文(简体)", "zh-hans"),
+            OptionItem("Español", "es"),
+            OptionItem("русский", "ru"),
+            OptionItem("Deutsch", "de"),
+            OptionItem("Italiano", "it"),
           ],
           onChange: (value) {
             KeyValue.set(language_key, value);
