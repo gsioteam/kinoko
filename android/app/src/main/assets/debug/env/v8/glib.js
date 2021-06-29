@@ -15,6 +15,16 @@ class Callback extends Object {
         }
         this.invoke(argv);
     }
+
+    toObject() {
+        if (this.func) return this.func;
+        else {
+            const that = this;
+            return function(d) {
+                return that.apply(...arguments);
+            };
+        }
+    }
 }
 
 Callback.class_name = 'gc::_Callback';
@@ -27,7 +37,12 @@ class FunctionCallback extends Callback {
             for (let i = 0; i < argv.length; i++) {
                 arr.push(argv.get(i));
             }
-            var ret = this.func.apply(this, arr);
+            let ret;
+            try {
+                ret = this.func.apply(this, arr);
+            } catch (e) {
+                console.log('error in Function Callback ' + e.message + '\n' + e.stack);
+            }
             return ret;
         } else {
             throw new Error("No function set!");
@@ -86,6 +101,18 @@ class Data extends Object {
 Data.class_name = 'gc::Data';
 Data.reg();
 
+class FileData extends Object {
+    toString(code) {
+        if (code) {
+            return Encoder.decode(this, code);
+        } else {
+            return this.text();
+        }
+    }
+}
+FileData.class_name = 'gc::FileData';
+FileData.reg();
+
 class Request extends Object {
 }
 Request.class_name = 'gs::Request';
@@ -97,6 +124,20 @@ Request.BodyType = {
 };
 
 class Collection extends Object {
+    get settings() {
+        let collection = this;
+        return {
+            set(key, value) {
+                collection.setSetting(key, value);
+            },
+            get(key) {
+                return collection.getSetting(key);
+            },
+            save() {
+                collection.synchronizeSettings();
+            }
+        };
+    }
 }
 Collection.class_name = 'gs::Collection';
 Collection.reg();
@@ -121,6 +162,8 @@ function toObject(obj) {
             arr.push(toObject(obj.get(i)));
         }
         return arr;
+    } else if (obj instanceof Callback) {
+        return obj.toObject();
     } else {
         return obj;
     }
@@ -189,9 +232,8 @@ class DataItem extends Object {
 DataItem.class_name = 'gs::DataItem';
 DataItem.reg();
 DataItem.Type = {
-    Book: 0,
-    Chapter: 1,
-    Header: 2
+    Data: 0,
+    Header: 1
 };
 
 class Error extends Object {
@@ -214,12 +256,28 @@ SettingItem.Type = {
     Options: 3
 };
 
+class Platform extends Object {
+}
+Platform.class_name = 'gs::Platform';
+Platform.reg();
+
+class Browser extends Object {
+}
+Browser.class_name = 'gs::Browser';
+Browser.reg();
+
+class KeyValue extends Object {
+}
+KeyValue.class_name = 'gs::KeyValue';
+KeyValue.reg();
+
 module.exports = {
     Object,
     Callback,
     Array,
     Map,
     Data,
+    FileData,
     
     Request,
     Collection,
@@ -228,5 +286,8 @@ module.exports = {
     Error,
     ScriptContext,
     Encoder,
-    SettingItem
+    SettingItem,
+    Platform,
+    Browser,
+    KeyValue,
 };

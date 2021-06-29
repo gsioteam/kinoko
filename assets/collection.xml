@@ -1,0 +1,59 @@
+<BetterRefreshIndicator controller="$refreshController">
+    <ListView.separated itemCount="$itemCount">
+        <attr:itemBuilder>
+            <Function returnType="Widget">
+                <SetArgument return="index" argument="${args[1]}"/>
+                <Call function="$getItem" return="itemData">
+                    <Argument value="$index"/>
+                </Call>
+                <Builder>
+                    <if candidate="${itemData.isHeader}">
+                        <Container padding="fromLTRB(5, 2, 5, 2)" height="30">
+                            <Row>
+                                <if candidate="isNotEmpty(${itemData.picture})">
+                                    <WebImage url="${itemData.picture}" width="26" height="26"/>
+                                    <Padding padding="all(5)"/>
+                                </if>
+                                <Text>
+                                    <attr:style>
+                                        <TextStyle fontSize="16" fontWeight="w600"/>
+                                    </attr:style>
+                                    <arg:0>${itemData.title}</arg:0>
+                                </Text>
+                            </Row>
+                        </Container>
+                    </if>
+                    <else>
+                        <ListTile>
+                            <attr:title>
+                                <Text>${itemData.title}</Text>
+                            </attr:title>
+                            <attr:subtitle>
+                                <Text>${itemData.subtitle}</Text>
+                            </attr:subtitle>
+                            <if candidate="isNotEmpty(${itemData.picture})">
+                                <attr:leading>
+                                    <WebImage fit="cover" url="${itemData.picture}" width="56" height="56"/>
+                                </attr:leading>
+                            </if>
+                            <attr:onTap>
+                                <Function>
+                                    <Call function="$onTap">
+                                        <Argument value="$index"/>
+                                    </Call>
+                                </Function>
+                            </attr:onTap>
+                        </ListTile>
+                    </else>
+                </Builder>
+            </Function>
+        </attr:itemBuilder>
+        <attr:separatorBuilder>
+            <Function returnType="Widget">
+                <Builder>
+                    <Divider/>
+                </Builder>
+            </Function>
+        </attr:separatorBuilder>
+    </ListView.separated>
+</BetterRefreshIndicator>

@@ -21,6 +21,7 @@ namespace gc {
         METHOD virtual void close() = 0;
         virtual size_t read(void *chs, size_t size, size_t nitems) = 0;
         virtual b8_vector readAll();
+        METHOD virtual void seek(size_t seek, int) {}
         METHOD virtual std::string text();
     
         METHOD static Ref<Data> fromString(const std::string &str);
@@ -31,6 +32,7 @@ namespace gc {
             ADD_METHOD(cls, Data, empty);
             ADD_METHOD(cls, Data, close);
             ADD_METHOD(cls, Data, text);
+            ADD_METHOD(cls, Data, seek);
             ADD_METHOD(cls, Data, fromString);
         ON_LOADED_END
     CLASS_END
@@ -58,6 +60,7 @@ namespace gc {
         _FORCE_INLINE_ virtual void close() {
         }
         virtual size_t read(void *chs, size_t size, size_t nitems);
+        virtual void seek(size_t seek, int type);
 
         _FORCE_INLINE_ BufferData() {}
         METHOD void initialize(void* buffer, long size, RetainType retain = Copy);

@@ -382,7 +382,7 @@ class _DownloadPageState extends State<DownloadPage> {
         DownloadQueueItem queueItem = cdata.data;
         DataItem item = queueItem.item;
         Project project = Project.allocate(item.projectKey);
-        Context ctx = project.createChapterContext(item).control();
+        Context ctx = project.createCollectionContext(CHAPTER_INDEX, item).control();
         await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
           return PictureViewer(
             ctx,

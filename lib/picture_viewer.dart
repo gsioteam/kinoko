@@ -174,7 +174,7 @@ class _PictureViewerState extends State<PictureViewer> {
 
   PictureCacheManager get cacheManager {
     if (_cacheManager == null) {
-      DataItem item = widget.context.info_data;
+      DataItem item = widget.context.infoData;
       _cacheManager = PictureCacheManager(
         cacheKey, item
       );
@@ -303,7 +303,7 @@ class _PictureViewerState extends State<PictureViewer> {
                   ),
                   Expanded(
                     child: Text(
-                      widget.context.info_data.title,
+                      widget.context.infoData.title,
                       style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white),
                     )
                   ),
@@ -454,7 +454,7 @@ class _PictureViewerState extends State<PictureViewer> {
                         list.add(PopupMenuItem(
                           child: TextButton(
                             onPressed: () {
-                              widget.onDownload(widget.context.info_data);
+                              widget.onDownload(widget.context.infoData);
                               Navigator.of(context).pop();
                             },
                             child: Row(
@@ -563,21 +563,21 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   void touch() {
-    cacheKey = PictureCacheManager.cacheKey(widget.context.info_data);
+    cacheKey = PictureCacheManager.cacheKey(widget.context.infoData);
     preloadQueue = PreloadQueue();
     widget.context.control();
-    widget.context.on_data_changed = Callback.fromFunction(onDataChanged).release();
-    widget.context.on_loading_status = Callback.fromFunction(onLoadingStatus).release();
-    widget.context.on_error = Callback.fromFunction(onError).release();
+    widget.context.onDataChanged = Callback.fromFunction(onDataChanged).release();
+    widget.context.onLoadingStatus = Callback.fromFunction(onLoadingStatus).release();
+    widget.context.onError = Callback.fromFunction(onError).release();
     widget.context.enterView();
     data = widget.context.data.control();
     loadSavedData();
   }
 
   void untouch() {
-    widget.context.on_data_changed = null;
-    widget.context.on_loading_status = null;
-    widget.context.on_error = null;
+    widget.context.onDataChanged = null;
+    widget.context.onLoadingStatus = null;
+    widget.context.onError = null;
     widget.context.exitView();
     data?.release();
     widget.context.release();

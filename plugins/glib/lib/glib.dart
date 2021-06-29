@@ -1,5 +1,4 @@
 
-import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 
@@ -25,6 +24,7 @@ import 'utils/platform.dart';
 import 'utils/bit64.dart';
 import 'utils/request.dart';
 import 'utils/script_context.dart';
+import 'utils/browser.dart';
 import 'main/collection_data.dart';
 import 'main/setting_item.dart';
 
@@ -38,7 +38,7 @@ class Glib {
     channel = MethodChannel("glib");
     channel.setMethodCallHandler(onMethod);
 
-    Base.reg(Base, "gc::Object", Base).constructor = (ptr) => {Base().setID(ptr)};
+    Base.reg(Base, "gc::Object", Base).constructor = (ptr) => Base().setID(ptr);
     Platform.reg();
     Array.reg();
     GMap.reg();
@@ -60,24 +60,27 @@ class Glib {
     CollectionData.reg();
     LibraryContext.reg();
     SettingItem.reg();
+    Browser.reg();
 
-    Pointer<Utf8> pstr = Utf8.toUtf8(root_path);
+    Pointer<Utf8> pstr = root_path.toNativeUtf8();
     postSetup(pstr);
-    free(pstr);
+    malloc.free(pstr);
 
     File file = File(root_path + '/cacert.pem');
     if (!file.existsSync()) {
       ByteData data = await rootBundle.load("packages/glib/res/cacert.pem");
       file.writeAsBytesSync(data.buffer.asUint8List());
     }
-    pstr = Utf8.toUtf8(file.path);
+    pstr = file.path.toNativeUtf8();
     setCacertPath(pstr);
-    free(pstr);
+    malloc.free(pstr);
   }
 
   static destroy() {
+    Platform.clearPlatform();
     destroyLibrary();
     Base.setuped = false;
+
   }
 
   static Future<dynamic> onMethod(MethodCall call) {

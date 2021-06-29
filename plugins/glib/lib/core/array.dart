@@ -54,4 +54,6 @@ class Array extends Base with ListMixin<dynamic> {
   removeAt(int index) {
     call("erase", argv: [index]);
   }
+
+  Array copy() => call("copy");
 }

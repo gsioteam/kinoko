@@ -115,6 +115,10 @@ namespace gc {
         _FORCE_INLINE_ variant_vector &vec() {
             return variants;
         }
+
+        METHOD Ref<_Array> copy() {
+            return new _Array(variants);
+        }
     
         /**
          * (ArrayEvent, long idx, Variant new_variant, Variant old_variant)
@@ -133,6 +137,7 @@ namespace gc {
             ADD_METHOD(cls, _Array, clear);
             ADD_METHOD(cls, _Array, resize);
             ADD_METHOD(cls, _Array, insert);
+            ADD_METHOD(cls, _Array, copy);
         ON_LOADED_END
     CLASS_END
 

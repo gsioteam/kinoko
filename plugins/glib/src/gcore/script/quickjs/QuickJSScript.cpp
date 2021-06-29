@@ -219,6 +219,43 @@ QuickJSScript::QuickJSScript(const char *dir) : Script("quickjs") {
                               callStaticFunction,
                               "_callStatic",
                               2));
+    JSAtom filenameAtom = JS_NewAtom(context, "__filename");
+    JSAtom dirnameAtom = JS_NewAtom(context, "__dirname");
+
+    JS_DefinePropertyGetSet(context, global, filenameAtom,
+            JS_NewCFunction(
+                    context, [](JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv){
+                        JSAtom atom = JS_GetScriptOrModuleName(ctx, 1);
+                        JSValue val = JS_AtomToString(ctx, atom);
+                        JS_FreeAtom(ctx, atom);
+                        return val;
+                    }, "get", 0),
+                    JS_UNDEFINED, 0);
+
+
+    JS_DefinePropertyGetSet(context, global, dirnameAtom,
+                            JS_NewCFunction(
+                                    context,
+                                    [](JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv){
+                                        JSAtom atom = JS_GetScriptOrModuleName(ctx, 1);
+                                        JSValue val = JS_UNDEFINED;
+                                        const char *chs = JS_AtomToCString(ctx, atom);
+                                        if (chs) {
+                                            string str = chs;
+                                            JS_FreeCString(ctx, chs);
+                                            int index = str.find_last_of('/');
+                                            if (index >= 0) {
+                                                str = str.substr(0, index);
+                                            }
+                                            val = JS_NewString(ctx, str.c_str());
+                                        }
+                                        JS_FreeAtom(ctx, atom);
+                                        return val;
+                                    }, "get", 0),
+                            JS_UNDEFINED, 0);
+
+    JS_FreeAtom(context, filenameAtom);
+    JS_FreeAtom(context, dirnameAtom);
 
     JSAtom globalAtom = JS_NewAtom(context, "global");
     JS_DefinePropertyGetSet(context, global, globalAtom, JS_NewCFunction(context, [](JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv){
@@ -343,7 +380,8 @@ gc::ScriptClass* QuickJSScript::makeClass() const {
 
 gc::Variant QuickJSScript::runScript(const char *script, const char *filename) const {
     if (filename == nullptr) filename = "<inline>";
-    JSValue val = JS_Eval(context, script, strlen(script), filename, JS_EVAL_TYPE_GLOBAL);
+    string str = script;
+    JSValue val = JS_Eval(context, str.data(), str.size(), filename, JS_EVAL_TYPE_GLOBAL);
     if (JS_IsException(val)) {
         JSValue ex = JS_GetException(context);
         PrintError(context, ex, "[Eval]");
@@ -973,7 +1011,14 @@ gc::Variant QuickJSCallback::invoke(const gc::Array &params) {
             argv[i] = script->toValue(params.at(i));
         }
         JSValue val = JS_Call(context, value, JS_NULL, len, argv.data());
-        Variant ret = script->toVariant(val);
+        Variant ret;
+        if (JS_IsException(val)) {
+            JSValue ex = JS_GetException(context);
+            PrintError(context, ex, "[Eval]");
+            JS_FreeValue(context, ex);
+        } else {
+            ret = script->toVariant(val);
+        }
         for (int i = 0; i < len; ++i) {
             JS_FreeValue(context, argv[i]);
         }

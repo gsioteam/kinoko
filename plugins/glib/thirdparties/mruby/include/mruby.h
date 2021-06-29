@@ -118,7 +118,7 @@ MRB_BEGIN_DECL
 typedef uint8_t mrb_code;
 
 /**
- * \class mrb_aspec
+ * mrb_sym_namespec
  *
  * Specifies the number of arguments a function takes
  *

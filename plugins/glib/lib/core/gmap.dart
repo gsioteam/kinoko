@@ -6,7 +6,7 @@ import 'array.dart';
 
 import 'core.dart';
 
-class GMap<V> extends Base with MapMixin<String, V> {
+class GMap extends Base with MapMixin<String, dynamic> {
   static reg() {
     Base.reg(GMap, "gc::_Map", Base).constructor = (ptr)=>GMap(ptr);
   }
@@ -15,18 +15,18 @@ class GMap<V> extends Base with MapMixin<String, V> {
     this.id = ptr;
   }
 
-  GMap.allocate(Map map) {
+  GMap.allocate(Map<dynamic, dynamic> map) {
     super.allocate([]);
-    map.forEach((k, v)=>{this[k] = v});
+    map.forEach((k, v)=>this[k] = v);
   }
 
   @override
-  V operator [](Object key) {
+  dynamic operator [](Object key) {
     return call("get", argv:[key.toString()]);
   }
 
   @override
-  void operator []=(String key, V value) {
+  void operator []=(String key, dynamic value) {
     call("set", argv:[key, value]);
   }
 
@@ -44,8 +44,8 @@ class GMap<V> extends Base with MapMixin<String, V> {
   }
 
   @override
-  V remove(Object key) {
-    V ret = this[key];
+  dynamic remove(Object key) {
+    dynamic ret = this[key];
     call("erase", argv:[key.toString()]);
     return ret;
   }

@@ -32,6 +32,8 @@ class TimerInfo {
   }
 }
 
+Set<Platform> _platformCache = Set();
+
 class Platform extends Base {
   static reg() {
     Base.reg(Platform, "gs::DartPlatform", Base)
@@ -49,6 +51,7 @@ class Platform extends Base {
     on("cancelTimer", cancelTimer);
     on("control", control);
     on("getLanguage", getLanguage);
+    _platformCache.add(this);
   }
 
   startTimer(Callback callback, double time, bool repeat, int id) {
@@ -73,11 +76,29 @@ class Platform extends Base {
     }
   }
 
+  void _removeAll() {
+    timers.forEach((key, value) {
+      value.timer.cancel();
+    });
+    timers.clear();
+  }
+
   onRelease(int id) {
     timers.remove(id);
   }
 
+  @override
+  void destroy() {
+    _removeAll();
+    _platformCache.remove(this);
+  }
+
   String getLanguage() {
     return onGetLanguage?.call();
+  }
+
+  static clearPlatform() {
+    _platformCache.forEach((element) {element._removeAll();});
+    _platformCache.clear();
   }
 }

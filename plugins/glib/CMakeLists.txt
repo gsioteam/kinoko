@@ -111,37 +111,38 @@ add_library(
 
 set(GLIB_SRC
 
-        src/shelf/main/Collection.cpp
-        src/shelf/main/Context.cpp
-        src/shelf/main/Project.cpp
-        src/shelf/main/DataItem.cpp
-        src/shelf/main/LibraryContext.cpp
-        src/shelf/main/Settings.cpp
+        src/application/main/Collection.cpp
+        src/application/main/Context.cpp
+        src/application/main/Project.cpp
+        src/application/main/DataItem.cpp
+        src/application/main/LibraryContext.cpp
+        src/application/main/Settings.cpp
 
         thirdparties/sha1/sha1.c
 
-        src/shelf/utils/dart/DartRequest.cpp
-        src/shelf/utils/dart/DartPlatform.cpp
-        src/shelf/utils/JSON.cpp
-        src/shelf/utils/YAML.cpp
-        src/shelf/utils/GitRepository.cpp
-        src/shelf/utils/SharedData.cpp
-        src/shelf/utils/Encoder.cpp
-        src/shelf/utils/GumboParser.cpp
+        src/application/utils/dart/DartBrowser.cpp
+        src/application/utils/dart/DartRequest.cpp
+        src/application/utils/dart/DartPlatform.cpp
+        src/application/utils/JSON.cpp
+        src/application/utils/YAML.cpp
+        src/application/utils/GitRepository.cpp
+        src/application/utils/SharedData.cpp
+        src/application/utils/Encoder.cpp
+        src/application/utils/GumboParser.cpp
 
-        src/shelf/utils/database/SQLite.cpp
-        src/shelf/utils/database/Model.cpp
-        src/shelf/utils/database/DBMaker.cpp
-        src/shelf/utils/Bit64.cpp
-        src/shelf/utils/Error.cpp
-        src/shelf/utils/ScriptContext.cpp
+        src/application/utils/database/SQLite.cpp
+        src/application/utils/database/Model.cpp
+        src/application/utils/database/DBMaker.cpp
+        src/application/utils/Bit64.cpp
+        src/application/utils/Error.cpp
+        src/application/utils/ScriptContext.cpp
 
-        src/shelf/models/GitLibrary.cpp
-        src/shelf/models/KeyValue.cpp
-        src/shelf/models/BookData.cpp
-        src/shelf/models/CollectionData.cpp
-        src/shelf/models/SearchData.cpp
-        src/shelf/glib.cpp
+        src/application/models/GitLibrary.cpp
+        src/application/models/KeyValue.cpp
+        src/application/models/BookData.cpp
+        src/application/models/CollectionData.cpp
+        src/application/models/SearchData.cpp
+        src/application/glib.cpp
 )
 
 set(GLIB_LIBS
@@ -161,7 +162,7 @@ set(GLIB_LIBS
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
-    set(GLIB_SRC ${GLIB_SRC} src/shelf/dart_main_android.cpp)
+    set(GLIB_SRC ${GLIB_SRC} src/application/dart_main_android.cpp)
     set(GLIB_LIBS ${GLIB_LIBS}
         log
 #        v8.cr
@@ -169,7 +170,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
     )
     set(LIB_TYPE SHARED)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
-    set(GLIB_SRC ${GLIB_SRC} src/shelf/dart_main_ios.mm)
+    set(GLIB_SRC ${GLIB_SRC} src/application/dart_main_ios.mm)
     set(LIB_TYPE STATIC)
 endif()
 

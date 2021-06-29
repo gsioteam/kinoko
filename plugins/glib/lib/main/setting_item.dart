@@ -21,8 +21,8 @@ class SettingItem extends Base {
   String get name => call("getName");
   set name(String v) => call("setName");
 
-  dynamic get default_value => call("getDefaultValue");
-  set default_value(dynamic v) => call("setDefaultValue", argv: [v]);
+  dynamic get defaultValue => call("getDefaultValue");
+  set defaultValue(dynamic v) => call("setDefaultValue", argv: [v]);
 
   dynamic get data => call("getData");
   set data(dynamic v) => call("setData", argv: [v]);

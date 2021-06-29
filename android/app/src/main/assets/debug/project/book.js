@@ -6,6 +6,10 @@ class BookCollection extends glib.Collection {
         this.url = data.link;
     }
 
+    initialize() {
+        this.temp = "temp.xml";
+    }
+
     fetch(url) {
         return new Promise((resolve, reject)=>{
             let req = glib.Request.new('GET', url);
@@ -15,7 +19,7 @@ class BookCollection extends glib.Collection {
                 } else {
                     let body = req.getResponseBody();
                     if (body) {
-                        resolve(glib.GumboNode.parse(body, 'gbk'));
+                        resolve(glib.GumboNode.parse(body));
                     } else {
                         reject(glib.Error.new(301, "Response null body"));
                     }
@@ -30,18 +34,66 @@ class BookCollection extends glib.Collection {
         let purl = new PageURL(this.url);
         let info_data = this.info_data;
         this.fetch(this.url).then((doc) => {
-            let links = doc.querySelectorAll("#list > li > a");
-            let results = [];
-            info_data.subtitle = doc.querySelector('.sub_r > .txtItme').text;
-            info_data.summary = doc.querySelector('.txtDesc').text;
-            for (let i = 0, t = links.length; i < t; i++) {
-                let el = links[i];
-                let item = glib.DataItem.new();
-                item.link = purl.href(el.getAttribute('href'));
-                item.title = el.text;
-                results.push(item);
+            let imgs = doc.querySelectorAll("#thumbnail-container a.gallerythumb > img");
+            let images = [];
+            let item = glib.DataItem.new();
+            item.type = glib.DataItem.Type.Data;
+            item.link = this.url + '/1';
+            for (let i = 0, t = imgs.length; i < t; i++) {
+                let el = imgs[i];
+                images.push(el.attr('data-src'));
             }
-            this.setData(results);
+            info_data.picture = doc.querySelector('#cover img').attr('data-src');
+            let titles = doc.querySelectorAll('#info > .title');
+            try {
+                info_data.title = titles[0].text
+                info_data.subtitle = titles[1].text;
+            } catch (e) {
+                
+            }
+            let tags = doc.querySelectorAll('#tags .tag-container:not(.hidden)');
+            let dataTags = [];
+            for (let i = 0, t = tags.length; i < t; ++i) {
+                let tag = tags[i];
+                let children = tag.children;
+                let title;
+                for (let child of children) {
+                    if (child.type == glib.GumboNode.Type.Text) {
+                        let text = child.text.trim();
+                        if (text.length > 0) {
+                            title = text;
+                            break;
+                        }
+                    }
+                }
+                let links = [];
+                let tagLinks = tag.querySelectorAll('.tags > a.tag');
+                console.log("size : " + tagLinks.length + "  title:" + title);
+                for (let link of tagLinks) {
+                    try {
+                        let data = {
+                            link: purl.href(link.attr('href')),
+                            name: link.querySelector('.name').text,
+                        };
+                        console.log("push name " + data.name);
+                        let count = link.querySelector('.count');
+                        if (count) data.count = count.text;
+                        else data.count = '-'
+                        links.push(data);
+                    } catch (e) {
+                        console.log("Error : " + e.message);
+                    }
+                }
+                dataTags.push({
+                    title: title,
+                    links: links
+                });
+            }
+            info_data.data = {
+                images: images,
+                tags: dataTags
+            };
+            this.setData([item]);
             cb.apply(null);
         }).catch(function(err) {
             if (err instanceof Error) 

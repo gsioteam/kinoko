@@ -6,8 +6,7 @@ import '../core/core.dart';
 import 'collection_data.dart';
 
 enum DataItemType {
-  Book,
-  Chapter,
+  Data,
   Header,
   Unkown
 }
@@ -16,7 +15,7 @@ class DataItem extends Base {
 
   static reg() {
     Base.reg(DataItem, "gs::DataItem", Base)
-        ..constructor = ((id)=>DataItem().setID(id));
+        ..constructor = ((id)=>DataItem._().setID(id));
   }
 
   String get title => call("getTitle");
@@ -44,12 +43,9 @@ class DataItem extends Base {
     int type = call("getType");
     switch (type) {
       case 0: {
-        return DataItemType.Book;
+        return DataItemType.Data;
       }
       case 1: {
-        return DataItemType.Chapter;
-      }
-      case 2: {
         return DataItemType.Header;
       }
     }
@@ -59,16 +55,12 @@ class DataItem extends Base {
   set type(DataItemType type) {
     int t = 0;
     switch (type) {
-      case DataItemType.Book: {
+      case DataItemType.Data: {
         t = 0;
         break;
       }
-      case DataItemType.Chapter: {
-        t = 1;
-        break;
-      }
       case DataItemType.Header: {
-        t = 2;
+        t = 1;
         break;
       }
       default: {
@@ -89,4 +81,9 @@ class DataItem extends Base {
 
   static String toJSON(Array items) => Base.s_call(DataItem, "toJSON", argv: [items]);
   static Array fromJSON(String json) => Base.s_call(DataItem, "fromJSON", argv: [json]);
+
+  DataItem._();
+  DataItem.allocate() {
+    super.allocate([]);
+  }
 }

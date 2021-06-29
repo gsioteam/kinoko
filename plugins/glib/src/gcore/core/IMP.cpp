@@ -35,24 +35,48 @@ b8_vector Data::readAll() {
     b8_vector res(size);
     if (size) {
         res.resize(size);
+        seek(0, SEEK_SET);
         read(res.data(), 1, size);
     }
     return res;
 }
 
 string Data::text() {
-    size_t size = getSize();
     string res;
-    if (size) {
-        res.resize(size);
-        read((char *)res.data(), 1, size);
+    auto buf = readAll();
+    res.reserve(buf.size() + 1);
+    for (int i = 0, t = buf.size(); i < t; ++i) {
+        uint8_t ch = buf[i];
+        if (ch) {
+            res.push_back(ch);
+        }
     }
     return res;
 }
 
 
 Ref<Data> Data::fromString(const std::string &str) {
-    return new_t(BufferData, (void*)str.data(), str.size(), BufferData::Copy);
+    size_t len = str.size();
+    char *chs = (char *)malloc(len);
+    memcpy(chs, str.data(), len);
+    return new_t(BufferData, chs, len, BufferData::Retain);
+}
+
+void BufferData::seek(size_t seek, int type) {
+    switch (type) {
+        case SEEK_SET: {
+            offset = seek;
+            break;
+        }
+        case SEEK_CUR: {
+            offset += seek;
+            break;
+        }
+        case SEEK_END: {
+            offset = size - seek - 1;
+            break;
+        }
+    }
 }
 
 size_t BufferData::read(void *chs, size_t size, size_t nitems) {
@@ -122,8 +146,7 @@ b8_vector FileData::readAll() {
     if (file) {
 #define BUF_SIZE (8 * 1024)
         b8_vector res;
-        size_t s = ftell(file);
-        fseek(file,0,SEEK_END);
+        fseek(file,0, SEEK_SET);
         size_t readed = 0;
         uint8_t buf[BUF_SIZE];
         while ((readed = fread(buf, 1, BUF_SIZE, file)) > 0) {
@@ -131,7 +154,7 @@ b8_vector FileData::readAll() {
             res.resize(size + readed);
             memcpy(res.data() + size, buf, readed);
         }
-        fseek(file,s,SEEK_END);
+        fseek(file,0, SEEK_END);
         return res;
     }
     return b8_vector();

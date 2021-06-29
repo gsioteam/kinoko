@@ -35,23 +35,14 @@ android {
         }
         ndk {
             stl = 'c++_shared'
-            abiFilters = [
-                    'arm64-v8a',
+//            abiFilters = [
+//                    'arm64-v8a',
 //                    'x86_64',
-                    'armeabi-v7a',
+//                    'armeabi-v7a',
 //                    'x86'
-            ]
+//            ]
         }
     }
-
-//    buildTypes {
-//
-//        release {
-//            useProguard true
-//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-//        }
-//    }
-
     lintOptions {
         disable 'InvalidPackage'
     }
@@ -60,5 +51,6 @@ android {
             path '../CMakeLists.txt'
         }
     }
-    ndkVersion "21.4.7075529"
+
+    ndkVersion '21.4.7075529'
 }

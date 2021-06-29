@@ -1,8 +1,5 @@
 
 import '../core/callback.dart';
-import '../core/callback.dart';
-import '../core/callback.dart';
-import '../core/callback.dart';
 import '../core/core.dart';
 
 class GitAction extends Base {
@@ -54,8 +51,8 @@ class GitRepository extends Base {
 
   GitRepository();
 
-  GitRepository.allocate(String path) {
-    super.allocate([path]);
+  GitRepository.allocate(String path, [String branch]) {
+    super.allocate([path, branch ?? ""]);
   }
 
   bool isOpen() => call("isOpen");

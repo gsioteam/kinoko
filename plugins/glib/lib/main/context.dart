@@ -15,40 +15,44 @@ class Context extends Base {
   void enterView() => call("enterView");
   void exitView() => call("exitView");
 
+  void clearData() => call("clearData");
+
+  void saveData() => call("saveData");
+
   static const int DataReload = 1;
   static const int DataAppend = 2;
 
-  Callback _on_data_changed;
-  set on_data_changed(Callback cb) {
-    r(_on_data_changed);
-    _on_data_changed = cb == null ? null : cb.control();
+  Callback _onDataChanged;
+  set onDataChanged(Callback cb) {
+    r(_onDataChanged);
+    _onDataChanged = cb == null ? null : cb.control();
     call("setOnDataChanged", argv: [cb]);
   }
 
-  Callback _on_loading_status;
-  set on_loading_status(Callback cb) {
-    r(_on_loading_status);
-    _on_loading_status = cb == null ? null : cb.control();
+  Callback _onLoadingStatus;
+  set onLoadingStatus(Callback cb) {
+    r(_onLoadingStatus);
+    _onLoadingStatus = cb == null ? null : cb.control();
     call("setOnLoadingStatus", argv: [cb]);
   }
 
-  Callback _on_error;
-  set on_error(Callback cb) {
-    r(_on_error);
-    _on_error = cb == null ? null : cb.control();
+  Callback _onError;
+  set onError(Callback cb) {
+    r(_onError);
+    _onError = cb == null ? null : cb.control();
     call("setOnError", argv: [cb]);
   }
 
-  Callback _on_reload_complete;
-  set on_reload_complete(Callback cb) {
-    r(_on_reload_complete);
-    _on_reload_complete = cb == null ? null : cb.control();
+  Callback _onReloadComplete;
+  set onReloadComplete(Callback cb) {
+    r(_onReloadComplete);
+    _onReloadComplete = cb == null ? null : cb.control();
     call("setOnReloadComplete", argv: [cb]);
   }
 
   Array get data => call("getData");
-  dynamic get info_data => call("getInfoData");
-  set info_data(dynamic data) => call("setInfoData", argv: [data]);
+  dynamic get infoData => call("getInfoData");
+  set infoData(dynamic data) => call("setInfoData", argv: [data]);
 
   String get projectKey => call("getProjectKey");
 
@@ -57,9 +61,10 @@ class Context extends Base {
 
   @override
   void destroy() {
-    r(_on_data_changed);
-    r(_on_loading_status);
-    r(_on_error);
+    r(_onDataChanged);
+    r(_onLoadingStatus);
+    r(_onError);
+    r(_onReloadComplete);
     super.destroy();
   }
 
@@ -67,12 +72,12 @@ class Context extends Base {
   void setSetting(String key, dynamic value) => call("setSetting", argv: [key, value]);
 
   String get temp => call("getTemp");
-  String get item_temp => call("getItemTemp");
+  // String get itemTemp => call("getItemTemp");
 
   dynamic applyFunction(String name, Array args) => call("applyFunction", argv: [name, args]);
 
-  Callback get on_call => call("getOnCall");
-  set on_call(Callback v) => call("setOnCall", argv: [v]);
+  Callback get onCall => call("getOnCall");
+  set onCall(Callback v) => call("setOnCall", argv: [v]);
 }
 
 class LibraryContext extends Base {

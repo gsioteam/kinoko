@@ -21,7 +21,7 @@ class TypeInfo {
 }
 
 mixin AutoRelease {
-  static List<AutoRelease> _cachePool = List<AutoRelease>();
+  static Set<AutoRelease> _cachePool = Set();
   static Timer timer;
   int _retainCount = 1;
   bool _destroyed = false;
@@ -51,7 +51,7 @@ mixin AutoRelease {
 
   static _timeUp(Timer t) {
     t.cancel();
-    List<AutoRelease> copyList = List<AutoRelease>.from(_cachePool);
+    Set<AutoRelease> copyList = Set<AutoRelease>.from(_cachePool);
     _cachePool.clear();
     copyList.forEach((AutoRelease tar){
       tar.destroy();
@@ -68,11 +68,11 @@ mixin AutoRelease {
 
 class AutoPointer<T extends NativeType> with AutoRelease {
   Pointer<T> ptr;
-  AutoPointer(this.ptr) {}
+  AutoPointer(this.ptr);
 
   @override
   destroy() {
-    free(ptr);
+    malloc.free(ptr);
   }
 }
 
@@ -92,7 +92,7 @@ void _toNative(dynamic obj, Pointer<NativeTarget> ret) {
     nt.pointerValue = obj._id;
   } else if (obj is String) {
     nt.type = TypeString;
-    Pointer<Utf8> utf8 = Utf8.toUtf8(obj);
+    Pointer<Utf8> utf8 = obj.toNativeUtf8();
     nt.pointerValue = utf8;
     autorelease(utf8);
   } else if (obj is List) {
@@ -116,7 +116,7 @@ void _toNative(dynamic obj, Pointer<NativeTarget> ret) {
 }
 
 Pointer<NativeTarget> _makeArgv(List<dynamic> argv) {
-  Pointer<NativeTarget> argvPtr = allocate<NativeTarget>(count: argv.length);
+  Pointer<NativeTarget> argvPtr = malloc.allocate<NativeTarget>(argv.length * sizeOf<NativeTarget>());
   for (int i = 0, t = argv.length; i < t; ++i) {
     _toNative(argv[i], argvPtr.elementAt(i));
   }
@@ -142,11 +142,15 @@ List<dynamic> _convertArgv(Pointer<NativeTarget> argv, int length) {
         break;
       }
       case TypeString: {
-        ret = Utf8.fromUtf8(Pointer<Utf8>.fromAddress(target.pointerValue.address));
+        ret = Pointer<Utf8>.fromAddress(target.pointerValue.address).toDartString();
         break;
       }
       case TypeBoolean: {
         ret = (target.intValue != 0);
+        break;
+      }
+      case TypePointer: {
+        ret = target.pointerValue;
         break;
       }
       default: {
@@ -163,7 +167,7 @@ void autorelease<T extends NativeType>(Pointer<T> ptr) {
 }
 
 void _callClassFromNative(Pointer ptr, Pointer<Utf8> name, Pointer<NativeTarget> argv, int length, Pointer<NativeTarget> result) {
-  String fun = Utf8.fromUtf8(name);
+  String fun = name.toDartString();
   try {
     TypeInfo type = _classDB[ptr];
     if (type != null) {
@@ -173,19 +177,19 @@ void _callClassFromNative(Pointer ptr, Pointer<Utf8> name, Pointer<NativeTarget>
         _toNative(ret, result);
       }
     }
-  } catch (e) {
-    print("Call static $fun failed : " + e.toString());
+  } catch (e, stacktrace) {
+    print("Call static $fun failed : ${e.toString()} \n$stacktrace");
   }
 }
 
 void _callInstanceFromNative(Pointer ptr, Pointer<Utf8> name, Pointer<NativeTarget> argv, int length, Pointer<NativeTarget> result) {
-  String fun = Utf8.fromUtf8(name);
+  String fun = name.toDartString();
+  Base ins = _objectDB[ptr];
   try {
-    Base ins = _objectDB[ptr];
     dynamic ret = ins.apply(fun, _convertArgv(argv, length));
     _toNative(ret, result);
-  }catch (e) {
-    print("Call $fun failed : " + e.toString());
+  }catch (e, stacktrace) {
+    print("Call $fun on $ins failed : ${e.toString()} \n$stacktrace");
   }
 }
 
@@ -221,15 +225,15 @@ class Base with AutoRelease {
 
   dynamic call(String name, { argv: const <dynamic>[]}) {
     if (isDestroyed) {
-      throw new Exception("This object(${runtimeType}) is destroyed.");
+      throw new Exception("This object($runtimeType) is destroyed.");
     }
     Pointer<NativeTarget> argvPtr = _makeArgv(argv);
-    Pointer<Utf8> namePtr = Utf8.toUtf8(name);
+    Pointer<Utf8> namePtr = name.toNativeUtf8();
     Pointer<NativeTarget> resultPtr = callObject(_id, namePtr, argvPtr, argv.length);
     List<dynamic> ret = _convertArgv(resultPtr, 1);
 
-    free(namePtr);
-    free(argvPtr);
+    malloc.free(namePtr);
+    malloc.free(argvPtr);
     freePointer(resultPtr);
 
     var obj = ret[0];
@@ -240,13 +244,13 @@ class Base with AutoRelease {
     TypeInfo typeInfo = _classRef[type];
     if (typeInfo != null) {
       Pointer<NativeTarget> argvPtr = _makeArgv(argv);
-      Pointer<Utf8> namePtr = Utf8.toUtf8(name);
+      Pointer<Utf8> namePtr = name.toNativeUtf8();
       Pointer<NativeTarget> resultPtr = callClass(typeInfo.ptr, namePtr, argvPtr, argv.length);
 
       List<dynamic> ret = _convertArgv(resultPtr, 1);
 
-      free(namePtr);
-      free(argvPtr);
+      malloc.free(namePtr);
+      malloc.free(argvPtr);
       freePointer(resultPtr);
 
       return ret[0];
@@ -302,7 +306,7 @@ class Base with AutoRelease {
     }
     Pointer<NativeTarget> argvPtr = _makeArgv(argv);
     _id = createObject(_type.ptr, argvPtr, argv.length);
-    free(argvPtr);
+    malloc.free(argvPtr);
     _objectDB[_id] = this;
   }
 
@@ -311,16 +315,16 @@ class Base with AutoRelease {
       setuped = true;
       setupLibrary(callClassPointer, callInstancePointer, createNativeTarget);
     }
-    Pointer<Utf8> pname = Utf8.toUtf8(name);
+    Pointer<Utf8> pname = name.toNativeUtf8();
     Pointer handler = bindClass(pname);
     if (handler.address != 0) {
       TypeInfo info = TypeInfo(type, handler, superType);
       _classDB[handler] = info;
       _classRef[type] = info;
-      free(pname);
+      malloc.free(pname);
       return info;
     } else {
-      throw new Exception("Unkown class $type with ${name}");
+      throw new Exception("Unkown class $type with $name");
     }
   }
 
@@ -331,6 +335,18 @@ class Base with AutoRelease {
       _id = null;
     }
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is Base) {
+      return _id == other._id;
+    }
+    return super == other;
+  }
+
+  @override
+  int get hashCode => _id.hashCode + 0xfabc;
+
 }
 
 void r(Base b) {if (b != null) b.release();}

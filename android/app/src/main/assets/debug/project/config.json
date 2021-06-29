@@ -1,42 +1,23 @@
 {
-    "name": "Kukudm",
-    "icon": "https://wap.kukudm.com/images/head_logo.gif",
-    "url": "https://wap.kukudm.com/",
+    "name": "nhentai",
+    "icon": "https://static.nhentai.net/img/logo.090da3be7b51.svg",
+    "url": "https://nhentai.net/",
     "index": "index.js",
-    "book": "book.js",
-    "chapter": "chapter.js",
+    "collections": [
+        "book.js",
+        "chapter.js"
+    ],
     "search": {
         "src": "search.js",
         "data": {
-            "url": "https://so.kukudm.com/m_search.asp?kw={0}&page={1}"
+            "url": "https://nhentai.net/search/?q={0}&page={1}"
         }
     },
     "categories": [
         {
-            "title": "推薦",
+            "title": "主頁",
             "id": "home",
-            "url": "https://wap.kukudm.com/",
-            "data": {}
-        },
-        {
-            "title": "日漫",
-            "id": "japan",
-            "url": "https://wap.kukudm.com/comictype/3_{0}.htm"
-        },
-        {
-            "title": "港漫",
-            "id": "hongkong",
-            "url": "https://wap.kukudm.com/comictype/5_{0}.htm"
-        },
-        {
-            "title": "国漫",
-            "id": "china",
-            "url": "https://wap.kukudm.com/comictype/30_{0}.htm"
-        },
-        {
-            "title": "更多",
-            "id": "more",
-            "url": "https://wap.kukudm.com/comictype/31_{0}.htm"
+            "url": "https://nhentai.net/?page={0}"
         }
     ]
 }

@@ -1,0 +1,132 @@
+<Scaffold>
+    <attr:appBar>
+        <AppBar>
+            <attr:title>
+                <Text>${infoData.title}</Text>
+            </attr:title>
+        </AppBar>
+    </attr:appBar>
+
+    <attr:body>
+        <BetterRefreshIndicator controller="$refreshController">
+        <CustomScrollView>
+            <SliverToBoxAdapter>
+                <Padding padding="all(5)">
+                    <Row crossAxisAlignment="start">
+                        <Padding padding="only(5,5,5,0)">
+                            <Image width="90" height="120" fit="cover" gaplessPlayback="true">
+                                <attr:image>
+                                    <CachedNetworkImageProvider>${infoData.picture}</CachedNetworkImageProvider>
+                                </attr:image>
+                            </Image>
+                        </Padding>
+                        <Expanded>
+                            <Column crossAxisAlignment="start">
+                                <Text>${infoData.title}</Text>
+                                <Text text="${infoData.subtitle}">
+                                    <attr:style>
+                                        <TextStyle color="grey" fontSize="12"/>
+                                    </attr:style>
+                                </Text>
+                                <Padding padding="all(3)"/>
+
+                                <Column crossAxisAlignment="start">
+                                    <for array="${infoData.data.tags}">
+                                    <Padding padding="only(5,2,5,2)">
+                                        <Text.rich>
+                                            <TextSpan>
+                                                <TextSpan text="${item.title}">
+                                                    <attr:style>
+                                                        <TextStyle fontSize="12"/>
+                                                    </attr:style>
+                                                </TextSpan>
+                                                <for array="${item.links}" item="link">
+                                                    <WidgetSpan>
+                                                        <Container margin="only(3,1,3,1)">
+                                                            <Row mainAxisSize="min">
+                                                                <Container padding="only(4,2,1,2)">
+                                                                    <Text>
+                                                                        <attr:style>
+                                                                            <TextStyle color="white" fontSize="8"/>
+                                                                        </attr:style>
+                                                                        <arg:0>${link.name}</arg:0>
+                                                                    </Text>
+                                                                    <attr:decoration>
+                                                                        <BoxDecoration color="rgb(80,80,80)" borderRadius="horizontal(circular(4), )">
+                                                                            <attr:boxShadow>
+                                                                                <BoxShadow color="rgb(80,80,80)" blurRadius="1"/>
+                                                                            </attr:boxShadow>
+                                                                        </BoxDecoration>
+                                                                    </attr:decoration>
+                                                                </Container>
+                                                                <Container padding="only(1,2,4,2)">
+                                                                    <Text>
+                                                                        <attr:style>
+                                                                            <TextStyle color="white" fontSize="8"/>
+                                                                        </attr:style>
+                                                                        <arg:0>${link.count}</arg:0>
+                                                                    </Text>
+                                                                    <attr:decoration>
+                                                                        <BoxDecoration color="grey" borderRadius="horizontal(,circular(4))">
+                                                                            <attr:boxShadow>
+                                                                                <BoxShadow color="grey" blurRadius="1"/>
+                                                                            </attr:boxShadow>
+                                                                        </BoxDecoration>
+                                                                    </attr:decoration>
+                                                                </Container>
+                                                            </Row>
+                                                        </Container>
+                                                    </WidgetSpan>
+                                                </for>
+                                            </TextSpan>
+                                        </Text.rich>
+                                    </Padding>
+                                    </for>
+                                </Column>
+                            </Column>
+                        </Expanded>
+                    </Row>
+                </Padding>
+            </SliverToBoxAdapter>
+            <SliverToBoxAdapter>
+                <Container padding="all(8)" margin="only(null,null,null,5)">
+                    <attr:decoration>
+                        <BoxDecoration color="white">
+                            <attr:boxShadow>
+                                <BoxShadow color="grey" blurRadius="2" offset="(0, 2)"/>
+                            </attr:boxShadow>
+                        </BoxDecoration>
+                    </attr:decoration>
+                    <Row>
+                        <Icon>list</Icon>
+                        <Text>List</Text>
+                    </Row>
+                </Container>
+            </SliverToBoxAdapter>
+            <SliverGrid.count crossAxisCount="4" childAspectRatio="0.8">
+                <for array="${infoData.data.images}">
+                    <MaterialButton padding="zero">
+                        <attr:onPressed>
+                            <Function>
+                                <Call function="$openChapter">
+                                    <Argument value="${chapters[0]}"/>
+                                    <Argument value="$index"/>
+                                </Call>
+                            </Function>
+                        </attr:onPressed>
+                        <Container width="999" height="999" margin="all(2)" color="black12">
+                            <Image fit="cover">
+                                <attr:image>
+                                    <CachedNetworkImageProvider>
+                                        $item
+                                    </CachedNetworkImageProvider>
+                                </attr:image>
+                            </Image>
+                        </Container>
+                    </MaterialButton>
+                </for>
+            </SliverGrid.count>
+        </CustomScrollView>
+        </BetterRefreshIndicator>
+    </attr:body>
+</Scaffold>

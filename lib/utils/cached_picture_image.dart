@@ -1,6 +1,7 @@
 
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' as io;
+import 'package:file/src/interface/file.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:path_provider/path_provider.dart';
@@ -8,7 +9,9 @@ import 'package:path/path.dart' as p;
 import '../configs.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-
+import 'package:file/file.dart' as file;
+import 'package:file/local.dart';
+import 'package:flutter_cache_manager/src/storage/file_system/file_system.dart';
 
 String _generateMd5(String input) {
   return md5.convert(utf8.encode(input)).toString();
@@ -19,17 +22,38 @@ class SizeResult {
   int other = 0;
 }
 
-class PictureCacheManager extends BaseCacheManager {
+class PictureFileSystem extends FileSystem {
+  String key;
+  file.Directory directory;
+
+  PictureFileSystem(this.key);
+
+  @override
+  Future<File> createFile(String name) async {
+    if (directory == null) {
+      var temp = await getTemporaryDirectory();
+      directory = LocalFileSystem().directory(p.join(temp.path, "pic", key));
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+    }
+    return directory.childFile(name);
+  }
+
+}
+
+class PictureCacheManager extends CacheManager {
   String key;
   bool _store = false;
   static Map<String, PictureCacheManager> _managers = Map();
 
   PictureCacheManager._(this.key, {
     Duration maxAgeCacheObject
-  }) : super(
+  }) : super(Config(
     key,
-    maxAgeCacheObject: maxAgeCacheObject,
-  );
+    stalePeriod: maxAgeCacheObject,
+    fileSystem: PictureFileSystem(key),
+  ));
 
   factory PictureCacheManager(String key, DataItem item) {
     PictureCacheManager manager = _managers[key];
@@ -44,13 +68,6 @@ class PictureCacheManager extends BaseCacheManager {
     }
   }
 
-  @override
-  Future<String> getFilePath() async {
-    var directory = await getTemporaryDirectory();
-    String result = p.join(directory.path, "pic", key);
-    return result;
-  }
-
   static String cacheKey(DataItem item) {
     return "${item.projectKey}/${_generateMd5(item.link)}";
   }
@@ -59,7 +76,7 @@ class PictureCacheManager extends BaseCacheManager {
     if (cached == null) cached = Set();
     var directory = await getTemporaryDirectory();
     String path = p.join(directory.path, "pic");
-    var dir = Directory(path);
+    var dir = io.Directory(path);
     SizeResult result = SizeResult();
     await for (var entry in dir.list(recursive: true, followLinks: false)) {
       if (entry is File) {
@@ -81,9 +98,9 @@ class PictureCacheManager extends BaseCacheManager {
     if (without == null) without = Set();
     var directory = await getTemporaryDirectory();
     String path = p.join(directory.path, "pic");
-    var dir = Directory(path);
+    var dir = io.Directory(path);
     await for (var firstEntry in dir.list(followLinks: false)) {
-      if (firstEntry is Directory) {
+      if (firstEntry is io.Directory) {
         String firstName = p.basename(firstEntry.path);
         await for (var secondEntry in firstEntry.list(followLinks: false)) {
           String secondName = p.basename(secondEntry.path);

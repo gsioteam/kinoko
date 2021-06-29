@@ -32,7 +32,7 @@ import 'favorites_page.dart';
 import 'download_page.dart';
 import 'package:xml_layout/types/colors.dart' as colors;
 import 'package:xml_layout/types/icons.dart' as icons;
-import 'layout/all.xml_layout.dart' as all;
+import 'layout/layout.xml_layout.dart' as layout;
 import 'package:xml_layout/xml_layout.dart';
 import 'package:glib/utils/platform.dart' as glib;
 
@@ -99,6 +99,19 @@ class _LifecycleEventHandler extends WidgetsBindingObserver {
   }
 }
 
+class ListType<T> {
+  List<T> children(NodeData node) {
+    return node.children<T>();
+  }
+}
+
+ListType _defaultType = ListType();
+
+Map<String, ListType> listTypes = {
+  "PopupMenuEntry": ListType<PopupMenuEntry>(),
+  "Color": ListType<Color>(),
+};
+
 class SplashScreen extends StatefulWidget {
 
   @override
@@ -122,19 +135,18 @@ class SplashScreenState extends State<SplashScreen> {
     );
   }
 
+  Future<void> _loadTemplates() async {
+    Future<void> load(String key) async {
+      cachedTemplates[key] = await rootBundle.loadString(key);
+    }
+    await load("assets/collection.xml");
+  }
+
   Future<void> setup(BuildContext context) async {
-    // await Firebase.initializeApp();
-//    if (kDebugMode) {
-//      // Force disable Crashlytics collection while doing every day development.
-//      // Temporarily toggle this to true if you want to test crash reporting in your app.
-//      await FirebaseCrashlytics.instance
-//          .setCrashlyticsCollectionEnabled(false);
-//    } else {
-//      // Handle Crashlytics enabled status when not in Debug,
-//      // e.g. allow your users to opt-in to crash reporting.
-//    }
     Directory dir = await platform.getApplicationSupportDirectory();
     share_cache["root_path"] = dir.path;
+
+    await _loadTemplates();
 
     await Glib.setup(dir.path);
     Locale locale = KinokoLocalizationsDelegate.supports[KeyValue.get(language_key)];
@@ -146,7 +158,7 @@ class SplashScreenState extends State<SplashScreen> {
     WidgetsBinding.instance.addObserver(_LifecycleEventHandler());
     colors.register();
     icons.register();
-    all.register();
+    layout.register();
     XmlLayout.register("CachedNetworkImageProvider", (node, key) {
       return CachedNetworkImageProvider(
           node.text,
@@ -183,24 +195,29 @@ class SplashScreenState extends State<SplashScreen> {
     });
     XmlLayout.registerInline(EdgeInsets, "only", false, (node, method) {
       return EdgeInsets.only(
-        left: double.tryParse(method[0]) ?? 0,
-        top: double.tryParse(method[1]) ?? 0,
-        right: double.tryParse(method[2]) ?? 0,
-        bottom: double.tryParse(method[3]) ?? 0,
+        left: method[0]?.toDouble() ?? 0,
+        top: method[1]?.toDouble() ?? 0,
+        right: method[2]?.toDouble() ?? 0,
+        bottom: method[3]?.toDouble() ?? 0,
       );
     });
     XmlLayout.registerInline(EdgeInsets, "all", false, (node, method) {
-      return EdgeInsets.all(double.tryParse(method[0]) ?? 0);
+      return EdgeInsets.all(method[0]?.toDouble() ?? 0);
     });
     XmlLayout.registerInline(Color, "rgb", false, (node, method) {
-      return Color.fromRGBO(int.tryParse(method[0]), int.tryParse(method[1]),
-          int.tryParse(method[2]), 1);
+      return Color.fromRGBO(method[0]?.toInt(), method[1]?.toInt(),
+          method[2]?.toInt(), 1);
     });
     XmlLayout.registerInline(BorderRadius, "horizontal", false, (node, method) {
       return BorderRadius.horizontal(
         left: node.v<Radius>(method[0], Radius.zero),
         right: node.v<Radius>(method[1], Radius.zero),
       );
+    });
+    XmlLayout.registerFunctionReturn<List<PopupMenuEntry>>("MenuItemList");
+    XmlLayout.register("List", (node, key) {
+      ListType listType = listTypes[node.s<String>("type")] ?? _defaultType;
+      return listType.children(node);
     });
   }
 

@@ -126,9 +126,9 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
           }
         ),
         SettingItem(
-            SettingItemType.Label,
-            kt("download_size"),
-            value: size == null ? "..." : _sizeString(size.cached)
+          SettingItemType.Label,
+          kt("download_size"),
+          value: size == null ? "..." : _sizeString(size.cached)
         ),
         SettingItem(
           SettingItemType.Button,

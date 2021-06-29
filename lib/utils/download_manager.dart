@@ -269,13 +269,13 @@ class DownloadQueueItem {
   Future<void> reload(Context context) {
     _loaded2 = 0;
     Completer<void> completer = Completer();
-    context.on_error = Callback.fromFunction((glib.Error error){
+    context.onError = Callback.fromFunction((glib.Error error){
       completer.completeError(Exception(error.msg));
     }).release();
-    context.on_reload_complete = Callback.fromFunction(() {
+    context.onReloadComplete = Callback.fromFunction(() {
       completer.complete();
     }).release();
-    context.on_data_changed = Callback.fromFunction((int type, Array data, int idx) {
+    context.onDataChanged = Callback.fromFunction((int type, Array data, int idx) {
       for (int i = 0, t = data.length; i < t; ++i) {
         DataItem dataItem = data[i];
         addToQueue(dataItem.picture, headers: dataItem.headers);
@@ -296,7 +296,7 @@ class DownloadQueueItem {
     }
     project.control();
 
-    context = project.createChapterContext(item).control();
+    context = project.createCollectionContext(CHAPTER_INDEX, item).control();
 
     try {
       if (state == DownloadState.None) {

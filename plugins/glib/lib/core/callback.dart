@@ -37,6 +37,10 @@ class FunctionCallback extends Callback {
   }
 
   _invoke(List argv) {
-    return Function.apply(function, argv);
+    try {
+      return Function.apply(function, argv);
+    } catch (e) {
+      print("Error when invoke $function $e");
+    }
   }
 }

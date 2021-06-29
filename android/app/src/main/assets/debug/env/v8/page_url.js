@@ -12,14 +12,34 @@ class URL {
         str = str.substr(this.host.length);
         let path = str;
         let sidx = path.indexOf('?');
-        this.path = path.substr(0, sidx);
+        let search;
+        if (sidx >= 0) {
+            this.pathname = this.path = path.substr(0, sidx);
+            search = path.substr(sidx);
+        } else {
+            this.pathname = this.path = path;
+            search = '';
+        }
         if (!this.path) this.path = "/";
-        let search = path.substr(sidx);
         let hidx = search.indexOf('#');
-        this.search = search.substr(0, hidx);
-        this.hash = search.substr(hidx);
+        if (hidx >= 0) {
+            this.search = search.substr(0, hidx);
+            this.hash = search.substr(hidx);
+        } else {
+            this.search = search;
+            this.hash = '';
+        }
         this.origin = this.protocol + '//' + this.hostname;
         this.href = this.origin + this.path + this.search + this.hash;
+
+        let query = {};
+        this.search.substr(1).split('&').forEach(function(str) {
+            let idx = str.indexOf('=');
+            if (idx > 0) {
+                query[str.substr(0, idx)] = str.substr(idx + 1);
+            }
+        });
+        this.searchParams = query;
     }
 }
 
@@ -54,4 +74,7 @@ class PageURL {
     }
 }
 
-module.exports = PageURL;
+module.exports = {
+    PageURL,
+    URL
+};

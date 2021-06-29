@@ -205,7 +205,7 @@ class _BookPageState extends State<BookPage> {
   Set<int> selected = Set();
 
   Widget createItem(int idx) {
-    String temp = widget.context.item_temp;
+    String temp = "";
     DataItem item = chapters[idx];
     if (temp.isEmpty) {
       if (item.type != DataItemType.Header) {
@@ -329,7 +329,7 @@ class _BookPageState extends State<BookPage> {
 
   onDownloadStartClicked() {
     setState(() {
-      DataItem dataItem = widget.context.info_data;
+      DataItem dataItem = widget.context.infoData;
       selected.forEach((idx) {
         DownloadQueueItem item = DownloadManager().add(chapters[idx], BookInfo(
             title: dataItem.title,
@@ -367,7 +367,7 @@ class _BookPageState extends State<BookPage> {
   String _lastChapterValue;
   String get lastChapterKey {
     if (_lastChapterKey == null) {
-      DataItem bookItem = widget.context.info_data;
+      DataItem bookItem = widget.context.infoData;
       _lastChapterKey = "$last_chapter_key:${bookItem.projectKey}:${bookItem.link}";
     }
     return _lastChapterKey;
@@ -413,7 +413,7 @@ class _BookPageState extends State<BookPage> {
     widget.project.control();
 
     Future.delayed(Duration(milliseconds: 100)).then((value) => SystemChrome.setEnabledSystemUIOverlays([]));
-    Context currentContext = widget.project.createChapterContext(chapter).control();
+    Context currentContext = widget.project.createCollectionContext(CHAPTER_INDEX, chapter).control();
     await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
       return PictureViewer(
         currentContext,
@@ -428,7 +428,7 @@ class _BookPageState extends State<BookPage> {
               DataItem data = chapters[currentIndex];
               _saveLastChapter(data);
               r(currentContext);
-              currentContext = widget.project.createChapterContext(data).control();
+              currentContext = widget.project.createCollectionContext(CHAPTER_INDEX, data).control();
               return currentContext;
             }
           } else if (flipType == PictureFlipType.Next) {
@@ -440,14 +440,14 @@ class _BookPageState extends State<BookPage> {
               DataItem data = chapters[currentIndex];;
               _saveLastChapter(data);
               r(currentContext);
-              currentContext = widget.project.createChapterContext(data).control();
+              currentContext = widget.project.createCollectionContext(CHAPTER_INDEX, data).control();
               return currentContext;
             }
           }
           return null;
         },
         onDownload: (_item) {
-          DataItem dataItem = widget.context.info_data;
+          DataItem dataItem = widget.context.infoData;
           setState(() {
             DownloadQueueItem item = DownloadManager().add(_item, BookInfo(
                 title: dataItem.title,
@@ -483,9 +483,6 @@ class _BookPageState extends State<BookPage> {
     widget.project.release();
   }
 
-  XmlLayoutBuilder _xmlBuilder;
-  XmlLayoutBuilder get xmlBuilder => _xmlBuilder ?? (_xmlBuilder = XmlLayoutBuilder());
-
   Widget makeLastChapter() {
     DataItem item = lastChapter;
     var theme = Theme.of(context);
@@ -515,7 +512,7 @@ class _BookPageState extends State<BookPage> {
     ThemeData theme = Theme.of(context);
     String temp = widget.context.temp;
     if (temp.isEmpty) {
-      var data = widget.context.info_data;
+      var data = widget.context.infoData;
       if (!(data is DataItem)) {
         return Container(
           child: Text("Wrong type"),
@@ -652,40 +649,20 @@ class _BookPageState extends State<BookPage> {
         ),
       );
     } else {
-      DataItem info_data = widget.context.info_data;
-      return xmlBuilder.build(
-        context,
+      DataItem info_data = widget.context.infoData;
+      return XmlLayout(
         template: temp,
-        objects: {
-          "info_data": _itemMap(info_data),
-          "chapters": proxyObject(chapters),
-          "openChapter": (List args) {
-            if (args.length >= 1) {
-              openChapter(args[0], args.length >= 2 ? args[1] : null);
-            }
+          objects: {
+            "infoData": _itemMap(info_data),
+            "chapters": proxyObject(chapters),
+            "openChapter": openChapter,
+            "buildChapterItem": createItem,
+            "openCollection": openCollection,
+            "refreshController": refreshController
           },
-          "buildChapterItem": (List args) {
-            if (args.length >= 1) {
-              int idx = args[0];
-              return createItem(idx);
-            } else {
-              print("Wrong item $args");
-              return Container();
-            }
-          },
-          "openCollection": (List args) {
-            if (args.length >= 1) {
-              openCollection(args[0], args.length >= 2 ? args[1] : null);
-            }
-          },
-          "refreshController": refreshController
-        },
-        apply: (String name, List args) {
-          return widget.context.applyFunction(name, args);
-        },
-        onUnkownElement: (node, key) {
-          print("Unkown node ${node.name}");
-        }
+          onUnkownElement: (node, key) {
+            print("Unkown node ${node.name}");
+          }
       );
     }
   }
@@ -697,7 +674,7 @@ class _BookPageState extends State<BookPage> {
 
   void favoriteClicked() {
     setState(() {
-      DataItem data = widget.context.info_data;
+      DataItem data = widget.context.infoData;
       if (FavoritesManager().isFavorite(data)) {
         FavoritesManager().remove(data);
       } else {
@@ -733,21 +710,21 @@ class _BookPageState extends State<BookPage> {
   }
 
   String key(String type) {
-    return "$type:${widget.context.info_data.link}";
+    return "$type:${widget.context.infoData.link}";
   }
 
   @override
   void initState() {
     widget.project.control();
     widget.context.control();
-    widget.context.on_data_changed = Callback.fromFunction(onDataChanged).release();
-    widget.context.on_loading_status = Callback.fromFunction(onLoadingStatus).release();
-    widget.context.on_error = Callback.fromFunction(onError).release();
-    widget.context.on_call = Callback.fromFunction(onCall).release();
+    widget.context.onDataChanged = Callback.fromFunction(onDataChanged).release();
+    widget.context.onLoadingStatus = Callback.fromFunction(onLoadingStatus).release();
+    widget.context.onError = Callback.fromFunction(onError).release();
+    widget.context.onCall = Callback.fromFunction(onCall).release();
     refreshController.onRefresh = onPullDownRefresh;
     widget.context.enterView();
-    FavoritesManager().clearNew(widget.context.info_data);
-    HistoryManager().insert(widget.context.info_data);
+    FavoritesManager().clearNew(widget.context.infoData);
+    HistoryManager().insert(widget.context.infoData);
     chapters = widget.context.data.control();
     String order = KeyValue.get(key(ORDER_TYPE));
     if (order != null && order.isNotEmpty) {

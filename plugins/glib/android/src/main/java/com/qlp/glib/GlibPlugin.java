@@ -2,7 +2,6 @@ package com.qlp.glib;
 
 import android.os.Handler;
 
-import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -21,11 +20,14 @@ public class GlibPlugin implements FlutterPlugin, MethodCallHandler {
 
   @Override
   public void onAttachedToEngine(FlutterPluginBinding flutterPluginBinding) {
-    channel = new MethodChannel(flutterPluginBinding.getFlutterEngine().getDartExecutor(), "glib");
-    channel.setMethodCallHandler(this);
-    handler = new Handler();
-    sendSignal();
-    onAttached(this);
+    try {
+      channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "glib");
+      channel.setMethodCallHandler(this);
+      handler = new Handler();
+      onAttached(this);
+    } catch (Exception e) {
+
+    }
   }
 
   // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -37,6 +39,7 @@ public class GlibPlugin implements FlutterPlugin, MethodCallHandler {
   // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
   // depending on the user's project. onAttachedToEngine or registerWith must both be defined
   // in the same class.
+  @SuppressWarnings("deprecation")
   public static void registerWith(Registrar registrar) {
     final MethodChannel channel = new MethodChannel(registrar.messenger(), "glib");
     channel.setMethodCallHandler(new GlibPlugin());

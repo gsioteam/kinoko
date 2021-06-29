@@ -155,21 +155,15 @@ class _FavoritesPageState extends State<FavoritesPage> {
     }
     DataItemType type = item.type;
     Context ctx;
-    if (type == DataItemType.Book) {
-      ctx = project.createBookContext(item).control();
-    } else if (type == DataItemType.Chapter) {
-      ctx = project.createChapterContext(item).control();
+    if (type == DataItemType.Data) {
+      ctx = project.createCollectionContext(BOOK_INDEX, item).control();
     } else {
       Fluttertoast.showToast(msg: kt("can_not_determine_the_context_type"));
       project.release();
       return;
     }
     await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-      if (type == DataItemType.Book) {
-        return BookPage(ctx, project);
-      } else {
-        return PictureViewer(ctx);
-      }
+      return BookPage(ctx, project);
     }));
     setState(() {});
     ctx.release();

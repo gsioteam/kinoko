@@ -83,8 +83,21 @@ module GS
     end
   end
 
+  class FileData < GS::Object 
+    native 'gc::FileData'
+
+    def to_s *args
+      coding = args[0]
+      if coding then Encoder.decode(self, coding) else text end
+    end
+  end
+
   class Encoder < GS::Object
     native 'gs::Encoder'
+  end
+
+  class KeyValue < GS::Object
+    native 'gs::KeyValue'
   end
 
   class Request < GS::Object
@@ -145,9 +158,8 @@ module GS
   class DataItem < GS::Object
     native 'gs::DataItem'
 
-    Book = 0
-    Chapter = 1
-    Header = 2
+    Data = 0
+    Header = 1
   end
 
   class Error < GS::Object
@@ -166,4 +178,9 @@ module GS
     Input = 2
     Options = 3
   end
+
+  class Platform < GS::Object 
+    native 'gs::Platform'
+  end
+
 end

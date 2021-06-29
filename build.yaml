@@ -3,4 +3,4 @@ targets:
     builders:
       xml_layout:
         generate_for:
-          - lib/layout/all.dart
+          - lib/layout/layout.dart

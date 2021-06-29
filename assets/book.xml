@@ -1,0 +1,120 @@
+<Scaffold>
+    <attr:body>
+        <BetterRefreshIndicator controller="$refreshController">
+            <CustomScrollView>
+                <SliverAppBar brightness="dark" floating="true" pinned="true" backgroundColor="blue"
+                    expandedHeight="288">
+                    <attr:bottom>
+                        <PreferredSize preferredSize="(infinity, 48)">
+                            <Container height="48" color="white" padding="only(10, null, 10, null)">
+                                <Row>
+                                    <Icon color="blue" size="14">bookmark</Icon>
+                                    <Text arg:0='kt("chapters")'/>
+                                    <!-- Last chapter -->
+                                    <PopupMenuButton>
+                                        <attr:icon>
+                                            <Icon color="blue">sort</Icon>
+                                        </attr:icon>
+                                        <attr:itemBuilder>
+                                            <Function returnType="MenuItemList">
+                                                <List type="PopupMenuEntry">
+                                                    <CheckedPopupMenuItem value="0" checked="equal(0, $orderIndex)">
+                                                        <Text arg:0='kt("reverse_order")'/>
+                                                    </CheckedPopupMenuItem>
+                                                    <CheckedPopupMenuItem value="1" checked="equal(1, $orderIndex)">
+                                                        <Text arg:0='kt("order")'/>
+                                                    </CheckedPopupMenuItem>
+                                                </List>
+                                            </Function>
+                                        </attr:itemBuilder>
+                                    </PopupMenuButton>
+                                    <BarItem display="$editing">
+                                        <IconButton color="blue">
+                                            <attr:icon>
+                                                <Icon>clear</Icon>
+                                            </attr:icon>
+                                            <attr:onPressed>
+                                                <Function>
+
+                                                </Function>
+                                            </attr:onPressed>
+                                        </IconButton>
+                                    </BarItem>
+                                    <BarItem display="$editing">
+                                        <IconButton color="blue">
+                                            <attr:icon>
+                                                <Icon>check</Icon>
+                                            </attr:icon>
+                                            <attr:onPressed>
+                                                <Function>
+
+                                                </Function>
+                                            </attr:onPressed>
+                                        </IconButton>
+                                    </BarItem>
+                                    <BarItem display="$editing">
+                                        <IconButton color="blue">
+                                            <attr:icon>
+                                                <Icon>file_download</Icon>
+                                            </attr:icon>
+                                            <attr:onPressed>
+                                                <Function>
+
+                                                </Function>
+                                            </attr:onPressed>
+                                        </IconButton>
+                                    </BarItem>
+                                </Row>
+                            </Container>
+                        </PreferredSize>
+                    </attr:bottom>
+                    <attr:flexibleSpace>
+                        <FlexibleSpaceBar titlePadding="only(20, null, null, 64)">
+                            <attr:title>
+
+                            </attr:title>
+                            <attr:background>
+                                <Stack>
+                                    <WebImage width="infinity" height="infinity" url="${infoData.picture}"
+                                        fit="cover"/>
+                                    <BackdropFilter>
+                                        <attr:filter>
+                                            <ImageFilter.blur sigmaX="4" sigmaY="4"/>
+                                        </attr:filter>
+                                        <Container color="black38"/>
+                                    </BackdropFilter>
+                                    <Container alignment="bottomLeft" width="infinity" height="infinity"
+                                        padding="fromLTRB(14, 10, 14, 58)">
+                                        <attr:decoration>
+                                            <BoxDecoration>
+                                                <attr:gradient>
+                                                    <LinearGradient begin="topCenter" end="bottomCenter">
+                                                        <attr:colors>
+                                                            <List type="Color"></List>
+                                                        </attr:colors>
+
+                                                    </LinearGradient>
+                                                </attr:gradient>
+                                            </BoxDecoration>
+                                        </attr:decoration>
+                                    </Container>
+                                </Stack>
+                            </attr:background>
+                        </FlexibleSpaceBar>
+                    </attr:flexibleSpace>
+                </SliverAppBar>
+                <SliverList childCount="$itemCount">
+                    <attr:delegate>
+                        <SliverChildBuilderDelegate>
+                            <Function returnType="Widget">
+                                <if candidate="">
+
+                                </if>
+                            </Function>
+                        </SliverChildBuilderDelegate>
+                    </attr:delegate>
+                </SliverList>
+            </CustomScrollView>
+        </BetterRefreshIndicator>
+    </attr:body>
+</Scaffold>

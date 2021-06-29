@@ -23,18 +23,18 @@ class Data extends Base {
 class BufferData extends Data {
   static reg() {
     Base.reg(BufferData, "gc::BufferData", Data)
-    ..constructor = ((id)=>BufferData(id));
+    ..constructor = (id)=>BufferData(id);
   }
 
   BufferData(id):super(id);
   BufferData.allocate(TypedData.ByteBuffer buffer):super(null) {
 
     int length = buffer.lengthInBytes;
-    Pointer<Uint8> buf = allocate(count: length);
+    Pointer<Uint8> buf = malloc.allocate(length);
     TypedData.Uint8List buflist = buf.asTypedList(length);
     buflist.setRange(0, length, buffer.asUint8List(0, length).getRange(0, length));
 
     super.allocate([buf, length, 1]);
-    free(buf);
+    malloc.free(buf);
   }
 }

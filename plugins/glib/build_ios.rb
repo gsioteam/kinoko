@@ -9,7 +9,7 @@ def mkdir path
     FileUtils.mkdir path unless File.exist? path
 end
 
-def ex_lib path
+def ex_lib path, exclude = []
     res = `lipo -info #{path}`
     dir = File.dirname path
     archs = res[/[^:$]+$/].strip
@@ -32,6 +32,7 @@ def ex_lib path
         Dir.chdir old_dir
     else
         archs.split(' ').each do |arch|
+            next if (exclude.count(arch) > 0) 
             tar_dir = "#{dir}/#{arch}"
             tar_name = path[/[^\/]+$/]
             mkdir tar_dir
@@ -52,7 +53,6 @@ def ex_lib path
     end
 end
 
-
 def main 
     dir = File.expand_path(File.dirname(__FILE__))
     
@@ -60,14 +60,9 @@ def main
 
     `cmake -G Xcode -B "#{dir}/build/ios" -DCMAKE_SYSTEM_NAME=iOS "#{dir}"`
     
-    system_ops = {
-        err: $stderr,
-        out: $stdout
-    }
-
-    system("xcodebuild IPHONEOS_DEPLOYMENT_TARGET=8.0 -project \"#{dir}/build/ios/glib.xcodeproj\" -scheme glib -sdk iphoneos -configuration #{configuration} -UseModernBuildSystem=NO clean build CONFIGURATION_BUILD_DIR=\"#{dir}/build/lib/iphoneos\"", system_ops)
+    `xcodebuild IPHONEOS_DEPLOYMENT_TARGET=8.0 -project "#{dir}/build/ios/glib.xcodeproj" -scheme glib -sdk iphoneos -configuration #{configuration} -UseModernBuildSystem=NO clean build CONFIGURATION_BUILD_DIR="#{dir}/build/lib/iphoneos"`
     
-    system("xcodebuild IPHONEOS_DEPLOYMENT_TARGET=8.0 -project \"#{dir}/build/ios/glib.xcodeproj\" -scheme glib -sdk iphonesimulator -configuration #{configuration} -UseModernBuildSystem=NO clean build CONFIGURATION_BUILD_DIR=\"#{dir}/build/lib/iphonesimulator\" EXCLUDED_ARCHS=\"arm64\"", system_ops)
+    `xcodebuild IPHONEOS_DEPLOYMENT_TARGET=8.0 -project "#{dir}/build/ios/glib.xcodeproj" -scheme glib -sdk iphonesimulator -configuration #{configuration} -UseModernBuildSystem=NO clean build CONFIGURATION_BUILD_DIR="#{dir}/build/lib/iphonesimulator"`
     
     iphoneos_dir = "#{dir}/build/lib/iphoneos" 
     iphonesimulator_dir = "#{dir}/build/lib/iphonesimulator" 
@@ -77,7 +72,7 @@ def main
     end
 
     Dir["#{iphonesimulator_dir}/*.a"].each do |file|
-        ex_lib file
+        ex_lib file, ['arm64']
     end
 
     $dirs.each do |dir, arr|
@@ -89,10 +84,10 @@ def main
     `lipo -create #{$dirs.keys.map{|d| "#{d}/ligglib_ios.a"}.join(' ')} -output #{dir}/ios/lib/libglib_ios.a`
 
     # FileUtils.cp "#{dir}/thirdparties/mruby/lib/ios/libmruby.a", "#{dir}/ios/lib/libmruby.a"
-    # Dir["#{dir}/thirdparties/openssl/ios/lib/*.a"].each do |file|
-    #     FileUtils.cp file, "#{dir}/ios/lib/#{file[/[^\/]+$/]}"
-    # end
-    FileUtils.cp "#{dir}/src/shelf/dart_main_ios.h", "#{dir}/ios/include/dart_main_ios.h"
+    Dir["#{dir}/thirdparties/openssl/ios/lib/*.a"].each do |file|
+        FileUtils.cp file, "#{dir}/ios/lib/#{file[/[^\/]+$/]}"
+    end
+    FileUtils.cp "#{dir}/src/application/dart_main_ios.h", "#{dir}/ios/include/dart_main_ios.h"
 end
 
 main

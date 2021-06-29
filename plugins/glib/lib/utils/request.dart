@@ -1,66 +1,22 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:ffi/ffi.dart';
 import 'package:glib/core/callback.dart';
 
 import '../core/core.dart';
 import '../core/data.dart';
-import 'package:http/http.dart' as http;
+import '../core/gmap.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:dio/dio.dart';
 
-class ExtendsRequest {
-  void Function(int bytes, int totalBytes) onProgress;
-
-  setOnProgress(void Function(int bytes, int totalBytes) op) {
-    onProgress = op;
-    return this;
-  }
-}
-
-class MultipartRequest extends http.MultipartRequest with ExtendsRequest {
-  MultipartRequest(String method, Uri uri) : super(method, uri);
-
-  http.ByteStream finalize() {
-    final byteStream = super.finalize();
-    if (onProgress == null) return byteStream;
-
-    final total = this.contentLength;
-    int bytes = 0;
-
-    final t = StreamTransformer.fromHandlers(
-      handleData: (List<int> data, EventSink<List<int>> sink) {
-        bytes += data.length;
-        onProgress(bytes, total);
-        sink.add(data);
-      },
-    );
-    final stream = byteStream.transform(t);
-    return http.ByteStream(stream);
-  }
-}
-
-class UrlRequest extends http.Request with ExtendsRequest {
-  UrlRequest(String method, Uri uri) : super(method, uri);
-
-  http.ByteStream finalize() {
-    final byteStream = super.finalize();
-    if (onProgress == null) return byteStream;
-
-    final total = this.contentLength;
-    int bytes = 0;
-
-    final t = StreamTransformer.fromHandlers(
-      handleData: (List<int> data, EventSink<List<int>> sink) {
-        bytes += data.length;
-        onProgress(bytes, total);
-        sink.add(data);
-      },
-    );
-    final stream = byteStream.transform(t);
-    return http.ByteStream(stream);
-  }
+enum BodyType {
+  Raw,
+  Mutilpart,
+  UrlEncode
 }
 
 class Request extends Base {
@@ -69,9 +25,8 @@ class Request extends Base {
         ..constructor = ((id) => Request().setID(id));
   }
 
-  Map<String, String> headers = Map();
   Uint8List body;
-  http.BaseRequest request;
+  Dio dio;
   int uploadNow;
   int uploadTotal;
   int downloadNow;
@@ -82,11 +37,17 @@ class Request extends Base {
   bool _canceled = false, _started = false;
   StreamSubscription<List<int>> _subscription;
   Uint8List responseBody;
+  GMap responseHeader;
   String _error;
+
+  int statusCode = 0;
 
   Callback onUploadProgress;
   Callback onDownloadProgress;
   Callback onComplete;
+  Callback onResponse;
+
+  String responseURL;
 
   bool cacheResponse = false;
 
@@ -102,6 +63,7 @@ class Request extends Base {
     on("setOnUploadProgress", setOnUploadProgress);
     on("setOnProgress", setOnProgress);
     on("setOnComplete", setOnComplete);
+    on("setOnResponse", setOnResponse);
     on("getUploadNow", getUploadNow);
     on("getUploadTotal", getUploadTotal);
     on("getDownloadNow", getDownloadNow);
@@ -113,29 +75,33 @@ class Request extends Base {
     on("setCacheResponse", setCacheResponse);
 
     on("getResponseBody", getResponseBody);
+    on("getStatusCode", getStatusCode);
+    on("getResponseHeaders", getResponseHeaders);
+    on("getResponseUrl", getResponseUrl);
   }
 
   _release() {
     release();
   }
+  Uri uri;
+  BodyType type;
 
   setup(String method, String url, int type) {
-    switch (type) {
-      case 0: {
-        request = UrlRequest(method, Uri.parse(url)).setOnProgress(uploadProgress);
-        break;
-      }
-      case 1: {
-        request = MultipartRequest(method, Uri.parse(url)).setOnProgress(uploadProgress);
-        break;
-      }
-      case 2: {
-        request = UrlRequest(method, Uri.parse(url)).setOnProgress(uploadProgress);
-        break;
-      }
-    }
+    uri = Uri.parse(url);
+    this.type = BodyType.values[type];
 
-    request.followRedirects = true;
+    dio = Dio(
+      BaseOptions(
+        method: method,
+        responseType: ResponseType.stream
+      )
+    )
+    //   ..httpClientAdapter = Http2Adapter(ConnectionManager(
+    //   idleTimeout: 10000,
+    //   onClientCreate: (_, config) => config.onBadCertificate = (_) => true,
+    // ))
+    ;
+
     control();
   }
 
@@ -143,31 +109,44 @@ class Request extends Base {
     return Data.fromByteBuffer(responseBody.buffer).release();
   }
 
+  GMap getResponseHeaders() => responseHeader;
+
+  String responseUrl;
+  String getResponseUrl() => responseURL;
+
+  int getStatusCode() => statusCode;
+
+  Map<String, String> headers = {};
   setHeader(String name, String value) {
-    request.headers[name] = value;
+    headers[name] = value;
   }
 
-  setBody(Pointer<Uint8> ptr, int length) {
-    if (request is UrlRequest) {
-      var req = request as UrlRequest;
-      Uint8List buf = ptr.asTypedList(length);
-      req.bodyBytes = Uint8List.fromList(buf);
-    }
+  setBody(Pointer ptr, int length) {
+
+    Uint8List buf = ptr.cast<Uint8>().asTypedList(length);
+    // req.body = str;
+    body = new Uint8List(buf.length);
+    body.setAll(0, buf);
   }
 
   setOnUploadProgress(Callback cb) {
-    onUploadProgress = cb;
-    if (onUploadProgress != null) onUploadProgress.control();
+    onUploadProgress?.release();
+    onUploadProgress = cb?.control();
   }
 
   setOnProgress(Callback cb) {
-    onDownloadProgress = cb;
-    if (onDownloadProgress != null) onDownloadProgress.control();
+    onDownloadProgress?.release();
+    onDownloadProgress = cb.control();
   }
 
   setOnComplete(Callback cb) {
-    onComplete = cb;
-    if (onComplete != null) onComplete.control();
+    onComplete?.release();
+    onComplete = cb?.control();
+  }
+
+  setOnResponse(Callback cb) {
+    onResponse?.release();
+    onResponse = cb?.control();
   }
 
   setTimeout(int timeout) {
@@ -207,7 +186,7 @@ class Request extends Base {
     _started = true;
     try {
       if (cacheResponse) {
-        Stream<FileResponse> stream = DefaultCacheManager().getFileStream(request.url.toString(), headers: request.headers, withProgress: true);
+        Stream<FileResponse> stream = DefaultCacheManager().getFileStream(uri.toString(), headers: headers, withProgress: true);
         await for (FileResponse res in stream) {
           if (res is DownloadProgress) {
             downloadTotal = res.totalSize;
@@ -218,34 +197,50 @@ class Request extends Base {
           }
         }
       } else {
-        http.StreamedResponse res = await request.send();
+        Response<ResponseBody> res = await dio.requestUri(
+          uri,
+          options: Options(
+            headers: headers,
+            followRedirects: true,
+            requestEncoder: (request, options) {
+              return options.data;
+            },
+            validateStatus: (status) {
+              return status < 500;
+            }
+          ),
+          data: body ?? Uint8List(0)
+        );
         if (_canceled) return;
-        downloadTotal = res.contentLength;
+        downloadTotal = int.tryParse(res.headers.value(Headers.contentLengthHeader) ?? "0") ?? 0;
+        statusCode = res.statusCode;
+        responseURL = res.realUri.toString();
+        responseHeader?.release();
+        responseHeader = GMap.allocate({});
+        res.headers.forEach((key, value) {
+          responseHeader[key] = value;
+        });
+        onResponse?.invoke([]);
+
         downloadNow = 0;
-        List<int> receiveBody = List();
-        _subscription = res.stream.listen((value) {
+        List<int> receiveBody = [];
+        _subscription = res.data.stream.listen((value) {
           downloadNow += value.length;
           receiveBody.addAll(value);
-          if (onDownloadProgress != null) onDownloadProgress.invoke([downloadNow, downloadTotal]);
+          onDownloadProgress?.invoke([downloadNow, downloadTotal]);
         });
-        await _subscription.asFuture().timeout(Duration(milliseconds: _timeout == null ? 30000 : _timeout), onTimeout: () {
+        await _subscription.asFuture().timeout(Duration(milliseconds: _timeout ?? 30000), onTimeout: () {
           if (!_canceled) {
             throw new Exception("Timeout");
           }
         });
         responseBody = Uint8List.fromList(receiveBody);
-
-        if (request.url.host == "en.ninemanga.com") {
-          print(request.headers);
-          String str = String.fromCharCodes(responseBody);
-          print(str);
-        }
       }
 
     } catch (e) {
       _error = e.toString();
-      print("Error ${_error}");
-      if (onComplete != null) onComplete.invoke([]);
+      print("Error $_error");
+      if (onComplete != null) onComplete?.invoke([]);
       else print("Error complete $onComplete  on ($this) " + _error);
       cancel();
     }
@@ -278,12 +273,11 @@ class Request extends Base {
     }
   }
 
-  getError() {
-    return _error;
-  }
+  getError() => _error;
 
   @override
   destroy() {
+    responseHeader?.release();
     freeCallbacks();
   }
 }

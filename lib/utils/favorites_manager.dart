@@ -45,7 +45,7 @@ class FavCheckItem {
 
   Future<void> _updateValue(bool first, Project project, Context context) async {
     Completer completer = Completer();
-    context.on_reload_complete = Callback.fromFunction(() {
+    context.onReloadComplete = Callback.fromFunction(() {
       Array resultData = context.data;
 
       if (resultData.length > 0) {
@@ -75,8 +75,8 @@ class FavCheckItem {
       return;
     }
     DataItemType type = item.type;
-    if (type == DataItemType.Book) {
-      Context context = project.createBookContext(item).control();
+    if (type == DataItemType.Data) {
+      Context context = project.createCollectionContext(BOOK_INDEX, item).control();
       await _updateValue(first, project, context);
       context.release();
     }

@@ -4,6 +4,7 @@
 
 #include "DartScript.h"
 #include <core/String.h>
+#include <core/Map.h>
 
 using namespace gscript;
 using namespace gc;
@@ -25,7 +26,7 @@ namespace gscript {
 
     struct NativeTarget {
         uint8_t type = TypeNull;
-        int64_t int_value;
+        uint64_t int_value;
         double double_value;
         void *pointer_value;
         uint8_t release = false;

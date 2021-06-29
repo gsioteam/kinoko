@@ -50,7 +50,7 @@ class CollectionsPage extends HomeWidget {
     Project project = ((key as GlobalKey).currentState as _CollectionsPageState)?.project;
     List<Widget> actions = [];
 
-    String settings = project?.settings_path;
+    String settings = project?.settingsPath;
     if (settings != null && settings.isNotEmpty) {
       actions.add(
         IconButton(

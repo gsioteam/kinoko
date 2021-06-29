@@ -106,7 +106,7 @@ CSelector* CParser::parseSelector()
 		}
 		else if (combinator == '~')
 		{
-			ret = new CBinarySelector(oldRet, sel, true);
+			ret = new CBinarySelector(oldRet, sel, false);
 		}
 		else
 		{

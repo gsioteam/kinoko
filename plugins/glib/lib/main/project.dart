@@ -7,7 +7,7 @@ import 'data_item.dart';
 class Project extends Base {
   static reg() {
     Base.reg(Project, "gs::Project", Base)
-      ..constructor = ((id) => Project().setID(id));
+      ..constructor = (id) => Project().setID(id);
   }
 
   Project();
@@ -21,13 +21,13 @@ class Project extends Base {
   String get subtitle => call("getSubtitle");
   String get url => call("getUrl");
   String get index => call("getIndex");
-  String get book => call("getBook");
   String get search => call("getSearch");
   Array get categories => call("getCategories");
   String get fullpath => call("getFullpath");
   String get path => call("getPath");
-  String get settings_path => call("getSettingsPath");
+  String get settingsPath => call("getSettingsPath");
   String get icon => call("getIcon");
+  String getCollection(int idx) => call("getCollection", argv: [idx]);
 
   static Project getMainProject() => Base.s_call(Project, "getMainProject");
   void setMainProject() => call("setMainProject");
@@ -40,8 +40,7 @@ class Project extends Base {
   }
 
   Context createIndexContext(dynamic data) => call("createIndexContext", argv: [data]);
-  Context createBookContext(DataItem data) => call("createBookContext", argv: [data]);
-  Context createChapterContext(DataItem data) => call("createChapterContext", argv: [data]);
+  Context createCollectionContext(int index, DataItem data) => call("createCollectionContext", argv: [index, data]);
   Context createSearchContext() => call("createSearchContext");
   Context createSettingsContext() => call("createSettingsContext");
 }
