@@ -1,24 +1,44 @@
 {
-    "name": "nhentai",
-    "icon": "https://static.nhentai.net/img/logo.090da3be7b51.svg",
-    "url": "https://nhentai.net/",
-    "index": "index.js",
-    "settings": "settings.js",
+    "name": "DM5",
+    "target": "v2",
+    "icon": "https://css99tel.cdndm5.com/v202008141414/dm5/images/header-logo.png",
+    "url": "https://www.dm5.cn/",
+    "index": "index.rb",
     "collections": [
-        "book.js",
-        "chapter.js"
+        "book.rb",
+        "chapter.rb"
     ],
     "search": {
-        "src": "search.js",
+        "src": "search.rb",
         "data": {
-            "url": "https://nhentai.net/search/?q={0}&page={1}"
+            "url": "https://m.dm5.com/search?title={0}&language=1&page={1}"
         }
     },
     "categories": [
         {
-            "title": "主頁",
-            "id": "home",
-            "url": "https://nhentai.net/?page={0}"
+            "title": "更新",
+            "id": "update",
+            "url": "https://m.dm5.com/"
+        },
+        {
+            "title": "日韩",
+            "id": "japan",
+            "url": "https://m.dm5.com/dm5.ashx?pagesize={1}&pageindex={0}&sort=2&areaid=36&action=getclasscomics"
+        },
+        {
+            "title": "港台",
+            "id": "hongkong",
+            "url": "https://m.dm5.com/dm5.ashx?pagesize={1}&pageindex={0}&sort=2&areaid=35&action=getclasscomics"
+        },
+        {
+            "title": "大陆",
+            "id": "china",
+            "url": "https://m.dm5.com/dm5.ashx?pagesize={1}&pageindex={0}&sort=2&areaid=37&action=getclasscomics"
+        },
+        {
+            "title": "欧美",
+            "id": "europe",
+            "url": "https://m.dm5.com/dm5.ashx?pagesize={1}&pageindex={0}&sort=2&areaid=52&action=getclasscomics"
         }
     ]
 }

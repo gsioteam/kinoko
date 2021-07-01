@@ -32,6 +32,7 @@ namespace gs {
         std::string index;
         std::vector<std::string> collections;
         std::string search;
+        std::string target;
         gc::Variant search_data;
 
         gc::Array   categories;
@@ -60,9 +61,10 @@ namespace gs {
         METHOD const std::string &getPath() const {return dir_name;}
         METHOD const std::string &getSettingsPath() const {return settings_path;}
         METHOD const std::string &getIcon() const {return icon;}
+        METHOD const std::string &getTarget() const { return target; }
 
         METHOD static gc::Ref<Project> getMainProject();
-        METHOD void setMainProject();
+        METHOD bool setMainProject();
 
         METHOD gc::Ref<Context> createIndexContext(const gc::Variant &data);
         METHOD gc::Ref<Context> createCollectionContext(int index, const gc::Ref<DataItem> &item);
@@ -85,6 +87,7 @@ namespace gs {
             ADD_METHOD(cls, Project, getMainProject);
             ADD_METHOD(cls, Project, setMainProject);
             ADD_METHOD(cls, Project, getCollection);
+            ADD_METHOD(cls, Project, getTarget);
 
             ADD_METHOD(cls, Project, createIndexContext);
             ADD_METHOD(cls, Project, createCollectionContext);

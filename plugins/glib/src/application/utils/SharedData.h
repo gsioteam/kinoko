@@ -26,6 +26,7 @@ namespace gs {
 
         static const std::string UPDATE_KEY;
 
+        static const std::string version;
     };
 
     std::time_t getTimeStamp();

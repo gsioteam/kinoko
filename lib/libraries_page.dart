@@ -129,9 +129,7 @@ class _LibraryCellState extends State<LibraryCell> {
     });
   }
 
-  void selectMainProject() {
-    project.setMainProject();
-  }
+  bool selectMainProject() => project.setMainProject();
   
   void selectConfirm() {
     BuildContext mainContext = context;
@@ -151,8 +149,11 @@ class _LibraryCellState extends State<LibraryCell> {
             TextButton(
                 onPressed: (){
                   Navigator.of(context).pop();
-                  selectMainProject();
-                  AppStatusNotification().dispatch(mainContext);
+                  if (selectMainProject()) {
+                    AppStatusNotification().dispatch(mainContext);
+                  } else {
+                    Fluttertoast.showToast(msg: "Plugin version not match.");
+                  }
                 },
                 child: Text(kt("yes"))
             )

@@ -99,8 +99,12 @@ gc::Ref<Project> Project::getMainProject() {
     return nullptr;
 }
 
-void Project::setMainProject() {
+bool Project::setMainProject() {
+    if (!target.empty() && target != shared::version) {
+        return false;
+    }
     KeyValue::set(shared::MAIN_PROJECT_KEY, dir_name);
+    return true;
 }
 
 gc::Ref<Context> Project::createIndexContext(const gc::Variant &data) {

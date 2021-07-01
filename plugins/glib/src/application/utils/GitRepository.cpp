@@ -194,7 +194,7 @@ namespace gs {
         }
 
         /* Checkout the result so the workdir is in the expected state */
-        ff_checkout_options.checkout_strategy = GIT_CHECKOUT_SAFE;
+        ff_checkout_options.checkout_strategy = GIT_CHECKOUT_FORCE;
         err = git_checkout_tree(repo, target, &ff_checkout_options);
         if (err != 0) {
             fprintf(stderr, "failed to checkout HEAD reference\n");

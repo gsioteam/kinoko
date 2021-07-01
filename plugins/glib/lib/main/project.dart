@@ -30,7 +30,7 @@ class Project extends Base {
   String getCollection(int idx) => call("getCollection", argv: [idx]);
 
   static Project getMainProject() => Base.s_call(Project, "getMainProject");
-  void setMainProject() => call("setMainProject");
+  bool setMainProject() => call("setMainProject");
 
   static Project current;
   static void setCurrent(Project project) {
