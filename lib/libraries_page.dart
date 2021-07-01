@@ -28,13 +28,14 @@ const int per_page = 40;
 
 class LibraryCell extends StatefulWidget {
 
-  final GitLibrary library;
+  final Array data;
+  final int index;
 
-  LibraryCell({Key key, this.library}) : super(key: key);
+  LibraryCell({Key key, this.data, this.index}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _LibraryCellState(library);
+    return _LibraryCellState();
   }
 }
 
@@ -46,8 +47,12 @@ class _LibraryCellState extends State<LibraryCell> {
   String dirName;
   GlobalKey<SpinItemState> _spinKey = GlobalKey();
 
-  _LibraryCellState(this.library) {
-    library.control();
+  _LibraryCellState();
+
+  @override
+  void initState() {
+    super.initState();
+    library = widget.data[widget.index].control();
     String name = Bit64.encodeString(library.url);
     project = Project.allocate(name);
     dirName = name;
@@ -431,7 +436,8 @@ class _LibrariesPageState extends State<LibrariesPage> {
                 key: GlobalObjectKey(url),
                 background: Container(color: Colors.red,),
                 child: LibraryCell(
-                  library: library,
+                  data: data,
+                  index: idx
                 ),
                 confirmDismiss: (_) async {
                   bool result = await showDialog<bool>(
@@ -468,7 +474,8 @@ class _LibrariesPageState extends State<LibrariesPage> {
             } else {
               return LibraryCell(
                 key: GlobalObjectKey(token),
-                library: library,
+                data: data,
+                index: idx
               );
             }
           },

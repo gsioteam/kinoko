@@ -81,10 +81,10 @@ class MainAppState extends State<MainApp> {
     super.initState();
 
     glib.Platform.onGetLanguage = () {
-      if (locale.scriptCode != null) {
+      if (locale?.scriptCode != null) {
         return "${locale.languageCode}-${locale.scriptCode}";
       } else {
-        return locale.languageCode;
+        return locale?.languageCode;
       }
     };
   }
