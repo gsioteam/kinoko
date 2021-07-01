@@ -74,4 +74,6 @@ Liah(Icono) https://liah0227.itch.io/
   "lang": "es",
   "source": "Fuente",
   "source_description": "La página de origen, copie y descargue los archivos de acuerdo con las leyes y normativas nacionales pertinentes.",
+  "v2_title": "Kinoko v2",
+  "v2_content": "¡Kinoko actualizado! Los complementos antiguos se eliminarían. ¡Simplemente clona el complemento nuevamente y luego el Kinoko descargado se actualizará! Los complementos antiguos se eliminarán. Simplemente clona el complemento nuevamente y el managa descargado se actualizará con Kinoko. Los complementos antiguos se eliminaría. Simplemente clona el complemento de nuevo y se podrá abrir el managa descargado.",
 };

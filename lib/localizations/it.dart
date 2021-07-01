@@ -74,4 +74,6 @@ Liah(Icona) https://liah0227.itch.io/
   "lang": "it",
   "source": "Fonte",
   "source_description": "La pagina di origine, copiare e scaricare i file in conformità con le leggi e i regolamenti nazionali pertinenti.",
+  "v2_title": "Kinoko v2",
+  "v2_content": "Kinoko aggiornato! I vecchi plug-in verranno rimossi. Basta clonare di nuovo il plug-in, quindi il Kinoko scaricato verrà aggiornato! I vecchi plug-in verranno rimossi. Basta clonare di nuovo il plug-in, quindi il manga scaricato sarà Kinoko aggiornato! I vecchi plug-in verrebbe rimosso. Basta clonare di nuovo il plugin, quindi il manga scaricato sarà apribile open.",
 };

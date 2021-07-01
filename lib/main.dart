@@ -142,6 +142,37 @@ class SplashScreenState extends State<SplashScreen> {
     await load("assets/collection.xml");
   }
 
+  Future<void> _v2Setup(String path) async {
+    String val = KeyValue.get(v2_key);
+    if (val != 'true') {
+      Directory dir = Directory(path + "/repo");
+      if (await dir.exists()) {
+        var ret = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(kt("v2_title")),
+              content: Text(kt("v2_content")),
+              actions: [
+                TextButton(
+                  child: Text(kt("ok")),
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                ),
+              ],
+            );
+          }
+        );
+        if (ret == true) {
+          await dir.delete(recursive: true);
+          KeyValue.set(v2_key, 'true');
+        }
+      }
+    }
+  }
+
   Future<void> setup(BuildContext context) async {
     Directory dir = await platform.getApplicationSupportDirectory();
     share_cache["root_path"] = dir.path;
@@ -153,6 +184,7 @@ class SplashScreenState extends State<SplashScreen> {
     if (locale != null) {
       LocaleChangedNotification(locale).dispatch(context);
     }
+    await _v2Setup(dir.path);
     await showDisclaimer(context);
     await fetchEnv(context);
     WidgetsBinding.instance.addObserver(_LifecycleEventHandler());

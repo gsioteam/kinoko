@@ -96,17 +96,17 @@ class _LibraryCellState extends State<LibraryCell> {
           ),
           actions: <Widget>[
             TextButton(
-                onPressed: (){
-                  Navigator.of(context).pop();
-                },
-                child: Text(kt("no"))
+              onPressed: (){
+                Navigator.of(context).pop();
+              },
+              child: Text(kt("no"))
             ),
             TextButton(
-                onPressed: (){
-                  Navigator.of(context).pop();
-                  install();
-                },
-                child: Text(kt("yes"))
+              onPressed: (){
+                Navigator.of(context).pop();
+                install();
+              },
+              child: Text(kt("yes"))
             )
           ],
         );

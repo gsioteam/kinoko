@@ -382,13 +382,17 @@ class _DownloadPageState extends State<DownloadPage> {
         DownloadQueueItem queueItem = cdata.data;
         DataItem item = queueItem.item;
         Project project = Project.allocate(item.projectKey);
-        Context ctx = project.createCollectionContext(CHAPTER_INDEX, item).control();
-        await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          return PictureViewer(
-            ctx,
-          );
-        }));
-        ctx.release();
+        if (project.isValidated) {
+          Context ctx = project.createCollectionContext(CHAPTER_INDEX, item).control();
+          await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+            return PictureViewer(
+              ctx,
+            );
+          }));
+          ctx.release();
+        } else {
+          Fluttertoast.showToast(msg: kt("no_project_found"));
+        }
         project.release();
         break;
       }
