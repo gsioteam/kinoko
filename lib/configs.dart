@@ -1,5 +1,5 @@
 import 'package:glib/utils/git_repository.dart';
-const String env_git_url = "https://github.com/gsioteam/env.git";
+const String env_git_url = "https://github.com/gsioteam/glib_env.git";
 
 Map<String, String> cachedTemplates = {};
 Map<String, dynamic> share_cache = Map();

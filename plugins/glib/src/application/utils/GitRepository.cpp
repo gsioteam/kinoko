@@ -129,16 +129,18 @@ namespace gs {
         git_checkout_options ff_checkout_options = GIT_CHECKOUT_OPTIONS_INIT;
         git_reference *target_ref;
         git_reference *new_target_ref;
-        git_reference  *local_ref;
+        git_reference  *local_ref = nullptr;
         git_object *target = NULL;
         int err = 0;
+        string local_name;
         if (branch.empty())
             branch = "master";
         {
-            string name = "refs/heads/" + branch;
+            local_name = "refs/heads/" + branch;
 
-            err = git_reference_lookup(&local_ref, repo, name.c_str());
-            if (err != 0 || git_reference_type(local_ref) != GIT_REFERENCE_DIRECT) {
+            err = git_reference_lookup(&local_ref, repo, local_name.c_str());
+            if (err == GIT_ENOTFOUND) {
+            } else if (err != 0 || git_reference_type(local_ref) != GIT_REFERENCE_DIRECT) {
                 fprintf(stderr, "failed to lookup HEAD ref\n");
                 return -1;
             }
@@ -167,6 +169,14 @@ namespace gs {
 //            }
 
 //            git_reference_free(ref);
+            if (local_ref == nullptr) {
+                err = git_reference_create(&local_ref, repo, local_name.c_str(), target_oid, true, NULL);
+                if (err != 0) {
+                    fprintf(stderr, "failed to create master reference\n");
+                    return -1;
+                }
+            }
+
         } else {
             /* HEAD exists, just lookup and resolve */
             err = git_repository_head(&target_ref, repo);

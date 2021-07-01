@@ -44,7 +44,15 @@ class SearchCollection extends Collection {
     }
 
     makeURL(key, page) {
-        return this.url.replace("{0}", glib.Encoder.urlEncode(this.key)).replace("{1}", page + 1);
+        let sort_type = this.getSetting('sort_type');
+        if (sort_type == null || sort_type == '') {
+            sort_type = 'recent';
+        }
+        let url = this.url.replace("{0}", glib.Encoder.urlEncode(key)).replace("{1}", page + 1);
+        if (sort_type != 'recent') {
+            url += '&sort=' + sort_type;
+        }
+        return url;
     }
 
     reload(data, cb) {

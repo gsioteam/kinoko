@@ -51,7 +51,8 @@ class _LibraryCellState extends State<LibraryCell> {
     String name = Bit64.encodeString(library.url);
     project = Project.allocate(name);
     dirName = name;
-    repo = GitRepository.allocate(name);
+    String branch = library.branch;
+    repo = GitRepository.allocate(name, branch.isEmpty ? null : branch);
   }
 
   @override

@@ -40,6 +40,12 @@ bool LibraryContext::parseLibrary(const std::string &body) {
                 lib->setUrl(url);
                 lib->setIcon(y_data["icon"]);
                 lib->setToken(token);
+                if (y_data.has("branch")) {
+                    lib->setBranch(y_data["branch"]);
+                } else {
+                    lib->setBranch("");
+                }
+
                 lib->save();
             }
             return true;

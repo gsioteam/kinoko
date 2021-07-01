@@ -16,6 +16,7 @@ namespace gs {
         DEFINE_STRING(icon, Icon);
         DEFINE_STRING(title, Title);
         DEFINE_STRING(token, Token);
+        DEFINE_STRING(branch, Branch);
 
     public:
         static void registerFields() {
@@ -25,9 +26,10 @@ namespace gs {
             ADD_FILED(GitLibrary, icon, Icon, false);
             ADD_FILED(GitLibrary, title, Title, false);
             ADD_FILED(GitLibrary, token, Token, false);
+            ADD_FILED(GitLibrary, branch, Branch, false);
         }
         static float version() {
-            return 2;
+            return 3;
         }
 
         METHOD static gc::Array allLibraries();
@@ -40,6 +42,7 @@ namespace gs {
             ADD_PROPERTY_EX(cls, icon, GitLibrary, getIcon, setIcon);
             ADD_PROPERTY_EX(cls, title, GitLibrary, getTitle, setTitle);
             ADD_PROPERTY_EX(cls, token, GitLibrary, getToken, setToken);
+            ADD_PROPERTY_EX(cls, branch, GitLibrary, getBranch, setBranch);
             ADD_METHOD(cls, GitLibrary, allLibraries);
             ADD_METHOD(cls, GitLibrary, insertLibrary);
             ADD_METHOD(cls, GitLibrary, findLibrary);

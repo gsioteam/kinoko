@@ -24,6 +24,8 @@ class GitLibrary extends Base {
 
   String get token => call("getToken");
 
+  String get branch => call("getBranch");
+
   static bool insertLibrary(String url) => Base.s_call(GitLibrary, "insertLibrary");
   static GitLibrary findLibrary(String url) => Base.s_call(GitLibrary, "findLibrary");
 }

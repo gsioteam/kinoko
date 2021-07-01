@@ -4,6 +4,20 @@
             <attr:title>
                 <Text>${infoData.title}</Text>
             </attr:title>
+            <attr:actions>
+                <IconButton>
+                    <attr:icon>
+                        <Icon>download_rounded</Icon>
+                    </attr:icon>
+                    <attr:onPressed>
+                        <Function>
+                            <Call function="$downloadChapter">
+                                <Argument value="0"/>
+                            </Call>
+                        </Function>
+                    </attr:onPressed>
+                </IconButton>
+            </attr:actions>
         </AppBar>
     </attr:appBar>
 
@@ -109,7 +123,7 @@
                         <attr:onPressed>
                             <Function>
                                 <Call function="$openChapter">
-                                    <Argument value="${chapters[0]}"/>
+                                    <Argument value="0"/>
                                     <Argument value="$index"/>
                                 </Call>
                             </Function>

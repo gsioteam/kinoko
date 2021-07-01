@@ -28,8 +28,471 @@ import 'picture_viewer.dart';
 import 'utils/book_info.dart';
 import 'utils/favorites_manager.dart';
 import 'utils/proxy_collections.dart';
+import 'widgets/collection_view.dart';
 import 'widgets/instructions_dialog.dart';
 import 'widgets/source_page.dart';
+
+class _DefaultBookPage extends StatefulWidget {
+  final Context context;
+  final Project project;
+  final void Function(DataItem) onTap;
+  final void Function(DataItem) onDownload;
+  final Array chapters;
+  final DataItem lastChapter;
+
+  _DefaultBookPage({
+    this.context,
+    this.project,
+    this.onTap,
+    this.chapters,
+    this.lastChapter,
+    this.onDownload,
+  });
+
+  @override
+  State<StatefulWidget> createState() => _DefaultBookPageState();
+}
+
+class _DefaultBookPageState extends State<_DefaultBookPage> {
+  BetterRefreshIndicatorController refreshController = BetterRefreshIndicatorController();
+  bool editing = false;
+  int orderIndex = 0;
+
+  static const String ORDER_TYPE = "order";
+
+  static const int ORDER = 1;
+  static const int R_ORDER = 0;
+
+  Set<int> selected = Set();
+
+  Widget createItem(int idx) {
+    String temp = "";
+    DataItem item = widget.chapters[idx];
+    if (temp.isEmpty) {
+      if (item.type != DataItemType.Header) {
+        String subtitle = item.subtitle;
+        DownloadQueueItem downloadItem = DownloadManager().find(item);
+
+        return ChapterItem(
+          title: item.title,
+          subtitle: subtitle,
+          editing: editing,
+          selected: selected.contains(idx),
+          downloadItem: downloadItem,
+          onTap: () {
+            onSelectItem(idx);
+          },
+        );
+      } else {
+        return Column(
+          children: [
+            ListTile(
+              title: Text(item.title),
+            ),
+            Divider(height: 3,)
+          ],
+        );
+      }
+    } else {
+      return XmlLayout(
+        template: temp,
+        objects: {
+          "data": _itemMap(item),
+          "onClick": () {
+            onSelectItem(idx);
+          }
+        },
+        onUnkownElement: (node, key) {
+          print("Unkown type $node");
+        },
+      );
+    }
+  }
+
+  Widget buildTitle(DataItem item, ThemeData theme) {
+    String link = item.link;
+    List<InlineSpan> spans = [
+      TextSpan(
+        text: item.title,
+        style: theme.textTheme.headline2.copyWith(color: Colors.white, fontSize: 14),
+      ),
+      WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: TextButton(
+            style: ButtonStyle(
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              padding: MaterialStateProperty.all(EdgeInsets.only(left: 4, right: 4, top: 1, bottom: 1)),
+              minimumSize: MaterialStateProperty.all(Size.zero),
+            ),
+            child: Text(
+              "[${kt("source")}]",
+              style: TextStyle(
+                  fontSize: 6
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                return SourcePage(
+                  url: link,
+                );
+              }));
+            },
+          )
+      )
+    ];
+
+    String subtitle = item.subtitle;
+    if (subtitle != null && subtitle.isNotEmpty) {
+      spans.add(WidgetSpan(child: Padding(padding: EdgeInsets.only(top: 5),)));
+      spans.add(TextSpan(
+        text: "\n${item.subtitle}",
+        style: theme.textTheme.bodyText2.copyWith(color: Colors.white, fontSize: 8),
+      ));
+    }
+
+    String summary = item.summary;
+    if (summary != null && summary.isNotEmpty) {
+      spans.add(WidgetSpan(child: Padding(padding: EdgeInsets.only(top: 5),)));
+      spans.add(TextSpan(
+        text: "\n${item.summary}",
+        style: theme.textTheme.bodyText2.copyWith(color: Colors.white, fontSize: 8),
+      ));
+    }
+
+    return Text.rich(
+      TextSpan(
+          children: spans
+      ),
+      maxLines: 4,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  onOrderChanged(int value) {
+    setState(() {
+      KeyValue.set(key(ORDER_TYPE),value.toString());
+      orderIndex = value;
+    });
+  }
+
+  onDownloadClicked() {
+    setState(() {
+      editing = true;
+    });
+  }
+
+  onCancelClicked() {
+    setState(() {
+      selected.clear();
+      editing = false;
+    });
+  }
+
+  onDownloadStartClicked() {
+    selected.forEach((idx) {
+      widget.onDownload?.call(widget.chapters[idx]);
+    });
+    setState(() {
+      editing = false;
+    });
+  }
+
+  onSelectItem(int idx) {
+    if (editing) {
+      DataItem data = widget.chapters[idx];
+      if (data.isInCollection(collection_download)) {
+      } else {
+        setState(() {
+          if (selected.contains(idx)) {
+            selected.remove(idx);
+          } else {
+            selected.add(idx);
+          }
+        });
+      }
+    } else {
+      int currentIndex = idx;
+      DataItem data = widget.chapters[currentIndex];
+      openChapter(data);
+    }
+  }
+
+  void openChapter(DataItem chapter) {
+    widget.onTap?.call(chapter);
+  }
+
+  void openCollection(Map data, String title) async {
+    widget.project.control();
+    Context scriptContext = widget.project.createIndexContext(data).control();
+
+    await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+      return CollectionPage(
+        title: title,
+        context: scriptContext,
+        project: widget.project,
+      );
+    }));
+
+    scriptContext.release();
+    widget.project.release();
+  }
+
+  Widget makeLastChapter() {
+    DataItem item = widget.lastChapter;
+    var theme = Theme.of(context);
+    return Expanded(
+        child: Container(
+          padding: EdgeInsets.only(left: 5, right: 5),
+          alignment: Alignment.centerLeft,
+          child: Visibility(
+            visible: item != null,
+            child: TextButton(
+              onPressed: () {
+                openChapter(widget.lastChapter);
+              },
+              child: Text(
+                  "[${item?.title}]",
+                  style: theme.textTheme.bodyText2.copyWith(color: theme.primaryColor),
+                  overflow: TextOverflow.ellipsis
+              ),
+            ),
+          ),
+        )
+    );
+  }
+
+  bool onPullDownRefresh() {
+    widget.context.reload();
+    return false;
+  }
+
+  void favoriteClicked() {
+    setState(() {
+      DataItem data = widget.context.infoData;
+      if (FavoritesManager().isFavorite(data)) {
+        FavoritesManager().remove(data);
+      } else {
+        FavoritesManager().add(data);
+      }
+    });
+  }
+
+  void onDataChanged(int type, Array data, int idx) {
+    if (data != null) {
+      setState(() {});
+    }
+  }
+
+  void onLoadingStatus(bool isLoading) {
+    if (isLoading) {
+      refreshController.startLoading();
+    } else {
+      refreshController.stopLoading();
+    }
+  }
+
+  void onError(glib.Error error) {
+    Fluttertoast.showToast(
+      msg: error.msg,
+      toastLength: Toast.LENGTH_SHORT,
+    );
+  }
+
+  dynamic onCall(String name, Array argv) {
+
+    return null;
+  }
+
+  String key(String type) => "$type:${widget.context.infoData.link}";
+  AutoRelease data;
+
+  Map<String, dynamic> _itemMap(DataItem item) {
+    data?.release();
+    data = item.data?.control();
+    return {
+      "title": item.title,
+      "data": proxyObject(data),
+      "summary": item.summary,
+      "picture": item.picture,
+      "subtitle": item.subtitle,
+      "link": item.link,
+      "type": item.type
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ThemeData theme = Theme.of(context);
+    var data = widget.context.infoData;
+    if (!(data is DataItem)) {
+      return Container(
+        child: Text("Wrong type"),
+        color: Colors.red,
+      );
+    }
+
+    return Scaffold(
+      body: BetterRefreshIndicator(
+        child: CustomScrollView(
+          slivers: <Widget>[
+            SliverAppBar(
+              brightness: Brightness.dark,
+              floating: true,
+              pinned: true,
+              backgroundColor: theme.primaryColor,
+              expandedHeight: 288.0,
+              bottom: PreferredSize(
+                  child: Container(
+                    height: 48,
+                    color: Colors.white,
+                    padding: EdgeInsets.only(left: 10, right: 10),
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.bookmark, color: theme.primaryColor, size: 14,),
+                        Text(kt("chapters")),
+                        makeLastChapter(),
+                        // Expanded(child: Container()),
+                        PopupMenuButton(
+                            onSelected: onOrderChanged,
+                            icon: Icon(Icons.sort, color: theme.primaryColor,),
+                            itemBuilder: (context) {
+                              return [
+                                CheckedPopupMenuItem<int>(
+                                    value: R_ORDER,
+                                    checked: orderIndex == R_ORDER,
+                                    child: Text(kt("reverse_order"))
+                                ),
+
+                                CheckedPopupMenuItem<int>(
+                                    value: ORDER,
+                                    checked: orderIndex == ORDER,
+                                    child: Text(kt("order"))
+                                )
+                              ];
+                            }
+                        ),
+                        BarItem(
+                          display: editing,
+                          child: IconButton(
+                              icon: Icon(Icons.clear),
+                              color: theme.primaryColor,
+                              onPressed: onCancelClicked
+                          ),
+                        ),
+                        BarItem(
+                          display: editing,
+                          child: IconButton(
+                              icon: Icon(Icons.check),
+                              color: theme.primaryColor,
+                              onPressed: onDownloadStartClicked
+                          ),
+                        ),
+                        BarItem(
+                          display: !editing,
+                          child: IconButton(
+                              icon: Icon(Icons.file_download),
+                              color: theme.primaryColor,
+                              onPressed: onDownloadClicked
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  preferredSize: Size(double.infinity, 48)
+              ),
+              flexibleSpace: FlexibleSpaceBar(
+                title: buildTitle(data, theme),
+                titlePadding: EdgeInsets.only(left: 20, bottom: 64),
+                background: Stack(
+                  children: <Widget>[
+                    Image(
+                      width: double.infinity,
+                      height: double.infinity,
+                      image: CachedNetworkImageProvider(data.picture),
+                      gaplessPlayback: true,
+                      fit: BoxFit.cover,
+                    ),
+                    BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX:  4, sigmaY: 4),
+                      child: Container(
+                        color: Colors.black.withOpacity(0),
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.bottomLeft,
+                      width: double.infinity,
+                      height: double.infinity,
+                      padding: EdgeInsets.fromLTRB(14, 10, 14, 58),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Color.fromRGBO(0, 0, 0, 0.5), Color.fromRGBO(0, 0, 0, 0), Color.fromRGBO(0, 0, 0, 0.5)],
+                            stops: [0, 0.4, 1]
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                IconButton(
+                    icon: Icon(Icons.favorite),
+                    color: FavoritesManager().isFavorite(data) ? Colors.red : Colors.white,
+                    onPressed: favoriteClicked
+                ),
+              ],
+            ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                    (context, idx) {
+                  if (orderIndex == ORDER) {
+                    idx = widget.chapters.length - idx - 1;
+                  }
+                  return createItem(idx);
+                },
+                childCount: widget.chapters.length,
+              ),
+            )
+          ],
+        ),
+        controller: refreshController,
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    widget.project.control();
+    widget.context.control();
+    widget.context.onDataChanged = Callback.fromFunction(onDataChanged).release();
+    widget.context.onLoadingStatus = Callback.fromFunction(onLoadingStatus).release();
+    widget.context.onError = Callback.fromFunction(onError).release();
+    widget.context.onCall = Callback.fromFunction(onCall).release();
+    refreshController.onRefresh = onPullDownRefresh;
+    widget.context.enterView();
+    FavoritesManager().clearNew(widget.context.infoData);
+    HistoryManager().insert(widget.context.infoData);
+    String order = KeyValue.get(key(ORDER_TYPE));
+    if (order != null && order.isNotEmpty) {
+      try {
+        orderIndex = int.parse(order);
+      } catch (e) { }
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    widget.context.exitView();
+    widget.context.release();
+    widget.project.release();
+    data?.release();
+  }
+
+}
 
 class BarItem extends StatefulWidget {
 
@@ -192,174 +655,39 @@ class BookPage extends StatefulWidget {
 
 class _BookPageState extends State<BookPage> {
 
-  BetterRefreshIndicatorController refreshController = BetterRefreshIndicatorController();
+  String template;
   Array chapters;
-  bool editing = false;
-  int orderIndex = 0;
 
-  static const String ORDER_TYPE = "order";
-
-  static const int ORDER = 1;
-  static const int R_ORDER = 0;
-
-  Set<int> selected = Set();
-
-  Widget createItem(int idx) {
-    String temp = "";
-    DataItem item = chapters[idx];
-    if (temp.isEmpty) {
-      if (item.type != DataItemType.Header) {
-        String subtitle = item.subtitle;
-        DownloadQueueItem downloadItem = DownloadManager().find(item);
-
-        return ChapterItem(
-          title: item.title,
-          subtitle: subtitle,
-          editing: editing,
-          selected: selected.contains(idx),
-          downloadItem: downloadItem,
-          onTap: () {
-            onSelectItem(idx);
-          },
-        );
-      } else {
-        return Column(
-          children: [
-            ListTile(
-              title: Text(item.title),
-            ),
-            Divider(height: 3,)
-          ],
-        );
-      }
-    } else {
-      return XmlLayout(
-        template: temp,
-        objects: {
-          "data": _itemMap(item),
-          "onClick": () {
-            onSelectItem(idx);
-          }
+  @override
+  Widget build(BuildContext context) {
+    if (template.isEmpty) {
+      return _DefaultBookPage(
+        project: widget.project,
+        context: widget.context,
+        chapters: chapters,
+        lastChapter: lastChapter,
+        onTap: (DataItem item) {
+          openChapter(item);
         },
-        onUnkownElement: (node, key) {
-          print("Unkown type $node");
+        onDownload: downloadItem,
+      );
+    } else {
+      return CollectionView(
+        project: widget.project,
+        context: widget.context,
+        template: template,
+        onTap: (DataItem item) {
+          openChapter(item);
+        },
+        extensions: {
+          "openChapter": (int chapterIndex, [int pageIndex]) {
+            openChapter(widget.context.data[chapterIndex], pageIndex);
+          },
+          "downloadChapter": (int chapterIndex) {
+            downloadItem(widget.context.data[chapterIndex]);
+          },
         },
       );
-    }
-  }
-
-  Widget buildTitle(DataItem item, ThemeData theme) {
-    String link = item.link;
-    List<InlineSpan> spans = [
-      TextSpan(
-        text: item.title,
-        style: theme.textTheme.headline2.copyWith(color: Colors.white, fontSize: 14),
-      ),
-      WidgetSpan(
-        alignment: PlaceholderAlignment.middle,
-        child: TextButton(
-          style: ButtonStyle(
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            padding: MaterialStateProperty.all(EdgeInsets.only(left: 4, right: 4, top: 1, bottom: 1)),
-            minimumSize: MaterialStateProperty.all(Size.zero),
-          ),
-          child: Text(
-            "[${kt("source")}]",
-            style: TextStyle(
-                fontSize: 6
-            ),
-          ),
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-              return SourcePage(
-                url: link,
-              );
-            }));
-          },
-        )
-      )
-    ];
-
-    String subtitle = item.subtitle;
-    if (subtitle != null && subtitle.isNotEmpty) {
-      spans.add(WidgetSpan(child: Padding(padding: EdgeInsets.only(top: 5),)));
-      spans.add(TextSpan(
-        text: "\n${item.subtitle}",
-        style: theme.textTheme.bodyText2.copyWith(color: Colors.white, fontSize: 8),
-      ));
-    }
-
-    String summary = item.summary;
-    if (summary != null && summary.isNotEmpty) {
-      spans.add(WidgetSpan(child: Padding(padding: EdgeInsets.only(top: 5),)));
-      spans.add(TextSpan(
-        text: "\n${item.summary}",
-        style: theme.textTheme.bodyText2.copyWith(color: Colors.white, fontSize: 8),
-      ));
-    }
-
-    return Text.rich(
-      TextSpan(
-          children: spans
-      ),
-      maxLines: 4,
-      overflow: TextOverflow.ellipsis,
-    );
-  }
-
-  onOrderChanged(int value) {
-    setState(() {
-      KeyValue.set(key(ORDER_TYPE),value.toString());
-      orderIndex = value;
-    });
-  }
-
-  onDownloadClicked() {
-    setState(() {
-      editing = true;
-    });
-  }
-
-  onCancelClicked() {
-    setState(() {
-      selected.clear();
-      editing = false;
-    });
-  }
-
-  onDownloadStartClicked() {
-    setState(() {
-      DataItem dataItem = widget.context.infoData;
-      selected.forEach((idx) {
-        DownloadQueueItem item = DownloadManager().add(chapters[idx], BookInfo(
-            title: dataItem.title,
-            picture: dataItem.picture,
-            link: dataItem.link,
-            subtitle: dataItem.subtitle
-        ));
-        item.start();
-      });
-      editing = false;
-    });
-  }
-
-  onSelectItem(int idx) {
-    if (editing) {
-      DataItem data = chapters[idx];
-      if (data.isInCollection(collection_download)) {
-      } else {
-        setState(() {
-          if (selected.contains(idx)) {
-            selected.remove(idx);
-          } else {
-            selected.add(idx);
-          }
-        });
-      }
-    } else {
-      int currentIndex = idx;
-      DataItem data = chapters[currentIndex];
-      openChapter(data);
     }
   }
 
@@ -373,14 +701,8 @@ class _BookPageState extends State<BookPage> {
     return _lastChapterKey;
   }
 
-  void _saveLastChapter(DataItem chapter) {
-    setState(() {
-      _lastChapterValue = DataItem.toJSON(Array.allocate([chapter]).release());
-      KeyValue.set(lastChapterKey, _lastChapterValue);
-    });
-  }
-
-  DataItem get lastChapter {
+  DataItem lastChapter;
+  DataItem _getLastChapter() {
     if (_lastChapterValue == null) {
       _lastChapterValue = KeyValue.get(lastChapterKey);
     }
@@ -404,9 +726,19 @@ class _BookPageState extends State<BookPage> {
         return i;
       }
     }
+    return -1;
   }
 
-  void openChapter(DataItem chapter, [int page]) async {;
+  void _saveLastChapter(DataItem chapter) {
+    setState(() {
+      _lastChapterValue = DataItem.toJSON(Array.allocate([chapter]).release());
+      KeyValue.set(lastChapterKey, _lastChapterValue);
+      lastChapter?.release();
+      lastChapter = _getLastChapter()?.control();
+    });
+  }
+
+  void openChapter(DataItem chapter, [int page]) async {
     _saveLastChapter(chapter);
     int currentIndex = chapters.indexOf(chapter);
     String link = chapter.link;
@@ -467,317 +799,36 @@ class _BookPageState extends State<BookPage> {
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
   }
 
-  void openCollection(Map data, String title) async {
-    widget.project.control();
-    Context scriptContext = widget.project.createIndexContext(data).control();
-
-    await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-      return CollectionPage(
-        title: title,
-        context: scriptContext,
-        project: widget.project,
-      );
-    }));
-
-    scriptContext.release();
-    widget.project.release();
-  }
-
-  Widget makeLastChapter() {
-    DataItem item = lastChapter;
-    var theme = Theme.of(context);
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.only(left: 5, right: 5),
-        alignment: Alignment.centerLeft,
-        child: Visibility(
-          visible: item != null,
-          child: TextButton(
-            onPressed: () {
-              openChapter(lastChapter);
-            },
-            child: Text(
-              "[${item?.title}]",
-              style: theme.textTheme.bodyText2.copyWith(color: theme.primaryColor),
-              overflow: TextOverflow.ellipsis
-            ),
-          ),
-        ),
-      )
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    ThemeData theme = Theme.of(context);
-    String temp = widget.context.temp;
-    if (temp.isEmpty) {
-      var data = widget.context.infoData;
-      if (!(data is DataItem)) {
-        return Container(
-          child: Text("Wrong type"),
-          color: Colors.red,
-        );
-      }
-
-      return Scaffold(
-        body: BetterRefreshIndicator(
-          child: CustomScrollView(
-            slivers: <Widget>[
-              SliverAppBar(
-                brightness: Brightness.dark,
-                floating: true,
-                pinned: true,
-                backgroundColor: theme.primaryColor,
-                expandedHeight: 288.0,
-                bottom: PreferredSize(
-                    child: Container(
-                      height: 48,
-                      color: Colors.white,
-                      padding: EdgeInsets.only(left: 10, right: 10),
-                      child: Row(
-                        children: <Widget>[
-                          Icon(Icons.bookmark, color: theme.primaryColor, size: 14,),
-                          Text(kt("chapters")),
-                          makeLastChapter(),
-                          // Expanded(child: Container()),
-                          PopupMenuButton(
-                            onSelected: onOrderChanged,
-                            icon: Icon(Icons.sort, color: theme.primaryColor,),
-                            itemBuilder: (context) {
-                              return [
-                                CheckedPopupMenuItem<int>(
-                                    value: R_ORDER,
-                                    checked: orderIndex == R_ORDER,
-                                    child: Text(kt("reverse_order"))
-                                ),
-
-                                CheckedPopupMenuItem<int>(
-                                    value: ORDER,
-                                    checked: orderIndex == ORDER,
-                                    child: Text(kt("order"))
-                                )
-                              ];
-                            }
-                          ),
-                          BarItem(
-                            display: editing,
-                            child: IconButton(
-                                icon: Icon(Icons.clear),
-                                color: theme.primaryColor,
-                                onPressed: onCancelClicked
-                            ),
-                          ),
-                          BarItem(
-                            display: editing,
-                            child: IconButton(
-                                icon: Icon(Icons.check),
-                                color: theme.primaryColor,
-                                onPressed: onDownloadStartClicked
-                            ),
-                          ),
-                          BarItem(
-                            display: !editing,
-                            child: IconButton(
-                                icon: Icon(Icons.file_download),
-                                color: theme.primaryColor,
-                                onPressed: onDownloadClicked
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    preferredSize: Size(double.infinity, 48)
-                ),
-                flexibleSpace: FlexibleSpaceBar(
-                  title: buildTitle(data, theme),
-                  titlePadding: EdgeInsets.only(left: 20, bottom: 64),
-                  background: Stack(
-                    children: <Widget>[
-                      Image(
-                        width: double.infinity,
-                        height: double.infinity,
-                        image: CachedNetworkImageProvider(data.picture),
-                        gaplessPlayback: true,
-                        fit: BoxFit.cover,
-                      ),
-                      BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX:  4, sigmaY: 4),
-                        child: Container(
-                          color: Colors.black.withOpacity(0),
-                        ),
-                      ),
-                      Container(
-                        alignment: Alignment.bottomLeft,
-                        width: double.infinity,
-                        height: double.infinity,
-                        padding: EdgeInsets.fromLTRB(14, 10, 14, 58),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Color.fromRGBO(0, 0, 0, 0.5), Color.fromRGBO(0, 0, 0, 0), Color.fromRGBO(0, 0, 0, 0.5)],
-                              stops: [0, 0.4, 1]
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                actions: <Widget>[
-                  IconButton(
-                    icon: Icon(Icons.favorite),
-                    color: FavoritesManager().isFavorite(data) ? Colors.red : Colors.white,
-                    onPressed: favoriteClicked
-                  ),
-                ],
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, idx) {
-                    if (orderIndex == ORDER) {
-                      idx = chapters.length - idx - 1;
-                    }
-                    return createItem(idx);
-                  },
-                  childCount: chapters.length,
-                ),
-              )
-            ],
-          ),
-          controller: refreshController,
-        ),
-      );
-    } else {
-      DataItem info_data = widget.context.infoData;
-      return XmlLayout(
-        template: temp,
-          objects: {
-            "infoData": _itemMap(info_data),
-            "chapters": proxyObject(chapters),
-            "openChapter": openChapter,
-            "buildChapterItem": createItem,
-            "openCollection": openCollection,
-            "refreshController": refreshController
-          },
-          onUnkownElement: (node, key) {
-            print("Unkown node ${node.name}");
-          }
-      );
-    }
-  }
-
-  bool onPullDownRefresh() {
-    widget.context.reload();
-    return false;
-  }
-
-  void favoriteClicked() {
-    setState(() {
-      DataItem data = widget.context.infoData;
-      if (FavoritesManager().isFavorite(data)) {
-        FavoritesManager().remove(data);
-      } else {
-        FavoritesManager().add(data);
-      }
-    });
-  }
-
-  void onDataChanged(int type, Array data, int idx) {
-    if (data != null) {
-      setState(() {});
-    }
-  }
-
-  void onLoadingStatus(bool isLoading) {
-    if (isLoading) {
-      refreshController.startLoading();
-    } else {
-      refreshController.stopLoading();
-    }
-  }
-
-  void onError(glib.Error error) {
-    Fluttertoast.showToast(
-      msg: error.msg,
-      toastLength: Toast.LENGTH_SHORT,
-    );
-  }
-
-  dynamic onCall(String name, Array argv) {
-
-    return null;
-  }
-
-  String key(String type) {
-    return "$type:${widget.context.infoData.link}";
+  void downloadItem(DataItem item) {
+    DataItem dataItem = widget.context.infoData;
+    DownloadQueueItem downloadItem = DownloadManager().add(item, BookInfo(
+        title: dataItem.title,
+        picture: dataItem.picture,
+        link: dataItem.link,
+        subtitle: dataItem.subtitle
+    ));
+    downloadItem.start();
+    setState(() { });
   }
 
   @override
   void initState() {
-    widget.project.control();
-    widget.context.control();
-    widget.context.onDataChanged = Callback.fromFunction(onDataChanged).release();
-    widget.context.onLoadingStatus = Callback.fromFunction(onLoadingStatus).release();
-    widget.context.onError = Callback.fromFunction(onError).release();
-    widget.context.onCall = Callback.fromFunction(onCall).release();
-    refreshController.onRefresh = onPullDownRefresh;
-    widget.context.enterView();
-    FavoritesManager().clearNew(widget.context.infoData);
-    HistoryManager().insert(widget.context.infoData);
-    chapters = widget.context.data.control();
-    String order = KeyValue.get(key(ORDER_TYPE));
-    if (order != null && order.isNotEmpty) {
-      try {
-        orderIndex = int.parse(order);
-      } catch (e) { }
-    }
     super.initState();
+    widget.context.control();
+    widget.project.control();
+    chapters = widget.context.data.control();
+    template = widget.context.temp;
 
-    // if (KeyValue.get("$viewed_key:book") != "true") setState(() {
-    //   Future.delayed(Duration(seconds: 1)).then((value) async {
-    //     await showInstructionsDialog(context, 'assets/book',
-    //         entry: kt('lang'),
-    //         onPop: () async {
-    //           final renderObject = iconKey.currentContext.findRenderObject();
-    //           Rect rect = renderObject?.paintBounds;
-    //           var translation = renderObject?.getTransformTo(null)?.getTranslation();
-    //           if (rect != null && translation != null) {
-    //             return rect.shift(Offset(translation.x, translation.y));
-    //           }
-    //           return null;
-    //         }
-    //     );
-    //     KeyValue.set("$viewed_key:book", "true");
-    //     AppStatusNotification().dispatch(context);
-    //   });
-    // });
+    lastChapter = _getLastChapter()?.control();
   }
-
-  AutoRelease data;
 
   @override
   void dispose() {
-    widget.context.exitView();
-    chapters.release();
+    super.dispose();
     widget.context.release();
     widget.project.release();
-    data?.release();
-    super.dispose();
-  }
-
-  Map<String, dynamic> _itemMap(DataItem item) {
-    data?.release();
-    data = item.data?.control();
-    return {
-      "title": item.title,
-      "data": proxyObject(data),
-      "summary": item.summary,
-      "picture": item.picture,
-      "subtitle": item.subtitle,
-      "link": item.link,
-      "type": item.type
-    };
+    chapters.release();
+    lastChapter?.release();
   }
 
 }
