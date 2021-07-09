@@ -45,7 +45,7 @@ class PictureFileSystem extends FileSystem {
 class PictureCacheManager extends CacheManager {
   String key;
   bool _store = false;
-  static Map<String, PictureCacheManager> _managers = Map();
+  static Map<String, PictureCacheManager> _managers = {};
 
   PictureCacheManager._(this.key, {
     Duration maxAgeCacheObject

@@ -22,6 +22,7 @@ import 'localizations/localizations.dart';
 import 'main.dart';
 import 'utils/download_manager.dart';
 import 'utils/history_manager.dart';
+import 'utils/neo_cache_manager.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:glib/main/error.dart' as glib;
 import 'picture_viewer.dart';
@@ -408,7 +409,10 @@ class _DefaultBookPageState extends State<_DefaultBookPage> {
                     Image(
                       width: double.infinity,
                       height: double.infinity,
-                      image: CachedNetworkImageProvider(data.picture),
+                      image: NeoImageProvider(
+                        uri: Uri.parse(data.picture),
+                        cacheManager: NeoCacheManager.defaultManager
+                      ),
                       gaplessPlayback: true,
                       fit: BoxFit.cover,
                     ),

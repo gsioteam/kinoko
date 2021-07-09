@@ -74,5 +74,5 @@ Liah(Icon) https://liah0227.itch.io/
   "source": "來源",
   "source_description": "資源來源，請復制、下載者遵循國家相關法律、法規。",
   "v2_title": "Kinoko v2",
-  "v2_content": "Kinoko 更新了! 舊的插件會被移除. 只需要重新克隆那些插件，然後下載的漫畫就能打開了."
+  "v2_content": "Kinoko 更新了! 如果點擊了\"是\"，所有舊的插件和下載的漫畫都會被移除."
 };

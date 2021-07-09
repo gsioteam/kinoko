@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:kinoko/utils/neo_cache_manager.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 import '../localizations/localizations.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -235,7 +236,10 @@ class InstructionsDialogState extends State<InstructionsDialog> {
                             ]
                         ),
                         child: uri.hasScheme ? Image(
-                            image: CachedNetworkImageProvider(url)
+                            image: NeoImageProvider(
+                              uri: Uri.parse(url),
+                              cacheManager: NeoCacheManager.defaultManager,
+                            )
                         ):Image.asset(Path.join(widget.path, url)),
                       );
                     },

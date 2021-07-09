@@ -10,6 +10,7 @@ import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
 import 'configs.dart';
 import 'main.dart';
+import 'utils/neo_cache_manager.dart';
 import 'widgets/home_widget.dart';
 import 'widgets/book_item.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -60,7 +61,10 @@ class _FavoriteItemState extends State<FavoriteItem> {
               title: Text(title),
               subtitle: Text(subtitle),
               leading: Image(
-                image: CachedNetworkImageProvider(picture),
+                image: NeoImageProvider(
+                  uri: Uri.parse(picture),
+                  cacheManager: NeoCacheManager.defaultManager,
+                ),
                 fit: BoxFit.cover,
                 width: 56,
                 height: 56,

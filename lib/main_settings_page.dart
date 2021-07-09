@@ -3,8 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:glib/main/models.dart';
 import 'package:kinoko/configs.dart';
-import 'package:kinoko/utils/cached_picture_image.dart';
 import 'package:kinoko/utils/download_manager.dart';
+import 'package:kinoko/utils/neo_cache_manager.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
 import 'package:kinoko/widgets/home_widget.dart';
 import 'localizations/localizations.dart';
@@ -118,7 +118,7 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
                   for (var item in DownloadManager().items) {
                     cached.add(item.cacheKey);
                   }
-                  await PictureCacheManager.clearCache(without: cached);
+                  await NeoCacheManager.clearCache(without: cached);
                   await fetchSize();
                 }
               ),)));
@@ -154,7 +154,7 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
     for (var item in DownloadManager().items) {
       cached.add(item.cacheKey);
     }
-    SizeResult size = await PictureCacheManager.calculateCacheSize(
+    SizeResult size = await NeoCacheManager.calculateCacheSize(
         cached: cached
     );
     setState(() {

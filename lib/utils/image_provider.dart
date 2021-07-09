@@ -5,6 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 
+import 'neo_cache_manager.dart';
+
 ImageProvider makeImageProvider(String url) {
   Uri uri = Uri.parse(url);
   if (RegExp(r"\.svg", caseSensitive: false).hasMatch(uri.path)) {
@@ -17,7 +19,10 @@ ImageProvider makeImageProvider(String url) {
     }
   } else {
     if (uri.scheme == "http" || uri.scheme == "https") {
-      return CachedNetworkImageProvider(url);
+      return NeoImageProvider(
+        uri: uri,
+        cacheManager: NeoCacheManager.defaultManager
+      );
     } else if (url[0] == '/') {
       return FileImage(File(url));
     } else {

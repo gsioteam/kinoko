@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 import 'package:glib/main/project.dart';
+import 'package:kinoko/utils/neo_cache_manager.dart';
 
 ImageProvider makeImageProvider(String url) {
   if (url?.startsWith("/") == true) {
@@ -26,7 +27,10 @@ ImageProvider makeImageProvider(String url) {
       if (uri.scheme == "asset") {
         return AssetImage(url);
       } else {
-        return CachedNetworkImageProvider(url);
+        return NeoImageProvider(
+          uri: Uri.parse(url),
+          cacheManager: NeoCacheManager.defaultManager
+        );
       }
     } else {
       return FileImage(File(url));

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/project.dart';
+import 'package:kinoko/utils/neo_cache_manager.dart';
 
 Widget makeBookItem(BuildContext context, Project project, DataItem item, void Function() onTap) {
   if (item.type == DataItemType.Header) {
@@ -19,7 +20,10 @@ Widget makeBookItem(BuildContext context, Project project, DataItem item, void F
       }
     }else if (item.picture.isNotEmpty){
       picture = item.picture;
-      provider = CachedNetworkImageProvider(picture);
+      provider = NeoImageProvider(
+        uri: Uri.parse(picture),
+        cacheManager: NeoCacheManager.defaultManager
+      );
     }
     var children = <Widget>[];
     if (provider != null) {
@@ -43,7 +47,10 @@ Widget makeBookItem(BuildContext context, Project project, DataItem item, void F
       title: Text(item.title),
       subtitle: Text(item.subtitle),
       leading: Image(
-        image: CachedNetworkImageProvider(item.picture),
+        image: NeoImageProvider(
+          uri: Uri.parse(item.picture),
+          cacheManager: NeoCacheManager.defaultManager
+        ),
         fit: BoxFit.cover,
         width: 56,
         height: 56,

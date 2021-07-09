@@ -1,12 +1,24 @@
 
+import 'dart:async';
+
 import 'package:glib/core/core.dart';
 import 'package:glib/utils/git_repository.dart';
 import '../progress_dialog.dart';
+
+class GitError extends Error {
+  final String msg;
+
+  GitError(this.msg);
+
+  @override
+  String toString() => msg;
+}
 
 class GitItem extends ProgressItem {
   GitAction action;
   GitRepository repo;
   String url;
+  int retryCount = 5;
 
   GitItem.clone(GitRepository repo, String url) {
     this.defaultText = "Clone from $url";
@@ -15,9 +27,26 @@ class GitItem extends ProgressItem {
     start();
   }
 
-  void start() {
-    action = repo.cloneFromRemote(url);
-    action.control();
+  void start() async {
+    String lastError;
+    for (int i = 0; i < retryCount; ++i) {
+      try {
+        await _clone();
+      } catch (e) {
+        lastError = e.toString();
+        continue;
+      }
+      complete();
+      return;
+    }
+    fail(lastError);
+  }
+
+  Future<void> _clone() {
+    Completer<void> completer = Completer();
+    action?.release();
+    action = repo.cloneFromRemote(url).control();
+    this.progress(defaultText);
     action.setOnProgress((String text, int receive, int total) {
       String title = text;
       switch (text) {
@@ -34,11 +63,12 @@ class GitItem extends ProgressItem {
     });
     action.setOnComplete(() {
       if (action.hasError()) {
-        this.fail(action.getError());
+        completer.completeError(new GitError(action.getError()));
       } else {
-        this.complete();
+        completer.complete();
       }
     });
+    return completer.future;
   }
 
   @override

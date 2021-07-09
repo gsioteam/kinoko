@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:kinoko/picture_viewer.dart';
+import 'package:kinoko/utils/neo_cache_manager.dart';
 import 'dart:math' as math;
 import 'over_drag.dart';
 import 'dart:ui' as ui;
@@ -594,7 +595,7 @@ class PhotoList extends StatefulWidget {
   final int itemCount;
   final PhotoInformation Function(int index) imageUrlProvider;
   final void Function(int index) onPageChanged;
-  final BaseCacheManager cacheManager;
+  final NeoCacheManager cacheManager;
   PhotoController controller;
   final double appBarHeight;
 
@@ -650,8 +651,8 @@ class _PhotoListState extends State<PhotoList> {
                       ),
                       child: Center(
                         child: PhotoImage(
-                          imageProvider: CachedNetworkImageProvider(
-                            photoInformation.url,
+                          imageProvider: NeoImageProvider(
+                            uri: Uri.parse(photoInformation.url),
                             cacheManager: widget.cacheManager,
                             headers: photoInformation.headers,
                           ),

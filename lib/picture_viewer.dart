@@ -12,7 +12,6 @@ import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
 import 'package:kinoko/configs.dart';
-import 'package:kinoko/utils/cached_picture_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:glib/main/error.dart' as glib;
@@ -21,6 +20,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'main.dart';
 import 'utils/download_manager.dart';
+import 'utils/neo_cache_manager.dart';
 import 'utils/preload_queue.dart';
 import 'dart:math' as math;
 import 'package:gesture_zoom_box/gesture_zoom_box.dart';
@@ -115,7 +115,7 @@ class _PictureViewerState extends State<PictureViewer> {
   bool loading = false;
   bool isTap = false;
   Timer _timer;
-  PictureCacheManager _cacheManager;
+  NeoCacheManager _cacheManager;
   PhotoController photoController;
   FlipType flipType = FlipType.Horizontal;
   bool isLandscape = false;
@@ -172,19 +172,17 @@ class _PictureViewerState extends State<PictureViewer> {
     }
   }
 
-  PictureCacheManager get cacheManager {
+  NeoCacheManager get cacheManager {
     if (_cacheManager == null) {
-      DataItem item = widget.context.infoData;
-      _cacheManager = PictureCacheManager(
-        cacheKey, item
-      );
+      // DataItem item = widget.context.infoData;
+      _cacheManager = NeoCacheManager(cacheKey);
     }
     return _cacheManager;
   }
 
-  CachedNetworkImageProvider makeImageProvider(DataItem item) {
-    return CachedNetworkImageProvider(
-      item.picture,
+  NeoImageProvider makeImageProvider(DataItem item) {
+    return NeoImageProvider(
+      uri: Uri.parse(item.picture),
       cacheManager: cacheManager
     );
   }
@@ -563,7 +561,7 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   void touch() {
-    cacheKey = PictureCacheManager.cacheKey(widget.context.infoData);
+    cacheKey = NeoCacheManager.cacheKey(widget.context.infoData);
     preloadQueue = PreloadQueue();
     widget.context.control();
     widget.context.onDataChanged = Callback.fromFunction(onDataChanged).release();

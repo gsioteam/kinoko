@@ -23,6 +23,8 @@ import 'package:path_provider/path_provider.dart' as platform;
 import 'package:glib/glib.dart';
 import 'package:glib/utils/git_repository.dart';
 import 'progress_dialog.dart';
+import 'utils/download_manager.dart';
+import 'utils/neo_cache_manager.dart';
 import 'utils/progress_items.dart';
 import 'localizations/localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -156,20 +158,34 @@ class SplashScreenState extends State<SplashScreen> {
               content: Text(kt("v2_content")),
               actions: [
                 TextButton(
-                  child: Text(kt("ok")),
+                  child: Text(kt("yes")),
                   onPressed: () {
                     Navigator.of(context).pop(true);
                   },
                 ),
+                TextButton(
+                  child: Text(kt("no")),
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                )
               ],
             );
           }
         );
         if (ret == true) {
           await dir.delete(recursive: true);
-          KeyValue.set(v2_key, 'true');
+          Directory directory = await platform.getTemporaryDirectory();
+          Directory picDir = Directory("${directory.path}/pic");
+          if (await picDir.exists())
+            await picDir.delete(recursive: true);
+          DownloadManager.reloadAll();
+        } else {
+          SystemNavigator.pop();
+          return;
         }
       }
+      KeyValue.set(v2_key, 'true');
     }
   }
 
@@ -192,9 +208,9 @@ class SplashScreenState extends State<SplashScreen> {
     icons.register();
     layout.register();
     XmlLayout.register("CachedNetworkImageProvider", (node, key) {
-      return CachedNetworkImageProvider(
-          node.text,
-          scale: node.s<double>("scale", 1)
+      return NeoImageProvider(
+        uri: Uri.parse(node.text),
+        cacheManager: NeoCacheManager.defaultManager
       );
     });
     XmlLayout.register("FlatButton", (node, key) {
@@ -385,8 +401,8 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
     widget.homeState.onRefresh = onRefresh;
     widget.homeState.onFetch = startFetch;
     animationController = AnimationController(
-        vsync: this,
-        duration: Duration(seconds: 1),
+      vsync: this,
+      duration: Duration(seconds: 1),
     );
   }
 
@@ -420,7 +436,10 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
         return FileImage(icon);
       }
     }
-    return CachedNetworkImageProvider("https://www.tinygraphs.com/squares/${generateMd5(project.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg");
+    return NeoImageProvider(
+      uri: Uri.parse("https://www.tinygraphs.com/squares/${generateMd5(project.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg"),
+      cacheManager: NeoCacheManager.defaultManager
+    );
   }
 
   List<Widget> buildList(Project project) {
@@ -502,7 +521,10 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
                 child: Container(
                   color: Colors.blueAccent,
                   child: Image(
-                    image: CachedNetworkImageProvider("https://www.tinygraphs.com/squares/unkown?theme=bythepool&numcolors=3&size=180&fmt=jpg"),
+                    image: NeoImageProvider(
+                      uri: Uri.parse("https://www.tinygraphs.com/squares/unkown?theme=bythepool&numcolors=3&size=180&fmt=jpg"),
+                      cacheManager: NeoCacheManager.defaultManager,
+                    ),
                     fit: BoxFit.contain,
                     width: 36,
                     height: 36,

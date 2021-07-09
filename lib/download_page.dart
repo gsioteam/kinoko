@@ -15,6 +15,7 @@ import 'main.dart';
 import 'picture_viewer.dart';
 import 'utils/download_manager.dart';
 import 'localizations/localizations.dart';
+import 'utils/neo_cache_manager.dart';
 import 'widgets/better_snack_bar.dart';
 import 'package:folder_picker/folder_picker.dart';
 
@@ -153,14 +154,14 @@ class _ChapterCellState extends State<ChapterCell> {
 
                             for (int i = 0, t = urls.length; i < t; ++i) {
                               var url = urls[i];
-                              var fileInfo = await queueItem.cacheManager.getFileFromCache(url);
-                              if (fileInfo != null) {
+                              var file = await queueItem.cacheManager.getFileFromCache(Uri.parse(url));
+                              if ((await file.stat()).size > 0) {
                                 String index = i.toString();
                                 for (int j = index.length; j < len; ++j) {
                                   index = "0" + index;
                                 }
                                 var uri = Uri.parse(url);
-                                await fileInfo.file.copy("${dir.path}/p_$index${path.extension(uri.path)}");
+                                await file.copy("${dir.path}/p_$index${path.extension(uri.path)}");
                               } else {
                                 print("No output $url");
                               }
@@ -453,7 +454,10 @@ class _DownloadPageState extends State<DownloadPage> {
               subtitle: Text(downloadData.bookInfo.subtitle),
               leading: Image(
                 key: ObjectKey(downloadData.bookInfo.picture),
-                image: CachedNetworkImageProvider(downloadData.bookInfo.picture),
+                image: NeoImageProvider(
+                  uri: Uri.parse(downloadData.bookInfo.picture),
+                  cacheManager: NeoCacheManager.defaultManager
+                ),
                 fit: BoxFit.cover,
                 width: 56,
                 height: 56,

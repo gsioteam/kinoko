@@ -23,7 +23,7 @@ const String history_key = "history";
 
 const String viewed_key = "viewed";
 
-const String v2_key = "v2_setup";
+const String v2_key = "v2_2_setup";
 
 const int BOOK_INDEX = 0;
 const int CHAPTER_INDEX = 1;

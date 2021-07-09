@@ -11,6 +11,7 @@ import 'package:glib/utils/bit64.dart';
 import 'package:glib/utils/git_repository.dart';
 import 'package:glib/main/project.dart';
 import 'package:kinoko/progress_dialog.dart';
+import 'package:kinoko/utils/neo_cache_manager.dart';
 import 'package:kinoko/utils/progress_items.dart';
 import 'package:kinoko/widgets/spin_itim.dart';
 import 'dart:convert';
@@ -81,7 +82,10 @@ class _LibraryCellState extends State<LibraryCell> {
         return makeImageProvider(project.icon);
       }
     }
-    return CachedNetworkImageProvider("https://www.tinygraphs.com/squares/${generateMd5(library.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg");
+    return NeoImageProvider(
+      uri: Uri.parse("https://www.tinygraphs.com/squares/${generateMd5(library.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg"),
+      cacheManager: NeoCacheManager.defaultManager
+    );
   }
 
   void installConfirm() {

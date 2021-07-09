@@ -23,6 +23,7 @@ import 'book_info.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'data_item_headers.dart';
+import 'neo_cache_manager.dart';
 
 enum DownloadState {
   None,
@@ -32,7 +33,7 @@ enum DownloadState {
 }
 
 class DownloadPictureItem {
-  PictureCacheManager cacheManager;
+  NeoCacheManager cacheManager;
   String url;
   Map<String, String> headers;
   bool canceled = false;
@@ -40,7 +41,7 @@ class DownloadPictureItem {
   DownloadPictureItem(this.url, this.cacheManager, {this.headers});
 
   void fetchImage(void Function() callback) {
-    cacheManager.getSingleFile(url, headers: headers).then((value) {
+    cacheManager.getSingleFile(Uri.parse(url), headers: headers).then((value) {
       if (!canceled) {
         callback();
       }
@@ -69,7 +70,7 @@ class DownloadQueueItem {
   CollectionData data;
   DataItem item;
   void Function(String error) onError;
-  PictureCacheManager cacheManager;
+  NeoCacheManager cacheManager;
   Queue<DownloadPictureItem> queue = Queue();
   bool _picture_downloading = false;
   String cacheKey;
@@ -125,8 +126,8 @@ class DownloadQueueItem {
 
   DownloadQueueItem._(this.data, this.item) {
     Array subitems = item.getSubItems();
-    cacheKey = PictureCacheManager.cacheKey(item);
-    cacheManager = PictureCacheManager(cacheKey, item);
+    cacheKey = NeoCacheManager.cacheKey(item);
+    cacheManager = NeoCacheManager(cacheKey);
     _total = subitems.length;
     if (state != DownloadState.AllComplete) {
       List<_DownloadCacheItem> urls = [];
@@ -148,8 +149,8 @@ class DownloadQueueItem {
   void _checkImages(List<_DownloadCacheItem> urls) async {
     int count = 0;
     for (_DownloadCacheItem url in urls) {
-      FileInfo info = await cacheManager.getFileFromCache(url.url);
-      if (info != null) {
+      var info = await cacheManager.getFileFromCache(Uri.parse(url.url));
+      if ((await info.stat()).size > 0) {
         ++count;
         _loaded = count;
         onProgress?.call();
@@ -374,6 +375,17 @@ class DownloadManager {
       _instance = DownloadManager._();
     }
     return _instance;
+  }
+
+  static void reloadAll() {
+    Array data = CollectionData.all(collection_download);
+    for (CollectionData item in data) {
+      if (item.flag == 2) {
+        item.flag = 1;
+        item.save();
+      }
+    }
+    _instance = null;
   }
 
   DownloadManager._() {

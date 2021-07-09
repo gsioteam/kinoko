@@ -75,5 +75,5 @@ Liah(Icon) https://liah0227.itch.io/
   "source": "Source",
   "source_description": "The source page, Please copy and download the files in accordance with relevant national laws and regulations.",
   "v2_title": "Kinoko v2",
-  "v2_content": "Kinoko updated! The old plugins would be removed. Just clone the plugin again then the downloaded managa will be openable.",
+  "v2_content": "Kinoko updated! If \"Yes\" be clicked all the old plugins and downloaded manga would be removed.",
 };

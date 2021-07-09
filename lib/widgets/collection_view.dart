@@ -52,6 +52,7 @@ class CollectionViewState extends State<CollectionView> {
       "itemCount": widget.context.data.length,
       "context": widget.context,
       "getItem": (int idx) {
+        if (idx >= widget.context.data.length || idx < 0) return null;
         DataItem item = widget.context.data[idx];
         Map<String, dynamic> data = dataCache[item.link];
         if (data == null) {

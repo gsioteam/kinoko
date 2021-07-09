@@ -14,6 +14,7 @@ import 'configs.dart';
 import 'localizations/localizations.dart';
 
 import 'picture_viewer.dart';
+import 'utils/neo_cache_manager.dart';
 import 'widgets/home_widget.dart';
 
 class HistoryPage extends HomeWidget {
@@ -88,7 +89,10 @@ class _HistoryPageState extends State<HistoryPage> {
               title: Text(data.title),
               subtitle: Text(data.subtitle),
               leading: Image(
-                image: CachedNetworkImageProvider(data.picture),
+                image: NeoImageProvider(
+                  uri: Uri.parse(data.picture),
+                  cacheManager: NeoCacheManager.defaultManager
+                ),
                 fit: BoxFit.cover,
                 width: 56,
                 height: 56,

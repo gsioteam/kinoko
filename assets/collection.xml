@@ -1,5 +1,5 @@
 <BetterRefreshIndicator controller="$refreshController">
-    <ListView.separated itemCount="$itemCount">
+    <ListView.separated itemCount="plus($itemCount, 1)">
         <attr:itemBuilder>
             <Function returnType="Widget">
                 <SetArgument return="index" argument="${args[1]}"/>
@@ -7,7 +7,10 @@
                     <Argument value="$index"/>
                 </Call>
                 <Builder>
-                    <if candidate="${itemData.isHeader}">
+                    <if candidate="nlt($index, $itemCount)">
+                        <Container height="24" />
+                    </if>
+                    <else candidate="${itemData.isHeader}">
                         <Container padding="fromLTRB(5, 2, 5, 2)" height="30">
                             <Row>
                                 <if candidate="isNotEmpty(${itemData.picture})">
@@ -22,7 +25,7 @@
                                 </Text>
                             </Row>
                         </Container>
-                    </if>
+                    </else>
                     <else>
                         <ListTile>
                             <attr:title>
