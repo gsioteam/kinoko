@@ -26,23 +26,23 @@ class SizeResult {
   int other = 0;
 }
 
-class ProviderKey {
-  ImageConfiguration configuration;
-  NeoImageProvider provider;
-
-  ProviderKey(this.provider, this.configuration);
-
-  @override
-  bool operator ==(Object other) {
-    if (other is ProviderKey) {
-      return configuration == other.configuration && provider == other.provider;
-    }
-    return false;
-  }
-
-  @override
-  int get hashCode => 0x88fa000 | provider.hashCode | configuration.hashCode;
-}
+// class ProviderKey {
+//   ImageConfiguration configuration;
+//   NeoImageProvider provider;
+//
+//   ProviderKey(this.provider, this.configuration);
+//
+//   @override
+//   bool operator ==(Object other) {
+//     if (other is ProviderKey) {
+//       return configuration == other.configuration && provider == other.provider;
+//     }
+//     return false;
+//   }
+//
+//   @override
+//   int get hashCode => 0x88fa000 | provider.hashCode | configuration.hashCode;
+// }
 
 class NeoError extends Error {
   final String msg;
@@ -163,12 +163,10 @@ class NeoCacheManager {
       listener = ImageStreamListener((image, info) {
         stream.removeListener(listener);
         completer.complete();
-      },
-          onError: (e, stack) {
-            stream.removeListener(listener);
-            completer.completeError(e, stack);
-          }
-      );
+      }, onError: (e, stack) {
+        stream.removeListener(listener);
+        completer.completeError(e, stack);
+      });
       stream.addListener(listener);
       await completer.future;
     }
@@ -226,7 +224,7 @@ class NeoCacheManager {
     }
   }
 
-  Map<ProviderKey, NeoImageProvider> _providers = {};
+  // Map<ProviderKey, NeoImageProvider> _providers = {};
 }
 
 class NeoImageProvider extends ImageProvider<NeoImageProvider> {
@@ -248,20 +246,10 @@ class NeoImageProvider extends ImageProvider<NeoImageProvider> {
   }
 
   @override
-  ImageStreamCompleter load(NeoImageProvider key, decode) {
-    return NeoImageStreamCompleter(key, decode);
-  }
+  ImageStreamCompleter load(NeoImageProvider key, decode) => NeoImageStreamCompleter(key, decode);
 
   @override
-  Future<NeoImageProvider> obtainKey(ImageConfiguration configuration) {
-    ProviderKey key = ProviderKey(this, configuration);
-    if (cacheManager._providers.containsKey(key)) {
-      return SynchronousFuture(cacheManager._providers[key]);
-    } else {
-      cacheManager._providers[key] = this;
-      return SynchronousFuture(this);
-    }
-  }
+  Future<NeoImageProvider> obtainKey(ImageConfiguration configuration) => SynchronousFuture(this);
 
   static String getFilename(Uri uri) {
     String ext = p.extension(uri.path);
@@ -288,7 +276,7 @@ class _ImageFrameDecoder {
   _ImageFrameDecoder(this._streamCompleter);
 
   void run() async {
-    ui.Codec codec = await _streamCompleter._codec;
+    ui.Codec codec = await _streamCompleter.getCodec();
     if (!validate || codec == null) return;
     if (codec.frameCount > 1) {
       while (true) {
@@ -314,12 +302,52 @@ class NeoImageStreamCompleter extends ImageStreamCompleter {
 
   final NeoImageProvider provider;
   final DecoderCallback decoder;
-  Future<ui.Codec> _codec;
 
-  NeoImageStreamCompleter(this.provider, this.decoder) {
-    _codec = getCodec().catchError((e, stack) {
-      reportError(exception: e, stack: stack);
-    });
+  static Map<NeoImageProvider, Future<Uint8List>> fetching = {};
+
+  NeoImageStreamCompleter(this.provider, this.decoder);
+
+  void run() {
+    getCodec();
+  }
+
+  Future<Uint8List> fetch() async {
+    var req = http.Request("GET", provider.uri);
+    if (provider.headers != null) req.headers.addAll(provider.headers);
+    var response = await req.send();
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      io.BytesBuilder builder = io.BytesBuilder();
+      await for (var chunk in response.stream) {
+        builder.add(chunk);
+        reportImageChunkEvent(ImageChunkEvent(
+            cumulativeBytesLoaded: builder.length,
+            expectedTotalBytes: response.contentLength
+        ));
+      }
+      var bytes = builder.toBytes();
+      if (bytes.length == 0) {
+        throw NeoError("Empty body");
+      } else {
+        return bytes;
+      }
+    } else {
+      throw NeoError("Status code ${response.statusCode}");
+    }
+  }
+
+  Future<Uint8List> startFetch() {
+
+    var async = fetch();
+    fetching[provider] = async;
+    void _wait() async {
+      try {
+        await async;
+      } finally {
+        fetching.remove(provider);
+      }
+    }
+    _wait();
+    return async;
   }
 
   Future<ui.Codec> getCodec() async {
@@ -328,32 +356,19 @@ class NeoImageStreamCompleter extends ImageStreamCompleter {
     if ((await file.stat()).size > 0) {
       return decoder(await file.readAsBytes());
     } else {
-      print("get : ${provider.uri}");
-      var req = http.Request("GET", provider.uri);
-      if (provider.headers != null) req.headers.addAll(provider.headers);
-      var response = await req.send();
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        io.BytesBuilder builder = io.BytesBuilder();
-        await for (var chunk in response.stream) {
-          builder.add(chunk);
-          reportImageChunkEvent(ImageChunkEvent(
-              cumulativeBytesLoaded: builder.length,
-              expectedTotalBytes: response.contentLength
-          ));
-        }
-        var bytes = builder.toBytes();
-        if (bytes.length == 0) {
-          throw NeoError("Empty body");
-        } else {
-          var parent = file.parent;
-          if (!await parent.exists())
-            await parent.create(recursive: true);
-          await file.writeAsBytes(bytes);
-          return decoder(bytes);
-        }
+      Future<Uint8List> asyncBytes;
+      if (fetching.containsKey(provider)) {
+        asyncBytes = fetching[provider];
       } else {
-        throw NeoError("Status code ${response.statusCode}");
+        asyncBytes = startFetch();
       }
+
+      var bytes = await asyncBytes;
+      var parent = file.parent;
+      if (!await parent.exists())
+        await parent.create(recursive: true);
+      await file.writeAsBytes(bytes);
+      return decoder(bytes);
     }
   }
 

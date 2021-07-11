@@ -291,11 +291,17 @@ class PhotoImageState extends State<PhotoImage> with TickerProviderStateMixin {
                 ],
               );
             },
-            child: RawImage(
-              image: _imageInfo?.image,
+            child: Container(
+              color: Colors.black,
               width: width,
               height: height,
-              fit: BoxFit.fill,
+              padding: EdgeInsets.all(1),
+              child: RawImage(
+                image: _imageInfo?.image,
+                width: width - 2,
+                height: height - 2,
+                fit: BoxFit.fill,
+              ),
             ),
           ),
         );

@@ -17,7 +17,7 @@ import 'utils/download_manager.dart';
 import 'localizations/localizations.dart';
 import 'utils/neo_cache_manager.dart';
 import 'widgets/better_snack_bar.dart';
-import 'package:folder_picker/folder_picker.dart';
+import 'package:filesystem_picker/filesystem_picker.dart';
 
 import 'widgets/home_widget.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
@@ -105,74 +105,76 @@ class _ChapterCellState extends State<ChapterCell> {
                 var lists = await PathProviderEx.getStorageInfo();
                 var info = lists.last;
                 if (info != null) {
-                  Navigator.of(context).push<FolderPickerPage>(MaterialPageRoute(
+                  Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) {
-                        return FolderPickerPage(
-                          action: (context, folder) async {
-                            DownloadQueueItem queueItem = widget.item;
-                            DataItem item = queueItem.item.control();
-                            String name = "${queueItem.info.title}";
-                            if (item.title.isNotEmpty) {
-                              name = name + "(${item.title})";
-                            }
-                            TextEditingController controller = TextEditingController(text: name);
-                            name = await showDialog<String>(
-                                context: context,
-                              builder: (context) {
-                                var theme = Theme.of(context);
-                                return AlertDialog(
-                                  title: Text(kt("directory_name")),
-                                  content: TextField(
-                                    controller: controller,
-                                    autofocus: true,
-                                  ),
-                                  actions: [
-                                    MaterialButton(
-                                      child: Text(kt("ok"), style: theme.textTheme.bodyText1.copyWith(color: theme.primaryColor),),
-                                      onPressed: () {
-                                        String text = controller.value.text;
-                                        if (text.isNotEmpty) {
-                                          Navigator.of(context).pop(text);
-                                        } else {
-                                          Fluttertoast.showToast(msg: kt("name_empty"), toastLength: Toast.LENGTH_SHORT);
-                                        }
-                                      }
-                                    )
-                                  ],
-                                );
+                        return FilesystemPicker(
+                            rootDirectory: Directory(info.rootDir),
+                            onSelect: (folderPath) async {
+                              DownloadQueueItem queueItem = widget.item;
+                              DataItem item = queueItem.item.control();
+                              String name = "${queueItem.info.title}";
+                              if (item.title.isNotEmpty) {
+                                name = name + "(${item.title})";
                               }
-                            );
-                            name = name.replaceAll("/", " ");
-                            Directory dir = Directory(folder.path + "/$name");
-                            if (!await dir.exists()) {
-                              dir.create();
-                            }
+                              TextEditingController controller = TextEditingController(text: name);
+                              name = await showDialog<String>(
+                                  context: context,
+                                  builder: (context) {
+                                    var theme = Theme.of(context);
+                                    return AlertDialog(
+                                      title: Text(kt("directory_name")),
+                                      content: TextField(
+                                        controller: controller,
+                                        autofocus: true,
+                                      ),
+                                      actions: [
+                                        MaterialButton(
+                                            child: Text(kt("ok"), style: theme.textTheme.bodyText1.copyWith(color: theme.primaryColor),),
+                                            onPressed: () {
+                                              String text = controller.value.text;
+                                              if (text.isNotEmpty) {
+                                                Navigator.of(context).pop(text);
+                                              } else {
+                                                Fluttertoast.showToast(msg: kt("name_empty"), toastLength: Toast.LENGTH_SHORT);
+                                              }
+                                            }
+                                        )
+                                      ],
+                                    );
+                                  }
+                              );
+                              name = name.replaceAll("/", " ");
+                              Directory dir = Directory(folderPath + "/$name");
+                              if (!await dir.exists()) {
+                                dir.create();
+                              }
 
-                            var subtimes = item.getSubItems();
-                            List<String> urls = subtimes.map<String>((element) => element.picture).toList();
-                            int len = math.max(urls.length.toString().length, 4);
+                              var subtimes = item.getSubItems();
+                              List<String> urls = subtimes.map<String>((element) => element.picture).toList();
+                              int len = math.max(urls.length.toString().length, 4);
 
-                            for (int i = 0, t = urls.length; i < t; ++i) {
-                              var url = urls[i];
-                              var file = await queueItem.cacheManager.getFileFromCache(Uri.parse(url));
-                              if ((await file.stat()).size > 0) {
-                                String index = i.toString();
-                                for (int j = index.length; j < len; ++j) {
-                                  index = "0" + index;
+                              for (int i = 0, t = urls.length; i < t; ++i) {
+                                var url = urls[i];
+                                var file = await queueItem.cacheManager.getFileFromCache(Uri.parse(url));
+                                if ((await file.stat()).size > 0) {
+                                  String index = i.toString();
+                                  for (int j = index.length; j < len; ++j) {
+                                    index = "0" + index;
+                                  }
+                                  var uri = Uri.parse(url);
+                                  await file.copy("${dir.path}/p_$index${path.extension(uri.path)}");
+                                } else {
+                                  print("No output $url");
                                 }
-                                var uri = Uri.parse(url);
-                                await file.copy("${dir.path}/p_$index${path.extension(uri.path)}");
-                              } else {
-                                print("No output $url");
                               }
-                            }
-                            item.release();
-                            Fluttertoast.showToast(
-                                msg: kt("output_to").replaceFirst("{0}", dir.path)
-                            );
-                            Navigator.of(context).pop();
-                          },
-                          rootDirectory: Directory(info.rootDir)
+                              item.release();
+                              Fluttertoast.showToast(
+                                  msg: kt("output_to").replaceFirst("{0}", dir.path)
+                              );
+                              Navigator.of(context).pop();
+                            },
+                            fsType: FilesystemType.folder,
+                            fileTileSelectMode: FileTileSelectMode.checkButton
                         );
                       }
                   ));

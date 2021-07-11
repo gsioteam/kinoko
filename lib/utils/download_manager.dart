@@ -50,7 +50,6 @@ class DownloadPictureItem {
       if (!canceled) {
         callback();
       }
-      return err;
     });
   }
 

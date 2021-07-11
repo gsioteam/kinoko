@@ -72,7 +72,6 @@ class WebImage extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
-        gaplessPlayback: true,
       );
     }
   }

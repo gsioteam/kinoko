@@ -190,13 +190,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.0"
-  extra_pedantic:
-    dependency: transitive
-    description:
-      name: extra_pedantic
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.2.0"
   ffi:
     dependency: transitive
     description:
@@ -211,22 +204,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.1.0"
-  filesize:
-    dependency: transitive
+  filesystem_picker:
+    dependency: "direct main"
     description:
-      name: filesize
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.4"
-  filex:
-    dependency: transitive
-    description:
-      path: "."
+      path: package
       ref: HEAD
-      resolved-ref: "7431923245f4fe107fe81c19a0c331c1c0e51af6"
-      url: "https://github.com/gsioteam/filex.git"
+      resolved-ref: "9b1a077183580f2b329707a85a25e1aeda48517f"
+      url: "https://github.com/gsioteam/filesystem_picker.git"
     source: git
-    version: "0.3.0"
+    version: "2.0.0-nullsafety.0"
   fixnum:
     dependency: transitive
     description:
@@ -261,7 +247,7 @@ packages:
     source: hosted
     version: "0.6.0"
   flutter_inappwebview:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_inappwebview
       url: "https://pub.dartlang.org"
@@ -279,13 +265,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.5"
-  flutter_slidable:
-    dependency: transitive
-    description:
-      name: flutter_slidable
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.5.7"
   flutter_spinkit:
     dependency: "direct main"
     description:
@@ -323,15 +302,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.1"
-  folder_picker:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "756470cbf4e986ca8363d4d529a88f3c716a005f"
-      url: "https://github.com/gsioteam/folder_picker.git"
-    source: git
-    version: "0.3.0"
   gesture_zoom_box:
     dependency: "direct main"
     description:
@@ -493,13 +463,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.0"
-  open_file:
-    dependency: transitive
-    description:
-      name: open_file
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.1.1"
   package_config:
     dependency: transitive
     description:
@@ -855,13 +818,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.2.0"
-  webview_flutter:
-    dependency: "direct main"
-    description:
-      name: webview_flutter
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.2"
   win32:
     dependency: transitive
     description:

@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../localizations/localizations.dart';
 import 'package:url_launcher/url_launcher.dart' as UrlLauncher;
 
@@ -18,7 +18,7 @@ class SourcePage extends StatefulWidget {
 }
 
 class SourcePageState extends State<SourcePage> {
-  WebViewController controller;
+  InAppWebViewController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class SourcePageState extends State<SourcePage> {
               if (controller == null) {
                 UrlLauncher.launch(widget.url);
               } else {
-                UrlLauncher.launch(await controller.currentUrl());
+                UrlLauncher.launch((await controller.getUrl()).toString());
               }
             }
           )
@@ -50,8 +50,10 @@ class SourcePageState extends State<SourcePage> {
           //   child: Text(kt('source_description')),
           // ),
           Expanded(
-            child: WebView(
-              initialUrl: widget.url,
+            child: InAppWebView(
+              initialUrlRequest: URLRequest(
+                url: Uri.parse(widget.url)
+              ),
               onWebViewCreated: (controller) {
                 this.controller = controller;
               },
