@@ -1,6 +1,6 @@
 # kinoko
 
-Awesome manga reader. Kinoko app is published on [Google Play](https://play.google.com/store/apps/details?id=com.ero.kinoko)
+Awesome manga reader. Kinoko app is published on [Google Play](https://play.google.com/store/apps/details?id=com.ero.kinoko) and [Fdroid](https://f-droid.org/en/packages/com.ero.kinoko/)
 
 ## Description
 
