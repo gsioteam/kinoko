@@ -1,0 +1,9 @@
+Carga el contenido de los cómics en línea con el apoyo de cualquier proyecto de complemento para proporcionar una cómoda experiencia de visualización de cómics en línea.
+
+### Características:
+
+* Soporte de plug-in, utilizando git para gestionar los complementos, puede utilizar los complementos proporcionados por los desarrolladores para navegar por los recursos de red correspondientes, o introducir cualquier dirección git para cargar el complemento.
+* Colecciones, Añadir a favoritos, fácil y rápida visualización en cualquier momento.
+* Descarga de mangas, descarga en local, y navegación en cualquier momento sin Internet.
+* Las teclas de volumen se pueden usar para pasar las páginas, que se pueden pasar fácilmente con una mano.
+* Múltiples modos de navegación, pasando las páginas horizontal o verticalmente.
