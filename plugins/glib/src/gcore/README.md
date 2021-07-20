@@ -35,7 +35,7 @@ Run the `process.rb`
 
         ruby process.rb {path to header file}
 
-This action would generate the dynamic codes. like:
+This move would generate the dynamic codes. like:
 
         ON_LOADED_BEGIN(cls, gc::RefObject)
             ADD_PROPERTY(cls, "int_value", ADD_METHOD(cls, TestObject, getIntValue), ADD_METHOD(cls, TestObject, setIntValue));
