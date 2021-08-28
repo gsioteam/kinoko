@@ -9,6 +9,7 @@
 #include <sha256.h>
 #include <bit64/bit64.h>
 #include "../models/GitLibrary.h"
+#include "../models/KeyValue.h"
 
 using namespace gs;
 using namespace gc;
@@ -30,23 +31,28 @@ bool LibraryContext::parseLibrary(const std::string &body) {
             this->token = token;
             bool ignore = y_data["ignore"];
             if (!ignore) {
-                Ref<GitLibrary> lib = find(url);
-                if (!lib) {
-                    lib = new GitLibrary;
-                    data->push_back(lib);
-                }
-                lib->setTitle(y_data["title"]);
-                lib->setDate(getTimeStamp());
-                lib->setUrl(url);
-                lib->setIcon(y_data["icon"]);
-                lib->setToken(token);
-                if (y_data.has("branch")) {
-                    lib->setBranch(y_data["branch"]);
-                } else {
-                    lib->setBranch("");
-                }
+                std::string inserted_key = "inserted:project:" + url;
+                std::string inserted = KeyValue::get(inserted_key);
+                if (inserted != "true") {
+                    Ref<GitLibrary> lib = find(url);
+                    if (!lib) {
+                        lib = new GitLibrary;
+                        data->push_back(lib);
+                    }
+                    lib->setTitle(y_data["title"]);
+                    lib->setDate(getTimeStamp());
+                    lib->setUrl(url);
+                    lib->setIcon(y_data["icon"]);
+                    lib->setToken(token);
+                    if (y_data.has("branch")) {
+                        lib->setBranch(y_data["branch"]);
+                    } else {
+                        lib->setBranch("");
+                    }
 
-                lib->save();
+                    lib->save();
+                    KeyValue::set(inserted_key, "true");
+                }
             }
             return true;
         }

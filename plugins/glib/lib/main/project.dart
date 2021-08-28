@@ -31,12 +31,13 @@ class Project extends Base {
 
   static Project getMainProject() => Base.s_call(Project, "getMainProject");
   bool setMainProject() => call("setMainProject");
+  void remove() => call("remove");
 
   static Project current;
   static void setCurrent(Project project) {
     r(current);
     current = project;
-    current.control();
+    current?.control();
   }
 
   Context createIndexContext(dynamic data) => call("createIndexContext", argv: [data]);

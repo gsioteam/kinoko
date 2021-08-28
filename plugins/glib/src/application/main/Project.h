@@ -65,6 +65,7 @@ namespace gs {
 
         METHOD static gc::Ref<Project> getMainProject();
         METHOD bool setMainProject();
+        METHOD void remove();
 
         METHOD gc::Ref<Context> createIndexContext(const gc::Variant &data);
         METHOD gc::Ref<Context> createCollectionContext(int index, const gc::Ref<DataItem> &item);
@@ -88,6 +89,7 @@ namespace gs {
             ADD_METHOD(cls, Project, setMainProject);
             ADD_METHOD(cls, Project, getCollection);
             ADD_METHOD(cls, Project, getTarget);
+            ADD_METHOD(cls, Project, remove);
 
             ADD_METHOD(cls, Project, createIndexContext);
             ADD_METHOD(cls, Project, createCollectionContext);

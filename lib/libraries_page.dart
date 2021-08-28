@@ -434,7 +434,7 @@ class _LibrariesPageState extends State<LibrariesPage> {
             }
             GitLibrary library = data[idx];
             String token = library.token;
-            if (token.isEmpty) {
+            if (true) {
               String url = library.url;
               return Dismissible(
                 key: GlobalObjectKey(url),
@@ -471,7 +471,12 @@ class _LibrariesPageState extends State<LibrariesPage> {
                 },
                 onDismissed: (_) {
                   setState(() {
+                    String name = Bit64.encodeString(url);
+                    var project = Project.allocate(name);
+                    project.remove();
+                    project.release();
                     ctx.removeLibrary(url);
+                    AppStatusNotification().dispatch(context);
                   });
                 },
               );

@@ -1003,7 +1003,7 @@ void _Array::set(long idx, const Variant &var) {
 
 void _Array::remove(const Variant &var) {
     long count = 0;
-    for (auto it = variants.begin(), _e = variants.end(); it != _e; ++it) {
+    for (auto it = variants.begin(), _e = variants.end(); it != _e;) {
         if (var == *it) {
             if (listener) triger(E(Remove), count, var);
             it = variants.erase(it);
