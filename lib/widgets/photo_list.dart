@@ -160,7 +160,7 @@ class PhotoImageState extends State<PhotoImage> with TickerProviderStateMixin {
         var offSize = _imageRect.size * (disScale - 1);
         var dx = -_translation.dx, dy = -_translation.dy;
         if (widget.flipType == FlipType.Vertical) {
-          dy += _imageRect.height * _oldScale * widget.range.start;
+          dy += _imageRect.height * _oldScale * (widget.range.start - controller.value);
         } else if (widget.flipType == FlipType.HorizontalReverse) {
           dx += _imageRect.width * _oldScale * (1 - widget.range.start + controller.value);
         } else {
