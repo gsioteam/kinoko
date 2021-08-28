@@ -161,15 +161,18 @@ class PhotoImageState extends State<PhotoImage> with TickerProviderStateMixin {
         var dx = -_translation.dx, dy = -_translation.dy;
         if (widget.flipType == FlipType.Vertical) {
           dy += _imageRect.height * _oldScale * widget.range.start;
+        } else if (widget.flipType == FlipType.HorizontalReverse) {
+          dx += _imageRect.width * _oldScale * (1 - widget.range.start + controller.value);
         } else {
-          dx += _imageRect.width * _oldScale * widget.range.start;
+          dx += _imageRect.width * _oldScale * (widget.range.start - controller.value);
         }
 
         dx += _imageSize.width / 2 * _oldScale;
         dy += _imageSize.height / 2 * _oldScale;
 
         var cSize = _imageRect.size * _oldScale;
-        _translation -= Offset(offSize.width * dx / cSize.width, offSize.height * dy / cSize.height);
+        var off = Offset(offSize.width * dx / cSize.width, offSize.height * dy / cSize.height);
+        _translation -= off;
         clampImage();
       });
     }

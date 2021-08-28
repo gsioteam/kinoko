@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/src/material/material_button.dart';
 import 'package:flutter/src/foundation/basic_types.dart';
-import 'package:flutter/src/rendering/mouse_cursor.dart';
+import 'package:flutter/src/services/mouse_cursor.dart';
 import 'package:flutter/src/material/button_theme.dart';
 import 'dart:ui';
 import 'package:flutter/src/painting/edge_insets.dart';
@@ -59,7 +59,9 @@ import 'package:flutter/src/material/list_tile.dart';
 import 'package:flutter/src/material/text_button.dart';
 import 'package:flutter/src/material/button_style.dart';
 import 'package:flutter/src/material/material_state.dart';
+import 'package:flutter/src/material/ink_well.dart';
 import 'package:flutter/src/material/icon_button.dart';
+import 'package:flutter/src/widgets/scroll_configuration.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:kinoko/book_page.dart';
 import 'package:flutter/src/painting/box_decoration.dart';
@@ -68,6 +70,7 @@ import 'package:flutter/src/painting/border_radius.dart';
 import 'package:flutter/src/painting/gradient.dart';
 import 'package:flutter/src/painting/box_shadow.dart';
 import 'package:flutter/src/painting/text_span.dart';
+import 'package:flutter/src/gestures/events.dart';
 import 'package:flutter/src/widgets/widget_span.dart';
 
 Register register = Register(() {
@@ -368,6 +371,8 @@ Register register = Register(() {
         wordSpacing: node.s<double>("wordSpacing"),
         textBaseline: node.s<TextBaseline>("textBaseline"),
         height: node.s<double>("height"),
+        leadingDistribution:
+            node.s<TextLeadingDistribution>("leadingDistribution"),
         locale: node.s<Locale>("locale"),
         foreground: node.s<Paint>("foreground"),
         background: node.s<Paint>("background"),
@@ -416,6 +421,7 @@ Register register = Register(() {
     return FontWeight.bold;
   });
   XmlLayout.registerEnum(FontStyle.values);
+  XmlLayout.registerEnum(TextLeadingDistribution.values);
   XmlLayout.registerInline(Locale, "", false, (node, method) {
     return Locale(method[0]?.toString(), method[1]?.toString());
   });
@@ -448,6 +454,8 @@ Register register = Register(() {
         fontFamilyFallback: node.array<String>("fontFamilyFallback"),
         fontSize: node.s<double>("fontSize"),
         height: node.s<double>("height"),
+        leadingDistribution:
+            node.s<TextLeadingDistribution>("leadingDistribution"),
         leading: node.s<double>("leading"),
         fontWeight: node.s<FontWeight>("fontWeight"),
         fontStyle: node.s<FontStyle>("fontStyle"),
@@ -462,6 +470,8 @@ Register register = Register(() {
         fontFamilyFallback: node.array<String>("fontFamilyFallback"),
         fontSize: node.s<double>("fontSize"),
         height: node.s<double>("height"),
+        leadingDistribution:
+            node.s<TextLeadingDistribution>("leadingDistribution"),
         leading: node.s<double>("leading"),
         fontWeight: node.s<FontWeight>("fontWeight"),
         fontStyle: node.s<FontStyle>("fontStyle"),
@@ -478,7 +488,9 @@ Register register = Register(() {
   XmlLayout.register("TextHeightBehavior", (node, key) {
     return TextHeightBehavior(
         applyHeightToFirstAscent: node.s<bool>("applyHeightToFirstAscent"),
-        applyHeightToLastDescent: node.s<bool>("applyHeightToLastDescent"));
+        applyHeightToLastDescent: node.s<bool>("applyHeightToLastDescent"),
+        leadingDistribution:
+            node.s<TextLeadingDistribution>("leadingDistribution"));
   });
   XmlLayout.registerInline(TextHeightBehavior, "fromEncoded", false,
       (node, method) {
@@ -1271,6 +1283,7 @@ Register register = Register(() {
         elevation: node.s<MaterialStateProperty<double>>("elevation"),
         padding: node.s<MaterialStateProperty<EdgeInsetsGeometry>>("padding"),
         minimumSize: node.s<MaterialStateProperty<Size>>("minimumSize"),
+        fixedSize: node.s<MaterialStateProperty<Size>>("fixedSize"),
         side: node.s<MaterialStateProperty<BorderSide>>("side"),
         shape: node.s<MaterialStateProperty<OutlinedBorder>>("shape"),
         mouseCursor: node.s<MaterialStateProperty<MouseCursor>>("mouseCursor"),
@@ -1278,7 +1291,8 @@ Register register = Register(() {
         tapTargetSize: node.s<MaterialTapTargetSize>("tapTargetSize"),
         animationDuration: node.s<Duration>("animationDuration"),
         enableFeedback: node.s<bool>("enableFeedback"),
-        alignment: node.s<Alignment>("alignment"));
+        alignment: node.s<Alignment>("alignment"),
+        splashFactory: node.s<InteractiveInkFeatureFactory>("splashFactory"));
   });
   XmlLayout.register("IconButton", (node, key) {
     return IconButton(
@@ -1288,7 +1302,6 @@ Register register = Register(() {
         padding: node.s<EdgeInsets>("padding", const EdgeInsets.all(8.0)),
         alignment: node.s<Alignment>("alignment", Alignment.center),
         splashRadius: node.s<double>("splashRadius"),
-        icon: node.s<Widget>("icon"),
         color: node.s<Color>("color"),
         focusColor: node.s<Color>("focusColor"),
         hoverColor: node.s<Color>("hoverColor"),
@@ -1302,7 +1315,8 @@ Register register = Register(() {
         autofocus: node.s<bool>("autofocus", false),
         tooltip: node.s<String>("tooltip"),
         enableFeedback: node.s<bool>("enableFeedback", true),
-        constraints: node.s<BoxConstraints>("constraints"));
+        constraints: node.s<BoxConstraints>("constraints"),
+        icon: node.s<Widget>("icon"));
   });
   XmlLayout.register("CustomScrollView", (node, key) {
     return CustomScrollView(
@@ -1312,6 +1326,7 @@ Register register = Register(() {
         controller: node.s<ScrollController>("controller"),
         primary: node.s<bool>("primary"),
         physics: node.s<ScrollPhysics>("physics"),
+        scrollBehavior: node.s<ScrollBehavior>("scrollBehavior"),
         shrinkWrap: node.s<bool>("shrinkWrap", false),
         center: node.s<Key>("center"),
         anchor: node.s<double>("anchor", 0.0),
@@ -1450,6 +1465,9 @@ Register register = Register(() {
         children: node.children<InlineSpan>(),
         style: node.s<TextStyle>("style"),
         recognizer: node.s<GestureRecognizer>("recognizer"),
+        mouseCursor: node.s<MouseCursor>("mouseCursor"),
+        onEnter: node.s<void Function(PointerEnterEvent)>("onEnter"),
+        onExit: node.s<void Function(PointerExitEvent)>("onExit"),
         semanticsLabel: node.s<String>("semanticsLabel"));
   });
   XmlLayout.register("WidgetSpan", (node, key) {

@@ -40,7 +40,7 @@ dependencies:
   scrollable_positioned_list: ^0.1.7
   flutter_picker: ^1.1.5
   http: ^0.13.0
-  xml_layout: ^2.2.7
+  xml_layout: 2.2.14
   flutter_svg_provider:
     git:
       url: https://github.com/gsioteam/flutter_svg_provider.git
