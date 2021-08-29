@@ -76,4 +76,5 @@ Liah(Symbol) https://liah0227.itch.io/
   "source_description": "Die Quellseite Bitte kopieren Sie die Dateien und laden Sie sie gemäß den einschlägigen nationalen Gesetzen und Vorschriften herunter.",
   "v2_title": "Kinoko v2",
   "v2_content": "Kinoko aktualisiert! Wenn auf \"Ja\" geklickt wird, werden alle alten Plugins und heruntergeladenen Mangas entfernt.",
+  "added_download": "{0} Elemente zur Download-Warteschlange hinzugefügt",
 };

@@ -76,4 +76,5 @@ Liah(Icona) https://liah0227.itch.io/
   "source_description": "La pagina di origine, copiare e scaricare i file in conformità con le leggi e i regolamenti nazionali pertinenti.",
   "v2_title": "Kinoko v2",
   "v2_content": "Kinoko aggiornato! Se si fa clic su \"Sì\", tutti i vecchi plug-in e il manga scaricato verranno rimossi.",
+  "added_download": "Aggiunti {0} elementi alla coda di download.",
 };

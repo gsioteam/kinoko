@@ -803,6 +803,7 @@ class _BookPageState extends State<BookPage> {
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
   }
 
+  int _downloadCount = 0;
   void downloadItem(DataItem item) {
     DataItem dataItem = widget.context.infoData;
     DownloadQueueItem downloadItem = DownloadManager().add(item, BookInfo(
@@ -813,6 +814,16 @@ class _BookPageState extends State<BookPage> {
     ));
     downloadItem.start();
     setState(() { });
+    
+    if (_downloadCount == 0) {
+      Future.delayed(Duration(milliseconds: 300)).then((value) {
+        Fluttertoast.showToast(
+            msg: kt("added_download").replaceFirst("{0}", _downloadCount.toString()),
+        );
+        _downloadCount = 0;
+      });
+    }
+    _downloadCount++;
   }
 
   @override
