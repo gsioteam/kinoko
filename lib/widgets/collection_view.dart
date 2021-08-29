@@ -10,6 +10,8 @@ import 'package:glib/core/gmap.dart';
 import 'package:glib/core/array.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:glib/main/project.dart';
+import 'package:kinoko/configs.dart';
+import 'package:kinoko/utils/favorites_manager.dart';
 import '../localizations/localizations.dart';
 import 'package:xml_layout/types/function.dart';
 import 'package:xml_layout/xml_layout.dart';
@@ -65,6 +67,22 @@ class CollectionViewState extends State<CollectionView> {
       "onTap": (int idx) {
         widget.onTap?.call(widget.context.data[idx]);
       },
+      "toggleFavorite": (int idx) {
+        if (idx >= widget.context.data.length || idx < 0) return null;
+        DataItem item = widget.context.data[idx];
+        bool isFavorite = FavoritesManager().isFavorite(item);
+        if (isFavorite) {
+          FavoritesManager().remove(item);
+        } else {
+          FavoritesManager().add(item);
+        }
+        Map<String, dynamic> data = dataCache[item.link];
+        if (data != null) {
+          setState(() {
+            data["isFavorite"] = !isFavorite;
+          });
+        }
+      },
       "kt": (String str) => kt(str),
     };
     if (widget.extensions != null)
@@ -86,7 +104,8 @@ class CollectionViewState extends State<CollectionView> {
         "subtitle": item.subtitle,
         "link": item.link,
         "type": item.type,
-        "isHeader": item.type == DataItemType.Header
+        "isHeader": item.type == DataItemType.Header,
+        "isFavorite": item.isInCollection(collection_mark)
       };
     } else if (data is GMap) {
       Map<String, dynamic> map = {};

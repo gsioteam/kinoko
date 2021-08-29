@@ -1,0 +1,3 @@
+* The default plug-ins could be removed.
+* Fixed a bug when zoom a image.
+* A toast will be shown when
