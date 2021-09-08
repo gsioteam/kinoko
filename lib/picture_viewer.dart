@@ -27,11 +27,14 @@ import 'package:gesture_zoom_box/gesture_zoom_box.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'localizations/localizations.dart';
 import 'widgets/instructions_dialog.dart';
+import 'widgets/page_slider.dart';
 import 'widgets/photo_list.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_picker/flutter_picker.dart';
 import 'utils/data_item_headers.dart';
 import 'dart:ui' as ui;
+import 'utils/fullscreen.dart';
+import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 enum PictureFlipType {
   Next,
@@ -77,17 +80,18 @@ class HorizontalIconPainter extends CustomPainter {
   }
 }
 
-// ignore: must_be_immutable
 class PictureViewer extends StatefulWidget {
   Context context;
   final Context Function(PictureFlipType) onChapterChanged;
   final int startPage;
   final void Function(DataItem) onDownload;
+  final EdgeInsets padding;
 
   PictureViewer(this.context, {
     this.onChapterChanged,
     this.onDownload,
-    this.startPage
+    this.startPage,
+    @required this.padding,
   });
 
   @override
@@ -127,6 +131,8 @@ class _PictureViewerState extends State<PictureViewer> {
   String _deviceKey;
   String _pageKey;
   bool _firstTime = true;
+
+  GlobalKey<PageSliderState> _sliderKey = GlobalKey();
 
   void onDataChanged(int type, Array data, int pos) {
     if (data != null) {
@@ -191,6 +197,12 @@ class _PictureViewerState extends State<PictureViewer> {
     setState(() {
       appBarDisplay = display;
       // SystemChrome.setEnabledSystemUIOverlays(display ? SystemUiOverlay.values : []);
+      if (display) {
+        exitFullscreen();
+      } else {
+        enterFullscreen();
+        _sliderKey.currentState?.dismiss();
+      }
     });
 
   }
@@ -229,32 +241,32 @@ class _PictureViewerState extends State<PictureViewer> {
       setAppBarDisplay(true);
       return;
     }
-    List<PickerItem<int>> items = [];
-    for (int i = 0, t= data.length; i < t; ++i) {
-      items.add(PickerItem<int>(
-        text: Text(kt("n_page").replaceAll("{0}", (i + 1).toString())),
-        value: i,
-      ));
-    }
+    // List<PickerItem<int>> items = [];
+    // for (int i = 0, t= data.length; i < t; ++i) {
+    //   items.add(PickerItem<int>(
+    //     text: Text(kt("n_page").replaceAll("{0}", (i + 1).toString())),
+    //     value: i,
+    //   ));
+    // }
+    //
+    // new Picker(
+    //   adapter: PickerDataAdapter<int>(
+    //     data: items
+    //   ),
+    //   selecteds: [index],
+    //   onConfirm: (picker, values) {
+    //     photoController.animateTo(values[0]);
+    //   }
+    // ).showModal(context);
 
-    new Picker(
-      adapter: PickerDataAdapter<int>(
-        data: items
-      ),
-      selecteds: [index],
-      onConfirm: (picker, values) {
-        photoController.animateTo(values[0]);
-      }
-    ).showModal(context);
+    _sliderKey.currentState?.show();
   }
 
   @override
   Widget build(BuildContext context) {
-    MediaQueryData media = MediaQuery.of(context);
     double size = IconTheme.of(context).size;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      extendBody: true,
       backgroundColor: Colors.black,
       body: Stack(
         children: <Widget>[
@@ -498,9 +510,9 @@ class _PictureViewerState extends State<PictureViewer> {
                 ],
               ),
             ),
-            top: appBarDisplay ? media.padding.top : (-44),
-            left: media.padding.left,
-            right: media.padding.right,
+            top: appBarDisplay ? widget.padding.top : (-44),
+            left: widget.padding.left,
+            right: widget.padding.right,
             height: 44,
             duration: Duration(milliseconds: 300),
           ),
@@ -551,10 +563,24 @@ class _PictureViewerState extends State<PictureViewer> {
               opacity: appBarDisplay ? 1 : 0,
               duration: Duration(milliseconds: 300)
             ),
-            right: 10 + media.padding.right,
-            bottom: 36 + media.padding.bottom,
+            right: 10 + widget.padding.right,
+            bottom: 66 + widget.padding.bottom,
           ),
 
+          Positioned(
+            child: PageSlider(
+              key: _sliderKey,
+              total: data.length,
+              page: index,
+              onPage: (page) {
+                return photoController.animateTo(page);
+              },
+            ),
+            right: 26 + widget.padding.right,
+            bottom: 70 + widget.padding.bottom,
+            left: 10 + widget.padding.left,
+            height: 40,
+          )
         ],
       )
     );
@@ -659,6 +685,7 @@ class _PictureViewerState extends State<PictureViewer> {
           if (!appBarDisplay) {
             appBarDisplay = true;
             // SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+            exitFullscreen();
             willDismissAppBar();
           }
         });
@@ -684,6 +711,7 @@ class _PictureViewerState extends State<PictureViewer> {
           if (!appBarDisplay) {
             appBarDisplay = true;
             // SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+            exitFullscreen();
             willDismissAppBar();
           }
         });

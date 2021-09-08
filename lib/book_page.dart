@@ -32,6 +32,7 @@ import 'utils/proxy_collections.dart';
 import 'widgets/collection_view.dart';
 import 'widgets/instructions_dialog.dart';
 import 'widgets/source_page.dart';
+import 'utils/fullscreen.dart';
 
 class _DefaultBookPage extends StatefulWidget {
   final Context context;
@@ -748,11 +749,15 @@ class _BookPageState extends State<BookPage> {
     String link = chapter.link;
     widget.project.control();
 
-    Future.delayed(Duration(milliseconds: 100)).then((value) => SystemChrome.setEnabledSystemUIOverlays([]));
+    var padding = MediaQuery.of(context).padding;
+
+    // Future.delayed(Duration(milliseconds: 100)).then((value) => SystemChrome.setEnabledSystemUIOverlays([]))
+    enterFullscreenMode();
     Context currentContext = widget.project.createCollectionContext(CHAPTER_INDEX, chapter).control();
     await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
       return PictureViewer(
         currentContext,
+        padding: padding,
         onChapterChanged: (PictureFlipType flipType) {
           if (currentIndex < 0) {
             if ((currentIndex = _findIndexOfChapter(link)) < 0) return null;
@@ -800,7 +805,7 @@ class _BookPageState extends State<BookPage> {
     currentContext.release();
     widget.project.release();
 
-    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    exitFullscreenMode();
   }
 
   int _downloadCount = 0;

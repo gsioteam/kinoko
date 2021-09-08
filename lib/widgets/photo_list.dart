@@ -534,12 +534,12 @@ class PhotoController {
     }
   }
 
-  void animateTo(int index) {
+  Future<void> animateTo(int index) async {
     if (state != null && state.widget != null) {
       this.index = index;
       listen = false;
       // if (state.widget.isHorizontal) {
-        pageController.animateToPage(index, duration: _duration, curve: Curves.easeInOutCubic);
+        await pageController.animateToPage(index, duration: _duration, curve: Curves.easeInOutCubic);
       // } else {
       //   scrollController.scrollTo(index: this.index, alignment: state.widget.isHorizontal ? 0 : 0.1, duration: Duration(milliseconds: 400), curve: Curves.easeInOutCubic);
       // }
@@ -605,7 +605,7 @@ class PhotoList extends StatefulWidget {
   final PhotoInformation Function(int index) imageUrlProvider;
   final void Function(int index) onPageChanged;
   final NeoCacheManager cacheManager;
-  PhotoController controller;
+  final PhotoController controller;
   final double appBarHeight;
 
   PhotoList({
@@ -614,14 +614,10 @@ class PhotoList extends StatefulWidget {
     @required this.imageUrlProvider,
     this.onPageChanged,
     this.cacheManager,
-    this.controller,
+    PhotoController controller,
     this.itemCount,
     this.appBarHeight = 0,
-  }) : super(key: key) {
-    if (controller == null) {
-      controller = PhotoController();
-    }
-  }
+  }) : controller = controller ?? PhotoController(), super(key: key);
 
   @override
   State<StatefulWidget> createState() => _PhotoListState();

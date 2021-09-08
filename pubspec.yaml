@@ -54,6 +54,8 @@ dependencies:
       url: https://github.com/gsioteam/filesystem_picker.git
       path: package
   flutter_inappwebview: ^5.3.2
+  flutter_windowmanager: ^0.2.0
+  syncfusion_flutter_sliders: ^19.2.60
 
 dev_dependencies:
 #  flutter_test:
