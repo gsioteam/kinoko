@@ -264,6 +264,7 @@ class _PictureViewerState extends State<PictureViewer> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.padding);
     double size = IconTheme.of(context).size;
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -305,207 +306,207 @@ class _PictureViewerState extends State<PictureViewer> {
               child: Row(
                 children: <Widget>[
                   IconButton(
-                    icon: Icon(Icons.arrow_back),
-                    color: Colors.white,
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    }
+                      icon: Icon(Icons.arrow_back),
+                      color: Colors.white,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      }
                   ),
                   Expanded(
-                    child: Text(
-                      widget.context.infoData.title,
-                      style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white),
-                    )
+                      child: Text(
+                        widget.context.infoData.title,
+                        style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white),
+                      )
                   ),
                   PopupMenuButton(
-                    key: menuKey,
-                    icon: Icon(Icons.more_vert, color: Colors.white,),
-                    itemBuilder: (context) {
-                      List<PopupMenuEntry> list = [
-                        PopupMenuItem(
-                          child: TextButton(
-                            onPressed: () {
-                              if (flipType != FlipType.Horizontal) {
-                                setState(() {
-                                  flipType = FlipType.Horizontal;
-                                });
-                                KeyValue.set(_directionKey, "horizontal");
-                                Navigator.of(context).pop();
-                              }
-                            },
-                            child: Row(
-                              children: <Widget>[
-                                Icon(Icons.border_vertical),
-                                Container(
-                                  padding: EdgeInsets.only(left: 20),
-                                  child: Text(kt("horizontal_flip")),
-                                ),
-                              ],
-                            ),
-                            style: ButtonStyle(
-                              foregroundColor: MaterialStateProperty.all(flipType != FlipType.Horizontal ? Colors.black87 : Colors.blue)
-                            ),
-                          ),
-                        ),
-                        PopupMenuItem(
-                          child: TextButton(
-                            onPressed: () {
-                              if (flipType != FlipType.HorizontalReverse) {
-                                setState(() {
-                                  flipType = FlipType.HorizontalReverse;
-                                });
-                                KeyValue.set(_directionKey, "horizontal_reverse");
-                                Navigator.of(context).pop();
-                              }
-                            },
-                            child: Row(
-                              children: <Widget>[
-                                Container(
-                                  width: size,
-                                  height: size,
-                                  child: CustomPaint(
-                                    painter: HorizontalIconPainter(flipType != FlipType.HorizontalReverse ? Colors.black87 : Colors.blue),
-                                    size: Size(size, size),
-                                  ),
-                                ),
-                                Container(
-                                  padding: EdgeInsets.only(left: 20),
-                                  child: Text(kt("horizontal_reverse")),
-                                ),
-                              ],
-                            ),
-                            style: ButtonStyle(
-                                foregroundColor: MaterialStateProperty.all(flipType != FlipType.HorizontalReverse ? Colors.black87 : Colors.blue)
-                            ),
-                          ),
-                        ),
-                        PopupMenuItem(
-                          child: TextButton(
-                            onPressed: () {
-                              if (flipType != FlipType.Vertical) {
-                                setState(() {
-                                  flipType = FlipType.Vertical;
-                                });
-                                KeyValue.set(_directionKey, "vertical");
-                                Navigator.of(context).pop();
-                              }
-                            },
-                            child: Row(
-                              children: <Widget>[
-                                Icon(Icons.border_horizontal),
-                                Container(
-                                  padding: EdgeInsets.only(left: 20),
-                                  child: Text(kt("vertical_flip")),
-                                ),
-                              ],
-                            ),
-                            style: ButtonStyle(
-                                foregroundColor: MaterialStateProperty.all(flipType != FlipType.Vertical ? Colors.black87 : Colors.blue)
-                            ),
-                          ),
-                        ),
-                        PopupMenuDivider(),
-                        PopupMenuItem(
-                          child: TextButton(
-                            onPressed: () {
-                              if (isLandscape) {
-                                setState(() {
-                                  isLandscape = false;
-                                  updateOrientation();
-                                });
-                                KeyValue.set(_deviceKey, "portrait");
-                                Navigator.of(context).pop();
-                              }
-                            },
-                            child: Row(
-                              children: <Widget>[
-                                Icon(Icons.stay_current_portrait),
-                                Container(
-                                  padding: EdgeInsets.only(left: 20),
-                                  child: Text(kt("portrait")),
-                                ),
-                              ],
-                            ),
-                            style: ButtonStyle(
-                                foregroundColor: MaterialStateProperty.all(isLandscape ? Colors.black87 : Colors.blue)
-                            ),
-                          ),
-                        ),
-                        PopupMenuItem(
-                          child: TextButton(
-                            onPressed: () {
-                              if (!isLandscape) {
-                                setState(() {
-                                  isLandscape = true;
-                                  updateOrientation();
-                                });
-                                KeyValue.set(_deviceKey, "landscape");
-                                Navigator.of(context).pop();
-                              }
-                            },
-                            child: Row(
-                              children: <Widget>[
-                                Icon(Icons.stay_current_landscape),
-                                Container(
-                                  padding: EdgeInsets.only(left: 20),
-                                  child: Text(kt("landscape")),
-                                ),
-                              ],
-                            ),
-                            style: ButtonStyle(
-                                foregroundColor: MaterialStateProperty.all(!isLandscape ? Colors.black87 : Colors.blue)
-                            ),
-                          ),
-                        ),
-                      ];
-
-                      if (widget.onDownload != null) {
-                        list.add(PopupMenuDivider());
-                        list.add(PopupMenuItem(
-                          child: TextButton(
-                            onPressed: () {
-                              widget.onDownload(widget.context.infoData);
-                              Navigator.of(context).pop();
-                            },
-                            child: Row(
-                              children: <Widget>[
-                                Icon(Icons.file_download),
-                                Container(
-                                  padding: EdgeInsets.only(left: 20),
-                                  child: Text(kt("download")),
-                                ),
-                              ],
-                            )
-                          ),
-                        ));
-                      }
-                      list.addAll([
-                        PopupMenuDivider(),
-                        PopupMenuItem(
-                          child: TextButton(
+                      key: menuKey,
+                      icon: Icon(Icons.more_vert, color: Colors.white,),
+                      itemBuilder: (context) {
+                        List<PopupMenuEntry> list = [
+                          PopupMenuItem(
+                            child: TextButton(
                               onPressed: () {
-                                showInstructionsDialog(context, 'assets/picture',
-                                  entry: kt('lang'),
-                                  iconColor: Theme.of(context).primaryColor,
-                                );
+                                if (flipType != FlipType.Horizontal) {
+                                  setState(() {
+                                    flipType = FlipType.Horizontal;
+                                  });
+                                  KeyValue.set(_directionKey, "horizontal");
+                                  Navigator.of(context).pop();
+                                }
                               },
                               child: Row(
                                 children: <Widget>[
-                                  Icon(
-                                    Icons.help_outline,
-                                    key: iconKey,
+                                  Icon(Icons.border_vertical),
+                                  Container(
+                                    padding: EdgeInsets.only(left: 20),
+                                    child: Text(kt("horizontal_flip")),
+                                  ),
+                                ],
+                              ),
+                              style: ButtonStyle(
+                                  foregroundColor: MaterialStateProperty.all(flipType != FlipType.Horizontal ? Colors.black87 : Colors.blue)
+                              ),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            child: TextButton(
+                              onPressed: () {
+                                if (flipType != FlipType.HorizontalReverse) {
+                                  setState(() {
+                                    flipType = FlipType.HorizontalReverse;
+                                  });
+                                  KeyValue.set(_directionKey, "horizontal_reverse");
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                              child: Row(
+                                children: <Widget>[
+                                  Container(
+                                    width: size,
+                                    height: size,
+                                    child: CustomPaint(
+                                      painter: HorizontalIconPainter(flipType != FlipType.HorizontalReverse ? Colors.black87 : Colors.blue),
+                                      size: Size(size, size),
+                                    ),
                                   ),
                                   Container(
                                     padding: EdgeInsets.only(left: 20),
-                                    child: Text(kt("instructions")),
+                                    child: Text(kt("horizontal_reverse")),
                                   ),
                                 ],
-                              )
+                              ),
+                              style: ButtonStyle(
+                                  foregroundColor: MaterialStateProperty.all(flipType != FlipType.HorizontalReverse ? Colors.black87 : Colors.blue)
+                              ),
+                            ),
                           ),
-                        ),
-                      ]);
-                      return list;
-                    }
+                          PopupMenuItem(
+                            child: TextButton(
+                              onPressed: () {
+                                if (flipType != FlipType.Vertical) {
+                                  setState(() {
+                                    flipType = FlipType.Vertical;
+                                  });
+                                  KeyValue.set(_directionKey, "vertical");
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(Icons.border_horizontal),
+                                  Container(
+                                    padding: EdgeInsets.only(left: 20),
+                                    child: Text(kt("vertical_flip")),
+                                  ),
+                                ],
+                              ),
+                              style: ButtonStyle(
+                                  foregroundColor: MaterialStateProperty.all(flipType != FlipType.Vertical ? Colors.black87 : Colors.blue)
+                              ),
+                            ),
+                          ),
+                          PopupMenuDivider(),
+                          PopupMenuItem(
+                            child: TextButton(
+                              onPressed: () {
+                                if (isLandscape) {
+                                  setState(() {
+                                    isLandscape = false;
+                                    updateOrientation();
+                                  });
+                                  KeyValue.set(_deviceKey, "portrait");
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(Icons.stay_current_portrait),
+                                  Container(
+                                    padding: EdgeInsets.only(left: 20),
+                                    child: Text(kt("portrait")),
+                                  ),
+                                ],
+                              ),
+                              style: ButtonStyle(
+                                  foregroundColor: MaterialStateProperty.all(isLandscape ? Colors.black87 : Colors.blue)
+                              ),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            child: TextButton(
+                              onPressed: () {
+                                if (!isLandscape) {
+                                  setState(() {
+                                    isLandscape = true;
+                                    updateOrientation();
+                                  });
+                                  KeyValue.set(_deviceKey, "landscape");
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(Icons.stay_current_landscape),
+                                  Container(
+                                    padding: EdgeInsets.only(left: 20),
+                                    child: Text(kt("landscape")),
+                                  ),
+                                ],
+                              ),
+                              style: ButtonStyle(
+                                  foregroundColor: MaterialStateProperty.all(!isLandscape ? Colors.black87 : Colors.blue)
+                              ),
+                            ),
+                          ),
+                        ];
+
+                        if (widget.onDownload != null) {
+                          list.add(PopupMenuDivider());
+                          list.add(PopupMenuItem(
+                            child: TextButton(
+                                onPressed: () {
+                                  widget.onDownload(widget.context.infoData);
+                                  Navigator.of(context).pop();
+                                },
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(Icons.file_download),
+                                    Container(
+                                      padding: EdgeInsets.only(left: 20),
+                                      child: Text(kt("download")),
+                                    ),
+                                  ],
+                                )
+                            ),
+                          ));
+                        }
+                        list.addAll([
+                          PopupMenuDivider(),
+                          PopupMenuItem(
+                            child: TextButton(
+                                onPressed: () {
+                                  showInstructionsDialog(context, 'assets/picture',
+                                    entry: kt('lang'),
+                                    iconColor: Theme.of(context).primaryColor,
+                                  );
+                                },
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(
+                                      Icons.help_outline,
+                                      key: iconKey,
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.only(left: 20),
+                                      child: Text(kt("instructions")),
+                                    ),
+                                  ],
+                                )
+                            ),
+                          ),
+                        ]);
+                        return list;
+                      }
                   )
                 ],
               ),
@@ -519,52 +520,52 @@ class _PictureViewerState extends State<PictureViewer> {
 
           Positioned(
             child: AnimatedOpacity(
-              child: TextButton(
-                onPressed: showPagePicker,
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      WidgetSpan(
-                        child: Padding(
-                          padding: EdgeInsets.only(right: 6),
-                          child: Icon(Icons.toc, color: Colors.white,size: 16,),
-                        ),
-                        alignment: PlaceholderAlignment.middle
-                      ),
-                      TextSpan(
-                        text: data.length > 0 ? "${index + 1}/${data.length}" : "",
-                        style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
-                      ),
-                      WidgetSpan(child: Container(padding: EdgeInsets.only(left: 5),)),
-                      WidgetSpan(
-                        child: AnimatedOpacity(
-                          opacity: loading ? 1 : 0,
-                          duration: Duration(milliseconds: 300),
-                          child: SpinKitFoldingCube(
-                            size: 12,
-                            color: Colors.white,
+                child: TextButton(
+                  onPressed: showPagePicker,
+                  child: Text.rich(
+                    TextSpan(
+                        children: [
+                          WidgetSpan(
+                              child: Padding(
+                                padding: EdgeInsets.only(right: 6),
+                                child: Icon(Icons.toc, color: Colors.white,size: 16,),
+                              ),
+                              alignment: PlaceholderAlignment.middle
                           ),
-                        ),
-                        alignment: PlaceholderAlignment.middle
-                      )
-                    ]
-                  ),
-                  style: TextStyle(
-                    shadows: [
-                      Shadow(
-                        color: Colors.black26,
-                        blurRadius: 2,
-                        offset: Offset(1, 1)
-                      )
-                    ]
+                          TextSpan(
+                            text: data.length > 0 ? "${index + 1}/${data.length}" : "",
+                            style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
+                          ),
+                          WidgetSpan(child: Container(padding: EdgeInsets.only(left: 5),)),
+                          WidgetSpan(
+                              child: AnimatedOpacity(
+                                opacity: loading ? 1 : 0,
+                                duration: Duration(milliseconds: 300),
+                                child: SpinKitFoldingCube(
+                                  size: 12,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              alignment: PlaceholderAlignment.middle
+                          )
+                        ]
+                    ),
+                    style: TextStyle(
+                        shadows: [
+                          Shadow(
+                              color: Colors.black26,
+                              blurRadius: 2,
+                              offset: Offset(1, 1)
+                          )
+                        ]
+                    ),
                   ),
                 ),
-              ),
-              opacity: appBarDisplay ? 1 : 0,
-              duration: Duration(milliseconds: 300)
+                opacity: appBarDisplay ? 1 : 0,
+                duration: Duration(milliseconds: 300)
             ),
             right: 10 + widget.padding.right,
-            bottom: 66 + widget.padding.bottom,
+            bottom: 0,
           ),
 
           Positioned(
@@ -577,12 +578,12 @@ class _PictureViewerState extends State<PictureViewer> {
               },
             ),
             right: 26 + widget.padding.right,
-            bottom: 70 + widget.padding.bottom,
+            bottom: 6,
             left: 10 + widget.padding.left,
             height: 40,
-          )
+          ),
         ],
-      )
+      ),
     );
   }
 

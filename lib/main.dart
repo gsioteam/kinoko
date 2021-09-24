@@ -39,6 +39,7 @@ import 'package:xml_layout/xml_layout.dart';
 import 'package:glib/utils/platform.dart' as glib;
 
 void main() {
+  SystemChrome.setSystemUIOverlayStyle(defaultStyle);
   runApp(MainApp());
 }
 

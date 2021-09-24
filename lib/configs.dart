@@ -1,3 +1,7 @@
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:glib/utils/git_repository.dart';
 const String env_git_url = "https://github.com/gsioteam/glib_env.git";
 
@@ -27,3 +31,9 @@ const String v2_key = "v2_2_setup";
 
 const int BOOK_INDEX = 0;
 const int CHAPTER_INDEX = 1;
+
+SystemUiOverlayStyle defaultStyle = SystemUiOverlayStyle.light.copyWith(
+  systemNavigationBarColor: Colors.white,
+  systemNavigationBarDividerColor: Color(0xffeeeeee),
+  systemNavigationBarIconBrightness: Brightness.dark,
+);

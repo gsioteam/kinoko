@@ -2,7 +2,7 @@
 import 'package:flutter/cupertino.dart';
 
 class SpinItem extends StatefulWidget {
-  Widget child;
+  final Widget child;
 
   SpinItem({Key key, this.child,}) : super(key: key);
 
@@ -17,8 +17,8 @@ class SpinItemState extends State<SpinItem> with SingleTickerProviderStateMixin 
   @override
   void initState() {
     animationController = AnimationController(
-        vsync: this,
-        duration: Duration(seconds: 1)
+      vsync: this,
+      duration: Duration(seconds: 1)
     );
     super.initState();
   }
