@@ -338,7 +338,6 @@ class _DefaultBookPageState extends State<_DefaultBookPage> {
         child: CustomScrollView(
           slivers: <Widget>[
             SliverAppBar(
-              brightness: Brightness.dark,
               floating: true,
               pinned: true,
               backgroundColor: theme.primaryColor,
@@ -355,46 +354,46 @@ class _DefaultBookPageState extends State<_DefaultBookPage> {
                         makeLastChapter(),
                         // Expanded(child: Container()),
                         PopupMenuButton(
-                            onSelected: onOrderChanged,
-                            icon: Icon(Icons.sort, color: theme.primaryColor,),
-                            itemBuilder: (context) {
-                              return [
-                                CheckedPopupMenuItem<int>(
-                                    value: R_ORDER,
-                                    checked: orderIndex == R_ORDER,
-                                    child: Text(kt("reverse_order"))
-                                ),
+                          onSelected: onOrderChanged,
+                          icon: Icon(Icons.sort, color: theme.primaryColor,),
+                          itemBuilder: (context) {
+                            return [
+                              CheckedPopupMenuItem<int>(
+                                value: R_ORDER,
+                                checked: orderIndex == R_ORDER,
+                                child: Text(kt("reverse_order"))
+                              ),
 
-                                CheckedPopupMenuItem<int>(
-                                    value: ORDER,
-                                    checked: orderIndex == ORDER,
-                                    child: Text(kt("order"))
-                                )
-                              ];
-                            }
+                              CheckedPopupMenuItem<int>(
+                                value: ORDER,
+                                checked: orderIndex == ORDER,
+                                child: Text(kt("order"))
+                              )
+                            ];
+                          }
                         ),
                         BarItem(
                           display: editing,
                           child: IconButton(
-                              icon: Icon(Icons.clear),
-                              color: theme.primaryColor,
-                              onPressed: onCancelClicked
+                            icon: Icon(Icons.clear),
+                            color: theme.primaryColor,
+                            onPressed: onCancelClicked
                           ),
                         ),
                         BarItem(
                           display: editing,
                           child: IconButton(
-                              icon: Icon(Icons.check),
-                              color: theme.primaryColor,
-                              onPressed: onDownloadStartClicked
+                            icon: Icon(Icons.check),
+                            color: theme.primaryColor,
+                            onPressed: onDownloadStartClicked
                           ),
                         ),
                         BarItem(
                           display: !editing,
                           child: IconButton(
-                              icon: Icon(Icons.file_download),
-                              color: theme.primaryColor,
-                              onPressed: onDownloadClicked
+                            icon: Icon(Icons.file_download),
+                            color: theme.primaryColor,
+                            onPressed: onDownloadClicked
                           ),
                         ),
                       ],
@@ -749,15 +748,13 @@ class _BookPageState extends State<BookPage> {
     String link = chapter.link;
     widget.project.control();
 
-    var padding = MediaQuery.of(context).padding;
-
     // Future.delayed(Duration(milliseconds: 100)).then((value) => SystemChrome.setEnabledSystemUIOverlays([]))
+
     enterFullscreenMode();
     Context currentContext = widget.project.createCollectionContext(CHAPTER_INDEX, chapter).control();
     await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
       return PictureViewer(
         currentContext,
-        padding: padding,
         onChapterChanged: (PictureFlipType flipType) {
           if (currentIndex < 0) {
             if ((currentIndex = _findIndexOfChapter(link)) < 0) return null;
@@ -796,7 +793,7 @@ class _BookPageState extends State<BookPage> {
                 link: dataItem.link,
                 subtitle: dataItem.subtitle
             ));
-            item.start();
+            item?.start();
           });
         },
         startPage: page,

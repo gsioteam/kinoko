@@ -37,7 +37,7 @@ dependencies:
   photo_view: ^0.9.2
   gesture_zoom_box: ^0.0.2
   cached_network_image: ^2.2.0+1
-  scrollable_positioned_list: ^0.1.7
+  scrollable_positioned_list: ^0.1.10
   flutter_picker: ^1.1.5
   http: ^0.13.0
   xml_layout: 2.2.14
@@ -55,7 +55,8 @@ dependencies:
       path: package
   flutter_inappwebview: ^5.3.2
   flutter_windowmanager: ^0.2.0
-  syncfusion_flutter_sliders: ^19.2.60
+  quds_popup_menu: ^0.0.1+1
+  yaml: ^3.1.0
 
 dev_dependencies:
 #  flutter_test:
@@ -83,6 +84,7 @@ flutter:
     - assets/download/
     - assets/picture/
     - assets/collection.xml
+    - assets/languages/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

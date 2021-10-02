@@ -1,14 +1,9 @@
 
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'zh_hans.dart' as zhHans;
-import 'zh_hant.dart' as zhHant;
-import 'en.dart' as en;
-import 'es.dart' as es;
-import 'ru.dart' as ru;
-import 'de.dart' as de;
-import 'it.dart' as it;
+import 'package:yaml/yaml.dart';
 
 class LocaleChangedNotification extends Notification {
   Locale locale;
@@ -51,29 +46,30 @@ class KinokoLocalizationsDelegate extends LocalizationsDelegate<KinokoLocalizati
     switch (locale.languageCode) {
       case 'zh': {
         if (locale.scriptCode == 'Hans') {
-          return get(zhHans.words);
+          return get('zh_hans.yaml');
         } else if (locale.scriptCode == 'Hant') {
-          return get(zhHant.words);
+          return get('zh_hant.yaml');
         } else {
-          return get(zhHant.words);
+          return get('zh_hant.yaml');
         }
         break;
       }
       case 'es':
-        return get(es.words);
+        return get('es.yaml');
       case 'ru':
-        return get(ru.words);
+        return get('ru.yaml');
       case 'it':
-        return get(it.words);
+        return get('it.yaml');
       case 'de':
-        return get(de.words);
+        return get('de.yaml');
       default: {
-        return get(en.words);
+        return get('en.yaml');
       }
     }
   }
 
-  Future<KinokoLocalizations> get(Map data) {
+  Future<KinokoLocalizations> get(String name) async {
+    var data = loadYaml(await rootBundle.loadString("assets/languages/$name"));
     return SynchronousFuture<KinokoLocalizations>(KinokoLocalizations(data, data));
   }
 

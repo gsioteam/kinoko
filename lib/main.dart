@@ -54,21 +54,28 @@ class MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return NotificationListener<LocaleChangedNotification>(
-      child: MaterialApp(
-        localizationsDelegates: [
-          const KinokoLocalizationsDelegate(),
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        locale: locale,
-        supportedLocales: KinokoLocalizationsDelegate.supports.values,
-        title: 'Kinoko',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: defaultStyle,
+        child: MaterialApp(
+          localizationsDelegates: [
+            const KinokoLocalizationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          locale: locale,
+          supportedLocales: KinokoLocalizationsDelegate.supports.values,
+          title: 'Kinoko',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+            brightness: Brightness.light,
+            appBarTheme: AppBarTheme(
+              brightness: Brightness.dark,
+            ),
+          ),
+          home: SplashScreen(),
         ),
-        home: SplashScreen(),
       ),
       onNotification: (n) {
         setState(() {
@@ -615,7 +622,6 @@ class _NavigationBarState extends State<NavigationBar> {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      brightness: Brightness.dark,
       title: Text(kt(widget.controller.title)),
       elevation: 0,
       actions: widget.controller.buildActions(context, onReload),

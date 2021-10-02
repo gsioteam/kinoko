@@ -15,6 +15,7 @@ import 'main.dart';
 import 'picture_viewer.dart';
 import 'utils/download_manager.dart';
 import 'localizations/localizations.dart';
+import 'utils/fullscreen.dart';
 import 'utils/neo_cache_manager.dart';
 import 'widgets/better_snack_bar.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
@@ -386,6 +387,7 @@ class _DownloadPageState extends State<DownloadPage> {
         DataItem item = queueItem.item;
         Project project = Project.allocate(item.projectKey);
         if (project.isValidated) {
+          enterFullscreenMode();
           Context ctx = project.createCollectionContext(CHAPTER_INDEX, item).control();
           await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
             return PictureViewer(
@@ -393,6 +395,7 @@ class _DownloadPageState extends State<DownloadPage> {
             );
           }));
           ctx.release();
+          exitFullscreenMode();
         } else {
           Fluttertoast.showToast(msg: kt("no_project_found"));
         }

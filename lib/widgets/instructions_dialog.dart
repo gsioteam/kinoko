@@ -42,6 +42,7 @@ Future<void> showInstructionsDialog(BuildContext context, String path, {
         entry: entry,
         onFinish: onPop == null ? () {
           Navigator.of(context).pop();
+          completer.complete();
         } : () async {
           Rect from = key.currentState?.getContentRect();
           ui.Image image = await key.currentState?.getContentImage();

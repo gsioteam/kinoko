@@ -5,19 +5,20 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as m;
 
-import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 class PageSlider extends StatefulWidget {
 
   final int total;
   final int page;
   final FutureOr<void> Function(int) onPage;
+  final VoidCallback onAppear;
 
   PageSlider({
     Key key,
     this.total,
     this.page,
     this.onPage,
+    this.onAppear
   }) : super(key: key);
 
   @override
@@ -31,7 +32,6 @@ class PageSliderState extends State<PageSlider> with SingleTickerProviderStateMi
   @override
   Widget build(BuildContext context) {
     if (widget.total > 0) {
-
       return LayoutBuilder(
           builder: (context, constraints) {
             return Stack(
@@ -63,7 +63,7 @@ class PageSliderState extends State<PageSlider> with SingleTickerProviderStateMi
                       children: [
                         IconButton(
                           padding: EdgeInsets.only(
-                              left: 10
+                            left: 10
                           ),
                           constraints: BoxConstraints(),
                           onPressed: dismiss,
@@ -74,17 +74,24 @@ class PageSliderState extends State<PageSlider> with SingleTickerProviderStateMi
                           ),
                         ),
                         Expanded(
-                            child: SfSlider(
-                              value: page,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 0
+                            ),
+                            child: Slider(
+                              value: page.toDouble(),
                               min: 0,
-                              max: widget.total,
+                              max: (widget.total - 1).toDouble(),
+                              onChangeEnd: (page) {
+                                _pageChanged();
+                              },
                               onChanged: (page) {
                                 setState(() {
-                                  this.page = (page as double).round();
-                                  _pageChanged();
+                                  this.page = page.round();
                                 });
                               },
-                            )
+                            ),
+                          )
                         ),
                         Padding(
                           padding: EdgeInsets.only(
@@ -134,20 +141,17 @@ class PageSliderState extends State<PageSlider> with SingleTickerProviderStateMi
 
   void show() {
     controller.forward();
+    widget.onAppear?.call();
   }
 
   void dismiss() {
     controller.reverse();
   }
 
-  Timer _timer;
-  void _pageChanged() {
-    _timer?.cancel();
-    _timer = Timer(Duration(milliseconds: 200), () async {
-      _locked = true;
-      await widget.onPage?.call(page);
-      _locked = false;
-    });
+  void _pageChanged() async {
+    _locked = true;
+    await widget.onPage?.call(page);
+    _locked = false;
   }
 
   bool _locked = false;

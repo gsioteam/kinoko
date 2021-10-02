@@ -19,13 +19,13 @@ void exitFullscreen() {
 
 void enterFullscreenMode() {
   // FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_LAYOUT_NO_LIMITS);
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
-    systemNavigationBarDividerColor: Colors.black,
-  ));
+  // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
+  //   systemNavigationBarDividerColor: Colors.black,
+  // ));
 }
 
 void exitFullscreenMode() {
   // FlutterWindowManager.clearFlags(FlutterWindowManager.FLAG_LAYOUT_NO_LIMITS);
-  SystemChrome.setSystemUIOverlayStyle(defaultStyle);
+  // SystemChrome.setSystemUIOverlayStyle(defaultStyle);
   exitFullscreen();
 }
