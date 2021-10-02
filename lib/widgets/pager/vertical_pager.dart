@@ -35,6 +35,7 @@ class VerticalPagerState extends PagerState<VerticalPager> {
 
   ItemScrollController controller;
   ItemPositionsListener listener;
+  bool _listen = true;
 
   @override
   Widget build(BuildContext context) {
@@ -73,33 +74,36 @@ class VerticalPagerState extends PagerState<VerticalPager> {
 
   @override
   void onNext() {
+    _listen = false;
     controller.scrollTo(
       index: widget.controller.index + 1,
       duration: Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
       alignment: _PageAlignment,
-    );
+    ).then((value) => _listen = true);
   }
 
   @override
   void onPrev() {
+    _listen = false;
     controller.scrollTo(
       index: widget.controller.index - 1,
       duration: Duration(milliseconds: 300),
       curve: Curves.easeInOutCubic,
       alignment: _PageAlignment,
-    );
+    ).then((value) => _listen = true);
   }
 
   @override
   void onPage(int page, bool animate) {
     if (animate) {
+      _listen = false;
       controller.scrollTo(
         index: page,
         duration: Duration(milliseconds: 300),
         curve: Curves.easeInOutCubic,
         alignment: 0.1
-      );
+      ).then((value) => _listen = true);
     } else {
       controller.jumpTo(
         index: page,
@@ -122,6 +126,7 @@ class VerticalPagerState extends PagerState<VerticalPager> {
   }
 
   void _positionUpdate() {
+    if (!_listen) return;
     var list = listener.itemPositions.value;
     for (var pos in list) {
       if (pos.itemLeadingEdge < 0.5 && pos.itemTrailingEdge >= 0.5) {

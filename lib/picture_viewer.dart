@@ -154,6 +154,7 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   void pageNext() {
+    print("pageNext");
     pagerController.next();
   }
 

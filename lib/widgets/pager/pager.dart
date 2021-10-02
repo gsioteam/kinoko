@@ -90,7 +90,8 @@ abstract class PagerState<T extends Pager> extends State<T> {
   @override
   void dispose() {
     super.dispose();
-    widget.controller.state = null;
+    if (widget.controller.state == this)
+      widget.controller.state = null;
   }
 
   void onNext();

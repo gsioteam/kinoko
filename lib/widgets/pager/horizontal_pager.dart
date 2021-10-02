@@ -143,6 +143,7 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
 
   @override
   void onNext() {
+    print("next");
     int index = pageController.page.round();
     PageRange range = getPageRange(index);
     if (range.arriveEnd()) {
