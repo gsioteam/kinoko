@@ -143,7 +143,7 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
 
   @override
   void onNext() {
-    print("next");
+    if (pageController == null) return;
     int index = pageController.page.round();
     PageRange range = getPageRange(index);
     if (range.arriveEnd()) {
@@ -160,6 +160,7 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
 
   @override
   void onPrev() {
+    if (pageController == null) return;
     int index = pageController.page.round();
     PageRange range = getPageRange(index);
     if (range.arriveStart()) {
@@ -176,6 +177,7 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
 
   @override
   void onPage(int page, bool animate) async {
+    if (pageController == null) return;
     _listen = false;
     if (animate) {
       await pageController.animateToPage(
@@ -204,20 +206,34 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
     scrollPhysics = _PageScrollPhysics(
       state: this,
     );
-    pageController = PageController(
-      initialPage: widget.controller.index,
-    );
-    pageController.addListener(() {
-      if (_listen) {
-        setPage(pageController.page.round());
-      }
-    });
+    _initPageController();
   }
 
   @override
   void dispose() {
     super.dispose();
-    pageController.dispose();
+    pageController?.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant HorizontalPager oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _initPageController();
+  }
+
+  void _initPageController() {
+    if (pageController == null && widget.itemCount > 0) {
+      if (widget.controller.index == -1) {
+        widget.controller.index = widget.itemCount - 1;
+      }
+      pageController = PageController(
+        initialPage: widget.controller.index,
+      );
+      pageController.addListener(() {
+        if (_listen) {
+          setPage(pageController.page.round());
+        }
+      });
+    }
+  }
 }

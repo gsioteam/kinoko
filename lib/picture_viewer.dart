@@ -13,6 +13,7 @@ import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
 import 'package:kinoko/configs.dart';
 import 'package:kinoko/widgets/pager/horizontal_pager.dart';
+import 'package:kinoko/widgets/picture_hint_painter.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:glib/main/error.dart' as glib;
@@ -83,7 +84,7 @@ class HorizontalIconPainter extends CustomPainter {
 }
 
 class PictureViewer extends StatefulWidget {
-  Context context;
+  final Context context;
   final Context Function(PictureFlipType) onChapterChanged;
   final int startPage;
   final void Function(DataItem) onDownload;
@@ -106,18 +107,41 @@ enum FlipType {
   Vertical,
 }
 
+HintMatrix _hintMatrix(FlipType type) {
+  switch (type) {
+    case FlipType.Horizontal: {
+      return HintMatrix([
+        -1, 0, 1,
+        -1, 0, 1,
+        -1, 0, 1,
+      ]);
+    }
+    case FlipType.HorizontalReverse: {
+      return HintMatrix();
+    }
+    case FlipType.Vertical: {
+      return HintMatrix([
+        -1, -1, -1,
+        -1,  0,  1,
+         1,  1,  1,
+      ]);
+    }
+    default: {
+      throw Exception("Unkown type $type");
+    }
+  }
+}
+
 class _PictureViewerState extends State<PictureViewer> {
 
   Array data;
   int index = 0;
   int touchState = 0;
   bool appBarDisplay = true;
-  Offset downPosition;
   MethodChannel channel;
   String cacheKey;
   PreloadQueue preloadQueue;
   bool loading = false;
-  bool isTap = false;
   Timer _timer;
   NeoCacheManager _cacheManager;
   PagerController pagerController;
@@ -130,8 +154,12 @@ class _PictureViewerState extends State<PictureViewer> {
   String _deviceKey;
   String _pageKey;
   bool _firstTime = true;
+  bool _hintDisplay = false;
 
   GlobalKey<PageSliderState> _sliderKey = GlobalKey();
+
+  Context pictureContext;
+  GlobalKey _canvasKey = GlobalKey();
 
   void onDataChanged(int type, Array data, int pos) {
     if (data != null) {
@@ -154,7 +182,6 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   void pageNext() {
-    print("pageNext");
     pagerController.next();
   }
 
@@ -285,9 +312,10 @@ class _PictureViewerState extends State<PictureViewer> {
                     setState(() {
                       flipType = FlipType.Horizontal;
                     });
+                    displayHint();
                     KeyValue.set(_directionKey, "horizontal");
                   }
-                }
+                },
             ),
             QudsPopupMenuItem(
                 leading: Container(
@@ -306,9 +334,10 @@ class _PictureViewerState extends State<PictureViewer> {
                     setState(() {
                       flipType = FlipType.HorizontalReverse;
                     });
+                    displayHint();
                     KeyValue.set(_directionKey, "horizontal_reverse");
                   }
-                }
+                },
             ),
             QudsPopupMenuItem(
                 leading: Icon(Icons.border_horizontal),
@@ -320,9 +349,10 @@ class _PictureViewerState extends State<PictureViewer> {
                     setState(() {
                       flipType = FlipType.Vertical;
                     });
+                    displayHint();
                     KeyValue.set(_directionKey, "vertical");
                   }
-                }
+                },
             )
           ]
       ),
@@ -368,7 +398,7 @@ class _PictureViewerState extends State<PictureViewer> {
           leading: Icon(Icons.file_download),
           title: Text(kt('download')),
           onPressed: () {
-            widget.onDownload(widget.context.infoData);
+            widget.onDownload(pictureContext.infoData);
             Fluttertoast.showToast(msg: kt('added_download').replaceAll('{0}', "1"));
           }
       ),);
@@ -395,32 +425,46 @@ class _PictureViewerState extends State<PictureViewer> {
           backgroundColor: Colors.black,
           body: Stack(
             children: <Widget>[
-              Listener(
+              GestureDetector(
+                key: _canvasKey,
                 child: Container(
                   color: Colors.black,
-                  child: data.length == 0 ?
-                  Center(
-                    child: SpinKitRing(
-                      lineWidth: 4,
-                      size: 36,
-                      color: Colors.white,
-                    ),
-                  ):
-                  buildPager(context),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: data.length == 0 ?
+                        Center(
+                          child: SpinKitRing(
+                            lineWidth: 4,
+                            size: 36,
+                            color: Colors.white,
+                          ),
+                        ):
+                        buildPager(context),
+                      ),
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: AnimatedOpacity(
+                            opacity: _hintDisplay ? 1 : 0,
+                            duration: Duration(
+                              milliseconds: 300,
+                            ),
+                            child: CustomPaint(
+                              painter: PictureHintPainter(
+                                matrix: _hintMatrix(flipType),
+                                prevText: kt("prev"),
+                                menuText: kt("menu"),
+                                nextText: kt("next")
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
                 ),
-                onPointerDown: (event) {
-                  isTap = true;
-                  downPosition = event.localPosition;
-                },
-                onPointerMove: (event) {
-                  if ((event.localPosition - downPosition).distance > 3) {
-                    isTap = false;
-                  }
-                },
-                onPointerUp: (event) {
-                  if (isTap) {
-                    onTapScreen();
-                  }
+                onTapUp: (event) {
+                  tapAt(event.localPosition);
                 },
               ),
 
@@ -438,7 +482,7 @@ class _PictureViewerState extends State<PictureViewer> {
                       ),
                       Expanded(
                           child: Text(
-                            widget.context.infoData.title,
+                            pictureContext.infoData.title,
                             style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white),
                           )
                       ),
@@ -479,7 +523,7 @@ class _PictureViewerState extends State<PictureViewer> {
                                   alignment: PlaceholderAlignment.middle
                               ),
                               TextSpan(
-                                text: data.length > 0 ? "${index + 1}/${data.length}" : "",
+                                text: data.length > 0 ? "${index == -1 ? data.length : (index + 1)}/${data.length}" : "",
                                 style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
                               ),
                               WidgetSpan(child: Container(padding: EdgeInsets.only(left: 5),)),
@@ -515,7 +559,7 @@ class _PictureViewerState extends State<PictureViewer> {
               ),
 
               Positioned(
-                child: PageSlider(
+                child: index == -1 ? Container() : PageSlider(
                   key: _sliderKey,
                   total: data.length,
                   page: index,
@@ -540,29 +584,30 @@ class _PictureViewerState extends State<PictureViewer> {
         ),
         value: SystemUiOverlayStyle.dark.copyWith(
           systemNavigationBarDividerColor: Colors.black,
+          statusBarIconBrightness: Brightness.light,
         ),
     );
   }
 
   void touch() {
-    cacheKey = NeoCacheManager.cacheKey(widget.context.infoData);
+    cacheKey = NeoCacheManager.cacheKey(pictureContext.infoData);
     preloadQueue = PreloadQueue();
-    widget.context.control();
-    widget.context.onDataChanged = Callback.fromFunction(onDataChanged).release();
-    widget.context.onLoadingStatus = Callback.fromFunction(onLoadingStatus).release();
-    widget.context.onError = Callback.fromFunction(onError).release();
-    widget.context.enterView();
-    data = widget.context.data.control();
+    pictureContext.control();
+    pictureContext.onDataChanged = Callback.fromFunction(onDataChanged).release();
+    pictureContext.onLoadingStatus = Callback.fromFunction(onLoadingStatus).release();
+    pictureContext.onError = Callback.fromFunction(onError).release();
+    pictureContext.enterView();
+    data = pictureContext.data.control();
     loadSavedData();
   }
 
   void untouch() {
-    widget.context.onDataChanged = null;
-    widget.context.onLoadingStatus = null;
-    widget.context.onError = null;
-    widget.context.exitView();
+    pictureContext.onDataChanged = null;
+    pictureContext.onLoadingStatus = null;
+    pictureContext.onError = null;
+    pictureContext.exitView();
     data?.release();
-    widget.context.release();
+    pictureContext.release();
     preloadQueue.stop();
     loading = false;
   }
@@ -589,7 +634,7 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   void loadSavedData() {
-    String key = widget.context.projectKey;
+    String key = pictureContext.projectKey;
     _directionKey = "$direction_key:$key";
     _deviceKey = "$device_key:$key";
     _pageKey = "$page_key:$cacheKey";
@@ -629,10 +674,10 @@ class _PictureViewerState extends State<PictureViewer> {
       Context context;
       if (widget.onChapterChanged != null && (context = widget.onChapterChanged(PictureFlipType.Prev)) != null) {
         untouch();
-        widget.context = context;
+        pictureContext = context;
         touch();
         setState(() {
-          index = math.max(data.length - 1, 0);
+          index = - 1;
           pagerController?.dispose();
           pagerController  = PagerController(
               onPage: onPage,
@@ -656,15 +701,15 @@ class _PictureViewerState extends State<PictureViewer> {
       Context context;
       if (widget.onChapterChanged != null && (context = widget.onChapterChanged(PictureFlipType.Next)) != null) {
         untouch();
-        widget.context = context;
+        pictureContext = context;
         touch();
         setState(() {
           index = 0;
           pagerController?.dispose();
           pagerController = PagerController(
-              onPage: onPage,
-              index: index,
-              onOverBound: onOverBound,
+            onPage: onPage,
+            index: index,
+            onOverBound: onOverBound,
           );
           if (!appBarDisplay) {
             appBarDisplay = true;
@@ -689,6 +734,7 @@ class _PictureViewerState extends State<PictureViewer> {
 
   @override
   initState() {
+    pictureContext = widget.context;
     touch();
     willDismissAppBar();
     pagerController = PagerController(
@@ -740,13 +786,42 @@ class _PictureViewerState extends State<PictureViewer> {
     ]);
     channel?.invokeMethod("stop");
     super.dispose();
-    // SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
   }
 
   void addToPreload(Array arr) {
     for (int i = 0 ,t = arr.length; i < t; ++i) {
       DataItem item = arr[i];
       preloadQueue.set(i, DownloadPictureItem(item.picture, cacheManager, headers: item.headers));
+    }
+  }
+
+  Timer _hintTimer;
+  void displayHint() {
+    _hintTimer?.cancel();
+    setState(() {
+      _hintDisplay = true;
+    });
+    _hintTimer = Timer(Duration(seconds: 4), () {
+      setState(() {
+        _hintDisplay = false;
+      });
+    });
+  }
+
+  void tapAt(Offset position) {
+    var rect = _canvasKey.currentContext?.findRenderObject()?.semanticBounds;
+    if (rect == null) {
+      onTapScreen();
+    } else {
+      var matrix = _hintMatrix(flipType);
+      int ret = matrix.findValue(rect.size, position);
+      if (ret > 0) {
+        pagerController.next();
+      } else if (ret < 0) {
+        pagerController.prev();
+      } else {
+        onTapScreen();
+      }
     }
   }
 }

@@ -7,6 +7,7 @@ import 'package:kinoko/utils/neo_cache_manager.dart';
 import 'package:kinoko/widgets/pager/pager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../images/zoom_image.dart';
+import 'dart:math' as math;
 
 const double _DefaultBarHeight = 88;
 const double _PageAlignment = 0.1;
@@ -36,6 +37,7 @@ class VerticalPagerState extends PagerState<VerticalPager> {
   ItemScrollController controller;
   ItemPositionsListener listener;
   bool _listen = true;
+  ItemPosition _current;
 
   @override
   Widget build(BuildContext context) {
@@ -73,25 +75,58 @@ class VerticalPagerState extends PagerState<VerticalPager> {
   }
 
   @override
-  void onNext() {
-    _listen = false;
-    controller.scrollTo(
-      index: widget.controller.index + 1,
-      duration: Duration(milliseconds: 300),
-      curve: Curves.easeInOutCubic,
-      alignment: _PageAlignment,
-    ).then((value) => _listen = true);
+  void onNext() async {
+    if (_current != null) {
+      int target;
+      double alignment;
+      if (_current.itemTrailingEdge > 1) {
+        target = _current.index;
+        var len = _current.itemTrailingEdge - _current.itemLeadingEdge;
+        alignment = math.max(_current.itemLeadingEdge - 0.6, (1 - _PageAlignment)-len);
+      } else {
+        if (_current.index < widget.itemCount - 1) {
+          target = _current.index + 1;
+          alignment = _PageAlignment;
+        } else {
+          widget.controller.onOverBound(BoundType.End);
+          return;
+        }
+      }
+      controller.scrollTo(
+        index: target,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOutCubic,
+        alignment: alignment,
+      );
+    }
   }
 
   @override
   void onPrev() {
-    _listen = false;
-    controller.scrollTo(
-      index: widget.controller.index - 1,
-      duration: Duration(milliseconds: 300),
-      curve: Curves.easeInOutCubic,
-      alignment: _PageAlignment,
-    ).then((value) => _listen = true);
+    if (_current != null) {
+      int target;
+      double alignment;
+      if (_current.itemLeadingEdge < 0) {
+        target = _current.index;
+        // var len = _current.itemTrailingEdge - _current.itemLeadingEdge;
+        alignment = math.min(_current.itemLeadingEdge + 0.6, _PageAlignment);
+      } else {
+        if (_current.index > 0) {
+          target = _current.index;
+          alignment = 1 - _PageAlignment;
+        } else {
+          widget.controller.onOverBound(BoundType.Start);
+          return;
+        }
+      }
+      controller.scrollTo(
+        index: target,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOutCubic,
+        alignment: alignment,
+      );
+
+    }
   }
 
   @override
@@ -118,6 +153,7 @@ class VerticalPagerState extends PagerState<VerticalPager> {
     controller = ItemScrollController();
     listener = ItemPositionsListener.create();
     listener.itemPositions.addListener(_positionUpdate);
+    _initPosition();
   }
 
   @override
@@ -125,13 +161,38 @@ class VerticalPagerState extends PagerState<VerticalPager> {
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant VerticalPager oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _initPosition();
+  }
+
   void _positionUpdate() {
     if (!_listen) return;
     var list = listener.itemPositions.value;
-    for (var pos in list) {
-      if (pos.itemLeadingEdge < 0.5 && pos.itemTrailingEdge >= 0.5) {
-        setPage(pos.index);
-        return;
+    ItemPosition current;
+    double old = double.infinity;
+    for (var position in list) {
+      var middle = (position.itemTrailingEdge + position.itemLeadingEdge) / 2;
+      if (middle > 0 && middle < old) {
+        old = middle;
+        current = position;
+      }
+    }
+    if (current != null) {
+      _current = current;
+      setPage(current.index);
+    }
+  }
+
+  void _initPosition() {
+    if (widget.controller.index == -1 && widget.itemCount > 0) {
+      widget.controller.index = widget.itemCount - 1;
+      if (controller.isAttached) {
+        controller.jumpTo(
+          index: widget.itemCount - 1,
+          alignment: -99,
+        );
       }
     }
   }
