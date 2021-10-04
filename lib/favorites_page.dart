@@ -26,10 +26,10 @@ class _FavKey extends GlobalObjectKey {
 }
 
 class FavoriteItem extends StatefulWidget {
-  void Function() onTap;
-  FavCheckItem item;
-  Animation<double> animation;
-  void Function() onDismiss;
+  final VoidCallback onTap;
+  final FavCheckItem item;
+  final Animation<double> animation;
+  final VoidCallback onDismiss;
 
   FavoriteItem({
     Key key,

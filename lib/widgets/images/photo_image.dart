@@ -6,6 +6,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' as m64;
 
+import '../../localizations/localizations.dart';
+
 const double _ImageAspect = 1.55;
 
 class PhotoImageController {
@@ -21,6 +23,8 @@ class PhotoImageController {
   void scrollOffset(double offset, bool animate) => state?.scrollOffset(offset, animate);
   void next() => state?.next();
   void prev() => state?.prev();
+
+  void reload() => state?.reload();
 }
 
 class PhotoImage extends StatefulWidget {
@@ -33,6 +37,7 @@ class PhotoImage extends StatefulWidget {
   final PhotoImageController controller;
 
   PhotoImage({
+    Key key,
     @required this.imageProvider,
     this.size,
     this.loadingWidget,
@@ -40,7 +45,7 @@ class PhotoImage extends StatefulWidget {
     this.reverse,
     this.initFromEnd = false,
     PhotoImageController controller,
-  }) : controller = controller == null ? PhotoImageController() : controller;
+  }) : controller = controller == null ? PhotoImageController() : controller, super(key: key);
 
   @override
   State<StatefulWidget> createState() => _PhotoImageState();
@@ -54,8 +59,6 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
   bool _hasError = false;
 
   AnimationController controller;
-
-  Duration _duration = const Duration(milliseconds: 600);
 
   _PhotoImageState() {
     _imageStreamListener = ImageStreamListener(
@@ -146,7 +149,27 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
         width: widget.size.width,
         height: widget.size.height,
         child: Center(
-          child: widget.errorWidget?.call(context),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              widget.errorWidget?.call(context),
+              Padding(
+                padding: EdgeInsets.only(top: 5),
+                child: OutlinedButton(
+                  onPressed: () {
+                    reload();
+                  },
+                  child: Text(kt("reload")),
+                  style: OutlinedButton.styleFrom(
+                      primary: Colors.white,
+                      side: BorderSide(
+                        color: Colors.white,
+                      )
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     } else {
@@ -296,6 +319,7 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
   }
 
   bool arriveStart() {
+    if (_imageSize == null) return true;
     if (widget.reverse) {
       Size realSize = _imageSize * _scale;
       return _translation.dx <= (widget.size.width - realSize.width + 0.01);
@@ -305,6 +329,7 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
   }
 
   bool arriveEnd() {
+    if (_imageSize == null) return true;
     if (widget.reverse) {
       return _translation.dx >= -0.01;
     } else {
@@ -335,6 +360,18 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
     controller.forward(from: 0);
   }
 
+  void reload() {
+    if (_hasError) {
+      setState(() {
+        _hasError = false;
+        _imageStream.removeListener(_imageStreamListener);
+        widget.imageProvider.evict();
+        _imageStream = widget.imageProvider.resolve(createLocalImageConfiguration(context));
+        _imageStream.addListener(_imageStreamListener);
+      });
+    }
+  }
+
   void scrollOffset(double offset, bool animate) {
     if (animate) {
       _animateStart = _translation;
@@ -354,7 +391,7 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
   }
 
   double _clampX(double dx) {
-    Size realSize = _imageSize * _scale;
+    Size realSize = (_imageSize ?? widget.size) * _scale;
     return math.min(math.max(dx, widget.size.width - realSize.width), 0);
   }
 

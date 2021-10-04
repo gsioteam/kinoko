@@ -7,6 +7,8 @@ import 'package:vector_math/vector_math_64.dart' as m64;
 import '../images/photo_image.dart';
 import 'pager.dart';
 
+import '../../localizations/localizations.dart';
+
 import 'dart:ui' as ui;
 import 'dart:math' as math;
 
@@ -105,6 +107,7 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
               SliverFillViewport(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   PhotoInformation photoInformation = widget.imageUrlProvider(index);
+                  PhotoImageController controller = getPageController(index);
                   return Container(
                     clipBehavior: Clip.hardEdge,
                     decoration: BoxDecoration(
@@ -128,9 +131,12 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
                           );
                         },
                         errorWidget: (context) {
-                          return Icon(Icons.broken_image);
+                          return Icon(
+                            Icons.broken_image,
+                            color: Colors.white,
+                          );
                         },
-                        controller: getPageController(index),
+                        controller: controller,
                       ),
                     ),
                   );

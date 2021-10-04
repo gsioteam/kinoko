@@ -67,7 +67,10 @@ class VerticalPagerState extends PagerState<VerticalPager> {
             );
           },
           errorWidget: (context) {
-            return Icon(Icons.broken_image);
+            return Icon(
+              Icons.broken_image,
+              color: Colors.white,
+            );
           },
         );
       },

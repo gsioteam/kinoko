@@ -233,11 +233,13 @@ class NeoImageProvider extends ImageProvider<NeoImageProvider> {
   final Map<String, String> headers;
   NeoCacheManager cacheManager;
   String filename;
+  final Duration timeout;
 
   NeoImageProvider({
     this.cacheManager,
     @required this.uri,
-    this.headers
+    this.headers,
+    this.timeout = const Duration(seconds: 20),
   }) {
     if (cacheManager == null) {
       cacheManager = NeoCacheManager.defaultManager;
@@ -337,12 +339,16 @@ class NeoImageStreamCompleter extends ImageStreamCompleter {
 
   Future<Uint8List> startFetch() {
 
-    var async = fetch();
+    var async = fetch().timeout(provider.timeout);
     fetching[provider] = async;
     void _wait() async {
       try {
         await async;
-      } finally {
+      }
+      catch (e) {
+        reportError(exception: e);
+      }
+      finally {
         fetching.remove(provider);
       }
     }

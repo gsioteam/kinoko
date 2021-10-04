@@ -7,6 +7,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' as m64;
 
+import '../../localizations/localizations.dart';
+
 const double _ImageAspect = 1.55;
 
 enum ImageFit {
@@ -60,8 +62,26 @@ class _ZoomImageState extends State<ZoomImage> {
       return Container(
         width: screenSize.width,
         height: screenSize.width * _ImageAspect,
-        child: Center(
-          child: widget.errorWidget?.call(context),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            widget.errorWidget?.call(context),
+            Padding(
+              padding: EdgeInsets.only(top: 5),
+              child: OutlinedButton(
+                onPressed: () {
+                  reload();
+                },
+                child: Text(kt("reload")),
+                style: OutlinedButton.styleFrom(
+                    primary: Colors.white,
+                    side: BorderSide(
+                      color: Colors.white,
+                    )
+                ),
+              ),
+            ),
+          ],
         ),
       );
     } else {
@@ -217,6 +237,18 @@ class _ZoomImageState extends State<ZoomImage> {
     super.didUpdateWidget(oldWidget);
     if (widget.imageProvider != oldWidget.imageProvider) {
       _updateImage();
+    }
+  }
+
+  void reload() {
+    if (_hasError) {
+      setState(() {
+        _hasError = false;
+        _imageStream.removeListener(_imageStreamListener);
+        widget.imageProvider.evict();
+        _imageStream = widget.imageProvider.resolve(createLocalImageConfiguration(context));
+        _imageStream.addListener(_imageStreamListener);
+      });
     }
   }
 }

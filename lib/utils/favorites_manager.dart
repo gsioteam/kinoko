@@ -50,6 +50,11 @@ class FavCheckItem {
 
       if (resultData.length > 0) {
         DataItem item = resultData[0];
+        // dynamic dataItem = context.infoData;
+        // if (dataItem is DataItem) {
+        //   item.title = dataItem.title;
+        //   item.subtitle = dataItem.subtitle;
+        // }
         data.setJSONData({
           "date": _date.toString(),
           "value": item.link
@@ -68,7 +73,7 @@ class FavCheckItem {
     return completer.future;
   }
 
-  void checkNew(bool first) async {
+  Future<void> checkNew(bool first) async {
     Project project = Project.allocate(item.projectKey);
     if (!project.isValidated) {
       project.release();
@@ -131,7 +136,6 @@ class FavoritesManager {
         FavCheckItem checkItem = FavCheckItem(data.control(), item.control());
         items.add(checkItem);
         checkItem.checkNew(true);
-        print("Checked !");
       } else {
       }
     } else {
