@@ -27,25 +27,29 @@ class _PageScrollPhysics extends PageScrollPhysics {
   double applyPhysicsToUserOffset(ScrollMetrics position, double offset) {
     var page = state.pageController.page;
     var round = page.round();
-    var range = state.getPageRange(round);
-    if (offset <= 0 && (page < round || (!range.reverse && range.arriveEnd() || range.reverse && range.arriveStart()))) {
+    var controller = state.getPageController(round);
+    var reverse = state.widget.reverse;
+    if (offset <= 0 && (page < round ||
+        (!reverse && controller.arriveEnd() ||
+            reverse && controller.arriveStart()))) {
       return super.applyPhysicsToUserOffset(position, offset);
-    } else if (offset > 0 && (page > round || (!range.reverse && range.arriveStart() || range.reverse && range.arriveEnd()))) {
+    } else if (offset > 0 &&
+        (page > round || (!reverse && controller.arriveStart() || reverse && controller.arriveEnd()))) {
       return super.applyPhysicsToUserOffset(position, offset);
     } else {
-      range.onOffset(offset, 0);
+      controller.scrollOffset(offset, false);
       return 0;
     }
   }
 
   @override
   Simulation createBallisticSimulation(ScrollMetrics position, double velocity) {
-    var range = state.getPageRange(state.pageController.page.round());
-    if (velocity > 0 && !range.arriveEnd()) {
-      range.onOffset(-velocity / 10, PageRange.ANIMATE);
+    var controller = state.getPageController(state.pageController.page.round());
+    if (velocity > 0 && !controller.arriveEnd()) {
+      controller.scrollOffset(-velocity / 10, true);
       velocity = 0;
-    } else if (velocity < 0 && !range.arriveStart()) {
-      range.onOffset(-velocity / 10, PageRange.ANIMATE);
+    } else if (velocity < 0 && !controller.arriveStart()) {
+      controller.scrollOffset(-velocity / 10, true);
       velocity = 0;
     }
     return super.createBallisticSimulation(position, velocity);
@@ -78,7 +82,7 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
 
   _PageScrollPhysics scrollPhysics;
   PageController pageController;
-  Map<int, PageRange> _ranges = new Map();
+  Map<int, PhotoImageController> _pages = new Map();
 
   Duration _duration = const Duration(milliseconds: 300);
   bool _listen = true;
@@ -115,7 +119,6 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
                         ),
                         size: media.size,
                         reverse: widget.reverse,
-                        padding: EdgeInsets.zero,
                         initFromEnd: index < widget.controller.index,
                         loadingWidget: (context) {
                           return SpinKitRing(
@@ -127,7 +130,7 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
                         errorWidget: (context) {
                           return Icon(Icons.broken_image);
                         },
-                        range: getPageRange(index),
+                        controller: getPageController(index),
                       ),
                     ),
                   );
@@ -145,16 +148,15 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
   void onNext() {
     if (pageController == null) return;
     int index = pageController.page.round();
-    PageRange range = getPageRange(index);
-    if (range.arriveEnd()) {
+    var controller = getPageController(index);
+    if (controller.arriveEnd()) {
       if (index >= widget.itemCount - 1) {
         widget.controller.onOverBound(BoundType.End);
       } else {
         pageController.nextPage(duration: _duration, curve: Curves.easeInOutCubic);
       }
     } else {
-      var len = range.length * 0.8;
-      range.onOffset(math.min(range.start + len, range.end - len), PageRange.ANIMATE | PageRange.SET_START);
+      controller.next();
     }
   }
 
@@ -162,16 +164,15 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
   void onPrev() {
     if (pageController == null) return;
     int index = pageController.page.round();
-    PageRange range = getPageRange(index);
-    if (range.arriveStart()) {
+    var controller = getPageController(index);
+    if (controller.arriveStart()) {
       if (index <= 0) {
         widget.controller.onOverBound?.call(BoundType.Start);
       } else {
         pageController.previousPage(duration: _duration, curve: Curves.easeInOutCubic);
       }
     } else {
-      var len = range.length * 0.8;
-      range.onOffset(math.max(0, range.start - len), PageRange.ANIMATE | PageRange.SET_START);
+      controller.prev();
     }
   }
 
@@ -191,12 +192,12 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
     _listen = true;
   }
 
-  PageRange getPageRange(int index) {
-    if (_ranges.containsKey(index)) {
-      return _ranges[index];
+  PhotoImageController getPageController(int index) {
+    if (_pages.containsKey(index)) {
+      return _pages[index];
     } else {
-      _ranges[index] = PageRange();
-      return _ranges[index];
+      _pages[index] = PhotoImageController();
+      return _pages[index];
     }
   }
 

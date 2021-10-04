@@ -6,56 +6,41 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' as m64;
 
-class PageRange {
-  double start = 0;
-  double get length => 1;
-  double end = 1;
-  bool reverse = false;
+const double _ImageAspect = 1.55;
 
-  static int ANIMATE = 1;
-  static int SET_START = 2;
+class PhotoImageController {
 
-  bool arriveStart() => start <= 0;
-  bool arriveEnd() =>  start + length >= end;
+  static const int ANIMATE = 1;
+  static const int SET_START = 2;
 
-  List<void Function(double, int)> listeners = [];
+  _PhotoImageState state;
 
-  void addListener(void Function(double, int) listener) {
-    listeners.add(listener);
-  }
+  bool arriveStart() => state?.arriveStart() ?? true;
+  bool arriveEnd() =>  state?.arriveEnd() ?? true;
 
-  void removeListener(void Function(double, int) listener) {
-    listeners.remove(listener);
-  }
-
-  void onOffset(double offset, int state) {
-    for (var ls in listeners) {
-      ls(offset, state);
-    }
-  }
-
+  void scrollOffset(double offset, bool animate) => state?.scrollOffset(offset, animate);
+  void next() => state?.next();
+  void prev() => state?.prev();
 }
 
 class PhotoImage extends StatefulWidget {
   final ImageProvider imageProvider;
   final Size size;
-  final EdgeInsets padding;
   final WidgetBuilder loadingWidget;
   final WidgetBuilder errorWidget;
   final bool reverse;
   final bool initFromEnd;
-  final PageRange range;
+  final PhotoImageController controller;
 
   PhotoImage({
     @required this.imageProvider,
     this.size,
-    this.padding,
     this.loadingWidget,
     this.errorWidget,
     this.reverse,
     this.initFromEnd = false,
-    PageRange range,
-  }) : range = range == null ? PageRange() : range;
+    PhotoImageController controller,
+  }) : controller = controller == null ? PhotoImageController() : controller;
 
   @override
   State<StatefulWidget> createState() => _PhotoImageState();
@@ -79,181 +64,158 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
     );
   }
 
-  void onOffset(double offset, int state) {
-    var range = widget.range;
-    double value;
-    if (state & PageRange.SET_START == 0) {
-      if (widget.reverse) {
-        double maxWidth = widget.size.width - widget.padding.left - widget.padding.right;
-        value = math.max(0, math.min(1, controller.value + (offset / maxWidth) / (range.end - range.length)));
-      } else {
-        double maxWidth = widget.size.width - widget.padding.left - widget.padding.right;
-        value = math.max(0, math.min(1, controller.value - (offset / maxWidth) / (range.end - range.length)));
-      }
-    } else {
-      value = offset / (range.end - range.length);
-    }
-    if ((state & PageRange.ANIMATE) != 0) {
-      controller.animateTo(value, duration: _duration, curve: Curves.easeOutCubic);
-    } else {
-      controller.value = value;
-    }
-  }
-
+  Offset _animateStart = Offset.zero;
+  Offset _animateEnd = Offset.zero;
   Offset _translation = Offset.zero;
   double _scale = 1;
 
-  Offset _oldOffset = Offset.zero;
-  double _oldScale = 1;
-
-  Rect _imageRect;
   Size _imageSize;
 
+  GlobalKey _key = GlobalKey();
+
+  double _minScale = 1;
+  double _maxScale = 4;
+
+  Offset _oldScalePoint;
+  double _oldScale;
   void _onScaleStart(ScaleStartDetails details) {
-    _oldOffset = details.focalPoint;
+    controller.stop();
+    _oldScalePoint = details.focalPoint;
     _oldScale = 1;
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
-    if (_imageRect != null) {
-      setState(() {
-        Offset offset = details.focalPoint - _oldOffset;
-        _translation += offset;
-        _oldOffset = details.focalPoint;
-        var disScale = details.scale / _oldScale;
-        var oldScale = _scale;
-        _scale *= disScale;
-        if (_scale < 1) {
-          _scale = 1;
-          disScale = _scale / oldScale;
-        } else if (_scale > 4) {
-          _scale = 4;
-          disScale = _scale / oldScale;
-        }
-        _oldScale = details.scale;
+    setState(() {
+      Offset offset = details.focalPoint - _oldScalePoint;
+      _translation += offset;
 
-        var offSize = _imageRect.size * (disScale - 1);
-        var dx = -_translation.dx, dy = -_translation.dy;
-        if (widget.reverse) {
-          dx += _imageRect.width * _oldScale * (1 - widget.range.start + controller.value);
-        } else {
-          dx += _imageRect.width * _oldScale * (widget.range.start - controller.value);
-        }
+      Size screenSize = widget.size;
+      Offset localFocalPoint = details.localFocalPoint;
+      if (_imageSize.height < screenSize.height) {
+        localFocalPoint -= Offset(0, (screenSize.height - _imageSize.height) / 2);
+      }
+      Offset anchor = (localFocalPoint - _translation) / _scale;
+      double oldScale = _scale;
+      _scale *= (details.scale / _oldScale);
+      Size extendSize = _imageSize * (_scale - oldScale);
 
-        dx += _imageSize.width / 2 * _oldScale;
-        dy += _imageSize.height / 2 * _oldScale;
 
-        var cSize = _imageRect.size * _oldScale;
-        var off = Offset(offSize.width * dx / cSize.width, offSize.height * dy / cSize.height);
-        _translation -= off;
-        clampImage();
-      });
-    }
+      _translation -= Offset(
+        extendSize.width * anchor.dx / _imageSize.width,
+        extendSize.height * anchor.dy / _imageSize.height,
+      );
+      clampImage();
+
+      _oldScalePoint = details.focalPoint;
+      _oldScale = details.scale;
+    });
   }
 
   void clampImage() {
+    _scale = math.min(math.max(_minScale, _scale), _maxScale);
+    Size realSize = _imageSize * _scale;
     double nx = _translation.dx, ny = _translation.dy;
-    if (nx > 0) {
-      nx = 0;
+    if (realSize.width < widget.size.width) {
+      nx = (widget.size.width - realSize.width) / 2;
+    } else {
+      if (nx > 0) {
+        nx = 0;
+      } else if (nx < widget.size.width - realSize.width) {
+        nx = widget.size.width - realSize.width;
+      }
     }
-    if (ny > 0) {
-      ny = 0;
-    }
-    var size = _imageRect.size * _scale;
-    if (nx < _imageSize.width - size.width) {
-      nx = _imageSize.width - size.width;
-    }
-    if (ny < _imageSize.height - size.height) {
-      ny = _imageSize.height - size.height;
+    if (realSize.height < widget.size.height) {
+      ny = (widget.size.height - realSize.height) / 2;
+    } else {
+      if (ny > 0) {
+        ny = 0;
+      } else if (ny < widget.size.height - realSize.height) {
+        ny = widget.size.height - realSize.height;
+      }
     }
     _translation = Offset(nx, ny);
   }
 
   void _onScaleEnd(ScaleEndDetails details) {
-    if (_imageRect != null) {
-
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_hasError) {
       return Container(
+        width: widget.size.width,
+        height: widget.size.height,
         child: Center(
           child: widget.errorWidget?.call(context),
         ),
       );
     } else {
       ui.Image image = _imageInfo?.image;
-      double width, height;
       if (image != null) {
-        double left = widget.padding.left, top = widget.padding.top,
-            maxWidth = widget.size.width - widget.padding.left - widget.padding.right,
-            maxHeight = widget.size.height - widget.padding.top - widget.padding.bottom;
-        if (image.width / image.height < 1) {
-          width = maxWidth;
-          height = maxWidth * image.height / image.width;
-          widget.range.end = 1;
-          widget.range.start = 0;
-        } else {
-          height = maxHeight - 60;
-          width = height * image.width / image.height;
-          widget.range.end = width / maxWidth;
-          widget.range.start = 0;
-        }
-        widget.range.reverse = widget.reverse;
+        if (_imageSize == null) {
+          double width, height;
+          if (image.width > image.height) {
+            height = math.min(widget.size.width * _ImageAspect, widget.size.height);
+            width = height * image.width / image.height;
+          } else {
+            width = widget.size.width;
+            height = width * image.height / image.width;
+          }
 
-        if (maxWidth > width) {
-          left = (maxWidth - width) / 2 + widget.padding.left;
-        }
-        if (maxHeight > height) {
-          top = (maxHeight - height) / 2 + widget.padding.top;
+          _imageSize = Size(width, height);
+          bool fromStart = !widget.reverse;
+          if (widget.initFromEnd) {
+            fromStart = !fromStart;
+          }
+          if (!fromStart) {
+            _translation = Offset(widget.size.width - width, 0);
+            _animateStart = _translation;
+          }
+          if (_imageSize.width > widget.size.width) {
+            _minScale = widget.size.width / _imageSize.width;
+          }
+          if (_imageSize.height > widget.size.height) {
+            double scale = widget.size.height / _imageSize.height;
+            if (scale < _minScale) {
+              _minScale = scale;
+            }
+          }
+          clampImage();
         }
 
-        _imageRect = Rect.fromLTWH(left, top, width, height);
-        _imageSize = Size(widget.size.width - left * 2, widget.size.height - top * 2);
-
-        return GestureDetector(
-          onScaleStart: _onScaleStart,
-          onScaleUpdate: _onScaleUpdate,
-          onScaleEnd: _onScaleEnd,
-          child: AnimatedBuilder(
-            animation: controller,
-            builder: (context, child) {
-              var range = widget.range;
-              range.start = controller.value * (range.end - range.length);
-              double tLeft = left, tTop = top;
-              if (widget.reverse) {
-                tLeft -= (range.end - range.length - range.start) * maxWidth;
-              } else {
-                tLeft -= range.start * maxWidth;
-              }
-              return Stack(
-                children: [
-                  Positioned(
-                      left: tLeft,
-                      top: tTop,
-                      width: width,
-                      height: height,
-                      child: Transform(
-                        transform: Matrix4.translation(m64.Vector3(_translation.dx, _translation.dy, 0))
-                          ..scale(_scale, _scale),
-                        child: child,
-                      )
-                  )
-                ],
-              );
-            },
-            child: Container(
-              color: Colors.black,
-              width: width,
-              height: height,
-              padding: EdgeInsets.all(1),
-              child: RawImage(
-                image: _imageInfo?.image,
-                width: width - 2,
-                height: height - 2,
-                fit: BoxFit.fill,
+        return Container(
+          width: widget.size.width,
+          height: widget.size.height,
+          decoration: BoxDecoration(
+            color: Colors.black,
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: GestureDetector(
+            key: _key,
+            onScaleStart: _onScaleStart,
+            onScaleUpdate: _onScaleUpdate,
+            onScaleEnd: _onScaleEnd,
+            child: OverflowBox(
+              minWidth: math.min(_imageSize.width, widget.size.width),
+              minHeight: math.min(_imageSize.height, widget.size.height),
+              maxWidth: _imageSize.width,
+              maxHeight: _imageSize.height,
+              alignment: Alignment.topLeft,
+              child: Transform(
+                transform: Matrix4.translation(m64.Vector3(_translation.dx, _translation.dy, 0))
+                  ..scale(_scale, _scale),
+                child: Container(
+                  color: Colors.black,
+                  width: _imageSize.width,
+                  height: _imageSize.height,
+                  padding: const EdgeInsets.all(1),
+                  child: RawImage(
+                    image: _imageInfo?.image,
+                    width: _imageSize.width - 2,
+                    height: _imageSize.height - 2,
+                    fit: BoxFit.fill,
+                  ),
+                ),
               ),
             ),
           ),
@@ -262,6 +224,7 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
       } else {
         return Container(
           width: widget.size.width,
+          height: widget.size.height,
           child: Center(
             child: widget.loadingWidget?.call(context),
           ),
@@ -290,13 +253,14 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    widget.range.addListener(onOffset);
+    widget.controller.state = this;
     controller = AnimationController(
-        vsync: this,
-        duration: Duration(milliseconds: 300)
+      vsync: this,
+      duration: Duration(milliseconds: 300),
     );
 
     controller.value = widget.initFromEnd ? 1 : 0;
+    controller.addListener(_onAnimation);
   }
 
   @override
@@ -304,7 +268,8 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
     controller.dispose();
     super.dispose();
     _imageStream?.removeListener(_imageStreamListener);
-    widget.range.removeListener(onOffset);
+    if (widget.controller.state == this)
+      widget.controller.state = null;
   }
 
   @override
@@ -313,9 +278,10 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
     if (widget.imageProvider != oldWidget.imageProvider) {
       _updateImage();
     }
-    if (widget.range != oldWidget.range) {
-      oldWidget.range.removeListener(onOffset);
-      widget.range.addListener(onOffset);
+    if (widget.controller != oldWidget.controller) {
+      if (oldWidget.controller.state == this)
+        oldWidget.controller.state = null;
+      widget.controller.state = this;
     }
   }
 
@@ -327,5 +293,74 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
       oldImageStream?.removeListener(_imageStreamListener);
       _imageStream.addListener(_imageStreamListener);
     }
+  }
+
+  bool arriveStart() {
+    if (widget.reverse) {
+      Size realSize = _imageSize * _scale;
+      return _translation.dx <= (widget.size.width - realSize.width + 0.01);
+    } else {
+      return _translation.dx >= -0.01;
+    }
+  }
+
+  bool arriveEnd() {
+    if (widget.reverse) {
+      return _translation.dx >= -0.01;
+    } else {
+      Size realSize = _imageSize * _scale;
+      return _translation.dx <= (widget.size.width - realSize.width + 0.01);
+    }
+  }
+
+  void next() {
+    if (widget.reverse) {
+      _animateStart = _translation;
+      _animateEnd = Offset(_clampX(_translation.dx + widget.size.width * 0.8), _translation.dy);
+    } else {
+      _animateStart = _translation;
+      _animateEnd = Offset(_clampX(_translation.dx - widget.size.width * 0.8), _translation.dy);
+    }
+    controller.forward(from: 0);
+  }
+
+  void prev() {
+    if (widget.reverse) {
+      _animateStart = _translation;
+      _animateEnd = Offset(_clampX(_translation.dx - widget.size.width * 0.8), _translation.dy);
+    } else {
+      _animateStart = _translation;
+      _animateEnd = Offset(_clampX(_translation.dx + widget.size.width * 0.8), _translation.dy);
+    }
+    controller.forward(from: 0);
+  }
+
+  void scrollOffset(double offset, bool animate) {
+    if (animate) {
+      _animateStart = _translation;
+      _animateEnd = Offset(
+          _clampX(_translation.dx + offset),
+          _translation.dy);
+      controller.forward(from: 0);
+    } else {
+      controller.stop();
+      setState(() {
+        _translation = Offset(
+            _clampX(_translation.dx + offset),
+            _translation.dy);
+        _animateStart = _animateEnd = _translation;
+      });
+    }
+  }
+
+  double _clampX(double dx) {
+    Size realSize = _imageSize * _scale;
+    return math.min(math.max(dx, widget.size.width - realSize.width), 0);
+  }
+
+  void _onAnimation() {
+    setState(() {
+      _translation = Offset.lerp(_animateStart, _animateEnd, controller.value);
+    });
   }
 }

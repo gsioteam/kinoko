@@ -229,6 +229,8 @@ class _PictureViewerState extends State<PictureViewer> {
       } else {
         enterFullscreen();
         _sliderKey.currentState?.dismiss();
+        _hintTimer?.cancel();
+        _hintDisplay = false;
       }
     });
 

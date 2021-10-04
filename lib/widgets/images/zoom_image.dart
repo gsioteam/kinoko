@@ -2,6 +2,7 @@
 import 'package:flutter/cupertino.dart';
 
 import 'dart:ui' as ui;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' as m64;
@@ -40,10 +41,10 @@ class _ZoomImageState extends State<ZoomImage> {
   Offset _translation = Offset.zero;
   double _scale = 1;
 
-  Offset _oldOffset = Offset.zero;
-  double _oldScale = 1;
-
   Size _imageSize;
+
+  double _minScale = 1;
+  double _maxScale = 4;
 
   _ZoomImageState() {
     _imageStreamListener = ImageStreamListener(
@@ -77,9 +78,9 @@ class _ZoomImageState extends State<ZoomImage> {
         _imageSize = Size(width, height);
 
         return GestureDetector(
-          onScaleStart: _onStart,
-          onScaleUpdate: _onUpdate,
-          onScaleEnd: _onEnd,
+          onScaleStart: _onScaleStart,
+          onScaleUpdate: _onScaleUpdate,
+          onScaleEnd: _onScaleEnd,
           child: Container(
             width: width,
             height: height,
@@ -117,64 +118,59 @@ class _ZoomImageState extends State<ZoomImage> {
     }
   }
 
-  void _onStart(ScaleStartDetails details) {
-    _oldOffset = details.focalPoint;
+  Offset _oldScalePoint;
+  double _oldScale;
+  void _onScaleStart(ScaleStartDetails details) {
+    _oldScalePoint = details.focalPoint;
     _oldScale = 1;
   }
 
-  void _onUpdate(ScaleUpdateDetails details) {
-    if (_imageSize != null) {
-      setState(() {
-        Offset offset = details.focalPoint - _oldOffset;
-        _translation += offset;
-        _oldOffset = details.focalPoint;
-        var disScale = details.scale / _oldScale;
-        var oldScale = _scale;
-        _scale *= disScale;
-        if (_scale < 1) {
-          _scale = 1;
-          disScale = _scale / oldScale;
-        } else if (_scale > 4) {
-          _scale = 4;
-          disScale = _scale / oldScale;
-        }
-        _oldScale = details.scale;
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    setState(() {
+      Offset offset = details.focalPoint - _oldScalePoint;
+      _translation += offset;
 
-        var offSize = _imageSize * (disScale - 1);
-        var dx = -_translation.dx, dy = -_translation.dy;
-        dx += _imageSize.width * _oldScale * (0.5);
+      Size screenSize = _imageSize;
+      Offset localFocalPoint = details.localFocalPoint;
+      if (_imageSize.height < screenSize.height) {
+        localFocalPoint -= Offset(0, (screenSize.height - _imageSize.height) / 2);
+      }
+      Offset anchor = (localFocalPoint - _translation) / _scale;
+      double oldScale = _scale;
+      _scale *= (details.scale / _oldScale);
+      Size extendSize = _imageSize * (_scale - oldScale);
 
-        dx += _imageSize.width / 2 * _oldScale;
-        dy += _imageSize.height / 2 * _oldScale;
 
-        var cSize = _imageSize * _oldScale;
-        var off = Offset(offSize.width * dx / cSize.width, offSize.height * dy / cSize.height);
-        _translation -= off;
-        clampImage();
-      });
-    }
-  }
+      _translation -= Offset(
+        extendSize.width * anchor.dx / _imageSize.width,
+        extendSize.height * anchor.dy / _imageSize.height,
+      );
+      clampImage();
 
-  void _onEnd(ScaleEndDetails details) {
-
+      _oldScalePoint = details.focalPoint;
+      _oldScale = details.scale;
+    });
   }
 
   void clampImage() {
+    _scale = math.min(math.max(_minScale, _scale), _maxScale);
+    Size realSize = _imageSize * _scale;
     double nx = _translation.dx, ny = _translation.dy;
     if (nx > 0) {
       nx = 0;
+    } else if (nx < _imageSize.width - realSize.width) {
+      nx = _imageSize.width - realSize.width;
     }
+
     if (ny > 0) {
       ny = 0;
-    }
-    var size = _imageSize * _scale;
-    if (nx < _imageSize.width - size.width) {
-      nx = _imageSize.width - size.width;
-    }
-    if (ny < _imageSize.height - size.height) {
-      ny = _imageSize.height - size.height;
+    } else if (ny < _imageSize.height - realSize.height) {
+      ny = _imageSize.height - realSize.height;
     }
     _translation = Offset(nx, ny);
+  }
+
+  void _onScaleEnd(ScaleEndDetails details) {
   }
 
   void _getImage(ImageInfo image, bool synchronousCall) {
