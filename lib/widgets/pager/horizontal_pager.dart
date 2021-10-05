@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
+import 'package:kinoko/widgets/over_drag.dart';
 import 'package:vector_math/vector_math_64.dart' as m64;
 import '../images/photo_image.dart';
 import 'pager.dart';
@@ -91,6 +92,21 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
 
   @override
   Widget build(BuildContext context) {
+    return OverDrag(
+      child: buildScrollable(context),
+      left: true,
+      right: true,
+      onOverDrag: (type) {
+        if (type == OverDragType.Left) {
+          widget.controller.onOverBound?.call(BoundType.Start);
+        } else if (type == OverDragType.Right) {
+          widget.controller.onOverBound?.call(BoundType.End);
+        }
+      },
+    );
+  }
+
+  Widget buildScrollable(BuildContext context) {
     var media = MediaQuery.of(context);
 
     AxisDirection axisDirection = AxisDirection.right;

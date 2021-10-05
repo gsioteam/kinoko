@@ -4,6 +4,7 @@ import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dio/adapter.dart';
 import 'package:ffi/ffi.dart';
 import 'package:glib/core/callback.dart';
 
@@ -101,6 +102,11 @@ class Request extends Base {
     //   onClientCreate: (_, config) => config.onBadCertificate = (_) => true,
     // ))
     ;
+    (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client) {
+      client.badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+      return client;
+    };
 
     control();
   }
@@ -185,31 +191,38 @@ class Request extends Base {
     if (_started) return;
     _started = true;
     try {
-      if (cacheResponse) {
-        Stream<FileResponse> stream = DefaultCacheManager().getFileStream(uri.toString(), headers: headers, withProgress: true);
-        await for (FileResponse res in stream) {
-          if (res is DownloadProgress) {
-            downloadTotal = res.totalSize;
-            downloadNow = res.downloaded;
-            if (onDownloadProgress != null) onDownloadProgress.invoke([downloadNow, downloadTotal]);
-          } else if (res is FileInfo) {
-            responseBody = await res.file.readAsBytes();
+      while (true) {
+        String cacheKey = uri.toString();
+        if (cacheResponse) {
+          var file = await DefaultCacheManager().getFileFromCache(cacheKey);
+          if (file != null) {
+            Stream<FileResponse> stream = DefaultCacheManager().getFileStream(uri.toString(), headers: headers, withProgress: true);
+            await for (FileResponse res in stream) {
+              if (res is DownloadProgress) {
+                downloadTotal = res.totalSize;
+                downloadNow = res.downloaded;
+                if (onDownloadProgress != null) onDownloadProgress.invoke([downloadNow, downloadTotal]);
+              } else if (res is FileInfo) {
+                responseBody = await res.file.readAsBytes();
+              }
+            }
+            break;
           }
         }
-      } else {
+
         Response<ResponseBody> res = await dio.requestUri(
-          uri,
-          options: Options(
-            headers: headers,
-            followRedirects: true,
-            requestEncoder: (request, options) {
-              return options.data;
-            },
-            validateStatus: (status) {
-              return status < 500;
-            }
-          ),
-          data: body ?? Uint8List(0)
+            uri,
+            options: Options(
+                headers: headers,
+                followRedirects: true,
+                requestEncoder: (request, options) {
+                  return options.data;
+                },
+                validateStatus: (status) {
+                  return status < 500;
+                }
+            ),
+            data: body ?? Uint8List(0)
         );
         if (_canceled) return;
         downloadTotal = int.tryParse(res.headers.value(Headers.contentLengthHeader) ?? "0") ?? 0;
@@ -235,6 +248,11 @@ class Request extends Base {
           }
         });
         responseBody = Uint8List.fromList(receiveBody);
+
+        if (cacheResponse) {
+          await DefaultCacheManager().putFile(cacheKey, responseBody);
+        }
+        break;
       }
 
     } catch (e) {

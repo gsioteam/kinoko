@@ -31,6 +31,21 @@ Widget makeBookItem(BuildContext context, Project project, DataItem item, void F
         image: provider,
         width: 26,
         height: 26,
+        errorBuilder: (context, e, stack) {
+          return Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: Colors.grey,
+            ),
+            child: Center(
+              child: Icon(
+                Icons.broken_image,
+                color: Colors.white,
+              ),
+            ),
+          );
+        },
       ));
       children.add(Padding(padding: EdgeInsets.all(5)));
     }
@@ -54,6 +69,21 @@ Widget makeBookItem(BuildContext context, Project project, DataItem item, void F
         fit: BoxFit.cover,
         width: 56,
         height: 56,
+        errorBuilder: (context, e, stack) {
+          return Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.grey,
+            ),
+            child: Center(
+              child: Icon(
+                Icons.broken_image,
+                color: Colors.white,
+              ),
+            ),
+          );
+        },
       ),
       onTap: onTap,
     );

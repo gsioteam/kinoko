@@ -7,19 +7,17 @@ import 'dart:typed_data';
 import 'package:file/src/interface/file.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:flutter_cache_manager/src/storage/file_system/file_system.dart';
 import 'package:file/local.dart';
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'package:file/file.dart';
-import 'package:http/http.dart' as http;
-
+import 'package:dio/dio.dart';
+import 'package:dio/adapter.dart';
 
 class SizeResult {
   int cached = 0;
@@ -313,17 +311,20 @@ class NeoImageStreamCompleter extends ImageStreamCompleter {
     getCodec();
   }
 
-  Future<Uint8List> fetch() async {
-    var req = http.Request("GET", provider.uri);
-    if (provider.headers != null) req.headers.addAll(provider.headers);
-    var response = await req.send();
+  Future<Uint8List> fetch(Dio dio) async {
+    Response<ResponseBody> response = await dio.requestUri(
+      provider.uri,
+      options: Options(
+        headers: provider.headers
+      ),
+    );
     if (response.statusCode >= 200 && response.statusCode < 300) {
       io.BytesBuilder builder = io.BytesBuilder();
-      await for (var chunk in response.stream) {
+      await for (var chunk in response.data.stream) {
         builder.add(chunk);
         reportImageChunkEvent(ImageChunkEvent(
             cumulativeBytesLoaded: builder.length,
-            expectedTotalBytes: response.contentLength
+            expectedTotalBytes: int.tryParse(response.headers.value(Headers.contentLengthHeader) ?? "0") ?? 0
         ));
       }
       var bytes = builder.toBytes();
@@ -338,8 +339,21 @@ class NeoImageStreamCompleter extends ImageStreamCompleter {
   }
 
   Future<Uint8List> startFetch() {
-
-    var async = fetch().timeout(provider.timeout);
+    Dio dio = Dio(
+      BaseOptions(
+        method: "GET",
+        responseType: ResponseType.stream,
+        connectTimeout: 5000,
+        receiveTimeout: 15000,
+        sendTimeout: 5000,
+      ),
+    );
+    (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client) {
+      client.badCertificateCallback =
+          (io.X509Certificate cert, String host, int port) => true;
+      return client;
+    };
+    var async = fetch(dio).timeout(provider.timeout);
     fetching[provider] = async;
     void _wait() async {
       try {
@@ -350,6 +364,7 @@ class NeoImageStreamCompleter extends ImageStreamCompleter {
       }
       finally {
         fetching.remove(provider);
+        dio.close(force: true);
       }
     }
     _wait();

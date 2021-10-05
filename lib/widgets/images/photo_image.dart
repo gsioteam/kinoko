@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:kinoko/widgets/over_drag.dart';
 import 'package:vector_math/vector_math_64.dart' as m64;
 
 import '../../localizations/localizations.dart';
@@ -11,9 +12,6 @@ import '../../localizations/localizations.dart';
 const double _ImageAspect = 1.55;
 
 class PhotoImageController {
-
-  static const int ANIMATE = 1;
-  static const int SET_START = 2;
 
   _PhotoImageState state;
 
@@ -381,12 +379,15 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
       controller.forward(from: 0);
     } else {
       controller.stop();
+      Offset trans = Offset(
+          _clampX(_translation.dx + offset),
+          _translation.dy);
+      Offset off = trans - _translation;
       setState(() {
-        _translation = Offset(
-            _clampX(_translation.dx + offset),
-            _translation.dy);
+        _translation = trans;
         _animateStart = _animateEnd = _translation;
       });
+      OverDragUpdateNotification(off).dispatch(context);
     }
   }
 

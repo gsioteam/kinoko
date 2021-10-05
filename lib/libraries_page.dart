@@ -184,6 +184,22 @@ class _LibraryCellState extends State<LibraryCell> {
           image: getIcon(),
           width: 56,
           height: 56,
+          errorBuilder: (context, e, stack) {
+            return Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                  color: Color(0x1F999999),
+                  borderRadius: BorderRadius.all(Radius.circular(4)),
+              ),
+              child: Center(
+                child: Icon(
+                  Icons.broken_image,
+                  color: Colors.white,
+                ),
+              ),
+            );
+          },
         ),
         decoration: BoxDecoration(
             color: Color(0x1F999999),
@@ -212,6 +228,20 @@ class _LibraryCellState extends State<LibraryCell> {
           image: getIcon(),
           width: 56,
           height: 56,
+          errorBuilder: (context, e, stack) {
+            return Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Color(0x1F999999),
+                borderRadius: BorderRadius.all(Radius.circular(4)),
+              ),
+              child: Icon(
+                Icons.broken_image,
+                color: Colors.white,
+              ),
+            );
+          },
         ),
         decoration: BoxDecoration(
           color: Color(0x1F999999),

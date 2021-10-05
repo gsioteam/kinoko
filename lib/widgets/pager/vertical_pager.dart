@@ -4,6 +4,7 @@ import 'package:flutter/src/foundation/change_notifier.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
+import 'package:kinoko/widgets/over_drag.dart';
 import 'package:kinoko/widgets/pager/pager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../images/zoom_image.dart';
@@ -41,6 +42,21 @@ class VerticalPagerState extends PagerState<VerticalPager> {
 
   @override
   Widget build(BuildContext context) {
+    return OverDrag(
+      child: buildScrollable(context),
+      up: true,
+      down: true,
+      onOverDrag: (type) {
+        if (type == OverDragType.Up) {
+          widget.controller.onOverBound?.call(BoundType.Start);
+        } else if (type == OverDragType.Down) {
+          widget.controller.onOverBound?.call(BoundType.End);
+        }
+      },
+    );
+  }
+
+  Widget buildScrollable(BuildContext context) {
     return ScrollablePositionedList.builder(
       padding: EdgeInsets.symmetric(
         vertical: _DefaultBarHeight

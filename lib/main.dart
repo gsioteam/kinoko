@@ -467,6 +467,19 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
                   fit: BoxFit.contain,
                   width: 36,
                   height: 36,
+                  errorBuilder: (context, e, stack) {
+                    return Container(
+                      width: 36,
+                      height: 36,
+                      child: Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
               clipper: OvalClipper(),
