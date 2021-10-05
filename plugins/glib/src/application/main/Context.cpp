@@ -280,7 +280,8 @@ void Context::enterView() {
 //        } else
         if (type != Search) {
             if (update || !data->size() || forceUpdate) {
-                reload();
+                if (auto_reload || flag == 0)
+                    reload();
             }
         }
         if (forceUpdate) {

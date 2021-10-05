@@ -50,6 +50,9 @@ class Context extends Base {
     call("setOnReloadComplete", argv: [cb]);
   }
 
+  bool get autoReload => call("isAutoReload");
+  set autoReload(bool v) => call("setAutoReload", argv: [v]);
+
   Array get data => call("getData");
   dynamic get infoData => call("getInfoData");
   set infoData(dynamic data) => call("setInfoData", argv: [data]);

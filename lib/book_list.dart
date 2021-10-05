@@ -51,6 +51,7 @@ class _BookListPageState extends State<BookListPage> {
       onTap: (DataItem item) async {
         if (item.type == DataItemType.Data) {
           Context itemContext = widget.project.createCollectionContext(BOOK_INDEX, item).control();
+          itemContext.autoReload = true;
           await Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => BookPage(itemContext, widget.project)
           ));

@@ -161,6 +161,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     Context ctx;
     if (type == DataItemType.Data) {
       ctx = project.createCollectionContext(BOOK_INDEX, item).control();
+      ctx.autoReload = true;
     } else {
       Fluttertoast.showToast(msg: kt("can_not_determine_the_context_type"));
       project.release();

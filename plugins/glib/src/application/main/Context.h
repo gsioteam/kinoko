@@ -38,6 +38,8 @@ namespace gs {
         std::string project_key;
         std::shared_ptr<Settings> settings;
 
+        bool auto_reload = false;
+
         void setupTarget(const gc::Ref<Collection> &target);
         void saveTime(const std::string &key);
 
@@ -123,6 +125,14 @@ namespace gs {
         }
         PROPERTY(on_call, getOnCall, setOnCall);
 
+        METHOD void setAutoReload(bool value) {
+            auto_reload = value;
+        }
+        METHOD bool isAutoReload() const {
+            return auto_reload;
+        }
+        PROPERTY(auto_reload, isAutoReload, setAutoReload);
+
         ON_LOADED_BEGIN(cls, gc::Object)
             ADD_METHOD(cls, Context, setup);
             ADD_METHOD(cls, Context, isReady);
@@ -147,6 +157,7 @@ namespace gs {
             ADD_PROPERTY(cls, "project_key", ADD_METHOD(cls, Context, getProjectKey), NULL);
             ADD_PROPERTY(cls, "temp", ADD_METHOD(cls, Context, getTemp), NULL);
             ADD_PROPERTY(cls, "item_temp", ADD_METHOD(cls, Context, getItemTemp), NULL);
+            ADD_PROPERTY(cls, "auto_reload", ADD_METHOD(cls, Context, isAutoReload), ADD_METHOD(cls, Context, setAutoReload));
         ON_LOADED_END
 
     CLASS_END

@@ -297,7 +297,6 @@ class DownloadQueueItem {
     project.control();
 
     context = project.createCollectionContext(CHAPTER_INDEX, item).control();
-
     try {
       if (state == DownloadState.None) {
         urls.clear();

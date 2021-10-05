@@ -82,6 +82,7 @@ class FavCheckItem {
     DataItemType type = item.type;
     if (type == DataItemType.Data) {
       Context context = project.createCollectionContext(BOOK_INDEX, item).control();
+      context.autoReload = true;
       await _updateValue(first, project, context);
       context.release();
     }
