@@ -1,0 +1,4 @@
+- Rewrite the zoom function
+- Fixed the image never load failed bug, now you can reload image after failed.
+- Added tap to navigate page
+- No longer reload data automatically in picture viewer
