@@ -143,9 +143,11 @@ class _ZoomImageState extends State<ZoomImage> {
   void _onScaleStart(ScaleStartDetails details) {
     _oldScalePoint = details.focalPoint;
     _oldScale = 1;
+    print("ScaleStart");
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
+    print("ScaleUpdate");
     setState(() {
       Offset offset = details.focalPoint - _oldScalePoint;
       _translation += offset;

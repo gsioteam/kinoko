@@ -6,7 +6,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
 import 'package:kinoko/widgets/over_drag.dart';
 import 'package:kinoko/widgets/pager/pager.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:my_scrollable_positioned_list/my_scrollable_positioned_list.dart';
 import '../images/zoom_image.dart';
 import 'dart:math' as math;
 
