@@ -8,10 +8,14 @@ import 'package:glib/main/project.dart';
 import 'package:glib/utils/git_repository.dart';
 import 'package:kinoko/book_list.dart';
 import 'package:glib/main/context.dart';
+import 'package:kinoko/libraries_page.dart';
 import 'package:kinoko/search_page.dart';
 import 'package:kinoko/settings_page.dart';
-import 'widgets/home_widget.dart';
+import 'package:kinoko/utils/image_provider.dart';
+import 'localizations/localizations.dart';
 import './configs.dart';
+
+const double _LogoSize = 24;
 
 class _RectClipper extends CustomClipper<Rect> {
 
@@ -35,32 +39,46 @@ class _RectClipper extends CustomClipper<Rect> {
   }
 }
 
-class CollectionsPage extends HomeWidget {
-  CollectionsPage() : super(key: GlobalKey(), title: "app_title");
+class CollectionsPage extends StatefulWidget {
+  CollectionsPage({Key key}) :
+        super(key: key);
 
   @override
   State<StatefulWidget> createState() {
     return _CollectionsPageState();
   }
 
-  GlobalKey searchKey = GlobalKey();
+}
+
+class _CollectionData {
+  Context context;
+  String title;
+
+  _CollectionData(this.context, this.title);
+}
+
+class _CollectionsPageState extends State<CollectionsPage> {
+
+  Project project;
+  List<_CollectionData> contexts;
+
+  final GlobalKey searchKey = GlobalKey();
 
   @override
-  List<Widget> buildActions(BuildContext context, void Function() changed) {
-    Project project = ((key as GlobalKey).currentState as _CollectionsPageState)?.project;
+  List<Widget> buildActions(BuildContext context) {
     List<Widget> actions = [];
 
     String settings = project?.settingsPath;
     if (settings != null && settings.isNotEmpty) {
       actions.add(
-        IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () async {
-              Context ctx = project.createSettingsContext().control();
-              await Navigator.of(context).push(MaterialPageRoute(builder: (_)=>SettingsPage(ctx)));
-              ctx.release();
-            }
-        )
+          IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () async {
+                Context ctx = project.createSettingsContext().control();
+                await Navigator.of(context).push(MaterialPageRoute(builder: (_)=>SettingsPage(ctx)));
+                ctx.release();
+              }
+          )
       );
     }
 
@@ -86,7 +104,6 @@ class CollectionsPage extends HomeWidget {
                   center = Offset(0, 0);
                 }
 
-                Project project = ((key as GlobalKey)?.currentState as _CollectionsPageState)?.project;
                 project?.control();
                 Context ctx = project?.createSearchContext()?.control();
                 await Navigator.of(context).push(PageRouteBuilder(
@@ -109,24 +126,17 @@ class CollectionsPage extends HomeWidget {
     }
     return actions;
   }
-}
-
-class _CollectionData {
-  Context context;
-  String title;
-
-  _CollectionData(this.context, this.title);
-}
-
-class _CollectionsPageState extends State<CollectionsPage> {
-
-  Project project;
-  List<_CollectionData> contexts;
 
   Widget missBuild(BuildContext context) {
-    return Container(
-      child: Text("No Project"),
-      alignment: Alignment.center,
+    return Scaffold(
+      appBar: AppBar(
+        title: buildLogo(context),
+        actions: buildActions(context),
+      ),
+      body: Container(
+        child: Text("No Project"),
+        alignment: Alignment.center,
+      ),
     );
   }
 
@@ -151,16 +161,18 @@ class _CollectionsPageState extends State<CollectionsPage> {
     return DefaultTabController(
       length: contexts.length,
       child: Scaffold(
-        appBar: tabs.length > 1 ? AppBar(
-          toolbarHeight: 36,
-          elevation: 0,
-          centerTitle: true,
-          title: TabBar(
-            tabs: tabs,
-            isScrollable: true,
-          ),
+        appBar: AppBar(
+          title: buildLogo(context),
+          actions: buildActions(context),
+          bottom: tabs.length > 0 ? PreferredSize(
+            preferredSize: new Size(double.infinity, 36.0),
+            child: TabBar(
+              tabs: tabs,
+              isScrollable: true,
+            ),
+          ) : null,
           automaticallyImplyLeading: false,
-        ) : null,
+        ),
         body: TabBarView(
           children: bodies
         ),
@@ -196,5 +208,56 @@ class _CollectionsPageState extends State<CollectionsPage> {
   @override
   Widget build(BuildContext context) {
     return (project != null && project.isValidated) ? defaultBuild(context) : missBuild(context);
+  }
+
+  Widget buildLogo(BuildContext context) {
+    return InkWell(
+      highlightColor: Theme.of(context).appBarTheme.backgroundColor,
+      child: Container(
+        height: 36,
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: _LogoSize / 2,
+              backgroundColor: Theme.of(context).colorScheme.background,
+              child: ClipOval(
+                child: Image(
+                  width: _LogoSize,
+                  height: _LogoSize,
+                  image: projectImageProvider(project),
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, e, stack) {
+                    return Container(
+                      width: _LogoSize,
+                      height: _LogoSize,
+                      child: Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          color: Theme.of(context).colorScheme.onBackground,
+                          size: 16,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                ),
+                child: Text(project.name),
+              ),
+            ),
+          ],
+        ),
+      ),
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+          return LibrariesPage();
+        }));
+      },
+    );
   }
 }

@@ -24,12 +24,12 @@ import 'package:glib/glib.dart';
 import 'package:glib/utils/git_repository.dart';
 import 'progress_dialog.dart';
 import 'utils/download_manager.dart';
+import 'utils/favorites_manager.dart';
 import 'utils/neo_cache_manager.dart';
 import 'utils/progress_items.dart';
 import 'localizations/localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'widgets/better_refresh_indicator.dart';
-import 'widgets/home_widget.dart';
 import 'favorites_page.dart';
 import 'download_page.dart';
 import 'package:xml_layout/types/colors.dart' as colors;
@@ -37,6 +37,8 @@ import 'package:xml_layout/types/icons.dart' as icons;
 import 'layout/layout.xml_layout.dart' as layout;
 import 'package:xml_layout/xml_layout.dart';
 import 'package:glib/utils/platform.dart' as glib;
+import 'themes/them_desc.dart';
+import 'widgets/oval_clipper.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(defaultStyle);
@@ -66,14 +68,7 @@ class MainAppState extends State<MainApp> {
           locale: locale,
           supportedLocales: KinokoLocalizationsDelegate.supports.values,
           title: 'Kinoko',
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-            visualDensity: VisualDensity.adaptivePlatformDensity,
-            brightness: Brightness.light,
-            appBarTheme: AppBarTheme(
-              brightness: Brightness.dark,
-            ),
-          ),
+          theme: themes[0].data,
           home: SplashScreen(),
         ),
       ),
@@ -335,19 +330,6 @@ class HomeDrawer extends StatefulWidget {
   }
 }
 
-class OvalClipper extends CustomClipper<Rect> {
-  @override
-  Rect getClip(Size size) {
-    return Rect.fromLTRB(0, 0, size.width, size.height);
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Rect> oldClipper) {
-    return false;
-  }
-
-}
-
 class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateMixin {
 
   AnimationController animationController;
@@ -432,23 +414,6 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
     super.dispose();
   }
 
-  ImageProvider getIcon(Project project) {
-    String icon = project?.icon;
-    if (icon != null && icon.isNotEmpty) {
-      return makeImageProvider(icon);
-    }
-    if (project.isValidated) {
-      String iconpath = project.fullpath + "/icon.png";
-      File icon = new File(iconpath);
-      if (icon.existsSync()) {
-        return FileImage(icon);
-      }
-    }
-    return NeoImageProvider(
-      uri: Uri.parse("https://www.tinygraphs.com/squares/${generateMd5(project.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg"),
-      cacheManager: NeoCacheManager.defaultManager
-    );
-  }
 
   List<Widget> buildList(Project project) {
     var lv = env_repo.localID(), hv = env_repo.highID();
@@ -463,7 +428,7 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
               child: Container(
                 color: Colors.blueAccent,
                 child: Image(
-                  image: getIcon(project),
+                  image: projectImageProvider(project),
                   fit: BoxFit.contain,
                   width: 36,
                   height: 36,
@@ -600,54 +565,14 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
     this.setState(() { });
   }
 
-
 }
 
-class NavigationController {
-  AppBarData appBarData;
-
-  NavigationController(this.appBarData);
-
-  String get title => appBarData == null ? "" : appBarData.title;
-
-  List<Widget> buildActions(BuildContext context, void Function() reload) {
-    return appBarData == null ? [] : appBarData.buildActions(context, reload);
-  }
-}
 
 class AppStatusNotification extends Notification {
 }
 
-class NavigationBar extends StatefulWidget implements PreferredSizeWidget {
 
-  final NavigationController controller;
-
-  NavigationBar(AppBarData appBarData) : controller = NavigationController(appBarData);
-
-  @override
-  State<StatefulWidget> createState() => _NavigationBarState();
-
-  @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
-}
-
-class _NavigationBarState extends State<NavigationBar> {
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      title: Text(kt(widget.controller.title)),
-      elevation: 0,
-      actions: widget.controller.buildActions(context, onReload),
-    );
-  }
-
-  void onReload() {
-    setState(() {});
-  }
-
-}
-
-class HomePage extends HomeWidget {
+class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
 
   final String title;
@@ -666,25 +591,25 @@ class _HomePageState extends State<HomePage> {
     return Project.getMainProject() != null;
   }
 
-  HomeWidget _getBody(BuildContext context) {
+  Widget _getBody(BuildContext context) {
     switch (selected) {
       case 0: {
-        return CollectionsPage();
+        return FavoritesPage(key: ValueKey(selected),);
       }
       case 1: {
-        return HistoryPage();
+        return DownloadPage(key: ValueKey(selected),);
       }
       case 2: {
-        return FavoritesPage();
+        return CollectionsPage(key: ValueKey(selected),);
       }
       case 3: {
-        return DownloadPage();
+        return HistoryPage(key: ValueKey(selected),);
       }
       case 4: {
-        return LibrariesPage();
+        return MainSettingsPage(key: ValueKey(selected),);
       }
       case 5: {
-        return MainSettingsPage();
+        return LibrariesPage(key: ValueKey(selected),);
       }
     }
     return null;
@@ -711,61 +636,95 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    HomeWidget body = _getBody(context);
+    Widget body = _getBody(context);
 
     return Scaffold(
-      drawer: Drawer(
-        child: ListView(
-          physics: ClampingScrollPhysics(),
-          children: <Widget>[
-            HomeDrawer(this),
-            ListTile(
-              selected: selected == 0,
-              leading: Icon(Icons.collections_bookmark, color: hasMainProject() ? null : Colors.black45,),
-              title: Text(kt("manga_home"), style: hasMainProject() ? null : TextStyle(color: Colors.black45),),
-              onTap: _onTap(0),
-            ),
-            ListTile(
-              selected: selected == 1,
-              leading: Icon(Icons.history),
-              title: Text(kt("history")),
-              onTap: _onTap(1),
-            ),
-            ListTile(
-              selected: selected == 2,
-              leading: Icon(Icons.favorite),
-              title: Text(kt("favorites")),
-              onTap: _onTap(2),
-            ),
-            ListTile(
-              selected: selected == 3,
-              leading: Icon(Icons.file_download),
-              title: Text(kt("download_list")),
-              onTap: _onTap(3),
-            ),
-            Divider(),
-            ListTile(
-              selected: selected == 4,
-              leading: Icon(Icons.account_balance),
-              title: Text(kt("manage_projects")),
-              onTap: _onTap(4),
-            ),
-            Divider(),
-            ListTile(
-              selected: selected == 5,
-              leading: Icon(Icons.settings),
-              title: Text(kt("settings")),
-              onTap: _onTap(5),
-            ),
-          ],
-        ),
-      ),
-      appBar: NavigationBar(body.appBarData),
+      // drawer: Drawer(
+      //   child: ListView(
+      //     physics: ClampingScrollPhysics(),
+      //     children: <Widget>[
+      //       HomeDrawer(this),
+      //       ListTile(
+      //         selected: selected == 0,
+      //         leading: Icon(Icons.collections_bookmark, color: hasMainProject() ? null : Colors.black45,),
+      //         title: Text(kt("manga_home"), style: hasMainProject() ? null : TextStyle(color: Colors.black45),),
+      //         onTap: _onTap(0),
+      //       ),
+      //       ListTile(
+      //         selected: selected == 1,
+      //         leading: Icon(Icons.history),
+      //         title: Text(kt("history")),
+      //         onTap: _onTap(1),
+      //       ),
+      //       ListTile(
+      //         selected: selected == 2,
+      //         leading: Icon(Icons.favorite),
+      //         title: Text(kt("favorites")),
+      //         onTap: _onTap(2),
+      //       ),
+      //       ListTile(
+      //         selected: selected == 3,
+      //         leading: Icon(Icons.file_download),
+      //         title: Text(kt("download_list")),
+      //         onTap: _onTap(3),
+      //       ),
+      //       Divider(),
+      //       ListTile(
+      //         selected: selected == 4,
+      //         leading: Icon(Icons.account_balance),
+      //         title: Text(kt("manage_projects")),
+      //         onTap: _onTap(4),
+      //       ),
+      //       Divider(),
+      //       ListTile(
+      //         selected: selected == 5,
+      //         leading: Icon(Icons.settings),
+      //         title: Text(kt("settings")),
+      //         onTap: _onTap(5),
+      //       ),
+      //     ],
+      //   ),
+      // ),
       body: NotificationListener<AppStatusNotification>(
-        child: body,
+        child: AnimatedSwitcher(
+          duration: Duration(milliseconds: 300),
+          child: body,
+        ),
         onNotification: (_) {
           setState(() { });
           return true;
+        },
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        type: BottomNavigationBarType.fixed,
+        currentIndex: selected,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: kt("favorites"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.file_download),
+            label: kt("download_list"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_filled),
+            label: kt("manga_home"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: kt("history"),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: kt("settings"),
+          ),
+        ],
+        onTap: (index) {
+          setState(() {
+            selected = index;
+          });
         },
       ),
     );
@@ -774,6 +733,14 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    selected = hasMainProject() ? 0 : 4;
+    if (hasMainProject()) {
+      if (FavoritesManager().items.length > 0) {
+        selected = 0;
+      } else {
+        selected = 2;
+      }
+    } else {
+      selected = 4;
+    }
   }
 }

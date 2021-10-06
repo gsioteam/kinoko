@@ -15,7 +15,6 @@
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">@drawable/launch_background</item>
         <item name="android:navigationBarColor">#ffffff</item>
-        <item name="android:navigationBarDividerColor">#eeeeee</item>
         <item name="android:windowLightNavigationBar">true</item>
     </style>
 </resources>

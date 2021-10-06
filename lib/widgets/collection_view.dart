@@ -87,9 +87,12 @@ class CollectionViewState extends State<CollectionView> {
     };
     if (widget.extensions != null)
       objects.addAll(widget.extensions);
-    return XmlLayout(
-      template: widget.template,
-      objects: objects,
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      child: XmlLayout(
+        template: widget.template,
+        objects: objects,
+      ),
     );
   }
 

@@ -593,6 +593,7 @@ class _PictureViewerState extends State<PictureViewer> {
 
   void touch() {
     cacheKey = NeoCacheManager.cacheKey(pictureContext.infoData);
+    _cacheManager = NeoCacheManager(cacheKey);
     preloadQueue = PreloadQueue();
     pictureContext.control();
     pictureContext.onDataChanged = Callback.fromFunction(onDataChanged).release();

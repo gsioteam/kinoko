@@ -6,13 +6,12 @@ import 'package:kinoko/configs.dart';
 import 'package:kinoko/utils/download_manager.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
-import 'package:kinoko/widgets/home_widget.dart';
 import 'localizations/localizations.dart';
 import 'progress_dialog.dart';
 import 'widgets/settings_list.dart';
 
-class MainSettingsPage extends HomeWidget {
-  MainSettingsPage() : super(title: "settings");
+class MainSettingsPage extends StatefulWidget {
+  MainSettingsPage({Key key}) : super(key: key,);
 
   @override
   State<StatefulWidget> createState() => _MainSettingsPageState();
@@ -43,6 +42,7 @@ class ClearProgressItem extends ProgressItem {
 class _MainSettingsPageState extends State<MainSettingsPage> {
 
   SizeResult size;
+  bool _disposed = false;
 
   String _sizeString(int size) {
     String unit = "KB";
@@ -63,82 +63,88 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
         localeValue = key;
       }
     });
-    return SettingsList(
-      items: [
-        SettingItem(
-            SettingItemType.Header, 
-            kt("general")
-        ),
-        SettingItem(
-          SettingItemType.Options,
-          kt("language"),
-          value: localeValue,
-          data: [
-            OptionItem("English", "en"),
-            OptionItem("中文(繁體)", "zh-hant"),
-            OptionItem("中文(简体)", "zh-hans"),
-            OptionItem("Español", "es"),
-            OptionItem("русский", "ru"),
-            OptionItem("Deutsch", "de"),
-            OptionItem("Italiano", "it"),
-          ],
-          onChange: (value) {
-            KeyValue.set(language_key, value);
-            LocaleChangedNotification(KinokoLocalizationsDelegate.supports[value]).dispatch(context);
-          }
-        ),
-        SettingItem(
-          SettingItemType.Button,
-          kt("cached_size"),
-          value: size == null ? "..." : _sizeString(size.other),
-          data: () async {
-            bool result = await showDialog<bool>(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text(kt("confirm")),
-                    content: Text(kt("clear_cache")),
-                    actions: [
-                      TextButton(
-                        child: Text(kt("no")),
-                        onPressed: ()=> Navigator.of(context).pop(false),
-                      ),
-                      TextButton(
-                        child: Text(kt("yes")),
-                        onPressed:()=> Navigator.of(context).pop(true),
-                      ),
-                    ],
-                  );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(kt('settings')),
+      ),
+      body: SettingsList(
+        items: [
+          SettingItem(
+              SettingItemType.Header,
+              kt("general")
+          ),
+          SettingItem(
+              SettingItemType.Options,
+              kt("language"),
+              value: localeValue,
+              data: [
+                OptionItem("English", "en"),
+                OptionItem("中文(繁體)", "zh-hant"),
+                OptionItem("中文(简体)", "zh-hans"),
+                OptionItem("Español", "es"),
+                OptionItem("русский", "ru"),
+                OptionItem("Deutsch", "de"),
+                OptionItem("Italiano", "it"),
+              ],
+              onChange: (value) {
+                KeyValue.set(language_key, value);
+                LocaleChangedNotification(KinokoLocalizationsDelegate.supports[value]).dispatch(context);
+              }
+          ),
+          SettingItem(
+              SettingItemType.Button,
+              kt("cached_size"),
+              value: size == null ? "..." : _sizeString(size.other),
+              data: () async {
+                bool result = await showDialog<bool>(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text(kt("confirm")),
+                        content: Text(kt("clear_cache")),
+                        actions: [
+                          TextButton(
+                            child: Text(kt("no")),
+                            onPressed: ()=> Navigator.of(context).pop(false),
+                          ),
+                          TextButton(
+                            child: Text(kt("yes")),
+                            onPressed:()=> Navigator.of(context).pop(true),
+                          ),
+                        ],
+                      );
+                    }
+                );
+                if (result == true) {
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProgressDialog(title: "", item: ClearProgressItem(
+                      action: () async {
+                        Set<String> cached = Set();
+                        for (var item in DownloadManager().items) {
+                          cached.add(item.cacheKey);
+                        }
+                        await NeoCacheManager.clearCache(without: cached);
+                        await fetchSize();
+                      }
+                  ),)));
                 }
-            );
-            if (result == true) {
-              Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProgressDialog(title: "", item: ClearProgressItem(
-                action: () async {
-                  Set<String> cached = Set();
-                  for (var item in DownloadManager().items) {
-                    cached.add(item.cacheKey);
-                  }
-                  await NeoCacheManager.clearCache(without: cached);
-                  await fetchSize();
-                }
-              ),)));
-            }
-          }
-        ),
-        SettingItem(
-          SettingItemType.Label,
-          kt("download_size"),
-          value: size == null ? "..." : _sizeString(size.cached)
-        ),
-        SettingItem(
-          SettingItemType.Button,
-          kt("disclaimer"),
-          value: "",
-          data: () {
-            showCreditsDialog(context);
-          }
-        )
-      ],
+              }
+          ),
+          SettingItem(
+              SettingItemType.Label,
+              kt("download_size"),
+              value: size == null ? "..." : _sizeString(size.cached)
+          ),
+          SettingItem(
+              SettingItemType.Button,
+              kt("disclaimer"),
+              value: "",
+              data: () {
+                showCreditsDialog(context);
+              }
+          )
+        ],
+      ),
     );
   }
 
@@ -149,6 +155,11 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
     fetchSize();
   }
 
+  void dispose() {
+    super.dispose();
+    _disposed = true;
+  }
+
   Future<void> fetchSize() async {
     Set<String> cached = Set();
     for (var item in DownloadManager().items) {
@@ -157,8 +168,10 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
     SizeResult size = await NeoCacheManager.calculateCacheSize(
         cached: cached
     );
-    setState(() {
-      this.size = size;
-    });
+    if (!_disposed) {
+      setState(() {
+        this.size = size;
+      });
+    }
   }
 }

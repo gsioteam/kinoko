@@ -15,45 +15,13 @@ import 'localizations/localizations.dart';
 
 import 'picture_viewer.dart';
 import 'utils/neo_cache_manager.dart';
-import 'widgets/home_widget.dart';
 
-class HistoryPage extends HomeWidget {
-  HistoryPage() : super(key: GlobalKey<_HistoryPageState>(), title: "history");
+class HistoryPage extends StatefulWidget {
+  HistoryPage({Key key}) : super(key: key, );
 
   @override
   State<StatefulWidget> createState() => _HistoryPageState();
 
-  @override
-  List<Widget> buildActions(BuildContext context, void Function() changed) {
-    return [
-      IconButton(
-          icon: Icon(Icons.clear_all),
-          onPressed: () async {
-            bool ret = await showDialog<bool>(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text(kt(context, "confirm")),
-                  content: Text(kt(context, "clear_history")),
-                  actions: [
-                    TextButton(
-                      child: Text(kt(context, "no")),
-                      onPressed: ()=> Navigator.of(context).pop(false),
-                    ),
-                    TextButton(
-                      child: Text(kt(context, "yes")),
-                      onPressed:()=> Navigator.of(context).pop(true),
-                    ),
-                  ],
-                );
-              }
-            );
-            if (ret == true)
-              HistoryManager().clear();
-          }
-      )
-    ];
-  }
 }
 
 class _HistoryPageState extends State<HistoryPage> {
@@ -78,35 +46,70 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     List<HistoryItem> items = HistoryManager().items;
-    return ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        HistoryItem item = items[index];
-        DataItem data = item.item;
-        return Column(
-          children: [
-            ListTile(
-              title: Text(data.title),
-              subtitle: Text(data.subtitle),
-              leading: Image(
-                image: NeoImageProvider(
-                  uri: Uri.parse(data.picture),
-                  cacheManager: NeoCacheManager.defaultManager
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(kt("history")),
+        actions: [
+          IconButton(
+              icon: Icon(Icons.clear_all),
+              onPressed: () async {
+                bool ret = await showDialog<bool>(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text(kt("confirm")),
+                        content: Text(kt("clear_history")),
+                        actions: [
+                          TextButton(
+                            child: Text(kt("no")),
+                            onPressed: ()=> Navigator.of(context).pop(false),
+                          ),
+                          TextButton(
+                            child: Text(kt("yes")),
+                            onPressed:()=> Navigator.of(context).pop(true),
+                          ),
+                        ],
+                      );
+                    }
+                );
+                if (ret == true)
+                  HistoryManager().clear();
+              }
+          )
+        ],
+      ),
+      body: ListView.builder(
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            HistoryItem item = items[index];
+            DataItem data = item.item;
+            return Column(
+              children: [
+                ListTile(
+                  title: Text(data.title),
+                  subtitle: Text(data.subtitle),
+                  leading: Image(
+                    image: NeoImageProvider(
+                        uri: Uri.parse(data.picture),
+                        cacheManager: NeoCacheManager.defaultManager
+                    ),
+                    fit: BoxFit.cover,
+                    width: 56,
+                    height: 56,
+                    gaplessPlayback: true,
+                  ),
+                  onTap: () {
+                    enterPage(item);
+                  },
                 ),
-                fit: BoxFit.cover,
-                width: 56,
-                height: 56,
-                gaplessPlayback: true,
-              ),
-              onTap: () {
-                enterPage(item);
-              },
-            ),
-            Divider(height: 1,)
-          ],
-        );
-      }
+                Divider(height: 1,)
+              ],
+            );
+          }
+      ),
     );
+
   }
 
   void enterPage(HistoryItem historyItem) async {

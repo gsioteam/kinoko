@@ -12,7 +12,7 @@
 "new_project_hint": "Git://..."
 "add_project_failed": "No se puede añadir, ¿se habría añadido antes？"
 "manage_projects": "Gestionar proyectos"
-"manga_home": "Manga Hogar"
+"manga_home": "Manga"
 "favorites": "Favoritas"
 "history": "Historial"
 "chapters": "Capítulos"
@@ -20,7 +20,7 @@
 "order": "Orden normal"
 "no_project_found": "No se encontró el proyecto"
 "can_not_determine_the_context_type": "No se puede determinar el tipo de contexto"
-"download_list": "Lista de descargas"
+"download_list": "Descargas"
 "delete_item": "Eliminar {0}({1})"
 "undo": "Deshacer"
 "search": "Búsqueda"
@@ -80,3 +80,4 @@ orientation: Orientación del dispositivo
 prev: Anterior
 menu: Menú
 next: Siguiente
+no_data: No Data

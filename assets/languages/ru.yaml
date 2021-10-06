@@ -12,7 +12,7 @@
 "new_project_hint": "Git://..."
 "add_project_failed": "Не могу добавить, Может уже добавлено？"
 "manage_projects": "Управлять проектами"
-"manga_home": "Манга Главная"
+"manga_home": "Манга"
 "favorites": "Избранное"
 "history": "История"
 "chapters": "Главы"
@@ -20,7 +20,7 @@
 "order": "Положительный заказ"
 "no_project_found": "Проект не найден"
 "can_not_determine_the_context_type": "Не могу определить тип контекста"
-"download_list": "Список загрузок"
+"download_list": "Загрузки"
 "delete_item": "Удалить {0}({1})"
 "undo": "Отменить"
 "search": "Поиск"
@@ -80,3 +80,4 @@ orientation: Ориентация устройства
 prev: предыдущая
 menu: Меню
 next: следующий
+no_data: No Data

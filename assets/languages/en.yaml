@@ -11,7 +11,7 @@
 "new_project_hint": "Git://..."
 "add_project_failed": "Can not add，Maybe it be added already？"
 "manage_projects": "Manage Projects"
-"manga_home": "Manga Home"
+"manga_home": "Manga"
 "favorites": "Favorites"
 "history": "History"
 "chapters": "Chapters"
@@ -19,7 +19,7 @@
 "order": "Positive Order"
 "no_project_found": "The project is not found"
 "can_not_determine_the_context_type": "Can not determine the context type"
-"download_list": "Download List"
+"download_list": "Downloads"
 "delete_item": "Delete {0}({1})"
 "undo": "Undo"
 "search": "Search"
@@ -79,3 +79,4 @@ orientation: Device Orientation
 prev: Prev
 menu: Menu
 next: Next
+no_data: No Data

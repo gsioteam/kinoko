@@ -18,7 +18,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'localizations/localizations.dart';
 import 'main.dart';
-import 'widgets/home_widget.dart';
 import 'widgets/better_refresh_indicator.dart';
 import 'package:http/http.dart' as http;
 import 'package:glib/main/context.dart';
@@ -66,26 +65,6 @@ class _LibraryCellState extends State<LibraryCell> {
     r(library);
     r(project);
     super.dispose();
-  }
-
-  ImageProvider getIcon() {
-    String icon = library.icon;
-    if (icon != null && icon.isNotEmpty) {
-      return makeImageProvider(icon);
-    }
-    if (project.isValidated) {
-      String iconpath = project.fullpath + "/icon.png";
-      File icon = new File(iconpath);
-      if (icon.existsSync()) {
-        return FileImage(icon);
-      } else if (project.icon.isNotEmpty) {
-        return makeImageProvider(project.icon);
-      }
-    }
-    return NeoImageProvider(
-      uri: Uri.parse("https://www.tinygraphs.com/squares/${generateMd5(library.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg"),
-      cacheManager: NeoCacheManager.defaultManager
-    );
   }
 
   void installConfirm() {
@@ -176,12 +155,13 @@ class _LibraryCellState extends State<LibraryCell> {
     String title = library.title;
     if (title == null || title.isEmpty) title = library.url;
     return ListTile(
+      tileColor: Theme.of(context).colorScheme.surface,
       contentPadding: EdgeInsets.fromLTRB(16, 6, 10, 6),
       title: Text(title,),
       subtitle: Text(kt("not_installed")),
       leading: Container(
         child: Image(
-          image: getIcon(),
+          image: projectImageProvider(project),
           width: 56,
           height: 56,
           errorBuilder: (context, e, stack) {
@@ -218,6 +198,7 @@ class _LibraryCellState extends State<LibraryCell> {
       icons.insert(0, WidgetSpan(child: Icon(Icons.arrow_right, color: Colors.blueAccent,)));
     }
     return ListTile(
+      tileColor: Theme.of(context).colorScheme.surface,
       contentPadding: EdgeInsets.fromLTRB(16, 6, 10, 6),
       title: Text.rich(TextSpan(
         children: icons
@@ -225,7 +206,7 @@ class _LibraryCellState extends State<LibraryCell> {
       subtitle: Text("Ver. ${repo.localID()}"),
       leading: Container(
         child: Image(
-          image: getIcon(),
+          image: projectImageProvider(project),
           width: 56,
           height: 56,
           errorBuilder: (context, e, stack) {
@@ -293,70 +274,16 @@ class _LibraryCellState extends State<LibraryCell> {
 
 }
 
-class LibrariesPage extends HomeWidget {
-  String _inputText;
-  bool Function(String) onInsert;
+class LibrariesPage extends StatefulWidget {
 
-  @override
-  String get title => "manage_projects";
-
-  LibrariesPage();
+  LibrariesPage({
+    Key key,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _LibrariesPageState();
 
-  void textInput(String text) {
-    _inputText = text;
-  }
 
-  void addProject(BuildContext context, String url) {
-    if (url.isEmpty) {
-      return;
-    }
-    if (onInsert == null || !onInsert(url)) {
-      Fluttertoast.showToast(
-        msg: kt(context, "add_project_failed"),
-        toastLength: Toast.LENGTH_SHORT,
-      );
-    }
-  }
-
-  buildActions(BuildContext context, reload) {
-    return [
-      IconButton(
-          icon: Icon(Icons.add),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text(kt(context, "new_project")),
-                  content: TextField(
-                    decoration: InputDecoration(
-                      hintText: kt(context, "new_project_hint")
-                    ),
-                    onChanged: textInput,
-                  ),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: (){
-                        Navigator.of(context).pop();
-                        addProject(context, _inputText);
-                      },
-                      child: Text(kt(context, "add"))
-                    )
-                  ],
-                );
-              },
-            );
-          }
-      )
-    ];
-  }
-}
-
-String generateMd5(String input) {
-  return md5.convert(utf8.encode(input)).toString();
 }
 
 class _LibrariesPageState extends State<LibrariesPage> {
@@ -364,9 +291,9 @@ class _LibrariesPageState extends State<LibrariesPage> {
   LibraryContext ctx;
   BetterRefreshIndicatorController _controller;
   int pageIndex = 0;
-  String _currentToken;
   bool hasMore = false;
   static DateTime lastUpdateTime;
+  String _inputText;
 
   Future<bool> requestPage(int page) async {
     String url = LibURL.replaceAll("{0}", page.toString()).replaceAll("{1}", per_page.toString());
@@ -436,110 +363,159 @@ class _LibrariesPageState extends State<LibrariesPage> {
     return false;
   }
 
+  void addProject(BuildContext context, String url) {
+    if (url.isEmpty) {
+      return;
+    }
+
+    if (insertLibrary(url) == false) {
+      Fluttertoast.showToast(
+        msg: kt("add_project_failed"),
+        toastLength: Toast.LENGTH_SHORT,
+      );
+    }
+  }
+
+  void textInput(String text) {
+    _inputText = text;
+  }
+
   @override
   Widget build(BuildContext context) {
     var project = Project.getMainProject();
     bool hasProject = project != null;
 
-    return BetterRefreshIndicator(
-      child: NotificationListener<ScrollUpdateNotification>(
-        child: ListView.separated(
-          itemBuilder: (context, idx) {
-            if (!hasProject) {
-              if (idx == 0) {
-                return Container(
-                  color: Colors.lightGreenAccent,
-                  padding: EdgeInsets.all(10),
-                  child: Text(
-                    kt("libraries_hit"),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyText1.copyWith(
-                      color: Colors.indigo
-                    ),
-                  ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(kt("manage_projects")),
+        actions: [
+          IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text(kt("new_project")),
+                      content: TextField(
+                        decoration: InputDecoration(
+                            hintText: kt("new_project_hint")
+                        ),
+                        onChanged: textInput,
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                            onPressed: (){
+                              Navigator.of(context).pop();
+                              addProject(context, _inputText);
+                            },
+                            child: Text(kt("add"))
+                        )
+                      ],
+                    );
+                  },
                 );
-              } else {
-                --idx;
               }
-            }
-            GitLibrary library = data[idx];
-            String token = library.token;
-            if (true) {
-              String url = library.url;
-              return Dismissible(
-                key: GlobalObjectKey(url),
-                background: Container(color: Colors.red,),
-                child: LibraryCell(
-                  data: data,
-                  index: idx
-                ),
-                confirmDismiss: (_) async {
-                  bool result = await showDialog<bool>(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text(kt("remove_project")),
-                        content: Text(kt("would_remove_project").replaceFirst("{0}", url)),
-                        actions: [
-                          TextButton(
-                            onPressed: (){
-                              Navigator.of(context).pop(false);
-                            },
-                            child: Text(kt("no"))
-                          ),
-                          TextButton(
-                            onPressed: (){
-                              Navigator.of(context).pop(true);
-                            },
-                            child: Text(kt("yes"))
-                          ),
-                        ],
-                      );
-                    }
-                  );
-                  return result == true;
-                },
-                onDismissed: (_) {
-                  setState(() {
-                    String name = Bit64.encodeString(url);
-                    var project = Project.allocate(name);
-                    project.remove();
-                    project.release();
-                    ctx.removeLibrary(url);
-                    AppStatusNotification().dispatch(context);
-                  });
-                },
-              );
-            } else {
-              return LibraryCell(
-                key: GlobalObjectKey(token),
-                data: data,
-                index: idx
-              );
-            }
-          },
-          separatorBuilder: (context, idx) {
-            return Divider(height: 1,);
-          },
-          itemCount: hasProject ? data.length : data.length + 1
-        ),
-        onNotification: onUpdateNotification,
+          )
+        ],
       ),
-      controller: _controller,
+      body: BetterRefreshIndicator(
+        child: NotificationListener<ScrollUpdateNotification>(
+          child: ListView.separated(
+              itemBuilder: (context, idx) {
+                if (!hasProject) {
+                  if (idx == 0) {
+                    return Container(
+                      color: Colors.lightGreenAccent,
+                      padding: EdgeInsets.all(10),
+                      child: Text(
+                        kt("libraries_hit"),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyText1.copyWith(
+                            color: Colors.indigo
+                        ),
+                      ),
+                    );
+                  } else {
+                    --idx;
+                  }
+                }
+                GitLibrary library = data[idx];
+                String token = library.token;
+                if (true) {
+                  String url = library.url;
+                  return Dismissible(
+                    key: GlobalObjectKey(url),
+                    background: Container(color: Theme.of(context).errorColor,),
+                    child: LibraryCell(
+                        data: data,
+                        index: idx
+                    ),
+                    confirmDismiss: (_) async {
+                      bool result = await showDialog<bool>(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text(kt("remove_project")),
+                              content: Text(kt("would_remove_project").replaceFirst("{0}", url)),
+                              actions: [
+                                TextButton(
+                                    onPressed: (){
+                                      Navigator.of(context).pop(false);
+                                    },
+                                    child: Text(kt("no"))
+                                ),
+                                TextButton(
+                                    onPressed: (){
+                                      Navigator.of(context).pop(true);
+                                    },
+                                    child: Text(kt("yes"))
+                                ),
+                              ],
+                            );
+                          }
+                      );
+                      return result == true;
+                    },
+                    onDismissed: (_) {
+                      setState(() {
+                        String name = Bit64.encodeString(url);
+                        var project = Project.allocate(name);
+                        project.remove();
+                        project.release();
+                        ctx.removeLibrary(url);
+                        AppStatusNotification().dispatch(context);
+                      });
+                    },
+                  );
+                } else {
+                  return LibraryCell(
+                      key: GlobalObjectKey(token),
+                      data: data,
+                      index: idx
+                  );
+                }
+              },
+              separatorBuilder: (context, idx) {
+                return Divider(height: 1,);
+              },
+              itemCount: hasProject ? data.length : data.length + 1
+          ),
+          onNotification: onUpdateNotification,
+        ),
+        controller: _controller,
+      ),
     );
   }
 
   @override
   void didUpdateWidget(LibrariesPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    oldWidget.onInsert = null;
-    widget.onInsert = insertLibrary;
   }
 
   @override
   void initState() {
     super.initState();
-    widget.onInsert = insertLibrary;
     _controller = BetterRefreshIndicatorController();
     _controller.onRefresh = onRefresh;
     ctx = LibraryContext.allocate();
@@ -556,7 +532,6 @@ class _LibrariesPageState extends State<LibrariesPage> {
     r(data);
     r(ctx);
     super.dispose();
-    widget.onInsert = null;
     _controller.onRefresh = null;
   }
 }

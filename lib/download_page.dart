@@ -20,7 +20,6 @@ import 'utils/neo_cache_manager.dart';
 import 'widgets/better_snack_bar.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 
-import 'widgets/home_widget.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -298,29 +297,11 @@ class _ChapterCellState extends State<ChapterCell> {
 }
 
 
-class DownloadPage extends HomeWidget {
-  final GlobalKey iconKey = GlobalKey();
-  DownloadPage() : super(key: GlobalKey<_DownloadPageState>(), title: "download_list");
+class DownloadPage extends StatefulWidget {
+  DownloadPage({Key key}) : super(key: key,);
 
   @override
   State<StatefulWidget> createState() => _DownloadPageState();
-
-  @override
-  List<Widget> buildActions(BuildContext context, void Function() changed) {
-    bool has = KeyValue.get("$viewed_key:download") == "true";
-    return [
-      IconButton(
-        key: iconKey,
-        onPressed: () {
-          showInstructionsDialog(context, 'assets/download',
-            entry: kt(context, 'lang'),
-          );
-        },
-        icon: Icon(Icons.help_outline),
-        color: has ? Colors.white : Colors.transparent,
-      ),
-    ];
-  }
 }
 
 class _NeedRemove {
@@ -554,9 +535,31 @@ class _DownloadPageState extends State<DownloadPage> {
     );
   }
 
+  final GlobalKey iconKey = GlobalKey();
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    bool has = KeyValue.get("$viewed_key:download") == "true";
+    return [
+      IconButton(
+        key: iconKey,
+        onPressed: () {
+          showInstructionsDialog(context, 'assets/download',
+            entry: kt('lang'),
+          );
+        },
+        icon: Icon(Icons.help_outline),
+        color: has ? Colors.white : Colors.transparent,
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(kt('download_list')),
+        actions: buildActions(context),
+      ),
       body: AnimatedList(
         key: _listKey,
         initialItemCount: data.length,
@@ -603,7 +606,7 @@ class _DownloadPageState extends State<DownloadPage> {
         await showInstructionsDialog(context, 'assets/download',
             entry: kt('lang'),
             onPop: () async {
-              final renderObject = widget.iconKey.currentContext.findRenderObject();
+              final renderObject = iconKey.currentContext.findRenderObject();
               Rect rect = renderObject?.paintBounds;
               var translation = renderObject?.getTransformTo(null)?.getTranslation();
               if (rect != null && translation != null) {

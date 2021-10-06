@@ -39,25 +39,25 @@
                                     <WebImage fit="cover" url="${itemData.picture}" width="56" height="56"/>
                                 </attr:leading>
                             </if>
-                            <attr:trailing>
-                                <IconButton>
-                                    <attr:icon>
-                                        <if candidate="${itemData.isFavorite}">
-                                            <Icon color="red">favorite</Icon>
-                                        </if>
-                                        <else>
-                                            <Icon color="black12">favorite_border</Icon>
-                                        </else>
-                                    </attr:icon>
-                                    <attr:onPressed>
-                                        <Function>
-                                            <Call function="$toggleFavorite">
-                                                <Argument value="$index"/>
-                                            </Call>
-                                        </Function>
-                                    </attr:onPressed>
-                                </IconButton>
-                            </attr:trailing>
+<!--                            <attr:trailing>-->
+<!--                                <IconButton>-->
+<!--                                    <attr:icon>-->
+<!--                                        <if candidate="${itemData.isFavorite}">-->
+<!--                                            <Icon color="red">favorite</Icon>-->
+<!--                                        </if>-->
+<!--                                        <else>-->
+<!--                                            <Icon color="black12">favorite_border</Icon>-->
+<!--                                        </else>-->
+<!--                                    </attr:icon>-->
+<!--                                    <attr:onPressed>-->
+<!--                                        <Function>-->
+<!--                                            <Call function="$toggleFavorite">-->
+<!--                                                <Argument value="$index"/>-->
+<!--                                            </Call>-->
+<!--                                        </Function>-->
+<!--                                    </attr:onPressed>-->
+<!--                                </IconButton>-->
+<!--                            </attr:trailing>-->
                             <attr:onTap>
                                 <Function>
                                     <Call function="$onTap">

@@ -11,7 +11,6 @@ import 'package:glib/main/project.dart';
 import 'configs.dart';
 import 'main.dart';
 import 'utils/neo_cache_manager.dart';
-import 'widgets/home_widget.dart';
 import 'widgets/book_item.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'localizations/localizations.dart';
@@ -113,34 +112,15 @@ class _FavoriteItemState extends State<FavoriteItem> {
   }
 }
 
-class FavoritesPage extends HomeWidget {
+class FavoritesPage extends StatefulWidget {
 
-  final GlobalKey iconKey = GlobalKey();
-
-  @override
-  String get title => "favorites";
+  FavoritesPage({Key key}) : super(key: key,);
 
   @override
   State<StatefulWidget> createState() {
     return _FavoritesPageState();
   }
 
-  @override
-  List<Widget> buildActions(BuildContext context, void Function() changed) {
-    bool has = KeyValue.get("$viewed_key:fav") == "true";
-    return [
-      IconButton(
-        key: iconKey,
-        onPressed: () {
-          showInstructionsDialog(context, 'assets/fav',
-            entry: kt(context, 'lang'),
-          );
-        },
-        icon: Icon(Icons.help_outline),
-        color: has ? Colors.white : Colors.transparent,
-      ),
-    ];
-  }
 }
 
 class _FavoritesPageState extends State<FavoritesPage> {
@@ -231,23 +211,46 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedList(
-      key: _listKey,
-      initialItemCount: items.length,
-      itemBuilder: (context, index, animation) {
-        FavCheckItem item = items[index];
-        return FavoriteItem(
-          key: _FavKey(item),
-          animation: animation,
-          item: item,
-          onTap: () {
-            itemClicked(index);
-          },
-          onDismiss: () {
-            onRemoveItem(item);
-          },
-        );
-      },
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(kt("favorites")),
+        actions: buildActions(context),
+      ),
+      body: items.length > 0 ? AnimatedList(
+        key: _listKey,
+        initialItemCount: items.length,
+        itemBuilder: (context, index, animation) {
+          FavCheckItem item = items[index];
+          return FavoriteItem(
+            key: _FavKey(item),
+            animation: animation,
+            item: item,
+            onTap: () {
+              itemClicked(index);
+            },
+            onDismiss: () {
+              onRemoveItem(item);
+            },
+          );
+        },
+      ) : Container(
+        child: Center(
+          child: Text(
+            kt('no_data'),
+            style: TextStyle(
+              fontFamily: 'DancingScript',
+              fontSize: 24,
+              color: Theme.of(context).disabledColor,
+              shadows: [
+                Shadow(
+                  color: Theme.of(context).colorScheme.surface,
+                  offset: Offset(1, 1)
+                ),
+              ]
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -261,7 +264,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
          await showInstructionsDialog(context, 'assets/fav',
             entry: kt('lang'),
             onPop: () async {
-              final renderObject = widget.iconKey.currentContext.findRenderObject();
+              final renderObject = iconKey.currentContext.findRenderObject();
               Rect rect = renderObject?.paintBounds;
               var translation = renderObject?.getTransformTo(null)?.getTranslation();
               if (rect != null && translation != null) {
@@ -284,5 +287,23 @@ class _FavoritesPageState extends State<FavoritesPage> {
     });
     snackBars.clear();
     super.dispose();
+  }
+
+  final GlobalKey iconKey = GlobalKey();
+
+  List<Widget> buildActions(BuildContext context,) {
+    bool has = KeyValue.get("$viewed_key:fav") == "true";
+    return [
+      IconButton(
+        key: iconKey,
+        onPressed: () {
+          showInstructionsDialog(context, 'assets/fav',
+            entry: kt('lang'),
+          );
+        },
+        icon: Icon(Icons.help_outline),
+        color: has ? Colors.white : Colors.transparent,
+      ),
+    ];
   }
 }
