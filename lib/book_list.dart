@@ -22,7 +22,11 @@ import 'widgets/collection_view.dart';
 class BookListPage extends StatefulWidget {
   final Project project;
   final Context context;
-  BookListPage(this.project, this.context);
+  BookListPage({
+    Key key,
+    this.project,
+    this.context
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState()=>_BookListPageState();
@@ -31,16 +35,6 @@ class BookListPage extends StatefulWidget {
 
 class _BookListPageState extends State<BookListPage> {
   String template;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.context.control();
-
-    template = widget.context.temp;
-    if (template.isEmpty)
-      template = cachedTemplates["assets/collection.xml"];
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +53,16 @@ class _BookListPageState extends State<BookListPage> {
         }
       },
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    widget.context.control();
+
+    template = widget.context.temp;
+    if (template.isEmpty)
+      template = cachedTemplates["assets/collection.xml"];
   }
 
   @override

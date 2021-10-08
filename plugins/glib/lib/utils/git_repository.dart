@@ -8,19 +8,19 @@ class GitAction extends Base {
     ..constructor = ((id) => GitAction().setID(id));
   }
 
-  Callback _on_progress;
-  Callback _on_complete;
+  Callback _onProgress;
+  Callback _onComplete;
 
   setOnProgress(void Function(String, int, int) cb) {
-    r(_on_progress);
-    _on_progress = Callback.fromFunction(cb);
-    call("setOnProgress", argv:[_on_progress]);
+    _onProgress?.release();
+    _onProgress = Callback.fromFunction(cb);
+    call("setOnProgress", argv:[_onProgress]);
   }
 
   setOnComplete(void Function() cb) {
-    r(_on_complete);
-    _on_complete = Callback.fromFunction(cb);
-    call("setOnComplete", argv:[_on_complete]);
+    _onComplete?.release();
+    _onComplete = Callback.fromFunction(cb);
+    call("setOnComplete", argv:[_onComplete]);
   }
 
   void cancel() {
@@ -32,8 +32,8 @@ class GitAction extends Base {
 
   @override
   destroy() {
-    r(_on_progress);
-    r(_on_complete);
+    _onProgress?.release();
+    _onComplete?.release();
     super.destroy();
   }
 }

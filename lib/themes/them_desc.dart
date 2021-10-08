@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 abstract class ThemeDesc {
   String get title;
@@ -22,21 +23,24 @@ class _DefaultThemeDesc extends ThemeDesc {
   final String title = "default";
   ThemeData get data => ThemeData.light().copyWith(
     primaryColor: Colors.blue,
-    shadowColor: Color(0xffeeeeee),
+    shadowColor: Color(0xff888888),
     scaffoldBackgroundColor: Color(0xfff2f2f2),
     appBarTheme: AppBarTheme(
-        color: Colors.white,
-        shadowColor: Color(0xffeeeeee),
-        textTheme: TextTheme(
-          headline6: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+      color: Colors.white,
+      shadowColor: Color(0xff888888),
+      textTheme: TextTheme(
+        headline6: TextStyle(
+          color: Colors.black,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
         ),
-        iconTheme: IconThemeData(
-          color: Colors.grey,
-        )
+      ),
+      iconTheme: IconThemeData(
+        color: Colors.grey,
+      ),
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.white
+      )
     ),
     tabBarTheme: TabBarTheme(
       labelColor: Colors.blue,

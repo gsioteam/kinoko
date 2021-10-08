@@ -342,6 +342,7 @@ class _DefaultBookPageState extends State<_DefaultBookPage> {
               pinned: true,
               backgroundColor: theme.primaryColor,
               expandedHeight: 288.0,
+              brightness: Brightness.dark,
               bottom: PreferredSize(
                   child: Container(
                     height: 48,
@@ -476,7 +477,6 @@ class _DefaultBookPageState extends State<_DefaultBookPage> {
     widget.context.onCall = Callback.fromFunction(onCall).release();
     refreshController.onRefresh = onPullDownRefresh;
     widget.context.enterView();
-    FavoritesManager().clearNew(widget.context.infoData);
     HistoryManager().insert(widget.context.infoData);
     String order = KeyValue.get(key(ORDER_TYPE));
     if (order != null && order.isNotEmpty) {
@@ -484,6 +484,9 @@ class _DefaultBookPageState extends State<_DefaultBookPage> {
         orderIndex = int.parse(order);
       } catch (e) { }
     }
+    Future.delayed(Duration.zero).then((value) {
+      FavoritesManager().clearNew(widget.context.infoData);
+    });
   }
 
   @override
@@ -765,7 +768,7 @@ class _BookPageState extends State<BookPage> {
               currentIndex++;
               DataItem data = chapters[currentIndex];
               _saveLastChapter(data);
-              r(currentContext);
+              currentContext?.release();
               currentContext = widget.project.createCollectionContext(CHAPTER_INDEX, data).control();
               return currentContext;
             }
@@ -777,7 +780,7 @@ class _BookPageState extends State<BookPage> {
               currentIndex--;
               DataItem data = chapters[currentIndex];;
               _saveLastChapter(data);
-              r(currentContext);
+              currentContext?.release();
               currentContext = widget.project.createCollectionContext(CHAPTER_INDEX, data).control();
               return currentContext;
             }

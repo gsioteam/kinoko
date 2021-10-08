@@ -38,12 +38,12 @@ ImageProvider makeImageProvider(String url) {
   }
 }
 
-ImageProvider projectImageProvider(Project project) {
+ImageProvider projectImageProvider(Project project, [String defaultUrl]) {
   String icon = project?.icon;
-  if (icon != null && icon.isNotEmpty) {
+  if (icon?.isNotEmpty == true) {
     return makeImageProvider(icon);
   }
-  if (project.isValidated) {
+  if (project?.isValidated == true) {
     String iconpath = project.fullpath + "/icon.png";
     File icon = new File(iconpath);
     if (icon.existsSync()) {
@@ -52,8 +52,11 @@ ImageProvider projectImageProvider(Project project) {
       return makeImageProvider(project.icon);
     }
   }
+  if (defaultUrl?.isNotEmpty == true) {
+    return makeImageProvider(defaultUrl);
+  }
   return NeoImageProvider(
-      uri: Uri.parse("https://www.tinygraphs.com/squares/${generateMd5(project.url)}?theme=bythepool&numcolors=3&size=180&fmt=jpg"),
+      uri: Uri.parse("https://www.tinygraphs.com/squares/${generateMd5(project?.url ?? "null")}?theme=bythepool&numcolors=3&size=180&fmt=jpg"),
       cacheManager: NeoCacheManager.defaultManager
   );
 }

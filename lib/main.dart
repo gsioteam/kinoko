@@ -38,10 +38,10 @@ import 'layout/layout.xml_layout.dart' as layout;
 import 'package:xml_layout/xml_layout.dart';
 import 'package:glib/utils/platform.dart' as glib;
 import 'themes/them_desc.dart';
+import 'widgets/hint_point.dart';
 import 'widgets/oval_clipper.dart';
 
 void main() {
-  SystemChrome.setSystemUIOverlayStyle(defaultStyle);
   runApp(MainApp());
 }
 
@@ -55,10 +55,16 @@ class MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
+    var theme = themes[0].data;
     return NotificationListener<LocaleChangedNotification>(
       child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: defaultStyle,
+        value: SystemUiOverlayStyle(
+          systemNavigationBarColor: theme.colorScheme.onBackground,
+          systemNavigationBarDividerColor: theme.colorScheme.onBackground,
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           localizationsDelegates: [
             const KinokoLocalizationsDelegate(),
             GlobalMaterialLocalizations.delegate,
@@ -68,7 +74,7 @@ class MainAppState extends State<MainApp> {
           locale: locale,
           supportedLocales: KinokoLocalizationsDelegate.supports.values,
           title: 'Kinoko',
-          theme: themes[0].data,
+          theme: theme,
           home: SplashScreen(),
         ),
       ),
@@ -568,10 +574,6 @@ class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateM
 }
 
 
-class AppStatusNotification extends Notification {
-}
-
-
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
 
@@ -634,74 +636,33 @@ class _HomePageState extends State<HomePage> {
     };
   }
 
+  ValueNotifier<bool> favoritesController;
+
   @override
   Widget build(BuildContext context) {
     Widget body = _getBody(context);
 
     return Scaffold(
-      // drawer: Drawer(
-      //   child: ListView(
-      //     physics: ClampingScrollPhysics(),
-      //     children: <Widget>[
-      //       HomeDrawer(this),
-      //       ListTile(
-      //         selected: selected == 0,
-      //         leading: Icon(Icons.collections_bookmark, color: hasMainProject() ? null : Colors.black45,),
-      //         title: Text(kt("manga_home"), style: hasMainProject() ? null : TextStyle(color: Colors.black45),),
-      //         onTap: _onTap(0),
-      //       ),
-      //       ListTile(
-      //         selected: selected == 1,
-      //         leading: Icon(Icons.history),
-      //         title: Text(kt("history")),
-      //         onTap: _onTap(1),
-      //       ),
-      //       ListTile(
-      //         selected: selected == 2,
-      //         leading: Icon(Icons.favorite),
-      //         title: Text(kt("favorites")),
-      //         onTap: _onTap(2),
-      //       ),
-      //       ListTile(
-      //         selected: selected == 3,
-      //         leading: Icon(Icons.file_download),
-      //         title: Text(kt("download_list")),
-      //         onTap: _onTap(3),
-      //       ),
-      //       Divider(),
-      //       ListTile(
-      //         selected: selected == 4,
-      //         leading: Icon(Icons.account_balance),
-      //         title: Text(kt("manage_projects")),
-      //         onTap: _onTap(4),
-      //       ),
-      //       Divider(),
-      //       ListTile(
-      //         selected: selected == 5,
-      //         leading: Icon(Icons.settings),
-      //         title: Text(kt("settings")),
-      //         onTap: _onTap(5),
-      //       ),
-      //     ],
-      //   ),
-      // ),
-      body: NotificationListener<AppStatusNotification>(
-        child: AnimatedSwitcher(
-          duration: Duration(milliseconds: 300),
-          child: body,
-        ),
-        onNotification: (_) {
-          setState(() { });
-          return true;
-        },
-      ),
+      body: body,
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
         type: BottomNavigationBarType.fixed,
         currentIndex: selected,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(Icons.favorite),
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: HintPoint(
+                    controller: favoritesController,
+                  ),
+                ),
+              ],
+            ),
             label: kt("favorites"),
           ),
           BottomNavigationBarItem(
@@ -733,14 +694,23 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    if (hasMainProject()) {
-      if (FavoritesManager().items.length > 0) {
-        selected = 0;
-      } else {
-        selected = 2;
-      }
+    if (FavoritesManager().items.length > 0) {
+      selected = 0;
     } else {
-      selected = 4;
+      selected = 2;
     }
+    favoritesController = ValueNotifier(FavoritesManager().hasNew);
+    FavoritesManager().onState.addListener(_favoritesUpdate);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    FavoritesManager().onState.removeListener(_favoritesUpdate);
+    favoritesController.dispose();
+  }
+
+  void _favoritesUpdate() {
+    favoritesController.value = FavoritesManager().hasNew;
   }
 }

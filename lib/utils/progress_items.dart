@@ -102,7 +102,7 @@ class GitItem extends ProgressItem {
 
   @override
   void retry() {
-    r(action);
+    action?.release();
     start();
   }
 }

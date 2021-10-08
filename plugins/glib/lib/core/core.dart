@@ -124,8 +124,7 @@ Pointer<NativeTarget> _makeArgv(List<dynamic> argv) {
 }
 
 List<dynamic> _convertArgv(Pointer<NativeTarget> argv, int length) {
-  List<dynamic> results = List(length);
-  for (int i = 0; i < length; ++i) {
+  List<dynamic> results = List.generate(length, (i) {
     NativeTarget target = argv[i];
     dynamic ret;
     switch (target.type) {
@@ -157,8 +156,8 @@ List<dynamic> _convertArgv(Pointer<NativeTarget> argv, int length) {
         ret = null;
       }
     }
-    results[i] = ret;
-  }
+    return ret;
+  });
   return results;
 }
 
@@ -348,8 +347,6 @@ class Base with AutoRelease {
   int get hashCode => _id.hashCode + 0xfabc;
 
 }
-
-void r(Base b) {if (b != null) b.release();}
 
 void destroyAllObject() {
   _objectDB.forEach((key, value) {

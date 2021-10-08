@@ -67,7 +67,7 @@ class HistoryManager {
   List<HistoryItem> get items {
     if (_items == null) {
       var items = CollectionData.all(history_key);
-      _items = List();
+      _items = [];
 
       for (CollectionData data in items) {
         _items.add(HistoryItem(data));

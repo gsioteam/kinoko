@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:glib/core/array.dart';
 import 'package:glib/core/callback.dart';
 import 'package:glib/main/collection_data.dart';
@@ -10,12 +11,38 @@ import 'package:glib/main/data_item.dart';
 import 'package:glib/main/project.dart';
 import '../configs.dart';
 
-class FavCheckItem {
+class FavAttachment {
+  DateTime date;
+  String link;
+  int index;
+  String last;
+
+  FavAttachment.fromData(dynamic data) {
+    fill(data);
+  }
+
+  void fill(dynamic data) {
+    date = DateTime.tryParse(data['date']);
+    link = data['value'];
+    index = data['index'];
+    last = data['last'];
+  }
+
+  Map toData() => {
+    'date': date.toString(),
+    'value': link,
+    'index': index,
+    'last': last,
+  };
+}
+
+class FavCheckItem extends ValueNotifier<bool> {
   CollectionData data;
   DataItem item;
-  DateTime _date;
-  String _checkValue;
-  void Function() onStateChanged;
+
+  FavAttachment attachment;
+
+  ValueNotifier<bool> newListenable = ValueNotifier(false);
 
   factory FavCheckItem.from(CollectionData data) {
     if (data == null) return null;
@@ -26,21 +53,23 @@ class FavCheckItem {
     return FavCheckItem(data.control(), item.control());
   }
 
-  FavCheckItem(this.data, this.item) {
+  FavCheckItem(this.data, this.item) : super(false) {
+    attachment = FavAttachment.fromData(jsonDecode(data.data));
     _loadData();
   }
 
   dispose() {
+    super.dispose();
     this.data.release();
+    newListenable.dispose();
   }
 
-  bool get hasNew {
-    return this.data.flag == 1;
-  }
+  bool get hasNew => newListenable.value;
 
   void clearNew() {
     this.data.flag = 0;
     this.data.save();
+    newListenable.value = false;
   }
 
   Future<void> _updateValue(bool first, Project project, Context context) async {
@@ -55,16 +84,15 @@ class FavCheckItem {
         //   item.title = dataItem.title;
         //   item.subtitle = dataItem.subtitle;
         // }
-        data.setJSONData({
-          "date": _date.toString(),
-          "value": item.link
-        });
-        _date = DateTime.now();
-        if (_checkValue != item.link && !first) {
+        attachment.date = DateTime.now();
+        if (attachment.link != item.link && !first) {
           data.flag = 1;
-          onStateChanged?.call();
+          newListenable.value = true;
         }
-        data.save();
+        if (attachment.last != item.title) {
+          attachment.last = item.title;
+        }
+        synchronize();
       }
 
       completer.complete();
@@ -74,6 +102,11 @@ class FavCheckItem {
   }
 
   Future<void> checkNew(bool first) async {
+    if (!first) {
+      if (attachment.date.compareTo(DateTime.now().subtract(Duration(minutes: 30))) > 0) {
+        return;
+      }
+    }
     Project project = Project.allocate(item.projectKey);
     if (!project.isValidated) {
       project.release();
@@ -81,10 +114,12 @@ class FavCheckItem {
     }
     DataItemType type = item.type;
     if (type == DataItemType.Data) {
+      value = true;
       Context context = project.createCollectionContext(BOOK_INDEX, item).control();
       context.autoReload = true;
       await _updateValue(first, project, context);
       context.release();
+      value = false;
     }
     project.release();
   }
@@ -92,21 +127,24 @@ class FavCheckItem {
   void _loadData() {
     if (data.data != null && data.data.isNotEmpty) {
       Map<String, dynamic> map = jsonDecode(data.data);
-      String date = map["date"];
-      if (date != null) {
-        _date = DateTime.parse(date);
-      }
-      _checkValue = map["value"];
+      attachment.fill(map);
     }
+    newListenable = ValueNotifier(this.data.flag == 1);
   }
 
-  DateTime get date => _date;
+  bool get loading => value;
+
+  void synchronize() {
+    data.setJSONData(attachment.toData());
+    data.save();
+  }
 }
 
 class FavoritesManager {
   static FavoritesManager _instance;
-  List<FavCheckItem> items = List();
+  List<FavCheckItem> items = [];
   Timer _timer;
+  ChangeNotifier onState = ChangeNotifier();
 
   factory FavoritesManager() {
     if (_instance == null) {
@@ -117,15 +155,38 @@ class FavoritesManager {
 
   FavoritesManager._() {
     Array data = CollectionData.all(collection_mark);
+    bool hasIndex = true;
     for (int  i = 0, t = data.length; i < t; ++i) {
       CollectionData d = data[i];
       FavCheckItem item = FavCheckItem.from(d);
       if (item != null)
-        items.add(item);
+        _addItem(item);
+      if (item.attachment.index == null) {
+        hasIndex = false;
+      }
     }
-    _timer = Timer.periodic(Duration(minutes: 30), (timer) {
+    if (hasIndex) {
+      items.sort((item1, item2) {
+        return item1.attachment.index - item2.attachment.index;
+      });
+    } else {
+      for (int i = 0, t = items.length; i < t; ++i) {
+        var item = items[i];
+        item.attachment.index = i;
+        item.synchronize();
+      }
+    }
+    _timer = Timer.periodic(Duration(minutes: 2), (timer) {
       checkNew();
     });
+    checkNew();
+  }
+
+  bool get hasNew {
+    for (var item in items) {
+      if (item.hasNew) return true;
+    }
+    return false;
   }
 
   void add(DataItem item) {
@@ -135,7 +196,7 @@ class FavoritesManager {
       });
       if (data != null) {
         FavCheckItem checkItem = FavCheckItem(data.control(), item.control());
-        items.add(checkItem);
+        _addItem(checkItem);
         checkItem.checkNew(true);
       } else {
       }
@@ -156,15 +217,29 @@ class FavoritesManager {
           }
         }
         needRemove.forEach((element) {
-          items.remove(element);
+          _removeItem(element);
         });
       }
     } else if (item is FavCheckItem) {
       if (items.contains(item)) {
         item.item.removeFromCollection(collection_mark);
-        items.remove(item);
+        _removeItem(item);
       }
     }
+  }
+
+  void _itemStateUpdate() {
+    onState.notifyListeners();
+  }
+
+  void _addItem(FavCheckItem item) {
+    item.newListenable.addListener(_itemStateUpdate);
+    items.add(item);
+  }
+
+  void _removeItem(FavCheckItem item) {
+    item.newListenable.removeListener(_itemStateUpdate);
+    items.remove(item);
   }
 
   void checkNew() async {
@@ -186,6 +261,14 @@ class FavoritesManager {
           checkItem.clearNew();
         }
       }
+    }
+  }
+
+  void reorder() {
+    for (int i = 0, t = items.length; i < t; ++i) {
+      var item = items[i];
+      item.attachment.index = i;
+      item.synchronize();
     }
   }
 }

@@ -30,8 +30,14 @@ class LibraryCell extends StatefulWidget {
 
   final Array data;
   final int index;
+  final VoidCallback onSelect;
 
-  LibraryCell({Key key, this.data, this.index}) : super(key: key);
+  LibraryCell({
+    Key key,
+    this.data,
+    this.index,
+    this.onSelect,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -62,43 +68,51 @@ class _LibraryCellState extends State<LibraryCell> {
 
   @override
   void dispose() {
-    r(library);
-    r(project);
+    library?.release();
+    project?.release();
     super.dispose();
   }
 
-  void installConfirm() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(kt("confirm")),
-          content: Text(
-            kt("install_confirm").replaceFirst("{url}", library.url),
-            softWrap: true,
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: (){
-                Navigator.of(context).pop();
-              },
-              child: Text(kt("no"))
-            ),
-            TextButton(
-              onPressed: (){
-                Navigator.of(context).pop();
-                install();
-              },
-              child: Text(kt("yes"))
-            )
-          ],
-        );
-      }
-    );
+  Future<void> _keep(Future future) async {
+    var project = this.project.control();
+    var library = this.library.control();
+    await future;
+    project.release();
+    library.release();
   }
 
-  void install() {
-    showDialog(
+  void installConfirm() {
+    _keep(showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(kt("confirm")),
+            content: Text(
+              kt("install_confirm").replaceFirst("{url}", library.url),
+              softWrap: true,
+            ),
+            actions: <Widget>[
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text(kt("no"))
+              ),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    install();
+                  },
+                  child: Text(kt("yes"))
+              )
+            ],
+          );
+        }
+    ));
+  }
+
+  void install() async {
+    _keep(showDialog(
       barrierDismissible: false,
       context: context,
       builder: (context) {
@@ -109,19 +123,19 @@ class _LibraryCellState extends State<LibraryCell> {
       }
     ).then((value) {
       setState(() {
-        r(project);
+        project?.release();
         project = Project.allocate(dirName);
         if (repo.isOpen() && project.isValidated)
           selectConfirm();
       });
-    });
+    }));
   }
 
   bool selectMainProject() => project.setMainProject();
   
   void selectConfirm() {
     BuildContext mainContext = context;
-    showDialog(
+    _keep(showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -129,26 +143,26 @@ class _LibraryCellState extends State<LibraryCell> {
           content: Text(kt("select_main_project")),
           actions: <Widget>[
             TextButton(
-                onPressed: (){
-                  Navigator.of(context).pop();
-                },
-                child: Text(kt("no"))
+              onPressed: (){
+                Navigator.of(context).pop();
+              },
+              child: Text(kt("no"))
             ),
             TextButton(
-                onPressed: (){
-                  Navigator.of(context).pop();
-                  if (selectMainProject()) {
-                    AppStatusNotification().dispatch(mainContext);
-                  } else {
-                    Fluttertoast.showToast(msg: "Plugin version not match.");
-                  }
-                },
-                child: Text(kt("yes"))
+              onPressed: (){
+                Navigator.of(context).pop();
+                if (selectMainProject()) {
+                  widget.onSelect?.call();
+                } else {
+                  Fluttertoast.showToast(msg: "Plugin version not match.");
+                }
+              },
+              child: Text(kt("yes"))
             )
           ],
         );
       }
-    );
+    ));
   }
 
   Widget buildUnkown(BuildContext context) {
@@ -161,7 +175,7 @@ class _LibraryCellState extends State<LibraryCell> {
       subtitle: Text(kt("not_installed")),
       leading: Container(
         child: Image(
-          image: projectImageProvider(project),
+          image: projectImageProvider(project, library.icon),
           width: 56,
           height: 56,
           errorBuilder: (context, e, stack) {
@@ -169,8 +183,8 @@ class _LibraryCellState extends State<LibraryCell> {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                  color: Color(0x1F999999),
-                  borderRadius: BorderRadius.all(Radius.circular(4)),
+                color: Color(0x1F999999),
+                borderRadius: BorderRadius.all(Radius.circular(4)),
               ),
               child: Center(
                 child: Icon(
@@ -182,8 +196,8 @@ class _LibraryCellState extends State<LibraryCell> {
           },
         ),
         decoration: BoxDecoration(
-            color: Color(0x1F999999),
-            borderRadius: BorderRadius.all(Radius.circular(4))
+          color: Color(0x1F999999),
+          borderRadius: BorderRadius.all(Radius.circular(4))
         ),
       ),
       onTap: installConfirm,
@@ -206,7 +220,7 @@ class _LibraryCellState extends State<LibraryCell> {
       subtitle: Text("Ver. ${repo.localID()}"),
       leading: Container(
         child: Image(
-          image: projectImageProvider(project),
+          image: projectImageProvider(project, library.icon),
           width: 56,
           height: 56,
           errorBuilder: (context, e, stack) {
@@ -235,7 +249,7 @@ class _LibraryCellState extends State<LibraryCell> {
           key: _spinKey,
         ),
         onPressed: (){
-          if (_spinKey.currentState == null || _spinKey.currentState.isLoading) return;
+          if (_spinKey.currentState?.isLoading == true) return;
           _spinKey.currentState?.startAnimation();
           GitAction action = repo.fetch();
           action.control();
@@ -390,116 +404,119 @@ class _LibrariesPageState extends State<LibrariesPage> {
         title: Text(kt("manage_projects")),
         actions: [
           IconButton(
-              icon: Icon(Icons.add),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      title: Text(kt("new_project")),
-                      content: TextField(
-                        decoration: InputDecoration(
-                            hintText: kt("new_project_hint")
-                        ),
-                        onChanged: textInput,
+            icon: Icon(Icons.add),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text(kt("new_project")),
+                    content: TextField(
+                      decoration: InputDecoration(
+                        hintText: kt("new_project_hint")
                       ),
-                      actions: <Widget>[
-                        TextButton(
-                            onPressed: (){
-                              Navigator.of(context).pop();
-                              addProject(context, _inputText);
-                            },
-                            child: Text(kt("add"))
-                        )
-                      ],
-                    );
-                  },
-                );
-              }
+                      onChanged: textInput,
+                    ),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: (){
+                          Navigator.of(context).pop();
+                          addProject(context, _inputText);
+                        },
+                        child: Text(kt("add")),
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
           )
         ],
       ),
       body: BetterRefreshIndicator(
         child: NotificationListener<ScrollUpdateNotification>(
           child: ListView.separated(
-              itemBuilder: (context, idx) {
-                if (!hasProject) {
-                  if (idx == 0) {
-                    return Container(
-                      color: Colors.lightGreenAccent,
-                      padding: EdgeInsets.all(10),
-                      child: Text(
-                        kt("libraries_hit"),
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyText1.copyWith(
-                            color: Colors.indigo
-                        ),
+            itemBuilder: (context, idx) {
+              if (!hasProject) {
+                if (idx == 0) {
+                  return Container(
+                    color: Colors.lightGreenAccent,
+                    padding: EdgeInsets.all(10),
+                    child: Text(
+                      kt("libraries_hit"),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyText1.copyWith(
+                        color: Colors.indigo
                       ),
-                    );
-                  } else {
-                    --idx;
-                  }
-                }
-                GitLibrary library = data[idx];
-                String token = library.token;
-                if (true) {
-                  String url = library.url;
-                  return Dismissible(
-                    key: GlobalObjectKey(url),
-                    background: Container(color: Theme.of(context).errorColor,),
-                    child: LibraryCell(
-                        data: data,
-                        index: idx
                     ),
-                    confirmDismiss: (_) async {
-                      bool result = await showDialog<bool>(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: Text(kt("remove_project")),
-                              content: Text(kt("would_remove_project").replaceFirst("{0}", url)),
-                              actions: [
-                                TextButton(
-                                    onPressed: (){
-                                      Navigator.of(context).pop(false);
-                                    },
-                                    child: Text(kt("no"))
-                                ),
-                                TextButton(
-                                    onPressed: (){
-                                      Navigator.of(context).pop(true);
-                                    },
-                                    child: Text(kt("yes"))
-                                ),
-                              ],
-                            );
-                          }
-                      );
-                      return result == true;
-                    },
-                    onDismissed: (_) {
-                      setState(() {
-                        String name = Bit64.encodeString(url);
-                        var project = Project.allocate(name);
-                        project.remove();
-                        project.release();
-                        ctx.removeLibrary(url);
-                        AppStatusNotification().dispatch(context);
-                      });
-                    },
                   );
                 } else {
-                  return LibraryCell(
-                      key: GlobalObjectKey(token),
-                      data: data,
-                      index: idx
-                  );
+                  --idx;
                 }
-              },
-              separatorBuilder: (context, idx) {
-                return Divider(height: 1,);
-              },
-              itemCount: hasProject ? data.length : data.length + 1
+              }
+              GitLibrary library = data[idx];
+              String token = library.token;
+              if (true) {
+                String url = library.url;
+                return Dismissible(
+                  key: GlobalObjectKey(url),
+                  background: Container(color: Theme.of(context).errorColor,),
+                  child: LibraryCell(
+                    data: data,
+                    index: idx,
+                    onSelect: () {
+                      setState(() { });
+                    },
+                  ),
+                  confirmDismiss: (_) async {
+                    bool result = await showDialog<bool>(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text(kt("remove_project")),
+                          content: Text(kt("would_remove_project").replaceFirst("{0}", url)),
+                          actions: [
+                            TextButton(
+                              onPressed: (){
+                                Navigator.of(context).pop(false);
+                              },
+                              child: Text(kt("no"))
+                            ),
+                            TextButton(
+                              onPressed: (){
+                                Navigator.of(context).pop(true);
+                              },
+                              child: Text(kt("yes"))
+                            ),
+                          ],
+                        );
+                      }
+                    );
+                    return result == true;
+                  },
+                  onDismissed: (_) {
+                    setState(() {
+                      String name = Bit64.encodeString(url);
+                      var project = Project.allocate(name);
+                      project.remove();
+                      project.release();
+                      ctx.removeLibrary(url);
+                      // AppStatusNotification().dispatch(context);
+                    });
+                  },
+                );
+              } else {
+                return LibraryCell(
+                    key: GlobalObjectKey(token),
+                    data: data,
+                    index: idx
+                );
+              }
+            },
+            separatorBuilder: (context, idx) {
+              return Divider(height: 1,);
+            },
+            itemCount: hasProject ? data.length : data.length + 1
           ),
           onNotification: onUpdateNotification,
         ),
@@ -529,8 +546,8 @@ class _LibrariesPageState extends State<LibrariesPage> {
 
   @override
   void dispose() {
-    r(data);
-    r(ctx);
+    data?.release();
+    ctx?.release();
     super.dispose();
     _controller.onRefresh = null;
   }

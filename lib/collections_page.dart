@@ -12,6 +12,7 @@ import 'package:kinoko/libraries_page.dart';
 import 'package:kinoko/search_page.dart';
 import 'package:kinoko/settings_page.dart';
 import 'package:kinoko/utils/image_provider.dart';
+import 'package:decorated_icon/decorated_icon.dart';
 import 'localizations/localizations.dart';
 import './configs.dart';
 
@@ -128,14 +129,68 @@ class _CollectionsPageState extends State<CollectionsPage> {
   }
 
   Widget missBuild(BuildContext context) {
+    TextStyle textStyle = TextStyle(
+        fontFamily: 'DancingScript',
+        fontSize: 24,
+        color: Theme.of(context).disabledColor,
+        shadows: [
+          Shadow(
+              color: Theme.of(context).colorScheme.surface,
+              offset: Offset(1, 1)
+          ),
+        ]
+    );
     return Scaffold(
       appBar: AppBar(
         title: buildLogo(context),
         actions: buildActions(context),
       ),
-      body: Container(
-        child: Text("No Project"),
-        alignment: Alignment.center,
+      body: Stack(
+        children: [
+          Container(
+            child: Text(
+              kt('no_data'),
+              style: textStyle,
+            ),
+            alignment: Alignment.center,
+          ),
+          Positioned(
+            left: 18,
+            top: 0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(top: 4),
+                  child: DecoratedIcon(
+                    Icons.arrow_upward,
+                    color: Theme.of(context).disabledColor,
+                    size: 16,
+                    shadows: [
+                      BoxShadow(
+                          color: Theme.of(context).colorScheme.surface,
+                          offset: Offset(1, 1)
+                      ),
+                    ]
+                  ),
+                ),
+                Text(
+                  kt('click_to_select'),
+                  style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).disabledColor,
+                      shadows: [
+                        Shadow(
+                            color: Theme.of(context).colorScheme.surface,
+                            offset: Offset(1, 1)
+                        ),
+                      ]
+                  ),
+                )
+              ],
+            )
+          ),
+        ],
       ),
     );
   }
@@ -156,7 +211,11 @@ class _CollectionsPageState extends State<CollectionsPage> {
         child: Tab( text: data.title, ),
         height: 36,
       ));
-      bodies.add(BookListPage(project, data.context));
+      bodies.add(BookListPage(
+        key: ValueKey(data),
+        project: project,
+        context: data.context,
+      ));
     }
     return DefaultTabController(
       length: contexts.length,
@@ -183,6 +242,18 @@ class _CollectionsPageState extends State<CollectionsPage> {
   @override
   void initState() {
     project = Project.getMainProject();
+    _setupProject();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    freeContexts();
+    project?.release();
+    super.dispose();
+  }
+
+  void _setupProject() {
     contexts = [];
     if (project != null) {
       project.control();
@@ -195,14 +266,6 @@ class _CollectionsPageState extends State<CollectionsPage> {
         contexts.add(_CollectionData(ctx, title));
       }
     }
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    freeContexts();
-    r(project);
-    super.dispose();
   }
 
   @override
@@ -221,7 +284,13 @@ class _CollectionsPageState extends State<CollectionsPage> {
               radius: _LogoSize / 2,
               backgroundColor: Theme.of(context).colorScheme.background,
               child: ClipOval(
-                child: Image(
+                child: project == null ?
+                Icon(
+                  Icons.extension,
+                  size: _LogoSize * 0.66,
+                  color: Theme.of(context).colorScheme.onBackground,
+                ) :
+                Image(
                   width: _LogoSize,
                   height: _LogoSize,
                   image: projectImageProvider(project),
@@ -247,16 +316,23 @@ class _CollectionsPageState extends State<CollectionsPage> {
                 padding: EdgeInsets.symmetric(
                   horizontal: 12,
                 ),
-                child: Text(project.name),
+                child: Text(project?.name ?? kt('select_project')),
               ),
             ),
           ],
         ),
       ),
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+      onTap: () async {
+        await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
           return LibrariesPage();
         }));
+        var nProject = Project.getMainProject();
+        if (project?.url != nProject?.url) {
+          freeContexts();
+          project = nProject;
+          _setupProject();
+          setState(() { });
+        }
       },
     );
   }

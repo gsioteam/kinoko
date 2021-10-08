@@ -35,7 +35,7 @@ class Project extends Base {
 
   static Project current;
   static void setCurrent(Project project) {
-    r(current);
+    current.release();
     current = project;
     current?.control();
   }

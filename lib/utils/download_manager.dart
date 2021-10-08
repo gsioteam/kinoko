@@ -164,11 +164,11 @@ class DownloadQueueItem {
   }
 
   void destroy() {
-    r(data);
+    data?.release();
     data = null;
-    r(item);
+    item?.release();
     item = null;
-    r(context);
+    context?.release();
     context = null;
   }
 

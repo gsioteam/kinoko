@@ -17,7 +17,6 @@ import 'utils/download_manager.dart';
 import 'localizations/localizations.dart';
 import 'utils/fullscreen.dart';
 import 'utils/neo_cache_manager.dart';
-import 'widgets/better_snack_bar.dart';
 import 'package:filesystem_picker/filesystem_picker.dart';
 
 import 'package:path_provider_ex/path_provider_ex.dart';
@@ -319,8 +318,6 @@ class _DownloadKey extends GlobalObjectKey {
 class _DownloadPageState extends State<DownloadPage> {
   List<CellData> data;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey();
-  List<_NeedRemove> needRemove = List();
-  List<BetterSnackBar<bool>> snackBars = List();
 
   _DownloadPageState();
 
@@ -387,44 +384,9 @@ class _DownloadPageState extends State<DownloadPage> {
   }
 
   removeItem(_NeedRemove item) {
-    if (needRemove.contains(item)) {
+    setState(() {
       DownloadManager().removeItem(item.downloadItem);
-      needRemove.remove(item);
-    }
-  }
-
-  reverseItem(_NeedRemove item) {
-    if (needRemove.contains(item)) {
-      if (item.mainData.extend) {
-        BookData bookData = item.mainData.data;
-        int i, t = bookData.items.length;
-        for (i = 0; i < t; ++i) {
-          DownloadQueueItem cItem = bookData.items[i];
-          if (cItem.item.title.compareTo(item.downloadItem.item.title) >= 0) {
-            break;
-          }
-        }
-        bookData.items.insert(i, item.downloadItem);
-        int cIndex = data.indexOf(item.mainData);
-        int listIndex = cIndex + i + 1;
-        data.insert(listIndex, CellData(
-          type: _CellType.Chapter,
-          data: item.downloadItem
-        ));
-        _listKey.currentState.insertItem(listIndex);
-      } else {
-        BookData bookData = item.mainData.data;
-        int i, t = bookData.items.length;
-        for (i = 0; i < t; ++i) {
-          DownloadQueueItem cItem = bookData.items[i];
-          if (item.downloadItem.item.title.compareTo(cItem.item.title) >= 0) {
-            break;
-          }
-        }
-        bookData.items.insert(i, item.downloadItem);
-      }
-      needRemove.remove(item);
-    }
+    });
   }
 
   Widget cellWithData(int index) {
@@ -475,21 +437,32 @@ class _DownloadPageState extends State<DownloadPage> {
                 clickBookCell(index);
               },
             ),
-            onDismissed: (DismissDirection direction) async {
-              BetterSnackBar<bool> snackBar;
-              snackBar = BetterSnackBar(
-                title: kt("confirm"),
-                subtitle: kt("delete_item").replaceAll("{0}", queueItem.info.title).replaceAll("{1}", queueItem.item.title),
-                trailing: TextButton(
-                  child: Text(kt("undo"), style: Theme.of(context).textTheme.bodyText2.copyWith(color: Colors.white, fontWeight: FontWeight.bold),),
-                  onPressed: () {
-                    snackBar.dismiss(true);
-                  },
-                ),
-                duration: Duration(seconds: 5),
+            confirmDismiss: (DismissDirection direction) {
+              return showDialog<bool>(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text(kt("confirm")),
+                      content: Text(kt("delete_item").replaceAll("{0}", queueItem.info.title).replaceAll("{1}", queueItem.item.title)),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text(kt('no')),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(true);
+                          },
+                          child: Text(kt('yes')),
+                        ),
+                      ],
+                    );
+                  }
               );
-
-              snackBars.add(snackBar);
+            },
+            onDismissed: (DismissDirection direction) async {
 
               int index = data.indexOf(cdata);
               CellData mainData;
@@ -504,7 +477,6 @@ class _DownloadPageState extends State<DownloadPage> {
               }
 
               _NeedRemove item = _NeedRemove(mainData, queueItem);
-              needRemove.add(item);
               data.removeAt(index);
               _listKey.currentState.removeItem(index, (context, animation) {
                 return SizeTransition(
@@ -513,14 +485,7 @@ class _DownloadPageState extends State<DownloadPage> {
                 );
               });
 
-              bool result = await snackBar.show(context);
-              if (result == true) {
-                reverseItem(item);
-              } else {
-                removeItem(item);
-              }
-
-              snackBars.remove(snackBar);
+              removeItem(item);
             },
             background: Container(color: Colors.red,),
           );
@@ -616,15 +581,13 @@ class _DownloadPageState extends State<DownloadPage> {
             }
         );
         KeyValue.set("$viewed_key:download", "true");
-        AppStatusNotification().dispatch(context);
+        // AppStatusNotification().dispatch(context);
       });
     }
   }
 
   @override
   void dispose() {
-    snackBars.forEach((element)=>element.dismiss(false));
-    snackBars.clear();
     super.dispose();
   }
 }

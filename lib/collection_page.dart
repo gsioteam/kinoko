@@ -22,7 +22,10 @@ class CollectionPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
       ),
-      body: BookListPage(project, this.context),
+      body: BookListPage(
+        project: project,
+        context: this.context,
+      ),
     );
   }
 }

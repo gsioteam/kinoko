@@ -32,8 +32,3 @@ const String v2_key = "v2_2_setup";
 const int BOOK_INDEX = 0;
 const int CHAPTER_INDEX = 1;
 
-SystemUiOverlayStyle defaultStyle = SystemUiOverlayStyle.light.copyWith(
-  systemNavigationBarColor: Colors.white,
-  // systemNavigationBarDividerColor: Color(0xffeeeeee),
-  systemNavigationBarIconBrightness: Brightness.dark,
-);

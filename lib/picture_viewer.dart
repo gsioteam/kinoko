@@ -587,6 +587,7 @@ class _PictureViewerState extends State<PictureViewer> {
         value: SystemUiOverlayStyle.dark.copyWith(
           systemNavigationBarDividerColor: Colors.black,
           statusBarIconBrightness: Brightness.light,
+          statusBarColor: Colors.black26,
         ),
     );
   }

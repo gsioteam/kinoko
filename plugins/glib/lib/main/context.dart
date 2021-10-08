@@ -24,28 +24,28 @@ class Context extends Base {
 
   Callback _onDataChanged;
   set onDataChanged(Callback cb) {
-    r(_onDataChanged);
+    _onDataChanged?.release();
     _onDataChanged = cb == null ? null : cb.control();
     call("setOnDataChanged", argv: [cb]);
   }
 
   Callback _onLoadingStatus;
   set onLoadingStatus(Callback cb) {
-    r(_onLoadingStatus);
+    _onLoadingStatus?.release();
     _onLoadingStatus = cb == null ? null : cb.control();
     call("setOnLoadingStatus", argv: [cb]);
   }
 
   Callback _onError;
   set onError(Callback cb) {
-    r(_onError);
+    _onError?.release();
     _onError = cb == null ? null : cb.control();
     call("setOnError", argv: [cb]);
   }
 
   Callback _onReloadComplete;
   set onReloadComplete(Callback cb) {
-    r(_onReloadComplete);
+    _onReloadComplete?.release();
     _onReloadComplete = cb == null ? null : cb.control();
     call("setOnReloadComplete", argv: [cb]);
   }
@@ -64,10 +64,10 @@ class Context extends Base {
 
   @override
   void destroy() {
-    r(_onDataChanged);
-    r(_onLoadingStatus);
-    r(_onError);
-    r(_onReloadComplete);
+    _onDataChanged?.release();
+    _onLoadingStatus?.release();
+    _onError?.release();
+    _onReloadComplete?.release();
     super.destroy();
   }
 

@@ -255,7 +255,10 @@ class _SearchPageState extends State<SearchPage> {
         ),
         body: Stack(
           children: <Widget>[
-            BookListPage(widget.project, widget.context),
+            BookListPage(
+              project: widget.project,
+              context: widget.context,
+            ),
             AnimatedExtend(
               child: Container(
                 color: Colors.white,
