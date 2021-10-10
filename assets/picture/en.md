@@ -1,21 +1,13 @@
 ### Instructions
 
-- Horizontal Flip
-
-Flip page from left to right.
-
-- Horizontal Reverse
-
-Almost same as `Horizontal Flip`, but flip right to left when view a two page picture. 
-
-- Vertical Flip
-
-Layout pictures from up to down.
-
 - Volume Button 
 
   1. Volume+: Previous Page
   2. Volume-: Next Page
+
+- Pulsación larga y pellizco
+
+Mantenga presionado para acercar con un solo dedo, pellizque para acercar y alejar.
 
 - Page Jump
 

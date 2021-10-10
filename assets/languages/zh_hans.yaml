@@ -85,3 +85,9 @@ click_to_select: 点击选择一个
 version: Ver.
 framework_version: 框架
 cache_manager: 缓存
+about_description: "这是一个开源程序, 访问 "
+about_description_end: " 了解更多信息或者提交bug以及反馈."
+about: 关于
+fetch_framework: Fetch Framework...
+loading: 加载中...
+webtoon: 网页漫画

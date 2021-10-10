@@ -1,4 +1,6 @@
 
+import 'package:kinoko/widgets/images/one_finger_zoom_gesture_recognizer.dart';
+
 import '../over_drag.dart';
 import 'photo_image.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,7 @@ class VerticalImage extends PhotoImage {
     WidgetBuilder errorWidget,
     bool initFromEnd,
     PhotoImageController controller,
+    OneFingerCallback onTap,
   }) : super(
     key: key,
     imageProvider: imageProvider,
@@ -23,6 +26,7 @@ class VerticalImage extends PhotoImage {
     initFromEnd: initFromEnd,
     controller: controller,
     reverse: false,
+    onTap: onTap,
   );
 
   @override

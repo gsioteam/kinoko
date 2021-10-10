@@ -9,9 +9,9 @@ enum _OneFingerZoomState {
   Moving
 }
 
-typedef OneFingerStartCallback = void Function(PointerEvent event);
-typedef OneFingerUpdateCallback = void Function(PointerEvent event);
-typedef OneFingerStopCallback = void Function(PointerEvent event);
+typedef OneFingerCallback = void Function(PointerEvent event);
+
+GestureArenaTeam _team = GestureArenaTeam();
 
 class OneFingerZoomGestureRecognizer extends OneSequenceGestureRecognizer {
   @override
@@ -23,14 +23,21 @@ class OneFingerZoomGestureRecognizer extends OneSequenceGestureRecognizer {
   _OneFingerZoomState _state = _OneFingerZoomState.None;
   Offset _offset = Offset.zero;
 
-  OneFingerStartCallback onStart;
-  OneFingerUpdateCallback onUpdate;
-  OneFingerStopCallback onEnd;
+  OneFingerCallback onStart;
+  OneFingerCallback onUpdate;
+  OneFingerCallback onEnd;
+  OneFingerCallback onTap;
+
+  OneFingerZoomGestureRecognizer() {
+    // this.team = _team;
+  }
 
   @override
   void didStopTrackingLastPointer(int pointer) {
     startPointer = null;
     _state = _OneFingerZoomState.None;
+    _timer?.cancel();
+    _timer = null;
   }
 
   @override
@@ -38,17 +45,22 @@ class OneFingerZoomGestureRecognizer extends OneSequenceGestureRecognizer {
     if (event is PointerUpEvent || event is PointerCancelEvent) {
       if (startPointer?.pointer == event.pointer) {
         startPointer = null;
-        onEnd?.call(event);
+        if (_state == _OneFingerZoomState.Moving)
+          onEnd?.call(event);
+        else if (event is PointerUpEvent) {
+          onTap?.call(event);
+        }
       }
       stopTrackingPointer(event.pointer);
     } else if (event is PointerMoveEvent) {
       if (_state == _OneFingerZoomState.Detecting) {
-        if ((event.position - _offset).distance > 4) {
+        if ((event.position - _offset).distance > 8) {
           _cancel();
         }
       } else {
-        if (startPointer?.pointer == event.pointer)
+        if (startPointer?.pointer == event.pointer) {
           onUpdate?.call(event);
+        }
       }
     }
   }
@@ -60,7 +72,7 @@ class OneFingerZoomGestureRecognizer extends OneSequenceGestureRecognizer {
       _state = _OneFingerZoomState.Detecting;
       startTrackingPointer(event.pointer, event.transform);
       startPointer = event;
-      _timer = Timer(Duration(seconds: 1), _onTimer);
+      _timer = Timer(Duration(milliseconds: 400), _onTimer);
     } else if (_state == _OneFingerZoomState.Detecting) {
       _cancel();
     }
@@ -68,7 +80,8 @@ class OneFingerZoomGestureRecognizer extends OneSequenceGestureRecognizer {
 
   void _cancel() {
     resolve(GestureDisposition.rejected);
-    stopTrackingPointer(startPointer.pointer);
+    if (startPointer != null)
+      stopTrackingPointer(startPointer.pointer);
     _timer?.cancel();
     _timer = null;
   }
@@ -79,4 +92,10 @@ class OneFingerZoomGestureRecognizer extends OneSequenceGestureRecognizer {
     _state = _OneFingerZoomState.Moving;
     onStart?.call(startPointer);
   }
+
+  @override
+  void rejectGesture(int pointer) {
+    stopTrackingPointer(pointer);
+  }
+
 }

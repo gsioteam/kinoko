@@ -29,9 +29,9 @@ class KinokoLocalizationsDelegate extends LocalizationsDelegate<KinokoLocalizati
     "zh-hant": const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
     "zh-hans": const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
     "es": const Locale.fromSubtags(languageCode: 'es'),
-    "ru": const Locale.fromSubtags(languageCode: 'ru'),
-    "it": const Locale.fromSubtags(languageCode: 'it'),
-    "de": const Locale.fromSubtags(languageCode: 'de')
+    // "ru": const Locale.fromSubtags(languageCode: 'ru'),
+    // "it": const Locale.fromSubtags(languageCode: 'it'),
+    // "de": const Locale.fromSubtags(languageCode: 'de')
   };
 
   const KinokoLocalizationsDelegate();

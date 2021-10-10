@@ -585,6 +585,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int selected = 0;
+  int _oldSelected = 0;
   HomeDrawer drawer;
   void Function() onRefresh;
   void Function() onFetch;
@@ -627,9 +628,7 @@ class _HomePageState extends State<HomePage> {
         idx = 4;
       }
       if (selected != idx) {
-        setState(() {
-          selected = idx;
-        });
+        switchTo(idx);
 
         Navigator.of(context).popUntil(ModalRoute.withName(home_page_name));
       }
@@ -641,9 +640,28 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     Widget body = _getBody(context);
+    var size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: body,
+      body: AnimatedSwitcher(
+        duration: Duration(milliseconds: 300),
+        child: body,
+        transitionBuilder: (child, animation) {
+          return AnimatedBuilder(
+            animation: animation,
+            builder: (context, child) {
+              int nav = 1;
+              if (child != body) nav = -1;
+              if (selected < _oldSelected) nav *= -1;
+              return Transform.translate(
+                offset: Offset(size.width * (1-animation.value) * nav, 0),
+                child: child,
+              );
+            },
+            child: child,
+          );
+        },
+      ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
         type: BottomNavigationBarType.fixed,
@@ -683,9 +701,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
         onTap: (index) {
-          setState(() {
-            selected = index;
-          });
+          switchTo(index);
         },
       ),
     );
@@ -695,9 +711,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     if (FavoritesManager().items.length > 0) {
-      selected = 0;
+      _oldSelected = selected = 0;
     } else {
-      selected = 2;
+      _oldSelected = selected = 2;
     }
     favoritesController = ValueNotifier(FavoritesManager().hasNew);
     FavoritesManager().onState.addListener(_favoritesUpdate);
@@ -712,5 +728,14 @@ class _HomePageState extends State<HomePage> {
 
   void _favoritesUpdate() {
     favoritesController.value = FavoritesManager().hasNew;
+  }
+
+  void switchTo(int index) {
+    if (selected != index) {
+      setState(() {
+        _oldSelected = selected;
+        selected = index;
+      });
+    }
   }
 }

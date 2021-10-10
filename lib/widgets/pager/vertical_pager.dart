@@ -4,6 +4,7 @@ import 'package:flutter/src/foundation/change_notifier.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
+import 'package:kinoko/widgets/images/one_finger_zoom_gesture_recognizer.dart';
 import 'package:kinoko/widgets/images/photo_image.dart';
 import 'package:kinoko/widgets/images/vertical_image.dart';
 import 'package:kinoko/widgets/over_drag.dart';
@@ -63,12 +64,15 @@ class _PageScrollPhysics extends PageScrollPhysics {
 
 class VerticalPager extends Pager {
 
+  final OneFingerCallback onTap;
+
   VerticalPager({
     Key key,
     NeoCacheManager cacheManager,
     PagerController controller,
     int itemCount,
     PhotoInformation Function(int index) imageUrlProvider,
+    this.onTap,
   }) : super(
     key: key,
     cacheManager: cacheManager,
@@ -152,6 +156,7 @@ class _VerticalPagerState extends PagerState<VerticalPager> {
                           );
                         },
                         controller: controller,
+                        onTap: widget.onTap,
                       ),
                     ),
                   );

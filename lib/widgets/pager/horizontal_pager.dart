@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
+import 'package:kinoko/widgets/images/one_finger_zoom_gesture_recognizer.dart';
 import 'package:kinoko/widgets/over_drag.dart';
 import 'package:vector_math/vector_math_64.dart' as m64;
 import '../images/photo_image.dart';
@@ -61,6 +62,7 @@ class _PageScrollPhysics extends PageScrollPhysics {
 
 class HorizontalPager extends Pager {
   final bool reverse;
+  final OneFingerCallback onTap;
 
   HorizontalPager({
     Key key,
@@ -69,6 +71,7 @@ class HorizontalPager extends Pager {
     PagerController controller,
     int itemCount,
     PhotoInformation Function(int index) imageUrlProvider,
+    this.onTap,
   }) : super(
     key: key,
     cacheManager: cacheManager,
@@ -152,6 +155,7 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
                             color: Colors.white,
                           );
                         },
+                        onTap: widget.onTap,
                         controller: controller,
                       ),
                     ),

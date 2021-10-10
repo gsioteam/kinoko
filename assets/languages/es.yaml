@@ -80,4 +80,16 @@ orientation: Orientación del dispositivo
 prev: Anterior
 menu: Menú
 next: Siguiente
+
 no_data: No Data
+select_project: Sin complemento
+click_to_select: Haga clic para seleccionar uno
+version: Ver.
+framework_version: Estructura
+cache_manager: Cache
+about_description: "Este es un software de código abierto, visite "
+about_description_end: " para obtener más información, informar errores o sugerir una nueva función."
+about: Sobre
+fetch_framework: Fetch Framework...
+loading: Cargando...
+webtoon: Webtoon

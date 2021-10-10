@@ -1,5 +1,6 @@
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 
 import 'dart:ui' as ui;
 import 'dart:math' as math;
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' as m64;
 
 import '../../localizations/localizations.dart';
+import 'one_finger_zoom_gesture_recognizer.dart';
 
 const double _ImageAspect = 1.55;
 
@@ -20,6 +22,7 @@ class ZoomImage extends StatefulWidget {
   final WidgetBuilder loadingWidget;
   final WidgetBuilder errorWidget;
   final ImageFit fit;
+  final OneFingerCallback onTap;
 
   ZoomImage({
     Key key,
@@ -27,11 +30,15 @@ class ZoomImage extends StatefulWidget {
     this.loadingWidget,
     this.errorWidget,
     this.fit = ImageFit.FitWidth,
+    this.onTap,
   }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _ZoomImageState();
 }
+
+const double _zoomScale = 2.5;
+const Duration _moveDuration = Duration(milliseconds: 200);
 
 class _ZoomImageState extends State<ZoomImage> {
 
@@ -47,6 +54,8 @@ class _ZoomImageState extends State<ZoomImage> {
 
   double _minScale = 1;
   double _maxScale = 4;
+
+  Duration _animationDuration = Duration.zero;
 
   _ZoomImageState() {
     _imageStreamListener = ImageStreamListener(
@@ -97,35 +106,56 @@ class _ZoomImageState extends State<ZoomImage> {
         }
         _imageSize = Size(width, height);
 
-        return GestureDetector(
-          onScaleStart: _onScaleStart,
-          onScaleUpdate: _onScaleUpdate,
-          onScaleEnd: _onScaleEnd,
-          child: Container(
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
+        Widget buildGestureDetector(Widget child) {
+          return RawGestureDetector(
+            gestures: {
+              ScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
+                    () => ScaleGestureRecognizer(),
+                    (instance) {
+                  instance.onStart = _onScaleStart;
+                  instance.onUpdate = _onScaleUpdate;
+                  instance.onEnd = _onScaleEnd;
+                },
+              ),
+              OneFingerZoomGestureRecognizer: GestureRecognizerFactoryWithHandlers<OneFingerZoomGestureRecognizer>(
+                      () => OneFingerZoomGestureRecognizer(),
+                      (instance) {
+                    instance.onStart = _onOneFingerZoomStart;
+                    instance.onUpdate = _onOneFingerZoomUpdate;
+                    instance.onEnd = _onOneFingerZoomEnd;
+                    instance.onTap = widget.onTap;
+                  }
+              ),
+            },
+            child: child,
+          );
+        }
+
+        return buildGestureDetector(Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: Colors.black,
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: AnimatedContainer(
+            duration: _animationDuration,
+            transform: Matrix4.translation(m64.Vector3(_translation.dx, _translation.dy, 0))
+              ..scale(_scale, _scale),
+            child: Container(
               color: Colors.black,
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Transform(
-              transform: Matrix4.translation(m64.Vector3(_translation.dx, _translation.dy, 0))
-                ..scale(_scale, _scale),
-              child: Container(
-                color: Colors.black,
-                width: width,
-                height: height,
-                padding: EdgeInsets.all(1),
-                child: RawImage(
-                  image: image,
-                  width: width - 2,
-                  height: height - 2,
-                  fit: BoxFit.fill,
-                ),
+              width: width,
+              height: height,
+              padding: EdgeInsets.all(1),
+              child: RawImage(
+                image: image,
+                width: width - 2,
+                height: height - 2,
+                fit: BoxFit.fill,
               ),
             ),
           ),
-        );
+        ),);
       } else {
         return Container(
           width: screenSize.width,
@@ -143,11 +173,11 @@ class _ZoomImageState extends State<ZoomImage> {
   void _onScaleStart(ScaleStartDetails details) {
     _oldScalePoint = details.focalPoint;
     _oldScale = 1;
-    print("ScaleStart");
+    _animationDuration = Duration.zero;
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
-    print("ScaleUpdate");
+    _animationDuration = Duration.zero;
     setState(() {
       Offset offset = details.focalPoint - _oldScalePoint;
       _translation += offset;
@@ -174,18 +204,19 @@ class _ZoomImageState extends State<ZoomImage> {
     });
   }
 
-  void clampImage() {
+  void clampImage([double inset = 0]) {
     _scale = math.min(math.max(_minScale, _scale), _maxScale);
-    Size realSize = _imageSize * _scale;
+    Offset insetOffset = Offset(inset * 2, inset * 2);
+    Size realSize = _imageSize * _scale + insetOffset;
     double nx = _translation.dx, ny = _translation.dy;
-    if (nx > 0) {
-      nx = 0;
+    if (nx > insetOffset.dx) {
+      nx = insetOffset.dx;
     } else if (nx < _imageSize.width - realSize.width) {
       nx = _imageSize.width - realSize.width;
     }
 
-    if (ny > 0) {
-      ny = 0;
+    if (ny > insetOffset.dy) {
+      ny = insetOffset.dy;
     } else if (ny < _imageSize.height - realSize.height) {
       ny = _imageSize.height - realSize.height;
     }
@@ -193,6 +224,40 @@ class _ZoomImageState extends State<ZoomImage> {
   }
 
   void _onScaleEnd(ScaleEndDetails details) {
+  }
+
+  void _onOneFingerZoomStart(PointerEvent event) {
+    _animationDuration = _moveDuration;
+    setState(() {
+      Offset anchor = (event.localPosition - _translation) / _scale;
+      double oldScale = _scale;
+      _scale = _zoomScale;
+      Size extendSize = _imageSize * (_scale - oldScale);
+
+      _translation -= Offset(
+        extendSize.width * anchor.dx / _imageSize.width,
+        extendSize.height * anchor.dy / _imageSize.height,
+      );
+      clampImage();
+
+      _oldScalePoint = event.localPosition;
+    });
+  }
+  void _onOneFingerZoomUpdate(PointerEvent event) {
+    // _animationDuration = Duration.zero;
+    setState(() {
+      _translation -= (event.localPosition - _oldScalePoint) * _scale;
+      clampImage(40);
+      _oldScalePoint = event.localPosition;
+    });
+
+  }
+  void _onOneFingerZoomEnd(PointerEvent event) {
+    _animationDuration = _moveDuration;
+    setState(() {
+      _scale = 1;
+      clampImage();
+    });
   }
 
   void _getImage(ImageInfo image, bool synchronousCall) {

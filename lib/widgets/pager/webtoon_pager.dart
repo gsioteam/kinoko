@@ -4,6 +4,7 @@ import 'package:flutter/src/foundation/change_notifier.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
+import 'package:kinoko/widgets/images/one_finger_zoom_gesture_recognizer.dart';
 import 'package:kinoko/widgets/over_drag.dart';
 import 'package:kinoko/widgets/pager/pager.dart';
 import 'package:my_scrollable_positioned_list/my_scrollable_positioned_list.dart';
@@ -15,12 +16,15 @@ const double _PageAlignment = 0.1;
 
 class WebtoonPager extends Pager {
 
+  final OneFingerCallback onTap;
+
   WebtoonPager({
     Key key,
     NeoCacheManager cacheManager,
     PagerController controller,
     int itemCount,
     PhotoInformation Function(int index) imageUrlProvider,
+    this.onTap,
   }) : super(
     key: key,
     cacheManager: cacheManager,
@@ -88,6 +92,7 @@ class WebtoonPagerState extends PagerState<WebtoonPager> {
               color: Colors.white,
             );
           },
+          onTap: widget.onTap,
         );
       },
     );

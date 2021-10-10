@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:glib/main/context.dart' as glib;
 import 'package:kinoko/layout/layout.xml_layout.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
+import 'package:kinoko/widgets/images/one_finger_zoom_gesture_recognizer.dart';
 
 class PhotoInformation {
   String url;
@@ -46,10 +47,12 @@ class PagerController {
 
   void jumpTo(int index) {
     state?.onPage(index, false);
+    _index = index;
   }
 
   void animateTo(int index) {
     state?.onPage(index, true);
+    _index = index;
   }
 
   void _onPage(int page) {

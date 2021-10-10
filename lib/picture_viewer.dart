@@ -261,6 +261,9 @@ class _PictureViewerState extends State<PictureViewer> {
             DataItem item = (data[index] as DataItem);
             return PhotoInformation(item.picture, item.headers);
           },
+          onTap: (event) {
+            tapAt(event.position);
+          },
         );
       }
       case FlipType.Vertical: {
@@ -273,6 +276,9 @@ class _PictureViewerState extends State<PictureViewer> {
             DataItem item = (data[index] as DataItem);
             return PhotoInformation(item.picture, item.headers);
           },
+          onTap: (event) {
+            tapAt(event.position);
+          },
         );
       }
       case FlipType.Webtoon: {
@@ -284,6 +290,9 @@ class _PictureViewerState extends State<PictureViewer> {
           imageUrlProvider: (int index) {
             DataItem item = (data[index] as DataItem);
             return PhotoInformation(item.picture, item.headers);
+          },
+          onTap: (event) {
+            tapAt(event.position);
           },
         );
       }

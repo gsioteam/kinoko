@@ -35,6 +35,7 @@ class PhotoImage extends StatefulWidget {
   final bool reverse;
   final bool initFromEnd;
   final PhotoImageController controller;
+  final OneFingerCallback onTap;
 
   PhotoImage({
     Key key,
@@ -45,6 +46,7 @@ class PhotoImage extends StatefulWidget {
     this.reverse,
     this.initFromEnd = false,
     PhotoImageController controller,
+    this.onTap,
   }) : controller = controller == null ? PhotoImageController() : controller, super(key: key);
 
   @override
@@ -52,7 +54,7 @@ class PhotoImage extends StatefulWidget {
 }
 
 const double _zoomScale = 2.5;
-const Duration _moveDuration = Duration(milliseconds: 100);
+const Duration _moveDuration = Duration(milliseconds: 200);
 
 class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerProviderStateMixin {
 
@@ -126,15 +128,16 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
     });
   }
 
-  void clampImage() {
+  void clampImage([double inset = 0]) {
     _scale = math.min(math.max(_minScale, _scale), _maxScale);
-    Size realSize = _imageSize * _scale;
+    Offset insetOffset = Offset(inset * 2, inset * 2);
+    Size realSize = _imageSize * _scale + insetOffset;
     double nx = _translation.dx, ny = _translation.dy;
     if (realSize.width < widget.size.width) {
       nx = (widget.size.width - realSize.width) / 2;
     } else {
-      if (nx > 0) {
-        nx = 0;
+      if (nx > insetOffset.dx) {
+        nx = insetOffset.dx;
       } else if (nx < widget.size.width - realSize.width) {
         nx = widget.size.width - realSize.width;
       }
@@ -142,8 +145,8 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
     if (realSize.height < widget.size.height) {
       ny = (widget.size.height - realSize.height) / 2;
     } else {
-      if (ny > 0) {
-        ny = 0;
+      if (ny > insetOffset.dy) {
+        ny = insetOffset.dy;
       } else if (ny < widget.size.height - realSize.height) {
         ny = widget.size.height - realSize.height;
       }
@@ -172,10 +175,10 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
     });
   }
   void _onOneFingerZoomUpdate(PointerEvent event) {
-    _animationDuration = Duration.zero;
+    // _animationDuration = Duration.zero;
     setState(() {
       _translation -= (event.localPosition - _oldScalePoint) * _scale;
-      clampImage();
+      clampImage(40);
       _oldScalePoint = event.localPosition;
     });
 
@@ -269,8 +272,9 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
                     instance.onStart = _onOneFingerZoomStart;
                     instance.onUpdate = _onOneFingerZoomUpdate;
                     instance.onEnd = _onOneFingerZoomEnd;
+                    instance.onTap = widget.onTap;
                   }
-              )
+              ),
             },
             child: child,
           );
