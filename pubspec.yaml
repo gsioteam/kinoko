@@ -60,6 +60,7 @@ dependencies:
   yaml: ^3.1.0
   decorated_icon: ^1.2.1
   flutter_staggered_animations: ^1.0.0
+  get_version: ^0.2.2
 
 dev_dependencies:
 #  flutter_test:
@@ -88,6 +89,7 @@ flutter:
     - assets/picture/
     - assets/collection.xml
     - assets/languages/
+    - assets/icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

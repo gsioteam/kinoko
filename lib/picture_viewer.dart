@@ -13,6 +13,7 @@ import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
 import 'package:kinoko/configs.dart';
 import 'package:kinoko/widgets/pager/horizontal_pager.dart';
+import 'package:kinoko/widgets/pager/webtoon_pager.dart';
 import 'package:kinoko/widgets/picture_hint_painter.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -105,6 +106,7 @@ enum FlipType {
   Horizontal,
   HorizontalReverse,
   Vertical,
+  Webtoon,
 }
 
 HintMatrix _hintMatrix(FlipType type) {
@@ -119,7 +121,9 @@ HintMatrix _hintMatrix(FlipType type) {
     case FlipType.HorizontalReverse: {
       return HintMatrix();
     }
-    case FlipType.Vertical: {
+    case FlipType.Vertical:
+    case FlipType.Webtoon:
+      {
       return HintMatrix([
         -1, -1, -1,
         -1,  0,  1,
@@ -213,13 +217,6 @@ class _PictureViewerState extends State<PictureViewer> {
     return _cacheManager;
   }
 
-  NeoImageProvider makeImageProvider(DataItem item) {
-    return NeoImageProvider(
-      uri: Uri.parse(item.picture),
-      cacheManager: cacheManager
-    );
-  }
-
   void setAppBarDisplay(display) {
     setState(() {
       appBarDisplay = display;
@@ -268,6 +265,18 @@ class _PictureViewerState extends State<PictureViewer> {
       }
       case FlipType.Vertical: {
         return VerticalPager(
+          key: ValueKey(pagerController),
+          cacheManager: cacheManager,
+          controller: pagerController,
+          itemCount: data.length,
+          imageUrlProvider: (int index) {
+            DataItem item = (data[index] as DataItem);
+            return PhotoInformation(item.picture, item.headers);
+          },
+        );
+      }
+      case FlipType.Webtoon: {
+        return WebtoonPager(
           key: ValueKey(pagerController),
           cacheManager: cacheManager,
           controller: pagerController,
@@ -355,7 +364,23 @@ class _PictureViewerState extends State<PictureViewer> {
                     KeyValue.set(_directionKey, "vertical");
                   }
                 },
-            )
+            ),
+
+            QudsPopupMenuItem(
+              leading: Icon(Icons.web_asset_sharp),
+              title: Text(kt('webtoon')),
+              trailing: flipType == FlipType.Webtoon ?
+              Icon(Icons.check) : null,
+              onPressed: () {
+                if (flipType != FlipType.Webtoon) {
+                  setState(() {
+                    flipType = FlipType.Webtoon;
+                  });
+                  displayHint();
+                  KeyValue.set(_directionKey, "webtoon");
+                }
+              },
+            ),
           ]
       ),
       QudsPopupMenuSection(
@@ -654,6 +679,10 @@ class _PictureViewerState extends State<PictureViewer> {
       }
       case 'horizontal_reverse': {
         flipType = FlipType.HorizontalReverse;
+        break;
+      }
+      case 'webtoon': {
+        flipType = FlipType.Webtoon;
         break;
       }
       default: {

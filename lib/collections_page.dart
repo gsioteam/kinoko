@@ -15,6 +15,7 @@ import 'package:kinoko/utils/image_provider.dart';
 import 'package:decorated_icon/decorated_icon.dart';
 import 'localizations/localizations.dart';
 import './configs.dart';
+import 'widgets/no_data.dart';
 
 const double _LogoSize = 24;
 
@@ -147,13 +148,7 @@ class _CollectionsPageState extends State<CollectionsPage> {
       ),
       body: Stack(
         children: [
-          Container(
-            child: Text(
-              kt('no_data'),
-              style: textStyle,
-            ),
-            alignment: Alignment.center,
-          ),
+          NoData(),
           Positioned(
             left: 18,
             top: 0,

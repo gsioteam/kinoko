@@ -10,6 +10,7 @@ import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
 import 'package:kinoko/utils/book_info.dart';
 import 'package:kinoko/utils/cached_picture_image.dart';
+import 'package:kinoko/widgets/no_data.dart';
 import 'configs.dart';
 import 'main.dart';
 import 'picture_viewer.dart';
@@ -398,6 +399,7 @@ class _DownloadPageState extends State<DownloadPage> {
           key: _DownloadKey(cdata),
           children: <Widget>[
             ListTile(
+              tileColor: Theme.of(context).colorScheme.surface,
               title: Text(downloadData.bookInfo.title),
               subtitle: Text(downloadData.bookInfo.subtitle),
               leading: Image(
@@ -487,7 +489,6 @@ class _DownloadPageState extends State<DownloadPage> {
 
               removeItem(item);
             },
-            background: Container(color: Colors.red,),
           );
         }
     }
@@ -513,7 +514,7 @@ class _DownloadPageState extends State<DownloadPage> {
           );
         },
         icon: Icon(Icons.help_outline),
-        color: has ? Colors.white : Colors.transparent,
+        color: has ? Theme.of(context).appBarTheme.iconTheme.color : Colors.transparent,
       ),
     ];
   }
@@ -525,13 +526,13 @@ class _DownloadPageState extends State<DownloadPage> {
         title: Text(kt('download_list')),
         actions: buildActions(context),
       ),
-      body: AnimatedList(
+      body: data.length > 0 ? AnimatedList(
         key: _listKey,
         initialItemCount: data.length,
         itemBuilder: (context, index, Animation<double> animation) {
           return animationItem(index, animation);
         },
-      ),
+      ) : NoData(),
     );
   }
 

@@ -4,6 +4,8 @@ import 'package:flutter/src/foundation/change_notifier.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
+import 'package:kinoko/widgets/images/photo_image.dart';
+import 'package:kinoko/widgets/images/vertical_image.dart';
 import 'package:kinoko/widgets/over_drag.dart';
 import 'package:kinoko/widgets/pager/pager.dart';
 import 'package:my_scrollable_positioned_list/my_scrollable_positioned_list.dart';
@@ -12,6 +14,52 @@ import 'dart:math' as math;
 
 const double _DefaultBarHeight = 88;
 const double _PageAlignment = 0.1;
+
+
+class _PageScrollPhysics extends PageScrollPhysics {
+  final _VerticalPagerState state;
+  _PageScrollPhysics({
+    ScrollPhysics parent,
+    @required this.state,
+  }) : super(parent: parent);
+
+  @override
+  _PageScrollPhysics applyTo(ScrollPhysics ancestor) {
+    return _PageScrollPhysics(parent: buildParent(ancestor), state: state);
+  }
+
+  @override
+  double applyPhysicsToUserOffset(ScrollMetrics position, double offset) {
+    var page = state.pageController.page;
+    var round = page.round();
+    var controller = state.getPageController(round);
+    var reverse = false;
+    if (offset <= 0 && (page < round ||
+        (!reverse && controller.arriveEnd() ||
+            reverse && controller.arriveStart()))) {
+      return super.applyPhysicsToUserOffset(position, offset);
+    } else if (offset > 0 &&
+        (page > round || (!reverse && controller.arriveStart() || reverse && controller.arriveEnd()))) {
+      return super.applyPhysicsToUserOffset(position, offset);
+    } else {
+      controller.scrollOffset(offset, false);
+      return 0;
+    }
+  }
+
+  @override
+  Simulation createBallisticSimulation(ScrollMetrics position, double velocity) {
+    var controller = state.getPageController(state.pageController.page.round());
+    if (velocity > 0 && !controller.arriveEnd()) {
+      controller.scrollOffset(-velocity / 10, true);
+      velocity = 0;
+    } else if (velocity < 0 && !controller.arriveStart()) {
+      controller.scrollOffset(-velocity / 10, true);
+      velocity = 0;
+    }
+    return super.createBallisticSimulation(position, velocity);
+  }
+}
 
 class VerticalPager extends Pager {
 
@@ -30,15 +78,17 @@ class VerticalPager extends Pager {
   );
 
   @override
-  PagerState<Pager> createState() => VerticalPagerState();
+  PagerState<Pager> createState() => _VerticalPagerState();
 }
 
-class VerticalPagerState extends PagerState<VerticalPager> {
+class _VerticalPagerState extends PagerState<VerticalPager> {
 
-  ItemScrollController controller;
-  ItemPositionsListener listener;
+  _PageScrollPhysics scrollPhysics;
+  PageController pageController;
+  Map<int, PhotoImageController> _pages = new Map();
+
+  Duration _duration = const Duration(milliseconds: 300);
   bool _listen = true;
-  ItemPosition _current;
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +97,9 @@ class VerticalPagerState extends PagerState<VerticalPager> {
       up: true,
       down: true,
       onOverDrag: (type) {
-        if (type == OverDragType.Up) {
+        if (type == OverDragType.Left) {
           widget.controller.onOverBound?.call(BoundType.Start);
-        } else if (type == OverDragType.Down) {
+        } else if (type == OverDragType.Right) {
           widget.controller.onOverBound?.call(BoundType.End);
         }
       },
@@ -57,162 +107,155 @@ class VerticalPagerState extends PagerState<VerticalPager> {
   }
 
   Widget buildScrollable(BuildContext context) {
-    return ScrollablePositionedList.builder(
-      padding: EdgeInsets.symmetric(
-        vertical: _DefaultBarHeight
-      ),
-      itemCount: widget.itemCount,
-      initialScrollIndex: widget.controller.index,
-      initialAlignment: _PageAlignment,
-      itemScrollController: controller,
-      itemPositionsListener: listener,
-      itemBuilder: (context, index) {
-        PhotoInformation photoInformation = widget.imageUrlProvider(index);
+    var media = MediaQuery.of(context);
 
-        return ZoomImage(
-          imageProvider: NeoImageProvider(
-            uri: Uri.parse(photoInformation.url),
-            cacheManager: widget.cacheManager,
-            headers: photoInformation.headers,
-          ),
-          loadingWidget: (context) {
-            return SpinKitRing(
-              lineWidth: 4,
-              size: 36,
-              color: Colors.white,
-            );
-          },
-          errorWidget: (context) {
-            return Icon(
-              Icons.broken_image,
-              color: Colors.white,
-            );
-          },
-        );
-      },
+    AxisDirection axisDirection = AxisDirection.down;
+    return Scrollable(
+        axisDirection: axisDirection,
+        controller: pageController,
+        physics: scrollPhysics,
+        viewportBuilder: (context, position) {
+          return Viewport(
+            offset: position,
+            axisDirection: axisDirection,
+            cacheExtent: 0.1,
+            slivers: [
+              SliverFillViewport(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  PhotoInformation photoInformation = widget.imageUrlProvider(index);
+                  PhotoImageController controller = getPageController(index);
+                  return Container(
+                    clipBehavior: Clip.hardEdge,
+                    decoration: BoxDecoration(
+                        color: Colors.black
+                    ),
+                    child: Center(
+                      child: VerticalImage(
+                        imageProvider: NeoImageProvider(
+                          uri: Uri.parse(photoInformation.url),
+                          cacheManager: widget.cacheManager,
+                          headers: photoInformation.headers,
+                        ),
+                        size: media.size,
+                        initFromEnd: index < widget.controller.index,
+                        loadingWidget: (context) {
+                          return SpinKitRing(
+                            lineWidth: 4,
+                            size: 36,
+                            color: Colors.white,
+                          );
+                        },
+                        errorWidget: (context) {
+                          return Icon(
+                            Icons.broken_image,
+                            color: Colors.white,
+                          );
+                        },
+                        controller: controller,
+                      ),
+                    ),
+                  );
+                },
+                  childCount: widget.itemCount,
+                ),
+              ),
+            ],
+          );
+        }
     );
   }
 
   @override
-  void onNext() async {
-    if (_current != null) {
-      int target;
-      double alignment;
-      if (_current.itemTrailingEdge > 1) {
-        target = _current.index;
-        var len = _current.itemTrailingEdge - _current.itemLeadingEdge;
-        alignment = math.max(_current.itemLeadingEdge - 0.6, (1 - _PageAlignment)-len);
+  void onNext() {
+    if (pageController == null) return;
+    int index = pageController.page.round();
+    var controller = getPageController(index);
+    if (controller.arriveEnd()) {
+      if (index >= widget.itemCount - 1) {
+        widget.controller.onOverBound(BoundType.End);
       } else {
-        if (_current.index < widget.itemCount - 1) {
-          target = _current.index + 1;
-          alignment = _PageAlignment;
-        } else {
-          widget.controller.onOverBound(BoundType.End);
-          return;
-        }
+        pageController.nextPage(duration: _duration, curve: Curves.easeInOutCubic);
       }
-      controller.scrollTo(
-        index: target,
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeInOutCubic,
-        alignment: alignment,
-      );
+    } else {
+      controller.next();
     }
   }
 
   @override
   void onPrev() {
-    if (_current != null) {
-      int target;
-      double alignment;
-      if (_current.itemLeadingEdge < 0) {
-        target = _current.index;
-        // var len = _current.itemTrailingEdge - _current.itemLeadingEdge;
-        alignment = math.min(_current.itemLeadingEdge + 0.6, _PageAlignment);
+    if (pageController == null) return;
+    int index = pageController.page.round();
+    var controller = getPageController(index);
+    if (controller.arriveStart()) {
+      if (index <= 0) {
+        widget.controller.onOverBound?.call(BoundType.Start);
       } else {
-        if (_current.index > 0) {
-          target = _current.index;
-          alignment = 1 - _PageAlignment;
-        } else {
-          widget.controller.onOverBound(BoundType.Start);
-          return;
-        }
+        pageController.previousPage(duration: _duration, curve: Curves.easeInOutCubic);
       }
-      controller.scrollTo(
-        index: target,
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeInOutCubic,
-        alignment: alignment,
-      );
-
+    } else {
+      controller.prev();
     }
   }
 
   @override
-  void onPage(int page, bool animate) {
+  void onPage(int page, bool animate) async {
+    if (pageController == null) return;
+    _listen = false;
     if (animate) {
-      _listen = false;
-      controller.scrollTo(
-        index: page,
-        duration: Duration(milliseconds: 300),
+      await pageController.animateToPage(
+        page,
+        duration: _duration,
         curve: Curves.easeInOutCubic,
-        alignment: 0.1
-      ).then((value) => _listen = true);
-    } else {
-      controller.jumpTo(
-        index: page,
-        alignment: _PageAlignment,
       );
+    } else {
+      pageController.jumpToPage(page);
+    }
+    _listen = true;
+  }
+
+  PhotoImageController getPageController(int index) {
+    if (_pages.containsKey(index)) {
+      return _pages[index];
+    } else {
+      _pages[index] = PhotoImageController();
+      return _pages[index];
     }
   }
 
   @override
   void initState() {
     super.initState();
-    controller = ItemScrollController();
-    listener = ItemPositionsListener.create();
-    listener.itemPositions.addListener(_positionUpdate);
-    _initPosition();
+    scrollPhysics = _PageScrollPhysics(
+      state: this,
+    );
+    _initPageController();
   }
 
   @override
   void dispose() {
     super.dispose();
+    pageController?.dispose();
   }
 
   @override
   void didUpdateWidget(covariant VerticalPager oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _initPosition();
+    _initPageController();
   }
 
-  void _positionUpdate() {
-    if (!_listen) return;
-    var list = listener.itemPositions.value;
-    ItemPosition current;
-    double old = double.infinity;
-    for (var position in list) {
-      var middle = (position.itemTrailingEdge + position.itemLeadingEdge) / 2;
-      if (middle > 0 && middle < old) {
-        old = middle;
-        current = position;
+  void _initPageController() {
+    if (pageController == null && widget.itemCount > 0) {
+      if (widget.controller.index == -1) {
+        widget.controller.index = widget.itemCount - 1;
       }
-    }
-    if (current != null) {
-      _current = current;
-      setPage(current.index);
-    }
-  }
-
-  void _initPosition() {
-    if (widget.controller.index == -1 && widget.itemCount > 0) {
-      widget.controller.index = widget.itemCount - 1;
-      if (controller.isAttached) {
-        controller.jumpTo(
-          index: widget.itemCount - 1,
-          alignment: -99,
-        );
-      }
+      pageController = PageController(
+        initialPage: widget.controller.index,
+      );
+      pageController.addListener(() {
+        if (_listen) {
+          setPage(pageController.page.round());
+        }
+      });
     }
   }
 }

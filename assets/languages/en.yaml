@@ -79,6 +79,16 @@ orientation: Device Orientation
 prev: Prev
 menu: Menu
 next: Next
+
 no_data: No Data
 select_project: No Plug-in
 click_to_select: Click to Select one
+version: Ver.
+framework_version: Framework
+cache_manager: Cache
+about_description: "This is a open source software, visit "
+about_description_end: " for more information or report bugs or to suggest a new feature."
+about: About
+fetch_framework: Fetch Framework...
+loading: Loading...
+webtoon: Webtoon

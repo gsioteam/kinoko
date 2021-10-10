@@ -24,6 +24,8 @@ import 'utils/favorites_manager.dart';
 import 'widgets/instructions_dialog.dart';
 import 'dart:ui' as ui;
 
+import 'widgets/no_data.dart';
+
 const Size _containerSize = Size(120, 180);
 const double _frameOffset = 5;
 
@@ -55,7 +57,7 @@ class BookFramePainter extends CustomPainter {
     paint.style = PaintingStyle.stroke;
     paint.strokeJoin = StrokeJoin.round;
     paint.strokeCap = StrokeCap.round;
-    paint.color = Color(0xff333333);
+    paint.color = Color(0xff666666);
     paint.shader = null;
     paint.strokeWidth = 1;
     canvas.drawPath(path, paint);
@@ -67,6 +69,13 @@ class BookFramePainter extends CustomPainter {
       path.lineTo(size.width + 0, -0);
       path.lineTo(size.width + 0, size.height - 1);
       canvas.drawPath(path, paint);
+    }
+
+    {
+      paint = Paint();
+      paint.style = PaintingStyle.fill;
+      paint.color = Color(0xffaaaaaa);
+      canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
     }
   }
 
@@ -217,7 +226,6 @@ class _FavoriteItemState extends State<FavoriteItem> {
                               color: Colors.white,
                             ),
                             overflow: TextOverflow.ellipsis,
-
                             maxLines: 1,
                           ),
                           Padding(padding: EdgeInsets.only(top: 2)),
@@ -448,7 +456,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
       child: GridView.builder(
         key: _listKey,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2
+            crossAxisCount: 3,
+          childAspectRatio: 0.66
         ),
         itemCount: items.length,
         itemBuilder: (context, index) {
@@ -494,24 +503,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           statusBarColor: Colors.white,
         ),
       ),
-      body: items.length > 0 ? buildGridView(context) : Container(
-        child: Center(
-          child: Text(
-            kt('no_data'),
-            style: TextStyle(
-              fontFamily: 'DancingScript',
-              fontSize: 24,
-              color: Theme.of(context).disabledColor,
-              shadows: [
-                Shadow(
-                  color: Theme.of(context).colorScheme.surface,
-                  offset: Offset(1, 1)
-                ),
-              ]
-            ),
-          ),
-        ),
-      ),
+      body: items.length > 0 ? buildGridView(context) : NoData(),
     );
   }
 

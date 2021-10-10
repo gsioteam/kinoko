@@ -219,7 +219,8 @@ class _ZoomImageState extends State<ZoomImage> {
     if (_imageStream.key != oldImageStream?.key) {
       _hasError = false;
       oldImageStream?.removeListener(_imageStreamListener);
-      _imageStream.addListener(_imageStreamListener);
+      if (_imageStreamListener != null)
+        _imageStream.addListener(_imageStreamListener);
     }
   }
 

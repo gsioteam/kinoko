@@ -9,6 +9,7 @@ import 'package:glib/main/data_item.dart';
 import 'package:glib/main/collection_data.dart';
 import 'package:glib/main/project.dart';
 import 'package:kinoko/utils/history_manager.dart';
+import 'package:kinoko/widgets/no_data.dart';
 import 'book_page.dart';
 import 'configs.dart';
 import 'localizations/localizations.dart';
@@ -79,35 +80,32 @@ class _HistoryPageState extends State<HistoryPage> {
           )
         ],
       ),
-      body: ListView.builder(
+      body: items.length > 0 ? ListView.separated(
           itemCount: items.length,
           itemBuilder: (context, index) {
             HistoryItem item = items[index];
             DataItem data = item.item;
-            return Column(
-              children: [
-                ListTile(
-                  title: Text(data.title),
-                  subtitle: Text(data.subtitle),
-                  leading: Image(
-                    image: NeoImageProvider(
-                        uri: Uri.parse(data.picture),
-                        cacheManager: NeoCacheManager.defaultManager
-                    ),
-                    fit: BoxFit.cover,
-                    width: 56,
-                    height: 56,
-                    gaplessPlayback: true,
-                  ),
-                  onTap: () {
-                    enterPage(item);
-                  },
+            return ListTile(
+              tileColor: Theme.of(context).colorScheme.surface,
+              title: Text(data.title),
+              subtitle: Text(data.subtitle),
+              leading: Image(
+                image: NeoImageProvider(
+                    uri: Uri.parse(data.picture),
+                    cacheManager: NeoCacheManager.defaultManager
                 ),
-                Divider(height: 1,)
-              ],
+                fit: BoxFit.cover,
+                width: 56,
+                height: 56,
+                gaplessPlayback: true,
+              ),
+              onTap: () {
+                enterPage(item);
+              },
             );
-          }
-      ),
+          },
+        separatorBuilder: (context, index) => Divider(height: 1,),
+      ) : NoData(),
     );
 
   }

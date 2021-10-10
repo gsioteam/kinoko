@@ -72,6 +72,19 @@ class WebImage extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
+        errorBuilder: (context, e, stack) {
+          return Container(
+            width: width,
+            height: height,
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: Center(
+              child: Icon(
+                Icons.broken_image,
+                color: Theme.of(context).colorScheme.onBackground,
+              ),
+            ),
+          );
+        },
       );
     }
   }

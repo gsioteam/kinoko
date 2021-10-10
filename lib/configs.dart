@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:glib/utils/git_repository.dart';
 const String env_git_url = "https://github.com/gsioteam/glib_env.git";
+const String project_link = 'https://github.com/gsioteam/kinoko';
 
 Map<String, String> cachedTemplates = {};
 Map<String, dynamic> share_cache = Map();

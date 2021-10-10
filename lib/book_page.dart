@@ -343,6 +343,9 @@ class _DefaultBookPageState extends State<_DefaultBookPage> {
               backgroundColor: theme.primaryColor,
               expandedHeight: 288.0,
               brightness: Brightness.dark,
+              iconTheme: IconThemeData(
+                color: Colors.white,
+              ),
               bottom: PreferredSize(
                   child: Container(
                     height: 48,

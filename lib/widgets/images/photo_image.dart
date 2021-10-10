@@ -1,5 +1,6 @@
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'dart:ui' as ui;
 import 'dart:math' as math;
 
@@ -7,13 +8,14 @@ import 'package:flutter/material.dart';
 import 'package:kinoko/widgets/over_drag.dart';
 import 'package:vector_math/vector_math_64.dart' as m64;
 
+import 'one_finger_zoom_gesture_recognizer.dart';
 import '../../localizations/localizations.dart';
 
 const double _ImageAspect = 1.55;
 
 class PhotoImageController {
 
-  _PhotoImageState state;
+  PhotoImageState state;
 
   bool arriveStart() => state?.arriveStart() ?? true;
   bool arriveEnd() =>  state?.arriveEnd() ?? true;
@@ -46,10 +48,13 @@ class PhotoImage extends StatefulWidget {
   }) : controller = controller == null ? PhotoImageController() : controller, super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _PhotoImageState();
+  State<StatefulWidget> createState() => PhotoImageState();
 }
 
-class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateMixin {
+const double _zoomScale = 2.5;
+const Duration _moveDuration = Duration(milliseconds: 100);
+
+class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerProviderStateMixin {
 
   ImageInfo _imageInfo;
   ImageStreamListener _imageStreamListener;
@@ -58,7 +63,7 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
 
   AnimationController controller;
 
-  _PhotoImageState() {
+  PhotoImageState() {
     _imageStreamListener = ImageStreamListener(
         _getImage,
         onError: _getError
@@ -69,8 +74,13 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
   Offset _animateEnd = Offset.zero;
   Offset _translation = Offset.zero;
   double _scale = 1;
+  double get scale => _scale;
 
   Size _imageSize;
+  Size get imageSize => _imageSize;
+
+  Offset get translation => _translation;
+ set translation(v) => _translation = v;
 
   GlobalKey _key = GlobalKey();
 
@@ -79,10 +89,14 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
 
   Offset _oldScalePoint;
   double _oldScale;
+
+  Duration _animationDuration = Duration.zero;
+
   void _onScaleStart(ScaleStartDetails details) {
     controller.stop();
     _oldScalePoint = details.focalPoint;
     _oldScale = 1;
+    _animationDuration = Duration.zero;
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
@@ -138,6 +152,40 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
   }
 
   void _onScaleEnd(ScaleEndDetails details) {
+  }
+
+  void _onOneFingerZoomStart(PointerEvent event) {
+    _animationDuration = _moveDuration;
+    setState(() {
+      Offset anchor = (event.localPosition - _translation) / _scale;
+      double oldScale = _scale;
+      _scale = _zoomScale;
+      Size extendSize = _imageSize * (_scale - oldScale);
+
+      _translation -= Offset(
+        extendSize.width * anchor.dx / _imageSize.width,
+        extendSize.height * anchor.dy / _imageSize.height,
+      );
+      clampImage();
+
+      _oldScalePoint = event.localPosition;
+    });
+  }
+  void _onOneFingerZoomUpdate(PointerEvent event) {
+    _animationDuration = Duration.zero;
+    setState(() {
+      _translation -= (event.localPosition - _oldScalePoint) * _scale;
+      clampImage();
+      _oldScalePoint = event.localPosition;
+    });
+
+  }
+  void _onOneFingerZoomEnd(PointerEvent event) {
+    _animationDuration = _moveDuration;
+    setState(() {
+      _scale = 1;
+      clampImage();
+    });
   }
 
   @override
@@ -204,6 +252,30 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
           clampImage();
         }
 
+        Widget buildGestureDetector(Widget child) {
+          return RawGestureDetector(
+            gestures: {
+              ScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<ScaleGestureRecognizer>(
+                  () => ScaleGestureRecognizer(),
+                  (instance) {
+                    instance.onStart = _onScaleStart;
+                    instance.onUpdate = _onScaleUpdate;
+                    instance.onEnd = _onScaleEnd;
+                  },
+              ),
+              OneFingerZoomGestureRecognizer: GestureRecognizerFactoryWithHandlers<OneFingerZoomGestureRecognizer>(
+                  () => OneFingerZoomGestureRecognizer(),
+                  (instance) {
+                    instance.onStart = _onOneFingerZoomStart;
+                    instance.onUpdate = _onOneFingerZoomUpdate;
+                    instance.onEnd = _onOneFingerZoomEnd;
+                  }
+              )
+            },
+            child: child,
+          );
+        }
+
         return Container(
           width: widget.size.width,
           height: widget.size.height,
@@ -211,35 +283,30 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
             color: Colors.black,
           ),
           clipBehavior: Clip.antiAlias,
-          child: GestureDetector(
-            key: _key,
-            onScaleStart: _onScaleStart,
-            onScaleUpdate: _onScaleUpdate,
-            onScaleEnd: _onScaleEnd,
-            child: OverflowBox(
-              minWidth: math.min(_imageSize.width, widget.size.width),
-              minHeight: math.min(_imageSize.height, widget.size.height),
-              maxWidth: _imageSize.width,
-              maxHeight: _imageSize.height,
-              alignment: Alignment.topLeft,
-              child: Transform(
-                transform: Matrix4.translation(m64.Vector3(_translation.dx, _translation.dy, 0))
-                  ..scale(_scale, _scale),
-                child: Container(
-                  color: Colors.black,
-                  width: _imageSize.width,
-                  height: _imageSize.height,
-                  padding: const EdgeInsets.all(1),
-                  child: RawImage(
-                    image: _imageInfo?.image,
-                    width: _imageSize.width - 2,
-                    height: _imageSize.height - 2,
-                    fit: BoxFit.fill,
-                  ),
+          child: buildGestureDetector(OverflowBox(
+            minWidth: math.min(_imageSize.width, widget.size.width),
+            minHeight: math.min(_imageSize.height, widget.size.height),
+            maxWidth: _imageSize.width,
+            maxHeight: _imageSize.height,
+            alignment: Alignment.topLeft,
+            child: AnimatedContainer(
+              duration: _animationDuration,
+              transform: Matrix4.translation(m64.Vector3(_translation.dx, _translation.dy, 0))
+                ..scale(_scale, _scale),
+              child: Container(
+                color: Colors.black,
+                width: _imageSize.width,
+                height: _imageSize.height,
+                padding: const EdgeInsets.all(1),
+                child: RawImage(
+                  image: _imageInfo?.image,
+                  width: _imageSize.width - 2,
+                  height: _imageSize.height - 2,
+                  fit: BoxFit.fill,
                 ),
               ),
             ),
-          ),
+          ),),
         );
 
       } else {
@@ -312,7 +379,8 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
     if (_imageStream.key != oldImageStream?.key) {
       _hasError = false;
       oldImageStream?.removeListener(_imageStreamListener);
-      _imageStream.addListener(_imageStreamListener);
+      if (_imageStreamListener != null)
+        _imageStream.addListener(_imageStreamListener);
     }
   }
 
@@ -338,23 +406,24 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
 
   void next() {
     if (widget.reverse) {
-      _animateStart = _translation;
-      _animateEnd = Offset(_clampX(_translation.dx + widget.size.width * 0.8), _translation.dy);
+      animateTo(Offset(_clampX(_translation.dx + widget.size.width * 0.8), _translation.dy));
     } else {
-      _animateStart = _translation;
-      _animateEnd = Offset(_clampX(_translation.dx - widget.size.width * 0.8), _translation.dy);
+      animateTo(Offset(_clampX(_translation.dx - widget.size.width * 0.8), _translation.dy));
     }
-    controller.forward(from: 0);
   }
 
   void prev() {
     if (widget.reverse) {
-      _animateStart = _translation;
-      _animateEnd = Offset(_clampX(_translation.dx - widget.size.width * 0.8), _translation.dy);
+      animateTo(Offset(_clampX(_translation.dx - widget.size.width * 0.8), _translation.dy));
     } else {
-      _animateStart = _translation;
-      _animateEnd = Offset(_clampX(_translation.dx + widget.size.width * 0.8), _translation.dy);
+      animateTo(Offset(_clampX(_translation.dx + widget.size.width * 0.8), _translation.dy));
     }
+  }
+
+  void animateTo(Offset translation) {
+    _animationDuration = Duration.zero;
+    _animateStart = _translation;
+    _animateEnd = translation;
     controller.forward(from: 0);
   }
 
@@ -371,6 +440,7 @@ class _PhotoImageState extends State<PhotoImage> with SingleTickerProviderStateM
   }
 
   void scrollOffset(double offset, bool animate) {
+    _animationDuration = Duration.zero;
     if (animate) {
       _animateStart = _translation;
       _animateEnd = Offset(

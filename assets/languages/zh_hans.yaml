@@ -78,6 +78,10 @@ orientation: 设备方向
 prev: 上一页
 menu: 菜单
 next: 下一页
+
 no_data: No Data
 select_project: 没有插件
 click_to_select: 点击选择一个
+version: Ver.
+framework_version: 框架
+cache_manager: 缓存
