@@ -5,6 +5,7 @@ import '../over_drag.dart';
 import 'photo_image.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 class VerticalImage extends PhotoImage {
 
@@ -74,5 +75,30 @@ class VerticalImageState extends PhotoImageState<VerticalImage> {
   double _clampY(double dy) {
     Size realSize = (imageSize ?? widget.size) * scale;
     return math.min(math.max(dy, widget.size.height - realSize.height), 0);
+  }
+
+  Size onSetupImage(ui.Image image) {
+    double width, height;
+    width = widget.size.width;
+    height = width * image.height / image.width;
+
+    Size imageSize = Size(width, height);
+    bool fromStart = !widget.reverse;
+    if (widget.initFromEnd) {
+      fromStart = !fromStart;
+    }
+    if (!fromStart) {
+      translation = Offset(0, widget.size.height - height);
+    }
+    if (imageSize.width > widget.size.width) {
+      minScale = widget.size.width / imageSize.width;
+    }
+    if (imageSize.height > widget.size.height) {
+      double scale = widget.size.height / imageSize.height;
+      if (scale < minScale) {
+        minScale = scale;
+      }
+    }
+    return imageSize;
   }
 }

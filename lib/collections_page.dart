@@ -218,7 +218,7 @@ class _CollectionsPageState extends State<CollectionsPage> {
         appBar: AppBar(
           title: buildLogo(context),
           actions: buildActions(context),
-          bottom: tabs.length > 0 ? PreferredSize(
+          bottom: tabs.length > 1 ? PreferredSize(
             preferredSize: new Size(double.infinity, 36.0),
             child: TabBar(
               tabs: tabs,

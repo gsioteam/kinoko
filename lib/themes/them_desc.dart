@@ -21,32 +21,53 @@ class _DefaultThemeDesc extends ThemeDesc {
   _DefaultThemeDesc() : super._();
 
   final String title = "default";
-  ThemeData get data => ThemeData.light().copyWith(
-    primaryColor: Colors.blue,
-    shadowColor: Color(0xff888888),
-    scaffoldBackgroundColor: Color(0xfff2f2f2),
-    appBarTheme: AppBarTheme(
-      color: Colors.white,
+  ThemeData get data {
+
+    Color primaryColor = Color(0xff50a29f);
+
+    return ThemeData.light().copyWith(
+      primaryColor: primaryColor,
       shadowColor: Color(0xff888888),
-      textTheme: TextTheme(
-        headline6: TextStyle(
-          color: Colors.black,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+      scaffoldBackgroundColor: Color(0xfff2f2f2),
+      appBarTheme: AppBarTheme(
+        color: Colors.white,
+        shadowColor: Color(0xff888888),
+        textTheme: TextTheme(
+          headline6: TextStyle(
+            color: Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        iconTheme: IconThemeData(
+          color: Colors.grey,
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: Colors.white
         ),
       ),
-      iconTheme: IconThemeData(
-        color: Colors.grey,
+      tabBarTheme: TabBarTheme(
+        labelColor: primaryColor,
+        unselectedLabelColor: Colors.grey,
+        indicator: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: primaryColor,
+              width: 2,
+            )
+          )
+        )
       ),
-      systemOverlayStyle: SystemUiOverlayStyle(
-        statusBarColor: Colors.white
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        selectedItemColor: primaryColor,
+        unselectedItemColor: Colors.grey,
+      ),
+      colorScheme: ColorScheme.light(
+        primary: primaryColor,
+        background: Color(0xffb0e8d3),
       )
-    ),
-    tabBarTheme: TabBarTheme(
-      labelColor: Colors.blue,
-      unselectedLabelColor: Colors.grey,
-    ),
-  );
+    );
+  }
 }
 
 List<ThemeDesc> themes = [

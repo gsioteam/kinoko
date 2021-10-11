@@ -11,7 +11,7 @@ import 'package:vector_math/vector_math_64.dart' as m64;
 import 'one_finger_zoom_gesture_recognizer.dart';
 import '../../localizations/localizations.dart';
 
-const double _ImageAspect = 1.55;
+const double ImageAspect = 1.55;
 
 class PhotoImageController {
 
@@ -86,8 +86,8 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
 
   GlobalKey _key = GlobalKey();
 
-  double _minScale = 1;
-  double _maxScale = 4;
+  double minScale = 1;
+  double maxScale = 4;
 
   Offset _oldScalePoint;
   double _oldScale;
@@ -129,7 +129,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
   }
 
   void clampImage([double inset = 0]) {
-    _scale = math.min(math.max(_minScale, _scale), _maxScale);
+    _scale = math.min(math.max(minScale, _scale), maxScale);
     Offset insetOffset = Offset(inset * 2, inset * 2);
     Size realSize = _imageSize * _scale + insetOffset;
     double nx = _translation.dx, ny = _translation.dy;
@@ -225,33 +225,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
       ui.Image image = _imageInfo?.image;
       if (image != null) {
         if (_imageSize == null) {
-          double width, height;
-          if (image.width > image.height) {
-            height = math.min(widget.size.width * _ImageAspect, widget.size.height);
-            width = height * image.width / image.height;
-          } else {
-            width = widget.size.width;
-            height = width * image.height / image.width;
-          }
-
-          _imageSize = Size(width, height);
-          bool fromStart = !widget.reverse;
-          if (widget.initFromEnd) {
-            fromStart = !fromStart;
-          }
-          if (!fromStart) {
-            _translation = Offset(widget.size.width - width, 0);
-            _animateStart = _translation;
-          }
-          if (_imageSize.width > widget.size.width) {
-            _minScale = widget.size.width / _imageSize.width;
-          }
-          if (_imageSize.height > widget.size.height) {
-            double scale = widget.size.height / _imageSize.height;
-            if (scale < _minScale) {
-              _minScale = scale;
-            }
-          }
+          _imageSize = onSetupImage(image);
           clampImage();
         }
 
@@ -323,6 +297,36 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
         );
       }
     }
+  }
+
+  Size onSetupImage(ui.Image image) {
+    double width, height;
+    if (image.width > image.height) {
+      height = math.min(widget.size.width * ImageAspect, widget.size.height);
+      width = height * image.width / image.height;
+    } else {
+      width = widget.size.width;
+      height = width * image.height / image.width;
+    }
+
+    Size imageSize = Size(width, height);
+    bool fromStart = !widget.reverse;
+    if (widget.initFromEnd) {
+      fromStart = !fromStart;
+    }
+    if (!fromStart) {
+      _translation = Offset(widget.size.width - width, 0);
+    }
+    if (imageSize.width > widget.size.width) {
+      minScale = widget.size.width / imageSize.width;
+    }
+    if (imageSize.height > widget.size.height) {
+      double scale = widget.size.height / imageSize.height;
+      if (scale < minScale) {
+        minScale = scale;
+      }
+    }
+    return imageSize;
   }
 
   void _getImage(ImageInfo image, bool synchronousCall) {

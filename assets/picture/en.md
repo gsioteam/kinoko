@@ -5,9 +5,9 @@
   1. Volume+: Previous Page
   2. Volume-: Next Page
 
-- Pulsación larga y pellizco
+- Long Press And Pinch
 
-Mantenga presionado para acercar con un solo dedo, pellizque para acercar y alejar.
+Long press to zoom in with only one finger, pinch to zoom in and zoom out.
 
 - Page Jump
 
