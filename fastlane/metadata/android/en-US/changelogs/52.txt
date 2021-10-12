@@ -1,0 +1,3 @@
+- Brand new UI
+- Added long press gesture to zoom in the picture
+- Added a new page mode
