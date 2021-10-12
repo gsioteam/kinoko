@@ -26,7 +26,7 @@ gc::Array GitLibrary::allLibraries() {
     return res;
 }
 
-bool GitLibrary::insertLibrary(const std::string &url) {
+bool GitLibrary::insertLibrary(const std::string &url, const std::string &branch) {
     Array res = GitLibrary::query()->equal("url", url)->results();
     if (res->size() > 0) {
         return false;
@@ -34,6 +34,7 @@ bool GitLibrary::insertLibrary(const std::string &url) {
     Ref<GitLibrary> lib = new GitLibrary;
     lib->setUrl(url);
     lib->setDate(getTimeStamp());
+    lib->setBranch(branch);
     lib->save();
     return true;
 }

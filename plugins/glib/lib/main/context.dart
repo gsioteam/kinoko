@@ -95,6 +95,6 @@ class LibraryContext extends Base {
   Array get data => call("getData");
 
   bool parseLibrary(String str) => call("parseLibrary", argv: [str]);
-  bool insertLibrary(String url) => call("insertLibrary", argv: [url]);
+  bool insertLibrary(String url, String branch) => call("insertLibrary", argv: [url, branch]);
   bool removeLibrary(String url) => call("removeLibrary", argv: [url]);
 }

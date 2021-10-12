@@ -54,9 +54,9 @@ class _DefaultThemeDesc extends ThemeDesc {
             bottom: BorderSide(
               color: primaryColor,
               width: 2,
-            )
-          )
-        )
+            ),
+          ),
+        ),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         selectedItemColor: primaryColor,

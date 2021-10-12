@@ -33,7 +33,7 @@ namespace gs {
         }
 
         METHOD static gc::Array allLibraries();
-        METHOD static bool insertLibrary(const std::string &url);
+        METHOD static bool insertLibrary(const std::string &url, const std::string &branch);
         METHOD static gc::Ref<GitLibrary> findLibrary(const std::string &url);
 
         ON_LOADED_BEGIN(cls, Model<GitLibrary>)

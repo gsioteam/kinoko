@@ -9,7 +9,7 @@
 "not_installed": "未克隆"
 "select_main_project": "設為主項目"
 "new_project": "添加Git項目"
-"new_project_hint": "Git://..."
+"new_project_hint": "URL(Git://...)"
 "add_project_failed": "未能添加，是否已添加？"
 "manage_projects": "轄書齋"
 "manga_home": "漫畫之家"
@@ -92,3 +92,5 @@ about: 關於
 fetch_framework: Fetch Framework...
 loading: 加載中...
 webtoon: 網頁漫畫
+
+new_project_branch: "Branch(default:master)"

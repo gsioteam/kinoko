@@ -9,7 +9,7 @@
 "not_installed": "No clonada"
 "select_main_project": "Hacer proyecto principal"
 "new_project": "Nuevo proyecto Git"
-"new_project_hint": "Git://..."
+"new_project_hint": "URL(Git://...)"
 "add_project_failed": "No se puede añadir, ¿se habría añadido antes？"
 "manage_projects": "Gestionar proyectos"
 "manga_home": "Manga"
@@ -93,3 +93,5 @@ about: Sobre
 fetch_framework: Fetch Framework...
 loading: Cargando...
 webtoon: Webtoon
+
+new_project_branch: "Branch(default:master)"

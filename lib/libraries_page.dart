@@ -307,7 +307,6 @@ class _LibrariesPageState extends State<LibrariesPage> {
   int pageIndex = 0;
   bool hasMore = false;
   static DateTime lastUpdateTime;
-  String _inputText;
 
   Future<bool> requestPage(int page) async {
     String url = LibURL.replaceAll("{0}", page.toString()).replaceAll("{1}", per_page.toString());
@@ -360,8 +359,8 @@ class _LibrariesPageState extends State<LibrariesPage> {
     return true;
   }
 
-  bool insertLibrary(String url) {
-    if (ctx.insertLibrary(url)) {
+  bool insertLibrary(String url, String branch) {
+    if (ctx.insertLibrary(url, branch)) {
       setState(() { });
       return true;
     }
@@ -377,21 +376,20 @@ class _LibrariesPageState extends State<LibrariesPage> {
     return false;
   }
 
-  void addProject(BuildContext context, String url) {
+  void addProject(BuildContext context, String url, String branch) {
     if (url.isEmpty) {
       return;
     }
+    if (branch.isEmpty) {
+      branch = 'master';
+    }
 
-    if (insertLibrary(url) == false) {
+    if (insertLibrary(url, branch) == false) {
       Fluttertoast.showToast(
         msg: kt("add_project_failed"),
         toastLength: Toast.LENGTH_SHORT,
       );
     }
-  }
-
-  void textInput(String text) {
-    _inputText = text;
   }
 
   @override
@@ -405,23 +403,35 @@ class _LibrariesPageState extends State<LibrariesPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.add),
-            onPressed: () {
-              showDialog(
+            onPressed: () async {
+              TextEditingController urlController = TextEditingController();
+              TextEditingController branchController = TextEditingController();
+              var ret = await showDialog<bool>(
                 context: context,
                 builder: (context) {
                   return AlertDialog(
                     title: Text(kt("new_project")),
-                    content: TextField(
-                      decoration: InputDecoration(
-                        hintText: kt("new_project_hint")
-                      ),
-                      onChanged: textInput,
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          decoration: InputDecoration(
+                            labelText: kt("new_project_hint"),
+                          ),
+                          controller: urlController,
+                        ),
+                        TextField(
+                          decoration: InputDecoration(
+                              labelText: kt("new_project_branch")
+                          ),
+                          controller: branchController,
+                        ),
+                      ],
                     ),
                     actions: <Widget>[
                       TextButton(
                         onPressed: (){
-                          Navigator.of(context).pop();
-                          addProject(context, _inputText);
+                          Navigator.of(context).pop(true);
                         },
                         child: Text(kt("add")),
                       ),
@@ -429,6 +439,13 @@ class _LibrariesPageState extends State<LibrariesPage> {
                   );
                 },
               );
+
+              if (ret == true) {
+                addProject(context, urlController.text, branchController.text);
+              }
+              await Future.delayed(Duration(seconds: 1));
+              urlController.dispose();
+              branchController.dispose();
             }
           )
         ],
