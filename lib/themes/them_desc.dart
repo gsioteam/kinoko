@@ -65,6 +65,7 @@ class _DefaultThemeDesc extends ThemeDesc {
       colorScheme: ColorScheme.light(
         primary: primaryColor,
         background: Color(0xffb0e8d3),
+        onBackground: Colors.white,
       )
     );
   }
