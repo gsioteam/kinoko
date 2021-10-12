@@ -23,7 +23,7 @@ class _DefaultThemeDesc extends ThemeDesc {
   final String title = "default";
   ThemeData get data {
 
-    Color primaryColor = Color(0xff50a29f);
+    Color primaryColor = Color(0xff04AA6D);
 
     return ThemeData.light().copyWith(
       primaryColor: primaryColor,
