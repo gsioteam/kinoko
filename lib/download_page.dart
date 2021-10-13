@@ -368,6 +368,7 @@ class _DownloadPageState extends State<DownloadPage> {
         if (project.isValidated) {
           enterFullscreenMode();
           Context ctx = project.createCollectionContext(CHAPTER_INDEX, item).control();
+          ctx.expireTime = 0;
           await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
             return PictureViewer(
               ctx,

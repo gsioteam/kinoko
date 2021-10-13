@@ -758,6 +758,7 @@ class _BookPageState extends State<BookPage> {
 
     enterFullscreenMode();
     Context currentContext = widget.project.createCollectionContext(CHAPTER_INDEX, chapter).control();
+    currentContext.expireTime = 0;
     await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
       return PictureViewer(
         currentContext,
@@ -773,6 +774,7 @@ class _BookPageState extends State<BookPage> {
               _saveLastChapter(data);
               currentContext?.release();
               currentContext = widget.project.createCollectionContext(CHAPTER_INDEX, data).control();
+              currentContext.expireTime = 0;
               return currentContext;
             }
           } else if (flipType == PictureFlipType.Next) {
@@ -785,6 +787,7 @@ class _BookPageState extends State<BookPage> {
               _saveLastChapter(data);
               currentContext?.release();
               currentContext = widget.project.createCollectionContext(CHAPTER_INDEX, data).control();
+              currentContext.expireTime = 0;
               return currentContext;
             }
           }

@@ -190,7 +190,6 @@ gc::Ref<Context> Context::create(const std::string &path, const Variant &data, C
 }
 
 #define TIME_TAIL "-time"
-#define EXPIRE_TIME (30 * 60 * 100)
 
 void Context::saveTime(const std::string &key) {
     char time_str[256];
@@ -207,7 +206,7 @@ gc::Array Context::load(bool &update, int &flag) {
             string list = KeyValue::get(save_key);
             string timestr = KeyValue::get(save_key + TIME_TAIL);
             long long time = timestr.empty() ? 0 : atoll(timestr.c_str());
-            update = (currentTime() - time) > EXPIRE_TIME;
+            update = (currentTime() - time) > expire_time;
             if (!list.empty()) {
                 return DataItem::fromJSON(list);
             }
@@ -221,7 +220,7 @@ gc::Array Context::load(bool &update, int &flag) {
                 if (data) {
                     flag = data->getFlag();
                     item->fill(data);
-                    update = (currentTime() - data->getDate()) > EXPIRE_TIME;
+                    update = (currentTime() - data->getDate()) > expire_time;
                     return DataItem::fromJSON(data->getSubItems());
                 } else {
                     Ref<BookData> data = item->saveData(true);

@@ -9,6 +9,7 @@
 #include <core/Map.h>
 #include "./Collection.h"
 #include "../gs_define.h"
+#define EXPIRE_TIME (30 * 60 * 100)
 
 namespace gs {
     class Settings;
@@ -39,6 +40,7 @@ namespace gs {
         std::shared_ptr<Settings> settings;
 
         bool auto_reload = false;
+        uint64_t expire_time = EXPIRE_TIME;
 
         void setupTarget(const gc::Ref<Collection> &target);
         void saveTime(const std::string &key);
@@ -133,6 +135,15 @@ namespace gs {
         }
         PROPERTY(auto_reload, isAutoReload, setAutoReload);
 
+        METHOD void setExpireTime(uint64_t time) {
+            expire_time = time;
+        }
+
+        METHOD uint64_t  getExpireTime() const {
+            return expire_time;
+        }
+        PROPERTY(expire_time, setExpireTime, getExpireTime);
+
         ON_LOADED_BEGIN(cls, gc::Object)
             ADD_METHOD(cls, Context, setup);
             ADD_METHOD(cls, Context, isReady);
@@ -158,6 +169,7 @@ namespace gs {
             ADD_PROPERTY(cls, "temp", ADD_METHOD(cls, Context, getTemp), NULL);
             ADD_PROPERTY(cls, "item_temp", ADD_METHOD(cls, Context, getItemTemp), NULL);
             ADD_PROPERTY(cls, "auto_reload", ADD_METHOD(cls, Context, isAutoReload), ADD_METHOD(cls, Context, setAutoReload));
+            ADD_PROPERTY(cls, "expire_time", ADD_METHOD(cls, Context, getExpireTime), ADD_METHOD(cls, Context, setExpireTime));
         ON_LOADED_END
 
     CLASS_END

@@ -53,6 +53,9 @@ class Context extends Base {
   bool get autoReload => call("isAutoReload");
   set autoReload(bool v) => call("setAutoReload", argv: [v]);
 
+  int get expireTime => call("getExpireTime");
+  set expireTime(int v) => call("setExpireTime", argv: [v]);
+
   Array get data => call("getData");
   dynamic get infoData => call("getInfoData");
   set infoData(dynamic data) => call("setInfoData", argv: [data]);
