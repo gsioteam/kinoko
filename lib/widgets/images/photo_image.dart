@@ -36,6 +36,7 @@ class PhotoImage extends StatefulWidget {
   final bool initFromEnd;
   final PhotoImageController controller;
   final OneFingerCallback onTap;
+  final AxisDirection direction;
 
   PhotoImage({
     Key key,
@@ -46,6 +47,7 @@ class PhotoImage extends StatefulWidget {
     this.reverse,
     this.initFromEnd = false,
     PhotoImageController controller,
+    this.direction,
     this.onTap,
   }) : controller = controller == null ? PhotoImageController() : controller, super(key: key);
 
@@ -314,6 +316,9 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
     if (widget.initFromEnd) {
       fromStart = !fromStart;
     }
+    if (widget.direction == AxisDirection.left) {
+      fromStart = !fromStart;
+    }
     if (!fromStart) {
       _translation = Offset(widget.size.width - width, 0);
     }
@@ -394,7 +399,10 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
 
   bool arriveStart() {
     if (_imageSize == null) return true;
-    if (widget.reverse) {
+    bool check = widget.reverse;
+    if (widget.direction == AxisDirection.left)
+      check = !check;
+    if (check) {
       Size realSize = _imageSize * _scale;
       return _translation.dx <= (widget.size.width - realSize.width + 0.01);
     } else {
@@ -404,7 +412,10 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
 
   bool arriveEnd() {
     if (_imageSize == null) return true;
-    if (widget.reverse) {
+    bool check = widget.reverse;
+    if (widget.direction == AxisDirection.left)
+      check = !check;
+    if (check) {
       return _translation.dx >= -0.01;
     } else {
       Size realSize = _imageSize * _scale;
@@ -413,7 +424,10 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
   }
 
   void next() {
-    if (widget.reverse) {
+    bool check = widget.reverse;
+    if (widget.direction == AxisDirection.left)
+      check = !check;
+    if (check) {
       animateTo(Offset(_clampX(_translation.dx + widget.size.width * 0.8), _translation.dy));
     } else {
       animateTo(Offset(_clampX(_translation.dx - widget.size.width * 0.8), _translation.dy));
@@ -421,7 +435,10 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
   }
 
   void prev() {
-    if (widget.reverse) {
+    bool check = widget.reverse;
+    if (widget.direction == AxisDirection.left)
+      check = !check;
+    if (check) {
       animateTo(Offset(_clampX(_translation.dx - widget.size.width * 0.8), _translation.dy));
     } else {
       animateTo(Offset(_clampX(_translation.dx + widget.size.width * 0.8), _translation.dy));
@@ -449,6 +466,9 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
 
   void scrollOffset(double offset, bool animate) {
     _animationDuration = Duration.zero;
+    if (widget.direction == AxisDirection.left) {
+      offset = -offset;
+    }
     if (animate) {
       _animateStart = _translation;
       _animateEnd = Offset(

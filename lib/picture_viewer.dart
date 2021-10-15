@@ -105,6 +105,7 @@ class PictureViewer extends StatefulWidget {
 enum FlipType {
   Horizontal,
   HorizontalReverse,
+  RightToLeft,
   Vertical,
   Webtoon,
 }
@@ -120,6 +121,13 @@ HintMatrix _hintMatrix(FlipType type) {
     }
     case FlipType.HorizontalReverse: {
       return HintMatrix();
+    }
+    case FlipType.RightToLeft: {
+      return HintMatrix([
+        1, 0, -1,
+        1, 0, -1,
+        1, 0, -1,
+      ]);
     }
     case FlipType.Vertical:
     case FlipType.Webtoon:
@@ -266,6 +274,22 @@ class _PictureViewerState extends State<PictureViewer> {
           },
         );
       }
+      case FlipType.RightToLeft: {
+        return HorizontalPager(
+          key: ValueKey(pagerController),
+          cacheManager: cacheManager,
+          controller: pagerController,
+          itemCount: data.length,
+          imageUrlProvider: (int index) {
+            DataItem item = (data[index] as DataItem);
+            return PhotoInformation(item.picture, item.headers);
+          },
+          onTap: (event) {
+            tapAt(event.position);
+          },
+          direction: AxisDirection.left,
+        );
+      }
       case FlipType.Vertical: {
         return VerticalPager(
           key: ValueKey(pagerController),
@@ -342,7 +366,7 @@ class _PictureViewerState extends State<PictureViewer> {
                   width: size,
                   height: size,
                   child: CustomPaint(
-                    painter: HorizontalIconPainter(flipType != FlipType.HorizontalReverse ? Colors.black87 : Colors.blue),
+                    painter: HorizontalIconPainter(Colors.black87),
                     size: Size(size, size),
                   ),
                 ),
@@ -358,6 +382,25 @@ class _PictureViewerState extends State<PictureViewer> {
                     KeyValue.set(_directionKey, "horizontal_reverse");
                   }
                 },
+            ),
+            QudsPopupMenuItem(
+              leading: Transform.rotate(
+                angle: math.pi,
+                child: Icon(Icons.arrow_right_alt),
+                alignment: Alignment.center,
+              ),
+              title: Text(kt("right_to_left")),
+              trailing: flipType == FlipType.RightToLeft ?
+              Icon(Icons.check) : null,
+              onPressed: flipType == FlipType.RightToLeft ? null : () {
+                if (flipType != FlipType.RightToLeft) {
+                  setState(() {
+                    flipType = FlipType.RightToLeft;
+                  });
+                  displayHint();
+                  KeyValue.set(_directionKey, "right_to_left");
+                }
+              },
             ),
             QudsPopupMenuItem(
                 leading: Icon(Icons.border_horizontal),
@@ -688,6 +731,10 @@ class _PictureViewerState extends State<PictureViewer> {
       }
       case 'horizontal_reverse': {
         flipType = FlipType.HorizontalReverse;
+        break;
+      }
+      case 'right_to_left': {
+        flipType = FlipType.RightToLeft;
         break;
       }
       case 'webtoon': {

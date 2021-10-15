@@ -24,7 +24,7 @@
 "undo": "Undo"
 "search": "Search"
 "horizontal_flip": "Horizontal Flip"
-"horizontal_reverse": "Horizontal Reverse"
+"horizontal_reverse": "Button Mode"
 "vertical_flip": "Vertical Flip"
 "portrait": "Portrait"
 "landscape": "Landscape"
@@ -94,3 +94,7 @@ loading: Loading...
 webtoon: Webtoon
 
 new_project_branch: "Branch(default:master)"
+
+right_to_left: Right To Left
+remove: Remove
+move_to_first: Move To First

@@ -25,7 +25,7 @@
 "undo": "Deshacer"
 "search": "Búsqueda"
 "horizontal_flip": "Volteo horizontal"
-"horizontal_reverse": "Inversión horizontal"
+"horizontal_reverse": "Modo de botón"
 "vertical_flip": "Volteo vertical"
 "portrait": "Retrato"
 "landscape": "Paisaje"
@@ -95,3 +95,7 @@ loading: Cargando...
 webtoon: Webtoon
 
 new_project_branch: "Branch(default:master)"
+
+right_to_left: Right To Left
+remove: Eliminar
+move_to_first: Mover a abetos

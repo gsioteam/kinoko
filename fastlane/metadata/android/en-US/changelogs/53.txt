@@ -1,0 +1,2 @@
+- Added a page mode "Right To Left"
+- Rename "Horizontal Reverse" to "Button Mode"

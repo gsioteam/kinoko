@@ -245,7 +245,11 @@ class FavoritesManager {
   void checkNew() async {
     for (int i = 0, t = items.length; i < t; ++i) {
       FavCheckItem checkItem = items[i];
-      await checkItem.checkNew(false);
+      try {
+        await checkItem.checkNew(false).timeout(Duration(seconds: 10));
+      } catch (e) {
+        print("Check new failed $e");
+      }
     }
   }
 

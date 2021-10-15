@@ -25,7 +25,7 @@
 "undo": "取消"
 "search": "尋幽覓勝"
 "horizontal_flip": "水平翻頁"
-"horizontal_reverse": "水平逆向"
+"horizontal_reverse": "按鈕模式"
 "vertical_flip": "垂直翻頁"
 "portrait": "竪屏"
 "landscape": "橫屏"
@@ -94,3 +94,7 @@ loading: 加載中...
 webtoon: 網頁漫畫
 
 new_project_branch: "Branch(default:master)"
+
+right_to_left: 從右到左
+remove: 移除
+move_to_first: 置於第一

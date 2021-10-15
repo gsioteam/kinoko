@@ -63,6 +63,7 @@ class _PageScrollPhysics extends PageScrollPhysics {
 class HorizontalPager extends Pager {
   final bool reverse;
   final OneFingerCallback onTap;
+  final AxisDirection direction;
 
   HorizontalPager({
     Key key,
@@ -72,6 +73,7 @@ class HorizontalPager extends Pager {
     int itemCount,
     PhotoInformation Function(int index) imageUrlProvider,
     this.onTap,
+    this.direction = AxisDirection.right,
   }) : super(
     key: key,
     cacheManager: cacheManager,
@@ -112,7 +114,7 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
   Widget buildScrollable(BuildContext context) {
     var media = MediaQuery.of(context);
 
-    AxisDirection axisDirection = AxisDirection.right;
+    AxisDirection axisDirection = widget.direction;
     return Scrollable(
         axisDirection: axisDirection,
         controller: pageController,
@@ -142,6 +144,7 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
                         size: media.size,
                         reverse: widget.reverse,
                         initFromEnd: index < widget.controller.index,
+                        direction: widget.direction,
                         loadingWidget: (context) {
                           return SpinKitRing(
                             lineWidth: 4,
