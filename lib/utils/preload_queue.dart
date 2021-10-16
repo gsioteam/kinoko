@@ -37,7 +37,7 @@ class PreloadQueue {
     }
     if (target != null) {
       loading = true;
-      target.provider.fetchImage(() {
+      target.provider.fetchImage((_) {
         target.loaded = true;
         loading = false;
         _checkStart();

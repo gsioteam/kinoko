@@ -171,6 +171,14 @@ class NeoCacheManager {
     return file;
   }
 
+  Future<void> reset(Uri uri) async {
+    var provider = NeoImageProvider(
+        cacheManager: this,
+        uri: uri,
+    );
+    provider.evict();
+  }
+
   static String _generateMd5(String input) => md5.convert(utf8.encode(input)).toString();
   static String cacheKey(DataItem item) => "${item.projectKey}/${_generateMd5(item.link)}";
 

@@ -40,21 +40,25 @@ class DownloadPictureItem {
 
   DownloadPictureItem(this.url, this.cacheManager, {this.headers});
 
-  void fetchImage(void Function() callback) {
+  void fetchImage(void Function(bool success) callback) {
     cacheManager.getSingleFile(Uri.parse(url), headers: headers).then((value) {
       if (!canceled) {
-        callback();
+        callback(true);
       }
     }).catchError((err) {
       print("Download Error : $err");
       if (!canceled) {
-        callback();
+        callback(false);
       }
     });
   }
 
   void cancel() {
     canceled = true;
+  }
+
+  void reset() {
+    cacheManager.reset(Uri.parse(url));
   }
 }
 
@@ -217,12 +221,18 @@ class DownloadQueueItem {
 
     currentImage = queue.removeFirst();
     _picture_downloading = true;
-    currentImage.fetchImage(() {
-      currentImage = null;
+    currentImage.fetchImage((success) {
       _picture_downloading = false;
 
-      _loaded2++;
-      onProgress?.call();
+      if (success) {
+        currentImage = null;
+        _loaded2++;
+        onProgress?.call();
+      } else {
+        currentImage.reset();
+        queue.add(currentImage);
+        currentImage = null;
+      }
       checkImageQueue();
     });
   }
