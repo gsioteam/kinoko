@@ -53,10 +53,10 @@ class WebImage extends StatelessWidget {
   }
 
   WebImage({
-    this.url,
-    this.width,
-    this.height,
-    this.fit,
+    @required this.url,
+    this.width = 36,
+    this.height = 36,
+    this.fit = BoxFit.contain,
   });
 
   @override

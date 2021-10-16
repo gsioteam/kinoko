@@ -15,6 +15,7 @@ import 'package:kinoko/main_settings_page.dart';
 import 'package:kinoko/utils/image_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
+import 'package:kinoko/widgets/web_image.dart';
 import 'collections_page.dart';
 import 'configs.dart';
 import 'libraries_page.dart';
@@ -269,6 +270,14 @@ class SplashScreenState extends State<SplashScreen> {
       return BorderRadius.horizontal(
         left: node.v<Radius>(method[0], Radius.zero),
         right: node.v<Radius>(method[1], Radius.zero),
+      );
+    });
+    XmlLayout.register("WebImage", (node, key) {
+      return WebImage(
+        url: node.s<String>("url") ?? "",
+        width: node.s<double>("width") ?? 36,
+        height: node.s<double>("height") ?? 36,
+        fit: BoxFit.contain,
       );
     });
     XmlLayout.registerFunctionReturn<List<PopupMenuEntry>>("MenuItemList");

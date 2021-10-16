@@ -413,6 +413,19 @@ class _DownloadPageState extends State<DownloadPage> {
                 width: 56,
                 height: 56,
                 gaplessPlayback: true,
+                errorBuilder: (context, e, stack) {
+                  return Container(
+                    width: 56,
+                    height: 56,
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                    ),
+                  );
+                },
               ),
               trailing: AnimatedCrossFade(
                 firstChild: Icon(Icons.keyboard_arrow_up),
