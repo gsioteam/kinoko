@@ -89,9 +89,8 @@ class FavCheckItem extends ValueNotifier<bool> {
           data.flag = 1;
           newListenable.value = true;
         }
-        if (attachment.last != item.title) {
-          attachment.last = item.title;
-        }
+        attachment.link = item.link;
+        attachment.last = item.title;
         synchronize();
       }
 
