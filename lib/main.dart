@@ -12,6 +12,7 @@ import 'package:glib/main/project.dart';
 import 'package:kinoko/favorites_page.dart';
 import 'package:kinoko/history_page.dart';
 import 'package:kinoko/main_settings_page.dart';
+import 'package:kinoko/utils/git_repository_checker.dart';
 import 'package:kinoko/utils/image_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
@@ -213,6 +214,7 @@ class SplashScreenState extends State<SplashScreen> {
     await _v2Setup(dir.path);
     await showDisclaimer(context);
     await fetchEnv(context);
+    GitRepositoryChecker.instance.checkout(env_repo);
     WidgetsBinding.instance.addObserver(_LifecycleEventHandler());
     colors.register();
     icons.register();
@@ -334,255 +336,6 @@ class SplashScreenState extends State<SplashScreen> {
   }
 }
 
-class HomeDrawer extends StatefulWidget {
-  final _HomePageState homeState;
-
-  HomeDrawer(this.homeState);
-
-  @override
-  State<StatefulWidget> createState() {
-    return _HomeDrawerState();
-  }
-}
-
-class _HomeDrawerState extends State<HomeDrawer> with SingleTickerProviderStateMixin {
-
-  AnimationController animationController;
-  bool isFetch = false;
-  bool isCheckout = false;
-  bool isDispose = false;
-
-  void startFetch() {
-    if (isFetch) return;
-    isFetch = true;
-    animationController.repeat();
-    GitRepository repo = env_repo;
-    GitAction action = repo.fetch();
-    action.control();
-    action.setOnComplete(() {
-      action.release();
-      if (isDispose) return;
-      this.setState(() {
-        if (this.onRefresh != null) this.onRefresh();
-        animationController.stop();
-        animationController.reset();
-        isFetch = false;
-      });
-      if (action.hasError()) {
-        Fluttertoast.showToast(
-          msg: action.getError(),
-          toastLength: Toast.LENGTH_SHORT,
-        );
-      }
-    });
-  }
-
-  void startCheckout() {
-    if (isCheckout) return;
-    isCheckout = true;
-    GitRepository repo = env_repo;
-    GitAction action = repo.checkout();
-    action.control();
-    action.setOnComplete(() {
-      action.release();
-      if (isDispose) return;
-      this.setState(() {
-        if (this.onRefresh != null) this.onRefresh();
-        isCheckout = false;
-      });
-      if (action.hasError()) {
-        String err = action.getError();
-        Fluttertoast.showToast(
-          msg: err,
-          toastLength: Toast.LENGTH_SHORT,
-        );
-      }
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    widget.homeState.onRefresh = onRefresh;
-    widget.homeState.onFetch = startFetch;
-    animationController = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: 1),
-    );
-  }
-
-  @override
-  void didUpdateWidget(HomeDrawer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    oldWidget.homeState.onRefresh = null;
-    oldWidget.homeState.onFetch = null;
-    widget.homeState.onRefresh = onRefresh;
-    widget.homeState.onFetch = startFetch;
-  }
-
-  @override
-  void dispose() {
-    widget.homeState.onRefresh = null;
-    widget.homeState.onFetch = null;
-    animationController.dispose();
-    isDispose = true;
-    super.dispose();
-  }
-
-
-  List<Widget> buildList(Project project) {
-    var lv = env_repo.localID(), hv = env_repo.highID();
-//    GitLibrary library = GitLibrary.findLibrary(env_repo);
-
-    return [
-      Padding(
-        padding: EdgeInsets.only(top: 5, bottom: 5),
-        child: Row(
-          children: [
-            ClipOval(
-              child: Container(
-                color: Colors.blueAccent,
-                child: Image(
-                  image: projectImageProvider(project),
-                  fit: BoxFit.contain,
-                  width: 36,
-                  height: 36,
-                  errorBuilder: (context, e, stack) {
-                    return Container(
-                      width: 36,
-                      height: 36,
-                      child: Center(
-                        child: Icon(
-                          Icons.broken_image,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              clipper: OvalClipper(),
-            ),
-            Padding(padding: EdgeInsets.only(left: 8)),
-            Text(project.name,
-                style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white)
-            )
-          ],
-        ),
-      ),
-      Padding(
-        padding: EdgeInsets.only(top: 10, bottom: 5),
-        child: Text(
-          hv == lv ? "${kt("framework")}.$hv" : "${kt("framework")}.$hv ($lv)",
-          style: Theme.of(context).textTheme.caption.copyWith(color: Colors.white),
-        ),
-      ),
-      Row(
-        children: <Widget>[
-          IconButton(
-              icon: CircleAvatar(
-                  backgroundColor: Theme.of(context).primaryColorLight,
-                  child: AnimatedBuilder(
-                      animation: animationController,
-                      child: Icon(Icons.sync, color: Theme.of(context).primaryColor,),
-                      builder: (BuildContext context, Widget _widget) {
-                        return Transform.rotate(
-                          angle: animationController.value * -6.3,
-                          child: _widget,
-                        );
-                      }
-                  )
-              ),
-              onPressed: startFetch
-          ),
-          (lv == hv ? Container(): IconButton(
-              icon: CircleAvatar(
-                backgroundColor: Theme.of(context).primaryColorLight,
-                child: Icon(Icons.get_app, color: Theme.of(context).primaryColor,),
-              ),
-              onPressed: isCheckout ? null:startCheckout
-          ))
-        ],
-      )
-    ];
-  }
-
-  List<Widget> getChildren() {
-    var project = Project.getMainProject();
-    if (env_repo == null || project == null) {
-      return [
-        Padding(
-          padding: EdgeInsets.only(top: 5, bottom: 5),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              ClipOval(
-                child: Container(
-                  color: Colors.blueAccent,
-                  child: Image(
-                    image: NeoImageProvider(
-                      uri: Uri.parse("https://www.tinygraphs.com/squares/unkown?theme=bythepool&numcolors=3&size=180&fmt=jpg"),
-                      cacheManager: NeoCacheManager.defaultManager,
-                    ),
-                    fit: BoxFit.contain,
-                    width: 36,
-                    height: 36,
-                  ),
-                ),
-                clipper: OvalClipper(),
-              ),
-              Padding(padding: EdgeInsets.only(left: 8)),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(kt("no_main_project"),
-                        style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.white)
-                    ),
-                    Padding(padding: EdgeInsets.only(top: 5)),
-                    Text(kt("select_main_project_first"),
-                      style: Theme.of(context).textTheme.caption.copyWith(color: Colors.white),
-                      softWrap: true,
-                    )
-                  ],
-                ),
-              )
-            ],
-          ),
-        )
-      ];
-    } else {
-      return buildList(project);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.blue,
-      ),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: getChildren(),
-        ),
-      ),
-    );
-  }
-
-  void onRefresh() {
-    print("onRefresh");
-    this.setState(() { });
-  }
-
-}
-
-
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
 
@@ -595,9 +348,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int selected = 0;
   int _oldSelected = 0;
-  HomeDrawer drawer;
   void Function() onRefresh;
   void Function() onFetch;
+  ValueNotifier<bool> newEnv;
 
   bool hasMainProject() {
     return Project.getMainProject() != null;
@@ -625,23 +378,6 @@ class _HomePageState extends State<HomePage> {
       }
     }
     return null;
-  }
-
-  void Function() _onTap(int idx) {
-    return (){
-      if (idx == 0 && !hasMainProject()) {
-        Fluttertoast.showToast(
-          msg: kt("select_main_project_first"),
-          toastLength: Toast.LENGTH_LONG
-        );
-        idx = 4;
-      }
-      if (selected != idx) {
-        switchTo(idx);
-
-        Navigator.of(context).popUntil(ModalRoute.withName(home_page_name));
-      }
-    };
   }
 
   ValueNotifier<bool> favoritesController;
@@ -705,8 +441,20 @@ class _HomePageState extends State<HomePage> {
             label: kt("history"),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
             label: kt("settings"),
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(Icons.settings),
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: HintPoint(
+                    controller: newEnv,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
         onTap: (index) {
@@ -726,6 +474,9 @@ class _HomePageState extends State<HomePage> {
     }
     favoritesController = ValueNotifier(FavoritesManager().hasNew);
     FavoritesManager().onState.addListener(_favoritesUpdate);
+
+    newEnv = ValueNotifier(env_repo.localID() != env_repo.highID());
+    GitRepositoryChecker.instance.addListener(_checkerUpdate);
   }
 
   @override
@@ -733,6 +484,7 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
     FavoritesManager().onState.removeListener(_favoritesUpdate);
     favoritesController.dispose();
+    GitRepositoryChecker.instance.removeListener(_checkerUpdate);
   }
 
   void _favoritesUpdate() {
@@ -745,6 +497,12 @@ class _HomePageState extends State<HomePage> {
         _oldSelected = selected;
         selected = index;
       });
+    }
+  }
+
+  void _checkerUpdate(String path) {
+    if (env_repo.path == path) {
+      newEnv.value = env_repo.localID() != env_repo.highID();
     }
   }
 }

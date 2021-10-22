@@ -16,6 +16,7 @@ import 'package:kinoko/widgets/list_header.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'localizations/localizations.dart';
 import 'progress_dialog.dart';
+import 'widgets/hint_point.dart';
 import 'widgets/settings_list.dart';
 import 'package:get_version/get_version.dart';
 
@@ -168,7 +169,17 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
       title: Text(kt('settings')),
       children: [
         SettingCell(
-          title: Text(kt('framework_version')),
+          title: Text.rich(TextSpan(
+            children: [
+              TextSpan(text: kt('framework_version')),
+              WidgetSpan(
+                child: HintPoint(
+                  value: env_repo.localID() != env_repo.highID(),
+                ),
+                alignment: PlaceholderAlignment.top,
+              )
+            ]
+          )),
           subtitle: Text(kt('version') + env_repo.localID()),
           trailing: Icon(Icons.refresh),
           onTap: () async {

@@ -116,7 +116,11 @@ class FavCheckItem extends ValueNotifier<bool> {
       value = true;
       Context context = project.createCollectionContext(BOOK_INDEX, item).control();
       context.autoReload = true;
-      await _updateValue(first, project, context);
+      try {
+        await _updateValue(first, project, context).timeout(Duration(seconds: 10));
+      } catch (e) {
+        print("Update failed");
+      }
       context.release();
       value = false;
     }
@@ -142,7 +146,6 @@ class FavCheckItem extends ValueNotifier<bool> {
 class FavoritesManager {
   static FavoritesManager _instance;
   List<FavCheckItem> items = [];
-  Timer _timer;
   ChangeNotifier onState = ChangeNotifier();
 
   factory FavoritesManager() {
@@ -175,10 +178,7 @@ class FavoritesManager {
         item.synchronize();
       }
     }
-    _timer = Timer.periodic(Duration(minutes: 2), (timer) {
-      checkNew();
-    });
-    checkNew();
+    automaticCheckNew();
   }
 
   bool get hasNew {
@@ -241,15 +241,16 @@ class FavoritesManager {
     items.remove(item);
   }
 
-  void checkNew() async {
+  void automaticCheckNew() async {
     for (int i = 0, t = items.length; i < t; ++i) {
       FavCheckItem checkItem = items[i];
       try {
-        await checkItem.checkNew(false).timeout(Duration(seconds: 10));
+        await checkItem.checkNew(false);
       } catch (e) {
         print("Check new failed $e");
       }
     }
+    Future.delayed(Duration(minutes: 2), automaticCheckNew);
   }
 
   bool isFavorite(DataItem item) {

@@ -7,10 +7,12 @@ const double _pointSize = 12;
 class HintPoint extends StatefulWidget {
 
   final ValueNotifier<bool> controller;
+  final bool value;
 
   HintPoint({
     Key key,
     this.controller,
+    this.value = false,
   }) : super(key: key);
 
   @override
@@ -22,7 +24,7 @@ class _HintPointState extends State<HintPoint> {
   @override
   Widget build(BuildContext context) {
     return Visibility(
-      visible: widget.controller.value,
+      visible: widget.controller?.value ?? widget.value,
       child: Container(
         width: _pointSize,
         height: _pointSize,
@@ -46,12 +48,12 @@ class _HintPointState extends State<HintPoint> {
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(_update);
+    widget.controller?.addListener(_update);
   }
 
   @override
   void dispose() {
     super.dispose();
-    widget.controller.removeListener(_update);
+    widget.controller?.removeListener(_update);
   }
 }
