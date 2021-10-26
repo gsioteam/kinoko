@@ -1,0 +1,100 @@
+"app_title": "Kinoko"
+"confirm": "Onayla"
+"install_confirm": "Projeyi {url} bağlantısından kopyala"
+"yes": "Evet"
+"no": "Hayır"
+"add": "Ekle"
+"clone_project": "Kopyala..."
+"not_installed": "Kopyalanmadı"
+"select_main_project": "Ana proje yap"
+"new_project": "Yeni Git projesi"
+"new_project_hint": "Adres(Git://...)"
+"add_project_failed": "Eklenemiyor. Zaten eklenmiş olabilir mi？"
+"manage_projects": "Projeleri Yönet"
+"manga_home": "Manga"
+"favorites": "Favoriler"
+"history": "Geçmiş"
+"chapters": "Bölümler"
+"reverse_order": "Ters Sıra"
+"order": "Artan Sıra"
+"no_project_found": "Proje bulunamıyor"
+"can_not_determine_the_context_type": "Kaynak türü belirlenemiyor"
+"download_list": "İndirilenler"
+"delete_item": "{0}({1}) Siliniyor"
+"undo": "Geri Al"
+"search": "Ara"
+"horizontal_flip": "Yatat Çevir"
+"horizontal_reverse": "Düğme Modu"
+"vertical_flip": "Dikey Çevir"
+"portrait": "Portre"
+"landscape": "Yatay"
+"download": "İndir"
+"no_prev_chapter": "Önceki Bölüm yok"
+"no_next_chapter": "Sonraki Bölüm yok"
+"n_page": "s{0}"
+"delete_item_2": "Öğeyi sil {0}"
+"select_main_project_first": "Öncelikle, bir ana proje seçin"
+"bootstart": "Önyükleme"
+"cancel": "İptal"
+"retry": "Tekrar Dene"
+"settings": "Ayarlar"
+"framework": "Yapı"
+"disclaimer": "Sorumluluk Reddi"
+"disclaimer_content": >
+  Bu yazılım, ağ kaynaklarını yüklemek ve çizgi romanlara kolayca göz atmak için geliştirici tarafından sağlanan bir eklenti projesini yükleyen bir yazılımdır. Yazılımda görünen resim kaynak metni, eklenti projesi ve kaynak web sitesi tarafından sağlanmaktadır.
+  Yazılımın kendisi çizgi roman hizmetleri sağlamaz, lütfen çizgi roman kaynaklarını kullanırken ilgili yasa ve yönetmeliklere uyun.
+
+  Bu yazılım tarafından sağlanan indirilebilir çizgi roman kaynaklarının telif hakkı orijinal yazara aittir. Sadece öğrenme ve iletişim amaçlıdır. Lütfen dosyaları ilgili ulusal yasa ve yönetmeliklere uygun olarak kopyalayın, indirin; telif hakkı sahibinin izni olmadan başka amaçlar için kullanmayın. Yasa dışı kullanım nedeniyle anlaşmazlıkların ortaya çıkması durumunda, tüm sonuçlar kullanıcıya aittir.
+"ok": "Tamam"
+"language": "Dil"
+"general": "Genel"
+"credits": "Jenerik"
+"credits_content": >
+  Liah(Icon) https://liah0227.itch.io/
+"can_not_open": "{0} Açılamıyor"
+"no_main_project": "Yok"
+"remove_project": "Projeyi Sil"
+"would_remove_project": "Projeyi silmek istediğine emin misin({0})?"
+"no_card_found": "SD Card bulunamadı"
+"no_permission": "Yetki yok"
+"output_to": "Dışarı aktar: {0}"
+"directory_name": "Dizin adı"
+"name_empty": "Dizin boş olamaz"
+"clear_history": "Geçmişi silmek istediğine emin misin?"
+"download_size": "İndirme Boyutu"
+"cached_size": "Önbellek Boyutu"
+"clear_cache": "Önbelleği temizlemek istediğine emin misin?"
+"clear": "Önbelleği Temizle"
+"libraries_hit": "Klonlayın ve bir ana proje seçin, ardından manganın tadını çıkarın!"
+"instructions": "Talimatlar"
+"download_instructions": ""
+"lang": "tr"
+"source": "Kaynak"
+"source_description": "Kaynak sayfada lütfen dosyaları ilgili ulusal yasa ve yönetmeliklere uygun olarak kopyalayın ve indirin."
+"v2_title": "Kinoko v2"
+"v2_content": "Kinoko güncel! \"Evet\" tıklanırsa tüm eski eklentiler ve indirilen manga kaldırılacaktır."
+"added_download": "İndirme kuyruğuna {0} tane öğe eklendi."
+page_mode: Sayfa Modu
+orientation: Cihaz Yönelmesi
+prev: Önceki
+menu: Menü
+next: Sonraki
+
+no_data: Veri Yok
+select_project: Eklenti Yok
+click_to_select: Birini seçmek için tıklayın
+version: Ver.
+framework_version: Yapı
+cache_manager: Önbellek
+about_description: "Bu açık kaynaklı bir yazılımdır, ziyaret edin "
+about_description_end: " daha fazla bilgi edinmek, hataları bildirmek veya yeni bir özellik önermek için."
+about: Hakkında
+fetch_framework: Yapıyı Getir...
+loading: Yükleniyor...
+webtoon: Webtoon
+
+new_project_branch: "Branch(default:master)"
+
+right_to_left: Sağdan Sola
+remove: Kaldır
+move_to_first: Başa Taşı
