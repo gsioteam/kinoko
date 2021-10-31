@@ -1,0 +1,1 @@
+- Uygulamanın 32 bit cihazlarda çalışamaması sorunu giderildi.

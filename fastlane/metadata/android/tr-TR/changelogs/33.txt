@@ -1,0 +1,4 @@
+- Ses düğmesiyle çevirme hareketinin mesafesini azaltıldı.
+- Added illustrate of volume button.
+- Manga başlığına kaynak düğmesi eklendi.
+- Bir kilitlenme hatası giderildi.

@@ -1,0 +1,2 @@
+- "Sağdan Sola" sayfa modu eklendi
+- "Ters Yatay" adı "Düğme Modu" olarak değiştirildi

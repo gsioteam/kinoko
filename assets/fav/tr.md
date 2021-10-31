@@ -6,6 +6,6 @@ Kitabın yeni içeriği varsa `yeni` etiketi görünür.
 
 - Kaldırma
 
-Favori listesinden çıkarmak için uzun basın.
+Favori listesinden çıkarmak için basılı tutun.
 
 ![remove](remove.png)

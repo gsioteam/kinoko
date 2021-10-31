@@ -1,0 +1,5 @@
+- Mangayı dışa aktarırken izin alınamama sorunu düzeltildi.
+- Manga dışa aktarılırken oluşan isim sorunu düzeltildi.
+- Arayüz optimizasyonu.
+- Bazı açıklamalar eklendi.
+- İndirmeye devam edememe sorunu düzeltildi.

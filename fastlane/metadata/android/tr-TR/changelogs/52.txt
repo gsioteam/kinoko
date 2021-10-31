@@ -1,0 +1,3 @@
+- Yepyeni arayüz
+- Resmi yakınlaştırmak için basılı tutma hareketi eklendi
+- Yeni bir sayfa modu eklendi

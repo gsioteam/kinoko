@@ -1,0 +1,1 @@
+Ücretsiz ve açık kaynak kodlu bir manga tarayıcısı.
