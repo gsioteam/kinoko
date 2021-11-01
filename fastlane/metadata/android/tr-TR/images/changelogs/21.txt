@@ -1,0 +1,2 @@
+* JS motoru değiştirildi apk boyutu küçültüldü.
+* Sabit manga çizimi doldurulmuş olarak görüntülenmiyor.

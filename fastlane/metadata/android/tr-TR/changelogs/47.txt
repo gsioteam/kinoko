@@ -1,0 +1,4 @@
+- Yakınlaştırma fonksiyonu yeniden yazıldı
+- Görüntünün asla yüklenememesi hatası düzeltildi, artık başarısız olduktan sonra görüntüyü yeniden yüklemek mümkün.
+- Sayfada gezinmek için dokununma eklendi
+- Resim görüntüleyicide artık verileri otomatik olarak yeniden yüklemiyor
