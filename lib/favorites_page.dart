@@ -296,11 +296,11 @@ class _FavoriteItemState extends State<FavoriteItem> {
             ),
             items: [
               PopupMenuItem(
-                child: Text('move_to_first'),
+                child: Text(kt('move_to_first')),
                 value: 0,
               ),
               PopupMenuItem(
-                child: Text('remove'),
+                child: Text(kt('remove')),
                 value: 1,
               ),
             ],

@@ -148,9 +148,6 @@ const Map<String, String> _languageMap = {
   'zh-hant': '中文(繁體)',
   'zh-hans': '中文(简体)',
   'es': 'Español',
-  'ru': 'русский',
-  'de': 'Deutsch',
-  'it': 'Italiano',
 };
 
 class _MainSettingsPageState extends State<MainSettingsPage> {
@@ -297,94 +294,6 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
           },
         ),
       ],
-    );
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(kt('settings')),
-      ),
-      body: ListView(
-        children: [
-          ListHeader(),
-
-        ],
-      ),
-      // SettingsList(
-      //   items: [
-      //     SettingItem(
-      //         SettingItemType.Header,
-      //         kt("general")
-      //     ),
-      //     SettingItem(
-      //         SettingItemType.Options,
-      //         kt("language"),
-      //         value: localeValue,
-      //         data: [
-      //           OptionItem("English", "en"),
-      //           OptionItem("中文(繁體)", "zh-hant"),
-      //           OptionItem("中文(简体)", "zh-hans"),
-      //           OptionItem("Español", "es"),
-      //           OptionItem("русский", "ru"),
-      //           OptionItem("Deutsch", "de"),
-      //           OptionItem("Italiano", "it"),
-      //         ],
-      //         onChange: (value) {
-      //           KeyValue.set(language_key, value);
-      //           LocaleChangedNotification(KinokoLocalizationsDelegate.supports[value]).dispatch(context);
-      //         }
-      //     ),
-      //     SettingItem(
-      //         SettingItemType.Button,
-      //         kt("cached_size"),
-      //         value: size == null ? "..." : _sizeString(size.other),
-      //         data: () async {
-      //           bool result = await showDialog<bool>(
-      //               context: context,
-      //               builder: (context) {
-      //                 return AlertDialog(
-      //                   title: Text(kt("confirm")),
-      //                   content: Text(kt("clear_cache")),
-      //                   actions: [
-      //                     TextButton(
-      //                       child: Text(kt("no")),
-      //                       onPressed: ()=> Navigator.of(context).pop(false),
-      //                     ),
-      //                     TextButton(
-      //                       child: Text(kt("yes")),
-      //                       onPressed:()=> Navigator.of(context).pop(true),
-      //                     ),
-      //                   ],
-      //                 );
-      //               }
-      //           );
-      //           if (result == true) {
-      //             Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProgressDialog(title: "", item: ClearProgressItem(
-      //                 action: () async {
-      //                   Set<String> cached = Set();
-      //                   for (var item in DownloadManager().items) {
-      //                     cached.add(item.cacheKey);
-      //                   }
-      //                   await NeoCacheManager.clearCache(without: cached);
-      //                   await fetchSize();
-      //                 }
-      //             ),)));
-      //           }
-      //         }
-      //     ),
-      //     SettingItem(
-      //         SettingItemType.Label,
-      //         kt("download_size"),
-      //         value: size == null ? "..." : _sizeString(size.cached)
-      //     ),
-      //     SettingItem(
-      //         SettingItemType.Button,
-      //         kt("disclaimer"),
-      //         value: "",
-      //         data: () {
-      //           showCreditsDialog(context);
-      //         }
-      //     )
-      //   ],
-      // ),
     );
   }
 

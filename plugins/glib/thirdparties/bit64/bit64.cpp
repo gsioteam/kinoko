@@ -53,7 +53,6 @@ void bit64_makeIndex() {
         bit64_map.c_map.push_back(ch);
     }
 }
-
 uint8_t bit64_hex64(int num) {
     if (num >= 0 && num < bit64_SIZE) {
         if (bit64_map.c_map.size() == 0) {
@@ -63,6 +62,7 @@ uint8_t bit64_hex64(int num) {
     }
     return 0;
 }
+
 
 char bit64_hex64rev(char ch) {
     if (bit64_map.c_map.size() == 0) {
