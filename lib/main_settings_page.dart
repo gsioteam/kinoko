@@ -4,7 +4,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_picker/flutter_picker.dart';
+import 'package:flutter_material_pickers/flutter_material_pickers.dart' as pickers;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:glib/main/models.dart';
 import 'package:glib/utils/git_repository.dart';
@@ -15,8 +15,11 @@ import 'package:kinoko/widgets/credits_dialog.dart';
 import 'package:kinoko/widgets/list_header.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'localizations/localizations.dart';
+import 'main.dart';
 import 'progress_dialog.dart';
+import 'theme_page.dart';
 import 'widgets/hint_point.dart';
+import 'widgets/picker_item.dart';
 import 'widgets/settings_list.dart';
 import 'package:get_version/get_version.dart';
 
@@ -143,6 +146,21 @@ class ClearProgressItem extends ProgressItem {
   
 }
 
+class _LanguageInfo {
+  final String code;
+  final String name;
+
+  const _LanguageInfo(this.code, this.name);
+}
+
+const List<_LanguageInfo> _languageList = [
+  _LanguageInfo('en', 'English'),
+  _LanguageInfo('zh-hant', '中文(繁體)'),
+  _LanguageInfo('zh-hans', '中文(简体)'),
+  _LanguageInfo('es', 'Español'),
+  _LanguageInfo('tr', 'Türk'),
+];
+
 const Map<String, String> _languageMap = {
   'en': 'English',
   'zh-hant': '中文(繁體)',
@@ -195,41 +213,46 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
           },
         ),
         SettingCell(
+          title: Text(kt('theme')),
+          subtitle: Text(kt('default')),
+          trailing: Icon(Icons.keyboard_arrow_right),
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+              return ThemePage();
+            }));
+          },
+        ),
+        SettingCell(
           title: Text(kt('language')),
           subtitle: Text(_languageMap[localeValue]),
           trailing: Icon(Icons.keyboard_arrow_right),
           onTap: () async {
+            PickerItem<String> selectedItem;
             List<PickerItem<String>> items = [];
             KinokoLocalizationsDelegate.supports.forEach((key, value) {
-              items.add(PickerItem<String>(
-                text: Text(_languageMap[key]),
-                value: key,
-              ));
+              PickerItem<String> item = PickerItem<String>(
+                _languageMap[key],
+                key,
+              );
+              items.add(item);
+              if (item.value == localeValue) {
+                selectedItem = item;
+              }
             });
             items.sort((item1, item2) {
               return item1.value.compareTo(item2.value);
             });
-            int index = 0;
-            for (int i = 0, t = items.length; i < t; ++i) {
-              if (localeValue == items[i].value) {
-                index = i;
-                break;
-              }
-            }
 
-            String result;
-            await Picker(
-              adapter: PickerDataAdapter<String>(
-                data: items,
-              ),
-              selecteds: [index],
-              onConfirm: (picker, list) {
-                result = items[list[0]].value;
-              }
-            ).showDialog(context);
-            if (result != null) {
-              KeyValue.set(language_key, result);
-              LocaleChangedNotification(KinokoLocalizationsDelegate.supports[result]).dispatch(context);
+            var item = await pickers.showMaterialScrollPicker(
+              title: kt('language'),
+              context: context,
+              items: items,
+              selectedItem: selectedItem
+            );
+
+            if (item != null) {
+              KeyValue.set(language_key, item.value);
+              LocaleChangedNotification(KinokoLocalizationsDelegate.supports[item.value]).dispatch(context);
             }
           },
         ),

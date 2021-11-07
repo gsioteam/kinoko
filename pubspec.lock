@@ -211,6 +211,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.1.2"
+  file_picker:
+    dependency: transitive
+    description:
+      name: file_picker
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.2.1"
   filesystem_picker:
     dependency: "direct main"
     description:
@@ -246,6 +253,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.2"
+  flutter_colorpicker:
+    dependency: transitive
+    description:
+      name: flutter_colorpicker
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.6.0"
   flutter_highlight:
     dependency: transitive
     description:
@@ -265,13 +279,20 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_picker:
+  flutter_material_pickers:
     dependency: "direct main"
     description:
-      name: flutter_picker
+      name: flutter_material_pickers
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.5"
+    version: "3.1.2"
+  flutter_plugin_android_lifecycle:
+    dependency: transitive
+    description:
+      name: flutter_plugin_android_lifecycle
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.4"
   flutter_spinkit:
     dependency: "direct main"
     description:

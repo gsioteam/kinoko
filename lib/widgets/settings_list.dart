@@ -3,7 +3,9 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_picker/flutter_picker.dart';
+import 'package:flutter_material_pickers/flutter_material_pickers.dart' as pickers;
+
+import 'picker_item.dart';
 
 enum SettingItemType {
   Header,
@@ -118,19 +120,13 @@ class _SettingsListState extends State<SettingsList> {
     );
   }
 
-  Future<T> pickerValue<T>(List<PickerItem<T>> data, int index) {
-    Completer<T> completer = Completer();
-    Picker picker = new Picker(
-      adapter: PickerDataAdapter<T>(
-        data: data,
-      ),
-      selecteds: [index],
-      onConfirm: (picker, selects) {
-        completer.complete(data[selects[0]].value);
-      }
+  Future<T> pickerValue<T>(List<PickerItem<T>> data, int index) async {
+    var item = await pickers.showMaterialScrollPicker<PickerItem<T>>(
+      context: context,
+      selectedItem: data[index],
+      items: data
     );
-    picker.showModal<String>(context);
-    return completer.future;
+    return item?.value;
   }
 
   Widget buildItem(SettingItem item) {
@@ -145,10 +141,7 @@ class _SettingsListState extends State<SettingsList> {
       case SettingItemType.Options: {
         return buildStyle1(item, () async {
           String newValue = await pickerValue((item.data as Iterable<OptionItem>).map<PickerItem<String>>((e) {
-            return PickerItem<String>(
-                text: Text(e.text),
-                value: e.value
-            );
+            return PickerItem<String>(e.text, e.value);
           }).toList(), findOptionsIndex(item, item.value));
           item.onChange?.call(newValue);
         });

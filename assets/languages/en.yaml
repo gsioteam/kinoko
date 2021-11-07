@@ -98,3 +98,6 @@ new_project_branch: "Branch(default:master)"
 right_to_left: Right To Left
 remove: Remove
 move_to_first: Move To First
+
+default: Default
+dark: Dark

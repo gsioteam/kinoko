@@ -39,7 +39,7 @@ dependencies:
   cached_network_image: ^2.2.0+1
   my_scrollable_positioned_list:
     path: plugins/my_scrollable_positioned_list
-  flutter_picker: ^1.1.5
+  flutter_material_pickers: ^3.1.2
   http: ^0.13.0
   xml_layout: 2.2.14
   flutter_svg_provider:

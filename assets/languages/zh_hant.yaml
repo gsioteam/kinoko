@@ -98,3 +98,6 @@ new_project_branch: "Branch(default:master)"
 right_to_left: 從右到左
 remove: 移除
 move_to_first: 置於第一
+
+default: 默認
+dark: 暗色

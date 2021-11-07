@@ -55,7 +55,7 @@ class PageSliderState extends State<PageSlider> with SingleTickerProviderStateMi
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).canvasColor,
                       borderRadius: BorderRadius.circular(m.min(constraints.maxHeight, constraints.maxWidth) / 2),
                     ),
                     child: Row(

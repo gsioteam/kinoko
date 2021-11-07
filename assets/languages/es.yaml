@@ -99,3 +99,6 @@ new_project_branch: "Branch(default:master)"
 right_to_left: Right To Left
 remove: Eliminar
 move_to_first: Mover a abetos
+
+default: Defecto
+dark: Oscura

@@ -349,7 +349,7 @@ class _DefaultBookPageState extends State<_DefaultBookPage> {
               bottom: PreferredSize(
                   child: Container(
                     height: 48,
-                    color: Colors.white,
+                    color: Theme.of(context).appBarTheme.color,
                     padding: EdgeInsets.only(left: 10, right: 10),
                     child: Row(
                       children: <Widget>[

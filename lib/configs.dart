@@ -30,6 +30,8 @@ const String viewed_key = "viewed";
 
 const String v2_key = "v2_2_setup";
 
+const String theme_key = "theme_key";
+
 const int BOOK_INDEX = 0;
 const int CHAPTER_INDEX = 1;
 

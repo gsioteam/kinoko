@@ -17,6 +17,7 @@ import 'package:kinoko/utils/image_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
 import 'package:kinoko/widgets/web_image.dart';
+import 'package:markdown_widget/markdown_helper.dart';
 import 'collections_page.dart';
 import 'configs.dart';
 import 'libraries_page.dart';
@@ -43,6 +44,19 @@ import 'themes/them_desc.dart';
 import 'widgets/hint_point.dart';
 import 'widgets/oval_clipper.dart';
 
+class AppChangedNotification extends Notification {
+}
+
+class LocaleChangedNotification extends AppChangedNotification {
+  Locale locale;
+  LocaleChangedNotification(this.locale);
+}
+
+class ThemeChangedNotification extends AppChangedNotification {
+  ThemeData theme;
+  ThemeChangedNotification(this.theme);
+}
+
 void main() {
   runApp(MainApp());
 }
@@ -54,15 +68,15 @@ class MainApp extends StatefulWidget {
 
 class MainAppState extends State<MainApp> {
   Locale locale;
+  ThemeData theme;
 
   @override
   Widget build(BuildContext context) {
-    var theme = themes[0].data;
-    return NotificationListener<LocaleChangedNotification>(
+    return NotificationListener<AppChangedNotification>(
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle(
-          systemNavigationBarColor: theme.colorScheme.onBackground,
-          systemNavigationBarDividerColor: theme.colorScheme.onBackground,
+          systemNavigationBarColor: theme.bottomNavigationBarTheme.backgroundColor,
+          systemNavigationBarDividerColor: theme.bottomNavigationBarTheme.backgroundColor,
           systemNavigationBarIconBrightness: Brightness.dark,
         ),
         child: MaterialApp(
@@ -81,9 +95,15 @@ class MainAppState extends State<MainApp> {
         ),
       ),
       onNotification: (n) {
-        setState(() {
-          locale = n.locale;
-        });
+        if (n is LocaleChangedNotification) {
+          setState(() {
+            locale = n.locale;
+          });
+        } else if (n is ThemeChangedNotification) {
+          setState(() {
+            theme = n.theme;
+          });
+        }
         return true;
       },
     );
@@ -100,6 +120,7 @@ class MainAppState extends State<MainApp> {
         return locale?.languageCode;
       }
     };
+    theme = themes[0].data;
   }
 }
 
@@ -200,6 +221,15 @@ class SplashScreenState extends State<SplashScreen> {
     }
   }
 
+  ThemeData _findTheme(String title) {
+    for (var theme in themes) {
+      if (theme.title == title) {
+        return theme.data;
+      }
+      return themes[0].data;
+    }
+  }
+
   Future<void> setup(BuildContext context) async {
     Directory dir = await platform.getApplicationSupportDirectory();
     share_cache["root_path"] = dir.path;
@@ -211,6 +241,9 @@ class SplashScreenState extends State<SplashScreen> {
     if (locale != null) {
       LocaleChangedNotification(locale).dispatch(context);
     }
+    ThemeData themeData = _findTheme(KeyValue.get(theme_key));
+    ThemeChangedNotification(themeData).dispatch(context);
+
     await _v2Setup(dir.path);
     await showDisclaimer(context);
     await fetchEnv(context);
@@ -408,7 +441,6 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
         type: BottomNavigationBarType.fixed,
         currentIndex: selected,
         items: [
