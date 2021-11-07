@@ -29,6 +29,7 @@ class KinokoLocalizationsDelegate extends LocalizationsDelegate<KinokoLocalizati
     "zh-hant": const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
     "zh-hans": const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
     "es": const Locale.fromSubtags(languageCode: 'es'),
+    "tr": const Locale.fromSubtags(languageCode: 'tr'),
     // "ru": const Locale.fromSubtags(languageCode: 'ru'),
     // "it": const Locale.fromSubtags(languageCode: 'it'),
     // "de": const Locale.fromSubtags(languageCode: 'de')
@@ -56,12 +57,8 @@ class KinokoLocalizationsDelegate extends LocalizationsDelegate<KinokoLocalizati
       }
       case 'es':
         return get('es.yaml');
-      case 'ru':
-        return get('ru.yaml');
-      case 'it':
-        return get('it.yaml');
-      case 'de':
-        return get('de.yaml');
+      case 'tr':
+        return get('tr.yaml');
       default: {
         return get('en.yaml');
       }

@@ -148,6 +148,7 @@ const Map<String, String> _languageMap = {
   'zh-hant': '中文(繁體)',
   'zh-hans': '中文(简体)',
   'es': 'Español',
+  'tr': 'Türk',
 };
 
 class _MainSettingsPageState extends State<MainSettingsPage> {
