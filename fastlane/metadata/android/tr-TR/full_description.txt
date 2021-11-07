@@ -1,0 +1,9 @@
+Uygun bir çevrim içi çizgi roman inceleme deneyimi sağlayabilmek için herhangi bir eklenti projesi tarafından desteklenen çevrim içi çizgi roman içeriğini yükleyin.
+
+### Özellikler:
+
+* Eklenti desteği - Eklentileri yönetmek için git'i kullanarak, ilgili ağ kaynaklarına göz atmak için geliştiriciler tarafından sağlanan eklentileri kullanabilir veya eklentiyi yüklemek için herhangi bir git adresini girebilirsiniz.
+* Koleksiyonlar - Favorilere ekleyin, istediğiniz zaman kolay ve hızlıca görüntüleyin.
+* Manga indirin - Yerel olarak indirin ve internet olmadan istediğiniz zaman göz atın.
+* Sayfaları çevirmek için ses tuşları kullanılabilir - Tek elle kolayca sayfa değiştirilebilir.
+* Çeşitli çevirme modları - Sayfaları yatay veya dikey olarak çevirebilirsiniz.

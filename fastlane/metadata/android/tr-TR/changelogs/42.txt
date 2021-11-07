@@ -1,0 +1,2 @@
+- Yeni görüntü önbellek motoru
+- Çekirdek yapısı güncellendi
