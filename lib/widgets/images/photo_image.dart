@@ -188,7 +188,15 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
   void _onOneFingerZoomEnd(PointerEvent event) {
     _animationDuration = _moveDuration;
     setState(() {
+      Offset anchor = (event.localPosition - _translation) / _scale;
+      double oldScale = _scale;
       _scale = 1;
+      Size extendSize = _imageSize * (_scale - oldScale);
+
+      _translation -= Offset(
+        extendSize.width * anchor.dx / _imageSize.width,
+        extendSize.height * anchor.dy / _imageSize.height,
+      );
       clampImage();
     });
   }
