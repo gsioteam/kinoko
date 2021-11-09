@@ -13,7 +13,9 @@ PS: The new plug-in system no longer support `ruby` script.
 
 ## Online Preview
 
-This is a [preview website](https://gsioteam.github.io/plugin_online/).
+This is a liveing [preview website](https://gsioteam.github.io/plugin_online/).
 
-Try input [https://github.com/gsioteam/plugin_demo.git](https://github.com/gsioteam/plugin_demo.git) or 
-[https://github.com/gsioteam/dramacool.git](https://github.com/gsioteam/dramacool.git) and see the preview.
+Try to input a plug-in git address likes:
+
+- [https://github.com/gsioteam/plugin_demo.git](https://github.com/gsioteam/plugin_demo.git)
+- [https://github.com/gsioteam/dramacool.git](https://github.com/gsioteam/dramacool.git)
