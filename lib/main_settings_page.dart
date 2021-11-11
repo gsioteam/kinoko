@@ -158,7 +158,7 @@ const List<_LanguageInfo> _languageList = [
   _LanguageInfo('zh-hant', '中文(繁體)'),
   _LanguageInfo('zh-hans', '中文(简体)'),
   _LanguageInfo('es', 'Español'),
-  _LanguageInfo('tr', 'Türk'),
+  _LanguageInfo('tr', 'Türkçe'),
 ];
 
 const Map<String, String> _languageMap = {
@@ -166,7 +166,7 @@ const Map<String, String> _languageMap = {
   'zh-hant': '中文(繁體)',
   'zh-hans': '中文(简体)',
   'es': 'Español',
-  'tr': 'Türk',
+  'tr': 'Türkçe',
 };
 
 class _MainSettingsPageState extends State<MainSettingsPage> {
