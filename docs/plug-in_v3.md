@@ -78,7 +78,7 @@ index.xml
     "index": "index",
     // option, The elevation of AppBar
     "appbar_elevation": 0,
-    // require, A logic script with out UI， which used to perform special functions.
+    // require, A logic script with out UI， which is used to perform special functions.
     "processor": "processor",
     // option, The icons will be displayed on the right of AppBar.
     // And navigate to the page write in index attribute by pressing
