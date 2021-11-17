@@ -136,7 +136,7 @@ class BookController extends Controller {
 
         } else {
             this.openBook({
-                list: this.data.list.reverse(),
+                list: this.data.list.slice().reverse(),
                 index: (this.data.list.length - idx - 1),
             });
         }

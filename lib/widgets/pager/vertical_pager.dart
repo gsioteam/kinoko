@@ -101,9 +101,9 @@ class _VerticalPagerState extends PagerState<VerticalPager> {
       up: true,
       down: true,
       onOverDrag: (type) {
-        if (type == OverDragType.Left) {
+        if (type == OverDragType.Left || type == OverDragType.Up) {
           widget.controller.onOverBound?.call(BoundType.Start);
-        } else if (type == OverDragType.Right) {
+        } else if (type == OverDragType.Right || type == OverDragType.Down) {
           widget.controller.onOverBound?.call(BoundType.End);
         }
       },

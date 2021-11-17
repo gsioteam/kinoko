@@ -325,7 +325,6 @@ class OverDragState extends State<OverDrag> {
       ));
     }
     if (widget.up) {
-      print(_isActive());
       list.add(buildArrow(context,
         key: _upKey,
         alignment: Alignment.topCenter,
@@ -349,6 +348,7 @@ class OverDragState extends State<OverDrag> {
     }
 
     return Stack(
+      clipBehavior: Clip.hardEdge,
       children: list,
     );
   }

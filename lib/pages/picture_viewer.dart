@@ -108,6 +108,12 @@ enum FlipType {
   Webtoon,
 }
 
+enum PagerTransitionDirection {
+  Prev,
+  None,
+  Next
+}
+
 HintMatrix _hintMatrix(FlipType type) {
   switch (type) {
     case FlipType.Horizontal: {
@@ -481,6 +487,7 @@ class _PictureViewerState extends State<PictureViewer> {
     ),);
 
     var padding = MediaQuery.of(context).padding;
+    var currentBody = buildPager(context);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
         child: Scaffold(
@@ -503,7 +510,46 @@ class _PictureViewerState extends State<PictureViewer> {
                             color: Colors.white,
                           ),
                         ):
-                        buildPager(context),
+                        AnimatedSwitcher(
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeOutCubic,
+                          duration: Duration(milliseconds: 300),
+                          child: currentBody,
+                          transitionBuilder: (child, animation) {
+                            switch (_pageDirection) {
+                              case PagerTransitionDirection.None:
+                                return child;
+                              default: {
+                                var size = MediaQuery.of(context).size;
+                                Offset from;
+                                int sign = 1;
+                                if (child != currentBody)
+                                  sign *= -1;
+                                if (_pageDirection == PagerTransitionDirection.Prev)
+                                  sign *= -1;
+                                if (flipType == FlipType.Vertical || flipType == FlipType.Webtoon) {
+                                  from = Offset(0,
+                                      sign * size.height
+                                  );
+                                } else if (flipType == FlipType.RightToLeft) {
+                                  from = Offset(sign * -size.width, 0);
+                                } else {
+                                  from = Offset(sign * size.width, 0);
+                                }
+                                return AnimatedBuilder(
+                                  animation: animation,
+                                  builder: (context, child) {
+                                    return Transform.translate(
+                                      offset: Offset.lerp(from, Offset.zero, animation.value)!,
+                                      child: child,
+                                    );
+                                  },
+                                  child: child,
+                                );
+                              }
+                            }
+                          },
+                        ),
                       ),
                       Positioned.fill(
                         child: IgnorePointer(
@@ -749,10 +795,10 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   bool _toastCoolDown = true;
+  PagerTransitionDirection _pageDirection = PagerTransitionDirection.None;
 
   void onOverBound(BoundType type) {
     if (type == BoundType.Start) {
-      Context context;
       if (prev != null) {
         untouch();
         next?.dispose();
@@ -780,6 +826,7 @@ class _PictureViewerState extends State<PictureViewer> {
             exitFullscreen();
             willDismissAppBar();
           }
+          _pageDirection = PagerTransitionDirection.Prev;
         });
       } else if (_toastCoolDown) {
         _toastCoolDown = false;
@@ -813,6 +860,7 @@ class _PictureViewerState extends State<PictureViewer> {
             exitFullscreen();
             willDismissAppBar();
           }
+          _pageDirection = PagerTransitionDirection.Next;
         });
       } else if (_toastCoolDown) {
         _toastCoolDown = false;
