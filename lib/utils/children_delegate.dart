@@ -3,12 +3,12 @@ import 'package:flutter/widgets.dart';
 import 'dart:math' as math;
 
 class ChildrenDelegate extends SliverChildBuilderDelegate {
-  void Function(int) onItemShow;
+  void Function(int)? onItemShow;
 
   ChildrenDelegate({
-    @required IndexedWidgetBuilder itemBuilder,
-    @required IndexedWidgetBuilder separatorBuilder,
-    @required int itemCount,
+    required IndexedWidgetBuilder itemBuilder,
+    required IndexedWidgetBuilder separatorBuilder,
+    required int itemCount,
     this.onItemShow,
   }) : super((BuildContext context, int index) {
     final int itemIndex = index ~/ 2;
@@ -33,7 +33,7 @@ class ChildrenDelegate extends SliverChildBuilderDelegate {
   void didFinishLayout(int firstIndex, int lastIndex) {
     super.didFinishLayout(firstIndex, lastIndex);
     if (this.onItemShow != null) {
-      this.onItemShow(lastIndex);
+      this.onItemShow?.call(lastIndex);
     }
   }
 }

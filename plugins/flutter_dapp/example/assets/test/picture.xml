@@ -1,0 +1,14 @@
+<scaffold>
+    <attr:appbar>
+        <appbar>
+            <attr:title>
+                <text>Picture</text>
+            </attr:title>
+        </appbar>
+    </attr:appbar>
+    <attr:body>
+        <center>
+            <img src="${src}" fit="cover"/>
+        </center>
+    </attr:body>
+</scaffold>

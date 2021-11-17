@@ -5,12 +5,12 @@ import 'download_manager.dart';
 
 class _PreloadItem {
   bool loaded = false;
-  DownloadPictureItem provider;
+  DownloadPictureItem? provider;
 
   _PreloadItem([this.provider]);
 
   void set(DownloadPictureItem newProvider) {
-    if (provider.url != newProvider.url || provider.cacheManager != newProvider.cacheManager) {
+    if (provider?.url != newProvider.url || provider?.cacheManager != newProvider.cacheManager) {
       provider = newProvider;
       loaded = false;
     }
@@ -19,14 +19,14 @@ class _PreloadItem {
 
 class PreloadQueue {
   bool canceled = false, loading = false;
-  List<_PreloadItem> items = List();
+  List<_PreloadItem> items = [];
   int _offset = 0;
 
   void _checkStart() {
     if (canceled || loading)
       return;
 
-    _PreloadItem target;
+    _PreloadItem? target;
     for (int i = 0, t = items.length; i < t; ++i) {
       int idx = (_offset + i) % items.length;
       _PreloadItem item = items[idx];
@@ -37,8 +37,8 @@ class PreloadQueue {
     }
     if (target != null) {
       loading = true;
-      target.provider.fetchImage((_) {
-        target.loaded = true;
+      target.provider?.fetchImage((_) {
+        target!.loaded = true;
         loading = false;
         _checkStart();
       });

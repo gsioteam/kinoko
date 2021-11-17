@@ -1,0 +1,8 @@
+
+<tabs elevation="4" scrollable="true" background="hex(#fff)">
+    <for array="$tabs">
+        <tab title="${item.title}">
+            <widget src="main" data="$item"/>
+        </tab>
+    </for>
+</tabs>

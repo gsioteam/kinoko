@@ -33,11 +33,11 @@ class Project extends Base {
   bool setMainProject() => call("setMainProject");
   void remove() => call("remove");
 
-  static Project current;
+  static Project? current;
   static void setCurrent(Project project) {
-    current.release();
+    current?.release();
     current = project;
-    current?.control();
+    current?.retain();
   }
 
   Context createIndexContext(dynamic data) => call("createIndexContext", argv: [data]);

@@ -11,7 +11,7 @@ import 'package:kinoko/utils/neo_cache_manager.dart';
 
 Widget makeBookItem(BuildContext context, Project project, DataItem item, void Function() onTap) {
   if (item.type == DataItemType.Header) {
-    ImageProvider provider;
+    ImageProvider? provider;
     String picture;
     if (item.picture.isNotEmpty && item.picture[0] == "/") {
       File file = File(project.fullpath + item.picture);

@@ -15,22 +15,17 @@ class TypeInfo {
   Type type, superType;
   Pointer ptr;
   Map<String, Function> functions = Map();
-  dynamic Function(Pointer) constructor;
+  dynamic Function(Pointer)? constructor;
 
   TypeInfo(this.type, this.ptr, this.superType);
 }
 
 mixin AutoRelease {
-  static Set<AutoRelease> _cachePool = Set();
-  static Timer timer;
   int _retainCount = 1;
   bool _destroyed = false;
 
-  control() {
+  retain() {
     _retainCount ++;
-    if (_retainCount > 0) {
-      _cachePool.remove(this);
-    }
     return this;
   }
 
@@ -39,25 +34,16 @@ mixin AutoRelease {
       throw Exception("Object already release!");
     }
     _retainCount--;
-    if (_retainCount <= 0 && !_cachePool.contains(this)) {
-      _cachePool.add(this);
+    if (_retainCount <= 0) {
+      destroy();
+      _destroyed = true;
     }
 
-    if (timer == null) {
-      timer = Timer.periodic(Duration(milliseconds: 20), _timeUp);
-    }
     return this;
   }
 
-  static _timeUp(Timer t) {
-    t.cancel();
-    Set<AutoRelease> copyList = Set<AutoRelease>.from(_cachePool);
-    _cachePool.clear();
-    copyList.forEach((AutoRelease tar){
-      tar.destroy();
-      tar._destroyed = true;
-    });
-    timer = null;
+  delayRelease() {
+    Future.delayed(Duration(milliseconds: 100)).then((value) => release());
   }
 
   destroy() {
@@ -89,7 +75,7 @@ void _toNative(dynamic obj, Pointer<NativeTarget> ret) {
     nt.intValue = obj ? 1 : 0;
   } else if (obj is Base) {
     nt.type = TypeObject;
-    nt.pointerValue = obj._id;
+    nt.pointerValue = obj._id!;
   } else if (obj is String) {
     nt.type = TypeString;
     Pointer<Utf8> utf8 = obj.toNativeUtf8();
@@ -98,15 +84,12 @@ void _toNative(dynamic obj, Pointer<NativeTarget> ret) {
   } else if (obj is List) {
     Array arr = Array.allocate(obj);
     _toNative(arr, ret);
-    arr.release();
   } else if (obj is Map) {
     GMap map = GMap.allocate(obj);
     _toNative(map, ret);
-    map.release();
   } else if (obj is Function) {
     Callback cb = Callback.fromFunction(obj);
     _toNative(cb, ret);
-    cb.release();
   } else if (obj is Pointer) {
     nt.type = TypePointer;
     nt.pointerValue = obj;
@@ -162,15 +145,15 @@ List<dynamic> _convertArgv(Pointer<NativeTarget> argv, int length) {
 }
 
 void autorelease<T extends NativeType>(Pointer<T> ptr) {
-  AutoPointer<T>(ptr).release();
+  AutoPointer<T>(ptr).delayRelease();
 }
 
 void _callClassFromNative(Pointer ptr, Pointer<Utf8> name, Pointer<NativeTarget> argv, int length, Pointer<NativeTarget> result) {
   String fun = name.toDartString();
   try {
-    TypeInfo type = _classDB[ptr];
+    TypeInfo? type = _classDB[ptr];
     if (type != null) {
-      Function func = type.functions[fun];
+      Function? func = type.functions[fun];
       if (func != null) {
         dynamic ret = Function.apply(func, _convertArgv(argv, length));
         _toNative(ret, result);
@@ -183,9 +166,9 @@ void _callClassFromNative(Pointer ptr, Pointer<Utf8> name, Pointer<NativeTarget>
 
 void _callInstanceFromNative(Pointer ptr, Pointer<Utf8> name, Pointer<NativeTarget> argv, int length, Pointer<NativeTarget> result) {
   String fun = name.toDartString();
-  Base ins = _objectDB[ptr];
+  Base? ins = _objectDB[ptr];
   try {
-    dynamic ret = ins.apply(fun, _convertArgv(argv, length));
+    dynamic ret = ins!.apply(fun, _convertArgv(argv, length));
     _toNative(ret, result);
   }catch (e, stacktrace) {
     print("Call $fun on $ins failed : ${e.toString()} \n$stacktrace");
@@ -197,14 +180,14 @@ int _createNativeTarget(Pointer type, Pointer ptr) {
   if (typeinfo != null) {
     var cons = typeinfo.constructor;
     while (cons == null) {
-      var sup = typeinfo.superType;
+      var sup = typeinfo?.superType;
       if (sup != null) {
         typeinfo = _classRef[sup];
-        cons = typeinfo.constructor;
+        cons = typeinfo?.constructor;
       } else break;
     }
     if (cons != null) {
-      _objectDB[ptr] = cons(ptr).release();
+      _objectDB[ptr] = cons(ptr);
       return 0;
     }
   }
@@ -219,8 +202,8 @@ Pointer<NativeFunction<CreateNative>> createNativeTarget = Pointer.fromFunction(
 class Base with AutoRelease {
 
   Map<String, Function> functions = Map();
-  Pointer _id;
-  TypeInfo _type;
+  Pointer? _id;
+  TypeInfo? _type;
 
   dynamic call(String name, { argv: const <dynamic>[]}) {
     if (isDestroyed) {
@@ -228,7 +211,7 @@ class Base with AutoRelease {
     }
     Pointer<NativeTarget> argvPtr = _makeArgv(argv);
     Pointer<Utf8> namePtr = name.toNativeUtf8();
-    Pointer<NativeTarget> resultPtr = callObject(_id, namePtr, argvPtr, argv.length);
+    Pointer<NativeTarget> resultPtr = callObject(_id!, namePtr, argvPtr, argv.length);
     List<dynamic> ret = _convertArgv(resultPtr, 1);
 
     malloc.free(namePtr);
@@ -240,7 +223,7 @@ class Base with AutoRelease {
   }
 
   static dynamic s_call(Type type, String name, {argv: const <dynamic>[]}) {
-    TypeInfo typeInfo = _classRef[type];
+    TypeInfo? typeInfo = _classRef[type];
     if (typeInfo != null) {
       Pointer<NativeTarget> argvPtr = _makeArgv(argv);
       Pointer<Utf8> namePtr = name.toNativeUtf8();
@@ -262,7 +245,7 @@ class Base with AutoRelease {
 
   dynamic apply(String name, List<dynamic> argv) {
     if (functions.containsKey(name)) {
-      return Function.apply(functions[name], argv);
+      return Function.apply(functions[name]!, argv);
     }
     return null;
   }
@@ -272,10 +255,10 @@ class Base with AutoRelease {
   }
 
   void initialize() {
-    Type t = this.aliasType;
+    Type? t = this.aliasType;
     while (t != null) {
       if (_classRef.containsKey(t)) {
-        _type = _classRef[t];
+        _type = _classRef[t]!;
         break;
       }
       t = Base;
@@ -284,6 +267,7 @@ class Base with AutoRelease {
 
   Base() {
     initialize();
+    delayRelease();
   }
 
   set id(Pointer v) {
@@ -304,9 +288,9 @@ class Base with AutoRelease {
       throw new Exception("Can not create ${this.runtimeType} because glib is destroyed.");
     }
     Pointer<NativeTarget> argvPtr = _makeArgv(argv);
-    _id = createObject(_type.ptr, argvPtr, argv.length);
+    _id = createObject(_type!.ptr, argvPtr, argv.length);
     malloc.free(argvPtr);
-    _objectDB[_id] = this;
+    _objectDB[_id!] = this;
   }
 
   static TypeInfo reg(Type type, String name, Type superType) {
@@ -329,7 +313,7 @@ class Base with AutoRelease {
 
   void destroy() {
     if (_id != null) {
-      freeObject(_id);
+      freeObject(_id!);
       _objectDB.remove(_id);
       _id = null;
     }

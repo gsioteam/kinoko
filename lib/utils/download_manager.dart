@@ -14,6 +14,7 @@ import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/error.dart' as glib;
 import 'package:glib/main/project.dart';
+import 'package:kinoko/utils/plugin/manga_loader.dart';
 import '../configs.dart';
 import 'cached_picture_image.dart';
 import 'package:glib/utils/bit64.dart';
@@ -35,7 +36,7 @@ enum DownloadState {
 class DownloadPictureItem {
   NeoCacheManager cacheManager;
   String url;
-  Map<String, String> headers;
+  Map<String, String>? headers;
   bool canceled = false;
 
   DownloadPictureItem(this.url, this.cacheManager, {this.headers});
@@ -64,21 +65,21 @@ class DownloadPictureItem {
 
 class _DownloadCacheItem {
   String url;
-  Map<String, String> headers;
+  Map<String, String>? headers;
 
   _DownloadCacheItem(this.url, [this.headers]);
 }
 
 class DownloadQueueItem {
   CollectionData data;
-  DataItem item;
-  void Function(String error) onError;
-  NeoCacheManager cacheManager;
+  Processor item;
+  void Function(String error)? onError;
+  late NeoCacheManager cacheManager;
   Queue<DownloadPictureItem> queue = Queue();
   bool _picture_downloading = false;
-  String cacheKey;
-  void Function() onImageQueueClear;
-  List<_DownloadCacheItem> urls = List();
+  late String cacheKey;
+  void Function()? onImageQueueClear;
+  List<_DownloadCacheItem> urls = [];
   int _total = 0;
   int _total2 = 0;
   int _loaded = 0;
@@ -86,12 +87,12 @@ class DownloadQueueItem {
 
   bool _downloading = false;
   bool cancel = false;
-  Context context;
+  Context? context;
 
   static const Duration MaxDuration = Duration(days: 365 * 99999);
 
-  void Function() onProgress;
-  void Function() onState;
+  void Function()? onProgress;
+  void Function()? onState;
 
   bool get downloading => _downloading;
 
@@ -100,7 +101,7 @@ class DownloadQueueItem {
 
   bool _setup = false;
 
-  BookInfo _info;
+  BookInfo? _info;
   BookInfo get info {
     if (_info == null) {
       if (data.data != null) {
@@ -112,41 +113,41 @@ class DownloadQueueItem {
           subtitle: map["subtitle"]
         );
       } else {
-        _info = BookInfo();
+        _info = BookInfo(link: '', title: '');
       }
     }
-    return _info;
+    return _info!;
   }
 
-  factory DownloadQueueItem(data) {
+  static DownloadQueueItem? fromData(data) {
     if (data == null) return null;
-    DataItem item = DataItem.fromCollectionData(data);
+    DataItem? item = DataItem.fromCollectionData(data);
     if (item == null) {
       return null;
     }
-    return DownloadQueueItem._(data.control(), item.control());
+    return DownloadQueueItem._(data.control(), item.retain());
   }
 
   DownloadQueueItem._(this.data, this.item) {
-    Array subitems = item.getSubItems();
-    cacheKey = NeoCacheManager.cacheKey(item);
-    cacheManager = NeoCacheManager(cacheKey);
-    _total = subitems.length;
-    if (state != DownloadState.AllComplete) {
-      List<_DownloadCacheItem> urls = [];
-      for (int i = 0, t = subitems.length; i < t; ++i) {
-        DataItem item = subitems[i];
-        urls.add(_DownloadCacheItem(
-          item.picture, item.headers
-        ));
-      }
-      _checkImages(urls);
-      if (state == DownloadState.ListComplete) {
-        this.urls = urls;
-      }
-    } else {
-      _loaded = total;
-    }
+    // Array subitems = item.getSubItems();
+    // cacheKey = NeoCacheManager.cacheKey(item);
+    // cacheManager = NeoCacheManager(cacheKey);
+    // _total = subitems.length;
+    // if (state != DownloadState.AllComplete) {
+    //   List<_DownloadCacheItem> urls = [];
+    //   for (int i = 0, t = subitems.length; i < t; ++i) {
+    //     DataItem item = subitems[i];
+    //     urls.add(_DownloadCacheItem(
+    //       item.picture, item.headers
+    //     ));
+    //   }
+    //   _checkImages(urls);
+    //   if (state == DownloadState.ListComplete) {
+    //     this.urls = urls;
+    //   }
+    // } else {
+    //   _loaded = total;
+    // }
   }
 
   void _checkImages(List<_DownloadCacheItem> urls) async {
@@ -168,16 +169,14 @@ class DownloadQueueItem {
   }
 
   void destroy() {
-    data?.release();
-    data = null;
-    item?.release();
-    item = null;
+    data.release();
+    item.dispose();
     context?.release();
     context = null;
   }
 
   DownloadState get state {
-    switch (data.flag) {
+    switch (data?.flag) {
       case 0: {
         return DownloadState.None;
       }
@@ -194,22 +193,22 @@ class DownloadQueueItem {
   set state(DownloadState s) {
     switch (s) {
       case DownloadState.None: {
-        data.flag = 0;
+        data?.flag = 0;
         break;
       }
       case DownloadState.ListComplete: {
-        data.flag = 1;
+        data?.flag = 1;
         break;
       }
       case DownloadState.AllComplete: {
-        data.flag = 2;
+        data?.flag = 2;
         break;
       }
       default: {}
     }
   }
 
-  DownloadPictureItem currentImage;
+  DownloadPictureItem? currentImage;
 
   void checkImageQueue() async {
     if (!_downloading) return;
@@ -221,7 +220,7 @@ class DownloadQueueItem {
 
     currentImage = queue.removeFirst();
     _picture_downloading = true;
-    currentImage.fetchImage((success) {
+    currentImage?.fetchImage((success) {
       _picture_downloading = false;
 
       if (success) {
@@ -229,8 +228,8 @@ class DownloadQueueItem {
         _loaded2++;
         onProgress?.call();
       } else {
-        currentImage.reset();
-        queue.add(currentImage);
+        currentImage!.reset();
+        queue.add(currentImage!);
         currentImage = null;
       }
       checkImageQueue();
@@ -256,7 +255,7 @@ class DownloadQueueItem {
     return false;
   }
 
-  void addToQueue(String url, {Map<String, String> headers, bool force = false}) {
+  void addToQueue(String url, {Map<String, String>? headers, bool force = false}) {
     if (!contains(url)) {
       urls.add(_DownloadCacheItem(
         url,
@@ -298,49 +297,49 @@ class DownloadQueueItem {
   }
 
   Future<bool> main() async {
-    Project project = Project.allocate(item.projectKey).release();
-
-    if (!project.isValidated) {
-      onError?.call("can not find the item.");
-      return false;
-    }
-    project.control();
-
-    context = project.createCollectionContext(CHAPTER_INDEX, item).control();
-    context.expireTime = 0;
-    try {
-      if (state == DownloadState.None) {
-        urls.clear();
-        await reload(context);
-        state = DownloadState.ListComplete;
-        data.save();
-        onState?.call();
-      } else {
-        _loaded = max(_loaded, _loaded2);
-        _loaded2 = 0;
-        var tmp = List.from(urls.map((e) => e.url));
-        urls.clear();
-        queue.clear();
-        tmp.forEach((url) {
-          addToQueue(url);
-        });
-      }
-      if (state == DownloadState.ListComplete) {
-        await waitForImageQueue();
-        state = DownloadState.AllComplete;
-        data.save();
-        onState?.call();
-      }
-    } catch (e) {
-      if (_downloading)
-        onError?.call(e.toString());
-    }
-
-    if (context != null) {
-      context.release();
-      context = null;
-    }
-    project.release();
+    // Project project = Project.allocate(item.plugin.id).release();
+    //
+    // if (!project.isValidated) {
+    //   onError?.call("can not find the item.");
+    //   return false;
+    // }
+    // project.retain();
+    //
+    // context = project.createCollectionContext(CHAPTER_INDEX, item).retain();
+    // context!.expireTime = 0;
+    // try {
+    //   if (state == DownloadState.None) {
+    //     urls.clear();
+    //     await reload(context!);
+    //     state = DownloadState.ListComplete;
+    //     data.save();
+    //     onState?.call();
+    //   } else {
+    //     _loaded = max(_loaded, _loaded2);
+    //     _loaded2 = 0;
+    //     var tmp = List.from(urls.map((e) => e.url));
+    //     urls.clear();
+    //     queue.clear();
+    //     tmp.forEach((url) {
+    //       addToQueue(url);
+    //     });
+    //   }
+    //   if (state == DownloadState.ListComplete) {
+    //     await waitForImageQueue();
+    //     state = DownloadState.AllComplete;
+    //     data.save();
+    //     onState?.call();
+    //   }
+    // } catch (e) {
+    //   if (_downloading)
+    //     onError?.call(e.toString());
+    // }
+    //
+    // if (context != null) {
+    //   context!.release();
+    //   context = null;
+    // }
+    // project.release();
     return true;
   }
 
@@ -360,11 +359,11 @@ class DownloadQueueItem {
 
   void stop() {
     if (context != null) {
-      context.release();
+      context!.release();
       context = null;
     }
     if (currentImage != null) {
-      currentImage.cancel();
+      currentImage!.cancel();
       currentImage = null;
       _picture_downloading = false;
     }
@@ -373,17 +372,17 @@ class DownloadQueueItem {
 }
 
 class DownloadManager {
-  static DownloadManager _instance;
+  static DownloadManager? _instance;
   Queue<DownloadQueueItem> queue = Queue();
 
-  Array data;
-  List<DownloadQueueItem> items = List();
+  late Array data;
+  List<DownloadQueueItem> items = [];
 
   factory DownloadManager() {
     if (_instance == null) {
       _instance = DownloadManager._();
     }
-    return _instance;
+    return _instance!;
   }
 
   static void reloadAll() {
@@ -398,16 +397,16 @@ class DownloadManager {
   }
 
   DownloadManager._() {
-    data = CollectionData.all(collection_download).control();
+    data = CollectionData.all(collection_download).retain();
     for (int  i = 0, t = data.length; i < t; ++i) {
       CollectionData d = data[i];
-      DownloadQueueItem queueItem = DownloadQueueItem(d);
+      DownloadQueueItem? queueItem = DownloadQueueItem.fromData(d);
       if (queueItem != null)
         items.add(queueItem);
     }
   }
 
-  DownloadQueueItem add(DataItem item, BookInfo bookInfo) {
+  DownloadQueueItem? add(DataItem item, BookInfo bookInfo) {
     if (!item.isInCollection(collection_download)) {
       CollectionData data = item.saveToCollection(collection_download, {
         "title": bookInfo.title,
@@ -415,7 +414,7 @@ class DownloadManager {
         "link": bookInfo.link,
         "subtitle": bookInfo.subtitle
       });
-      DownloadQueueItem queueItem = DownloadQueueItem(data);
+      DownloadQueueItem? queueItem = DownloadQueueItem.fromData(data);
       if (queueItem != null)
         items.add(queueItem);
       return queueItem;
@@ -440,13 +439,13 @@ class DownloadManager {
     items.remove(item);
   }
 
-  DownloadQueueItem find(DataItem item) {
-    for (int i = 0, t = items.length; i < t; ++i) {
-      String link = items[i].item.link;
-      if (item.link == link) {
-        return items[i];
-      }
-    }
+  DownloadQueueItem? find(DataItem item) {
+    // for (int i = 0, t = items.length; i < t; ++i) {
+    //   String link = items[i].item.link;
+    //   if (item.link == link) {
+    //     return items[i];
+    //   }
+    // }
     return null;
   }
 }

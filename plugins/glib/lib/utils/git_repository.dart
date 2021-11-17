@@ -8,8 +8,8 @@ class GitAction extends Base {
     ..constructor = ((id) => GitAction().setID(id));
   }
 
-  Callback _onProgress;
-  Callback _onComplete;
+  Callback? _onProgress;
+  Callback? _onComplete;
 
   setOnProgress(void Function(String, int, int) cb) {
     _onProgress?.release();
@@ -51,7 +51,7 @@ class GitRepository extends Base {
 
   GitRepository();
 
-  GitRepository.allocate(String path, [String branch]) {
+  GitRepository.allocate(String path, [String? branch]) {
     super.allocate([path, branch ?? ""]);
   }
 

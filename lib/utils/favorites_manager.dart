@@ -12,17 +12,17 @@ import 'package:glib/main/project.dart';
 import '../configs.dart';
 
 class FavAttachment {
-  DateTime date;
-  String link;
-  int index;
-  String last;
+  late DateTime date;
+  late String link;
+  late int index;
+  late String last;
 
   FavAttachment.fromData(dynamic data) {
     fill(data);
   }
 
   void fill(dynamic data) {
-    date = DateTime.tryParse(data['date']);
+    date = DateTime.tryParse(data['date']) ?? DateTime.fromMillisecondsSinceEpoch(0);
     link = data['value'];
     index = data['index'];
     last = data['last'];
@@ -40,17 +40,17 @@ class FavCheckItem extends ValueNotifier<bool> {
   CollectionData data;
   DataItem item;
 
-  FavAttachment attachment;
+  late FavAttachment attachment;
 
   ValueNotifier<bool> newListenable = ValueNotifier(false);
 
-  factory FavCheckItem.from(CollectionData data) {
+  static FavCheckItem? from(CollectionData? data) {
     if (data == null) return null;
-    DataItem item = DataItem.fromCollectionData(data);
+    DataItem? item = DataItem.fromCollectionData(data);
     if (item == null) {
       return null;
     }
-    return FavCheckItem(data.control(), item.control());
+    return FavCheckItem(data.retain(), item.retain());
   }
 
   FavCheckItem(this.data, this.item) : super(false) {
@@ -95,7 +95,7 @@ class FavCheckItem extends ValueNotifier<bool> {
       }
 
       completer.complete();
-    }).release();
+    });
     context.reload();
     return completer.future;
   }
@@ -106,7 +106,7 @@ class FavCheckItem extends ValueNotifier<bool> {
         return;
       }
     }
-    Project project = Project.allocate(item.projectKey);
+    Project project = Project.allocate(item.projectKey).retain();
     if (!project.isValidated) {
       project.release();
       return;
@@ -114,7 +114,7 @@ class FavCheckItem extends ValueNotifier<bool> {
     DataItemType type = item.type;
     if (type == DataItemType.Data) {
       value = true;
-      Context context = project.createCollectionContext(BOOK_INDEX, item).control();
+      Context context = project.createCollectionContext(BOOK_INDEX, item).retain();
       context.autoReload = true;
       try {
         await _updateValue(first, project, context).timeout(Duration(seconds: 10));
@@ -144,7 +144,7 @@ class FavCheckItem extends ValueNotifier<bool> {
 }
 
 class FavoritesManager {
-  static FavoritesManager _instance;
+  static FavoritesManager? _instance;
   List<FavCheckItem> items = [];
   ChangeNotifier onState = ChangeNotifier();
 
@@ -152,7 +152,7 @@ class FavoritesManager {
     if (_instance == null) {
       _instance = FavoritesManager._();
     }
-    return _instance;
+    return _instance!;
   }
 
   FavoritesManager._() {
@@ -160,10 +160,10 @@ class FavoritesManager {
     bool hasIndex = true;
     for (int  i = 0, t = data.length; i < t; ++i) {
       CollectionData d = data[i];
-      FavCheckItem item = FavCheckItem.from(d);
+      FavCheckItem? item = FavCheckItem.from(d);
       if (item != null)
         _addItem(item);
-      if (item.attachment.index == null) {
+      if (item?.attachment.index == null) {
         hasIndex = false;
       }
     }
@@ -194,7 +194,7 @@ class FavoritesManager {
         "date": DateTime.now().toString()
       });
       if (data != null) {
-        FavCheckItem checkItem = FavCheckItem(data.control(), item.control());
+        FavCheckItem checkItem = FavCheckItem(data.retain(), item.retain());
         _addItem(checkItem);
         checkItem.checkNew(true);
       } else {

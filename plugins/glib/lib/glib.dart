@@ -1,6 +1,7 @@
 
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
@@ -22,14 +23,12 @@ import 'main/error.dart';
 import 'utils/git_repository.dart';
 import 'utils/platform.dart';
 import 'utils/bit64.dart';
-import 'utils/request.dart';
 import 'utils/script_context.dart';
-import 'utils/browser.dart';
 import 'main/collection_data.dart';
 import 'main/setting_item.dart';
 
 class Glib {
-  static MethodChannel channel;
+  static late MethodChannel channel;
   static bool _isStatic = false;
 
   static setup(String root_path) async {
@@ -51,7 +50,6 @@ class Glib {
     Bit64.reg();
     Context.reg();
     DataItem.reg();
-    Request.reg();
     Data.reg();
     BufferData.reg();
     Error.reg();
@@ -60,7 +58,6 @@ class Glib {
     CollectionData.reg();
     LibraryContext.reg();
     SettingItem.reg();
-    Browser.reg();
 
     Pointer<Utf8> pstr = root_path.toNativeUtf8();
     postSetup(pstr);
@@ -83,7 +80,7 @@ class Glib {
 
   }
 
-  static Future<dynamic> onMethod(MethodCall call) {
+  static Future<dynamic> onMethod(MethodCall call) async {
     switch (call.method) {
       case "sendSignal": {
         runOnMainThread();
@@ -94,3 +91,20 @@ class Glib {
 }
 
 
+bool tokenVerify(String token, String url, String prev, Uint8List pubKey) {
+  Pointer<Utf8> tokenPointer = token.toNativeUtf8();
+  Pointer<Utf8> urlPointer = url.toNativeUtf8();
+  Pointer<Utf8> prevPointer = prev.toNativeUtf8();
+  int pubKeyLength = pubKey.lengthInBytes;
+  Pointer<Uint8> pubKeyPointer = malloc.allocate(pubKeyLength);
+  pubKeyPointer.asTypedList(pubKeyLength).setRange(0, pubKeyLength, pubKey);
+
+  bool ret = dartTokenVerify(tokenPointer, urlPointer, prevPointer, pubKeyPointer, pubKeyLength) != 0;
+
+  malloc.free(tokenPointer);
+  malloc.free(urlPointer);
+  malloc.free(prevPointer);
+  malloc.free(pubKeyPointer);
+
+  return ret;
+}

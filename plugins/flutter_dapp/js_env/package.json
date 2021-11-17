@@ -1,0 +1,18 @@
+{
+  "name": "js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "browserify index.js | uglifyjs > index.min.js\nbrowserify storage.js | uglifyjs > storage.min.js\nbrowserify fetch.js | uglifyjs > fetch.min.js\nbrowserify html.js | uglifyjs > html.min.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "event-target-shim": "^6.0.2",
+    "htmlparser2": "^7.1.2",
+    "node-html-parser": "^5.0.0",
+    "url": "^0.11.0"
+  }
+}

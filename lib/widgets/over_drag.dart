@@ -15,8 +15,8 @@ class TransformWidget extends StatefulWidget {
   final Offset translate;
 
   TransformWidget({
-    Key key,
-    @required this.child,
+    Key? key,
+    required this.child,
     this.translate = Offset.zero,
   }) : super(key: key);
 
@@ -30,7 +30,7 @@ class TransformWidget extends StatefulWidget {
 class TransformWidgetState extends State<TransformWidget> with SingleTickerProviderStateMixin {
 
   double position = 0;
-  AnimationController controller;
+  late AnimationController controller;
   bool active = false;
 
   void translatePosition(double position, bool active) {
@@ -99,11 +99,11 @@ class OverDrag extends StatefulWidget {
   final bool up;
   final bool down;
   final EdgeInsets iconInsets;
-  final void Function(OverDragType) onOverDrag;
+  final void Function(OverDragType)? onOverDrag;
 
   OverDrag({
-    Key key,
-    @required this.child,
+    Key? key,
+    required this.child,
     this.left = false,
     this.right = false,
     this.up = false,
@@ -223,7 +223,7 @@ class OverDragState extends State<OverDrag> {
           if (scrollNotification.dragDetails == null) {
             return touchEnd();
           } else {
-            delta = scrollNotification.scrollDelta;
+            delta = scrollNotification.scrollDelta!;
           }
         } else if (scrollNotification is ScrollEndNotification) {
           return touchEnd();
@@ -253,11 +253,11 @@ class OverDragState extends State<OverDrag> {
   }
 
   Widget buildArrow(BuildContext context, {
-    Key key,
-    Offset offset,
-    Alignment alignment,
-    Icon icon,
-    Offset targetOffset
+    Key? key,
+    required Offset offset,
+    required Alignment alignment,
+    Icon? icon,
+    required Offset targetOffset
   }) {
     return IgnorePointer(
       child: Align(

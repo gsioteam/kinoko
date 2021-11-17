@@ -77,7 +77,7 @@ class DataItem extends Base {
   bool isInCollection(String type) => call("isInCollection", argv: [type]);
   void removeFromCollection(String type) => call("removeFromCollection", argv: [type]);
 
-  static DataItem fromCollectionData(CollectionData data) => Base.s_call(DataItem, "fromCollectionData", argv: [data]);
+  static DataItem? fromCollectionData(CollectionData data) => Base.s_call(DataItem, "fromCollectionData", argv: [data]);
 
   static String toJSON(Array items) => Base.s_call(DataItem, "toJSON", argv: [items]);
   static Array fromJSON(String json) => Base.s_call(DataItem, "fromJSON", argv: [json]);

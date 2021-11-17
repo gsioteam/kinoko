@@ -71,18 +71,18 @@ class KinokoLocalizationsDelegate extends LocalizationsDelegate<KinokoLocalizati
 }
 
 String Function(String) lc(BuildContext context) {
-  KinokoLocalizations loc = Localizations.of<KinokoLocalizations>(context, KinokoLocalizations);
-  return (String key)=>loc.get(key);
+  KinokoLocalizations? loc = Localizations.of<KinokoLocalizations>(context, KinokoLocalizations);
+  return (String key)=>loc?.get(key) ?? key;
 }
 
 extension KinokoLocalizationsWidget on Widget {
   String kt(BuildContext context, String key) {
-    return Localizations.of<KinokoLocalizations>(context, KinokoLocalizations).get(key);
+    return Localizations.of<KinokoLocalizations>(context, KinokoLocalizations)?.get(key) ?? key;
   }
 }
 
 extension KinokoLocalizationsState on State {
   String kt(String key) {
-    return Localizations.of<KinokoLocalizations>(this.context, KinokoLocalizations).get(key);
+    return Localizations.of<KinokoLocalizations>(this.context, KinokoLocalizations)?.get(key) ?? key;
   }
 }

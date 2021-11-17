@@ -1,0 +1,1 @@
+globalThis.HTMLParser = require('node-html-parser');

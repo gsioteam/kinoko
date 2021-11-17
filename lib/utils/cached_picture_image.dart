@@ -24,7 +24,7 @@ class SizeResult {
 
 class PictureFileSystem extends FileSystem {
   String key;
-  file.Directory directory;
+  file.Directory? directory;
 
   PictureFileSystem(this.key);
 
@@ -33,11 +33,11 @@ class PictureFileSystem extends FileSystem {
     if (directory == null) {
       var temp = await getTemporaryDirectory();
       directory = LocalFileSystem().directory(p.join(temp.path, "pic", key));
-      if (!await directory.exists()) {
-        await directory.create(recursive: true);
+      if (!await directory!.exists()) {
+        await directory!.create(recursive: true);
       }
     }
-    return directory.childFile(name);
+    return directory!.childFile(name);
   }
 
 }
@@ -48,7 +48,7 @@ class PictureCacheManager extends CacheManager {
   static Map<String, PictureCacheManager> _managers = {};
 
   PictureCacheManager._(this.key, {
-    Duration maxAgeCacheObject
+    required Duration maxAgeCacheObject
   }) : super(Config(
     key,
     stalePeriod: maxAgeCacheObject,
@@ -56,10 +56,10 @@ class PictureCacheManager extends CacheManager {
   ));
 
   factory PictureCacheManager(String key, DataItem item) {
-    PictureCacheManager manager = _managers[key];
+    PictureCacheManager? manager = _managers[key];
     bool col = item.isInCollection(collection_download);
     if (manager?._store == col) {
-      return manager;
+      return manager!;
     } else {
       manager = PictureCacheManager._(key, maxAgeCacheObject: col ? Duration(days: 356 * 999) : Duration(days: 20));
       manager._store = col;
@@ -72,7 +72,7 @@ class PictureCacheManager extends CacheManager {
     return "${item.projectKey}/${_generateMd5(item.link)}";
   }
 
-  static Future<SizeResult> calculateCacheSize({Set<String> cached}) async {
+  static Future<SizeResult> calculateCacheSize({Set<String>? cached}) async {
     if (cached == null) cached = Set();
     var directory = await getTemporaryDirectory();
     String path = p.join(directory.path, "pic");
@@ -94,7 +94,7 @@ class PictureCacheManager extends CacheManager {
     return result;
   }
 
-  static Future<void> clearCache({Set<String> without}) async {
+  static Future<void> clearCache({Set<String>? without}) async {
     if (without == null) without = Set();
     var directory = await getTemporaryDirectory();
     String path = p.join(directory.path, "pic");

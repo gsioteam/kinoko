@@ -10,14 +10,14 @@ import 'dart:ui' as ui;
 class VerticalImage extends PhotoImage {
 
   VerticalImage({
-    Key key,
-    ImageProvider imageProvider,
-    Size size,
-    WidgetBuilder loadingWidget,
-    WidgetBuilder errorWidget,
-    bool initFromEnd,
-    PhotoImageController controller,
-    OneFingerCallback onTap,
+    Key? key,
+    required ImageProvider imageProvider,
+    required Size size,
+    WidgetBuilder? loadingWidget,
+    WidgetBuilder? errorWidget,
+    bool initFromEnd = false,
+    PhotoImageController? controller,
+    OneFingerCallback? onTap,
   }) : super(
     key: key,
     imageProvider: imageProvider,

@@ -9,23 +9,23 @@ import 'localizations/localizations.dart';
 abstract class ProgressItem {
   String defaultText = "";
   bool cancelable = true;
-  void Function(String) onProgress;
-  void Function() onComplete;
-  void Function(String) onFail;
+  void Function(String)? onProgress;
+  void Function()? onComplete;
+  void Function(String)? onFail;
 
   void cancel();
   void progress(String text) {
-    if (onProgress != null) onProgress(text);
+    if (onProgress != null) onProgress!(text);
     else print("Warring onProgress is null");
   }
 
   void complete() {
-    if (onComplete != null) onComplete();
+    if (onComplete != null) onComplete!();
     else print("Warring onComplete is null");
   }
 
   void fail(String msg) {
-    if (onFail != null) onFail(msg);
+    if (onFail != null) onFail!(msg);
     else print("Warring onFail is null");
   }
 
@@ -39,8 +39,8 @@ class ProgressDialog extends StatefulWidget {
   final ProgressItem item;
 
   ProgressDialog({
-    this.title,
-    this.item
+    required this.title,
+    required this.item
   });
 
   @override
@@ -62,8 +62,8 @@ enum ProgressResult {
 }
 
 class _ProgressDialogState extends State<ProgressDialog> {
-  String processText;
-  _Status status;
+  late String processText;
+  late _Status status;
 
   _ProgressDialogState(ProgressItem item) {
     processText = item.defaultText;
@@ -99,7 +99,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
     });
   }
 
-  Widget bottomButtons() {
+  Widget? bottomButtons() {
 
     switch (status) {
       case _Status.Progress: {
@@ -142,7 +142,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
     return null;
   }
 
-  Widget makeIcon() {
+  Widget? makeIcon() {
     switch (status) {
       case _Status.Progress: {
         return SpinKitRing(

@@ -1,0 +1,89 @@
+
+<scaffold>
+    <attr:appbar>
+        <appbar background="white" color="black87" brightness="light">
+            <attr:actions>
+                <button type="icon">
+                    <icon>search</icon>
+                    <attr:onPressed>
+                        <callback function="onSearchClicked" />
+                    </attr:onPressed>
+                </button>
+            </attr:actions>
+
+            <input autofocus="true" text="$text" id="input">
+                <attr:onChange>
+                    <callback function="onTextChange"/>
+                </attr:onChange>
+                <attr:onSubmit>
+                    <callback function="onTextSubmit"/>
+                </attr:onSubmit>
+                <attr:onFocus>
+                    <callback function="onTextFocus"/>
+                </attr:onFocus>
+                <attr:onBlur>
+                    <callback function="onTextBlur"/>
+                </attr:onBlur>
+            </input>
+        </appbar>
+    </attr:appbar>
+    <attr:body>
+        <stack>
+            <refresh loading="$loading">
+                <attr:onRefresh>
+                    <callback function="onRefresh"/>
+                </attr:onRefresh>
+                <if candidate="$hasMore">
+                    <attr:onLoadMore>
+                        <callback function="onLoadMore"/>
+                    </attr:onLoadMore>
+                </if>
+                <list-view itemCount="length($list)" padding="ltrb(0,0,0,56)">
+                    <attr:builder>
+                        <Function returnType='Widget'>
+                            <script>
+                                set("item", ${list[args[1]]})
+                            </script>
+                            <list-item color="white">
+                                <attr:onTap>
+                                    <callback function="onPressed" args="array(${args[1]})"/>
+                                </attr:onTap>
+                                <attr:leading>
+                                    <img src="${item.picture}" headers="${item.pictureHeaders}" width="48" height="48" fit="cover"/>
+                                </attr:leading>
+                                <attr:title>
+                                    <text>${item.title}</text>
+                                </attr:title>
+                                <attr:subtitle>
+                                    <text>${item.subtitle}</text>
+                                </attr:subtitle>
+                            </list-item>
+                        </Function>
+                    </attr:builder>
+                </list-view>
+            </refresh>
+            <view color="white" height="switch($focus, null, 0.0)">
+                <list-view itemCount="length($hints)">
+                    <attr:builder>
+                        <Function returnType='Widget'>
+                            <script>
+                                set("item", ${hints[args[1]]})
+                            </script>
+                            <list-item>
+                                <attr:onTap>
+                                    <callback function="onHintPressed" args="array(${args[1]})"/>
+                                </attr:onTap>
+                                <attr:leading>
+                                    <icon>history</icon>
+                                </attr:leading>
+                                <attr:title>
+                                    <text>${item}</text>
+                                </attr:title>
+                            </list-item>
+                        </Function>
+                    </attr:builder>
+                </list-view>
+            </view>
+        </stack>
+    </attr:body>
+</scaffold>

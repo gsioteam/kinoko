@@ -6,14 +6,14 @@ import '../core/callback.dart';
 import '../core/core.dart';
 
 class TimerInfo {
-  Timer timer;
+  Timer? timer;
   Callback callback;
-  int id;
+  int id = 0;
 
-  void Function(int) onRelease;
+  void Function(int)? onRelease;
 
   TimerInfo(this.callback) {
-    callback.control();
+    callback.retain();
   }
 
   repeatTimeup(Timer timer) {
@@ -23,11 +23,11 @@ class TimerInfo {
   timeup() {
     callback.invoke([]);
     callback.release();
-    onRelease(id);
+    onRelease?.call(id);
   }
 
   cancel() {
-    timer.cancel();
+    timer?.cancel();
     callback.release();
   }
 }
@@ -43,13 +43,13 @@ class Platform extends Base {
   }
 
   Map<int, TimerInfo> timers = Map();
-  static String Function() onGetLanguage;
+  static String Function()? onGetLanguage;
 
   initialize() {
     super.initialize();
     on("startTimer", startTimer);
     on("cancelTimer", cancelTimer);
-    on("control", control);
+    on("control", retain);
     on("getLanguage", getLanguage);
     _platformCache.add(this);
   }
@@ -69,7 +69,7 @@ class Platform extends Base {
   }
 
   cancelTimer(int id) {
-    TimerInfo timer = timers[id];
+    TimerInfo? timer = timers[id];
     if (timer != null) {
       timer.cancel();
       timers.remove(id);
@@ -78,7 +78,7 @@ class Platform extends Base {
 
   void _removeAll() {
     timers.forEach((key, value) {
-      value.timer.cancel();
+      value.timer?.cancel();
     });
     timers.clear();
   }
@@ -93,7 +93,7 @@ class Platform extends Base {
     _platformCache.remove(this);
   }
 
-  String getLanguage() {
+  String? getLanguage() {
     return onGetLanguage?.call();
   }
 

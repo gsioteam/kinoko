@@ -8,20 +8,20 @@ import 'package:glib/main/data_item.dart';
 import '../configs.dart';
 
 class HistoryItem {
-  CollectionData _collectionData;
-  DataItem _item;
+  late CollectionData _collectionData;
+  late DataItem _item;
   DataItem get item => _item;
-  DateTime _date;
+  late DateTime _date;
   DateTime get date => _date;
 
   CollectionData get data => _collectionData;
 
-  HistoryItem(CollectionData collectionData, [DataItem item]) {
-    _collectionData = collectionData.control();
+  HistoryItem(CollectionData collectionData, [DataItem? item]) {
+    _collectionData = collectionData.retain();
     if (item == null) {
-      _item = DataItem.fromCollectionData(_collectionData)?.control();
+      _item = DataItem.fromCollectionData(_collectionData)?.retain();
     } else {
-      _item = item.control();
+      _item = item.retain();
     }
     try {
       var json = jsonDecode(_collectionData.data);
@@ -35,8 +35,8 @@ class HistoryItem {
   }
 
   void dispose() {
-    _collectionData?.release();
-    _item?.release();
+    _collectionData.release();
+    _item.release();
   }
 
   void update() {
@@ -51,15 +51,15 @@ class HistoryItem {
 }
 
 class HistoryManager {
-  void Function() onChange;
-  static HistoryManager _instance;
-  List<HistoryItem> _items;
+  void Function()? onChange;
+  static HistoryManager? _instance;
+  List<HistoryItem>? _items;
 
   factory HistoryManager() {
     if (_instance == null) {
       _instance = HistoryManager._();
     }
-    return _instance;
+    return _instance!;
   }
 
   HistoryManager._();
@@ -70,13 +70,13 @@ class HistoryManager {
       _items = [];
 
       for (CollectionData data in items) {
-        _items.add(HistoryItem(data));
+        _items!.add(HistoryItem(data));
       }
-      _items.sort((item1, item2) {
+      _items!.sort((item1, item2) {
         return item2.date.difference(item1.date).inSeconds;
       });
     }
-    return _items;
+    return _items!;
   }
 
   static const int ITEM_COUNT = 60;
@@ -92,7 +92,7 @@ class HistoryManager {
 
   void insert(DataItem dataItem) {
     var link = dataItem.link;
-    HistoryItem foundItem;
+    HistoryItem? foundItem;
     for (var item in items) {
       if (item.item.link == link) {
         foundItem = item;

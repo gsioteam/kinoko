@@ -6,13 +6,13 @@ import 'package:glib/main/models.dart';
 import 'package:glib/utils/git_repository.dart';
 
 class GitRepositoryChecker {
-  static GitRepositoryChecker _instance;
+  static GitRepositoryChecker? _instance;
 
   static GitRepositoryChecker get instance {
     if (_instance == null) {
       _instance = GitRepositoryChecker();
     }
-    return _instance;
+    return _instance!;
   }
 
   Set<ValueChanged<String>> _listeners = Set();
@@ -41,9 +41,9 @@ class GitRepositoryChecker {
       }
     }
 
-    repository.control();
+    repository.retain();
     var action = repository.checkout();
-    action.control();
+    action.retain();
     Completer completer = Completer();
     action.setOnComplete(() {
       completer.complete();

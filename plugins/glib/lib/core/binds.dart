@@ -17,18 +17,18 @@ const int TypePointer = 6;
 
 class NativeTarget extends Struct {
   @Int8()
-  int type;
+  external int type;
 
   @Int64()
-  int intValue;
+  external int intValue;
 
   @Double()
-  double doubleValue;
+  external double doubleValue;
 
-  Pointer pointerValue;
+  external Pointer pointerValue;
 
   @Uint8()
-  int release;
+  external int release;
 }
 
 
@@ -71,3 +71,8 @@ void Function() destroyLibrary = nativeGLib.lookup<NativeFunction<Void Function(
 void Function(Pointer<Utf8>) postSetup = nativeGLib.lookup<NativeFunction<Void Function(Pointer<Utf8>)>>("dart_postSetup").asFunction();
 
 void Function(Pointer<Utf8>) setCacertPath = nativeGLib.lookup<NativeFunction<Void Function(Pointer<Utf8>)>>("dart_setCacertPath").asFunction();
+
+
+int Function(Pointer, Pointer, Pointer, Pointer, int) dartTokenVerify = nativeGLib
+    .lookup<NativeFunction<Int32 Function(Pointer, Pointer, Pointer, Pointer, Int32)>>("dart_tokenVerify")
+    .asFunction();

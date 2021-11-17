@@ -1,14 +1,14 @@
 
 class BookInfo {
   String title;
-  String picture;
+  String? picture;
   String link;
-  String subtitle;
+  String? subtitle;
 
   BookInfo({
-    this.title,
+    required this.title,
     this.picture,
-    this.link,
+    required this.link,
     this.subtitle
   });
 }

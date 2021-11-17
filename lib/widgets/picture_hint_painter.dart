@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class HintMatrix {
   List<int> storage;
 
-  HintMatrix([List<int> storage]) : storage = storage == null ? List.filled(9, 0) : storage {
+  HintMatrix([List<int>? storage]) : storage = storage == null ? List.filled(9, 0) : storage {
     if (this.storage.length < 9) {
       this.storage.addAll(List<int>.filled(9 - this.storage.length, 0));
     }
@@ -41,17 +41,17 @@ class HintMatrix {
 class PictureHintPainter extends CustomPainter {
 
   final HintMatrix matrix;
-  Paint prevPaint;
-  Paint menuPaint;
-  Paint nextPaint;
-  TextPainter textPainter;
-  TextStyle textStyle;
+  late Paint prevPaint;
+  late Paint menuPaint;
+  late Paint nextPaint;
+  late TextPainter textPainter;
+  late TextStyle textStyle;
   String prevText;
   String menuText;
   String nextText;
 
   PictureHintPainter({
-    @required this.matrix,
+    required this.matrix,
     this.prevText = "Prev",
     this.menuText = "Menu",
     this.nextText = "Next",

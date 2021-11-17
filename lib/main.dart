@@ -1,48 +1,32 @@
 import 'dart:io';
-// import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart' show kDebugMode;
-// import 'package:firebase_core/firebase_core.dart';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:glib/main/models.dart';
 import 'package:glib/main/project.dart';
-import 'package:kinoko/favorites_page.dart';
-import 'package:kinoko/history_page.dart';
-import 'package:kinoko/main_settings_page.dart';
-import 'package:kinoko/utils/git_repository_checker.dart';
-import 'package:kinoko/utils/image_provider.dart';
+import 'package:kinoko/pages/favorites_page.dart';
+import 'package:kinoko/pages/history_page.dart';
+import 'package:kinoko/pages/main_settings_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:kinoko/utils/plugins_manager.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
-import 'package:kinoko/widgets/web_image.dart';
-import 'package:markdown_widget/markdown_helper.dart';
-import 'collections_page.dart';
+import 'pages/collections_page.dart';
 import 'configs.dart';
-import 'libraries_page.dart';
+import 'pages/libraries_page.dart';
 
 import 'package:path_provider/path_provider.dart' as platform;
 import 'package:glib/glib.dart';
-import 'package:glib/utils/git_repository.dart';
-import 'progress_dialog.dart';
 import 'utils/download_manager.dart';
 import 'utils/favorites_manager.dart';
-import 'utils/neo_cache_manager.dart';
-import 'utils/progress_items.dart';
 import 'localizations/localizations.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'widgets/better_refresh_indicator.dart';
-import 'favorites_page.dart';
-import 'download_page.dart';
-import 'package:xml_layout/types/colors.dart' as colors;
-import 'package:xml_layout/types/icons.dart' as icons;
-import 'layout/layout.xml_layout.dart' as layout;
-import 'package:xml_layout/xml_layout.dart';
-import 'package:glib/utils/platform.dart' as glib;
+import 'pages/favorites_page.dart';
+import 'pages/download_page.dart';
 import 'themes/them_desc.dart';
+import 'utils/key_value_storage.dart';
+import 'utils/local_storage.dart';
 import 'widgets/hint_point.dart';
-import 'widgets/oval_clipper.dart';
+import 'utils/plugin/plugin.dart';
+import 'utils/plugin/assets_filesystem.dart';
 
 class AppChangedNotification extends Notification {
 }
@@ -67,8 +51,8 @@ class MainApp extends StatefulWidget {
 }
 
 class MainAppState extends State<MainApp> {
-  Locale locale;
-  ThemeData theme;
+  Locale? locale;
+  late ThemeData theme;
 
   @override
   Widget build(BuildContext context) {
@@ -113,13 +97,6 @@ class MainAppState extends State<MainApp> {
   void initState() {
     super.initState();
 
-    glib.Platform.onGetLanguage = () {
-      if (locale?.scriptCode != null) {
-        return "${locale.languageCode}-${locale.scriptCode}";
-      } else {
-        return locale?.languageCode;
-      }
-    };
     theme = themes[0].data;
   }
 }
@@ -132,19 +109,6 @@ class _LifecycleEventHandler extends WidgetsBindingObserver {
     }
   }
 }
-
-class ListType<T> {
-  List<T> children(NodeData node) {
-    return node.children<T>();
-  }
-}
-
-ListType _defaultType = ListType();
-
-Map<String, ListType> listTypes = {
-  "PopupMenuEntry": ListType<PopupMenuEntry>(),
-  "Color": ListType<Color>(),
-};
 
 class SplashScreen extends StatefulWidget {
 
@@ -200,7 +164,7 @@ class SplashScreenState extends State<SplashScreen> {
                   onPressed: () {
                     Navigator.of(context).pop(false);
                   },
-                )
+                ),
               ],
             );
           }
@@ -221,7 +185,7 @@ class SplashScreenState extends State<SplashScreen> {
     }
   }
 
-  ThemeData _findTheme(String title) {
+  ThemeData? _findTheme(String title) {
     for (var theme in themes) {
       if (theme.title == title) {
         return theme.data;
@@ -237,117 +201,33 @@ class SplashScreenState extends State<SplashScreen> {
     await _loadTemplates();
 
     await Glib.setup(dir.path);
-    Locale locale = KinokoLocalizationsDelegate.supports[KeyValue.get(language_key)];
+    Locale? locale = KinokoLocalizationsDelegate.supports[KeyValue.get(language_key)];
     if (locale != null) {
       LocaleChangedNotification(locale).dispatch(context);
     }
-    ThemeData themeData = _findTheme(KeyValue.get(theme_key));
-    ThemeChangedNotification(themeData).dispatch(context);
+    ThemeData? themeData = _findTheme(KeyValue.get(theme_key));
+    if (themeData != null)
+      ThemeChangedNotification(themeData).dispatch(context);
 
     await _v2Setup(dir.path);
     await showDisclaimer(context);
-    await fetchEnv(context);
-    GitRepositoryChecker.instance.checkout(env_repo);
-    WidgetsBinding.instance.addObserver(_LifecycleEventHandler());
-    colors.register();
-    icons.register();
-    layout.register();
-    XmlLayout.register("CachedNetworkImageProvider", (node, key) {
-      return NeoImageProvider(
-        uri: Uri.parse(node.text),
-        cacheManager: NeoCacheManager.defaultManager
-      );
-    });
-    XmlLayout.register("FlatButton", (node, key) {
-      return FlatButton(
-        key: key,
-        onPressed: node.s<VoidCallback>("onPressed"),
-        child: node.child<Widget>(),
-        padding: EdgeInsets.zero,
-      );
-    });
-    XmlLayout.register("BetterRefreshIndicator", (node, key) {
-      return BetterRefreshIndicator(
-        child: node.child<Widget>(),
-        displacement: node.s<double>("displacement", 40),
-        color: node.s<Color>("color"),
-        backgroundColor: node.s<Color>("backgroundColor"),
-        notificationPredicate: node.s<ScrollNotificationPredicate>("notificationPredicate", defaultScrollNotificationPredicate),
-        semanticsLabel: node.s<String>("semanticsLabel"),
-        semanticsValue: node.s<String>("semanticsValue"),
-        strokeWidth: node.s<double>("strokeWidth", 2),
-        controller: node.s<BetterRefreshIndicatorController>("controller"),
-      );
-    });
-    XmlLayout.register("Padding", (node, key) {
-      return Padding(
-        key: key,
-        padding: node.s<EdgeInsets>("padding"),
-        child: node.child<Widget>(),
-      );
-    });
-    XmlLayout.registerInline(EdgeInsets, "only", false, (node, method) {
-      return EdgeInsets.only(
-        left: method[0]?.toDouble() ?? 0,
-        top: method[1]?.toDouble() ?? 0,
-        right: method[2]?.toDouble() ?? 0,
-        bottom: method[3]?.toDouble() ?? 0,
-      );
-    });
-    XmlLayout.registerInline(EdgeInsets, "all", false, (node, method) {
-      return EdgeInsets.all(method[0]?.toDouble() ?? 0);
-    });
-    XmlLayout.registerInline(Color, "rgb", false, (node, method) {
-      return Color.fromRGBO(method[0]?.toInt(), method[1]?.toInt(),
-          method[2]?.toInt(), 1);
-    });
-    XmlLayout.registerInline(BorderRadius, "horizontal", false, (node, method) {
-      return BorderRadius.horizontal(
-        left: node.v<Radius>(method[0], Radius.zero),
-        right: node.v<Radius>(method[1], Radius.zero),
-      );
-    });
-    XmlLayout.register("WebImage", (node, key) {
-      return WebImage(
-        url: node.s<String>("url") ?? "",
-        width: node.s<double>("width") ?? 36,
-        height: node.s<double>("height") ?? 36,
-        fit: BoxFit.contain,
-      );
-    });
-    XmlLayout.registerFunctionReturn<List<PopupMenuEntry>>("MenuItemList");
-    XmlLayout.register("List", (node, key) {
-      ListType listType = listTypes[node.s<String>("type")] ?? _defaultType;
-      return listType.children(node);
-    });
-  }
+    WidgetsBinding.instance?.addObserver(_LifecycleEventHandler());
 
-  Future<void> fetchEnv(BuildContext context) async {
-    env_repo = GitRepository.allocate("env");
-    if (!env_repo.isOpen()) {
-      GitItem item = GitItem.clone(env_repo, env_git_url);
-      item.cancelable = false;
-      ProgressResult result = await showDialog<ProgressResult>(
-          barrierDismissible: false,
-          context: context,
-          builder: (context) {
-            return ProgressDialog(
-              title: kt(""),
-              item: item,
-            );
-          }
-      );
-      if (result != ProgressResult.Success) {
-        throw Exception("WTF?!");
-      }
-    } else {
+    await Configs.instance.initialize(context);
+    await PluginsManager.instance.ready;
+
+    if (Configs.isDebug) {
+      AssetsFileSystem assetsFileSystem = AssetsFileSystem(context: context, prefix: 'test_plugin/');
+      await assetsFileSystem.ready;
+      String id = "test";
+      Configs.instance.current = Plugin(id, assetsFileSystem, DataLocalStorage(id));
     }
   }
 
   Future<void> showDisclaimer(BuildContext context) async {
     String key = KeyValue.get(disclaimer_key);
     if (key != "true") {
-      bool result = await showCreditsDialog(context);
+      bool? result = await showCreditsDialog(context);
       if (result == true) {
         KeyValue.set(disclaimer_key, "true");
       } else {
@@ -370,9 +250,8 @@ class SplashScreenState extends State<SplashScreen> {
 }
 
 class HomePage extends StatefulWidget {
-  HomePage({Key key, this.title}) : super(key: key);
+  HomePage({Key? key}) : super(key: key);
 
-  final String title;
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -381,15 +260,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int selected = 0;
   int _oldSelected = 0;
-  void Function() onRefresh;
-  void Function() onFetch;
-  ValueNotifier<bool> newEnv;
+  void Function()? onRefresh;
+  void Function()? onFetch;
 
   bool hasMainProject() {
     return Project.getMainProject() != null;
   }
 
-  Widget _getBody(BuildContext context) {
+  Widget? _getBody(BuildContext context) {
     switch (selected) {
       case 0: {
         return FavoritesPage(key: ValueKey(selected),);
@@ -413,11 +291,11 @@ class _HomePageState extends State<HomePage> {
     return null;
   }
 
-  ValueNotifier<bool> favoritesController;
+  late ValueNotifier<bool> favoritesController;
 
   @override
   Widget build(BuildContext context) {
-    Widget body = _getBody(context);
+    Widget? body = _getBody(context);
     var size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -478,13 +356,13 @@ class _HomePageState extends State<HomePage> {
               clipBehavior: Clip.none,
               children: [
                 Icon(Icons.settings),
-                Positioned(
-                  right: -2,
-                  top: -2,
-                  child: HintPoint(
-                    controller: newEnv,
-                  ),
-                ),
+                // Positioned(
+                //   right: -2,
+                //   top: -2,
+                //   child: HintPoint(
+                //     controller: newEnv,
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -506,9 +384,6 @@ class _HomePageState extends State<HomePage> {
     }
     favoritesController = ValueNotifier(FavoritesManager().hasNew);
     FavoritesManager().onState.addListener(_favoritesUpdate);
-
-    newEnv = ValueNotifier(env_repo.localID() != env_repo.highID());
-    GitRepositoryChecker.instance.addListener(_checkerUpdate);
   }
 
   @override
@@ -516,7 +391,6 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
     FavoritesManager().onState.removeListener(_favoritesUpdate);
     favoritesController.dispose();
-    GitRepositoryChecker.instance.removeListener(_checkerUpdate);
   }
 
   void _favoritesUpdate() {
@@ -532,9 +406,4 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _checkerUpdate(String path) {
-    if (env_repo.path == path) {
-      newEnv.value = env_repo.localID() != env_repo.highID();
-    }
-  }
 }

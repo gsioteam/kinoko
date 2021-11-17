@@ -30,7 +30,7 @@ class _DefaultThemeDesc extends ThemeDesc {
       shadowColor: Color(0xff888888),
       scaffoldBackgroundColor: Color(0xfff2f2f2),
       appBarTheme: AppBarTheme(
-        color: Colors.white,
+        backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         shadowColor: Color(0xff888888),
         textTheme: TextTheme(

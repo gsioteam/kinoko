@@ -10,7 +10,7 @@ class Context extends Base {
   }
   
   bool isReady() => call("isReady");
-  void reload([Map data]) => call("reload", argv: [data]);
+  void reload([Map? data]) => call("reload", argv: [data]);
   void loadMore() => call("loadMore");
   void enterView() => call("enterView");
   void exitView() => call("exitView");
@@ -22,31 +22,31 @@ class Context extends Base {
   static const int DataReload = 1;
   static const int DataAppend = 2;
 
-  Callback _onDataChanged;
-  set onDataChanged(Callback cb) {
+  Callback? _onDataChanged;
+  set onDataChanged(Callback? cb) {
     _onDataChanged?.release();
-    _onDataChanged = cb == null ? null : cb.control();
+    _onDataChanged = cb == null ? null : cb.retain();
     call("setOnDataChanged", argv: [cb]);
   }
 
-  Callback _onLoadingStatus;
-  set onLoadingStatus(Callback cb) {
+  Callback? _onLoadingStatus;
+  set onLoadingStatus(Callback? cb) {
     _onLoadingStatus?.release();
-    _onLoadingStatus = cb == null ? null : cb.control();
+    _onLoadingStatus = cb == null ? null : cb.retain();
     call("setOnLoadingStatus", argv: [cb]);
   }
 
-  Callback _onError;
-  set onError(Callback cb) {
+  Callback? _onError;
+  set onError(Callback? cb) {
     _onError?.release();
-    _onError = cb == null ? null : cb.control();
+    _onError = cb == null ? null : cb.retain();
     call("setOnError", argv: [cb]);
   }
 
-  Callback _onReloadComplete;
-  set onReloadComplete(Callback cb) {
+  Callback? _onReloadComplete;
+  set onReloadComplete(Callback? cb) {
     _onReloadComplete?.release();
-    _onReloadComplete = cb == null ? null : cb.control();
+    _onReloadComplete = cb == null ? null : cb.retain();
     call("setOnReloadComplete", argv: [cb]);
   }
 

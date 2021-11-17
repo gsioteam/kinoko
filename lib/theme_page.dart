@@ -11,8 +11,8 @@ class ThemeImage extends StatelessWidget {
   final ThemeDesc theme;
 
   ThemeImage({
-    Key key,
-    @required this.theme,
+    Key? key,
+    required this.theme,
   }) : super(key: key);
 
   @override
@@ -50,7 +50,7 @@ class ThemeImage extends StatelessWidget {
                       left: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: theme.data.appBarTheme.iconTheme.color,
+                      color: theme.data.appBarTheme.iconTheme?.color,
                       borderRadius: BorderRadius.circular(5),
                     ),
                     width: 10,
@@ -86,7 +86,7 @@ class ThemeImage extends StatelessWidget {
                         horizontal: 8
                       ),
                       decoration: BoxDecoration(
-                        color: theme.data.textTheme.headline6.color,
+                        color: theme.data.textTheme.headline6?.color,
                         borderRadius: BorderRadius.circular(9),
                       ),
                       height: 12,
@@ -98,7 +98,7 @@ class ThemeImage extends StatelessWidget {
                           horizontal: 8
                       ),
                       decoration: BoxDecoration(
-                        color: theme.data.textTheme.bodyText1.color,
+                        color: theme.data.textTheme.bodyText1?.color,
                         borderRadius: BorderRadius.circular(9),
                       ),
                       height: 8,
@@ -110,7 +110,7 @@ class ThemeImage extends StatelessWidget {
                           horizontal: 8
                       ),
                       decoration: BoxDecoration(
-                        color: theme.data.textTheme.bodyText1.color,
+                        color: theme.data.textTheme.bodyText1?.color,
                         borderRadius: BorderRadius.circular(9),
                       ),
                       height: 8,
@@ -122,7 +122,7 @@ class ThemeImage extends StatelessWidget {
                           horizontal: 8
                       ),
                       decoration: BoxDecoration(
-                        color: theme.data.textTheme.bodyText1.color,
+                        color: theme.data.textTheme.bodyText1?.color,
                         borderRadius: BorderRadius.circular(9),
                       ),
                       height: 8,
@@ -134,7 +134,7 @@ class ThemeImage extends StatelessWidget {
                           horizontal: 8
                       ),
                       decoration: BoxDecoration(
-                        color: theme.data.textTheme.bodyText1.color,
+                        color: theme.data.textTheme.bodyText1?.color,
                         borderRadius: BorderRadius.circular(9),
                       ),
                       height: 8,
@@ -146,7 +146,7 @@ class ThemeImage extends StatelessWidget {
                           horizontal: 8
                       ),
                       decoration: BoxDecoration(
-                        color: theme.data.textTheme.bodyText1.color,
+                        color: theme.data.textTheme.bodyText1?.color,
                         borderRadius: BorderRadius.circular(9),
                       ),
                       height: 8,
@@ -199,12 +199,12 @@ class ThemeImage extends StatelessWidget {
 class ThemeWidget extends StatelessWidget {
   final bool selected;
   final ThemeDesc theme;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   ThemeWidget({
-    Key key,
+    Key? key,
     this.selected = false,
-    @required this.theme,
+    required this.theme,
     this.onTap,
   }) : super(key: key);
 
@@ -265,7 +265,7 @@ class ThemeWidget extends StatelessWidget {
 class ThemePage extends StatefulWidget {
 
   ThemePage({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override

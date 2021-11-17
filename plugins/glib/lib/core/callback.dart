@@ -10,12 +10,12 @@ class Callback extends Base {
   }
 
   static Callback fromFunction(Function func) {
-    if (func == null) return null;
     return FunctionCallback.allocate(func);
   }
 
-  Callback(Pointer ptr) : super() {
-    this.id = ptr;
+  Callback(Pointer? ptr) : super() {
+    if (ptr != null)
+      this.id = ptr;
   }
 
   invoke(List argv) {
