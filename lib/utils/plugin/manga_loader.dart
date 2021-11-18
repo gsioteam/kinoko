@@ -44,7 +44,7 @@ class Processor extends ValueNotifier<List<Picture>> {
     this.data = dartToJsValue(script, data);
     this.data.retain();
 
-    storage = KeyValueStorage(key: "processor:${this.data["link"]}");
+    storage = KeyValueStorage(key: "processor:${jsProcessor["key"]}");
 
     var list = storage.data["list"];
     if (list is List) {

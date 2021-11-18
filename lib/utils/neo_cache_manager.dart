@@ -168,6 +168,11 @@ class NeoCacheManager {
     return file;
   }
 
+  Future<bool> exist(Uri uri) async {
+    var file = (await _directory).childFile(NeoImageProvider.getFilename(uri));
+    return await file.exists();
+  }
+
   Future<void> reset(Uri uri) async {
     var provider = NeoImageProvider(
         cacheManager: this,

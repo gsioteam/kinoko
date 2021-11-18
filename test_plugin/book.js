@@ -8,6 +8,7 @@ class BookController extends Controller {
             picture: data.picture,
             loading: false,
             editing: false,
+            reverse: localStorage['reverse'] != 'false',
             list: []
         };
         this.selected = [];
@@ -104,7 +105,7 @@ class BookController extends Controller {
             title: title,
             subtitle: subtitle,
             summary: summary,
-            list: list,
+            list: list.reverse(),
         };
     }
 
@@ -126,6 +127,21 @@ class BookController extends Controller {
     }
     
     onCheckPressed() {
+        let downloads = [];
+        for (let idx of this.selected) {
+            var data = this.data.list[idx];
+            downloads.push({
+                key: data.link,
+                title: this.data.title,
+                link: this.url,
+                picture: this.data.picture,
+                subtitle: this.data.subtitle,
+                data: data,
+            });
+        }
+        this.addDownload(downloads);
+
+        this.selected = [];
         this.setState(()=>{
             this.data.editing = false;
         });
@@ -133,21 +149,40 @@ class BookController extends Controller {
 
     onPressed(idx) {
         if (this.data.editing) {
-
+            this.setState(()=>{
+                let loc = this.selected.indexOf(idx);
+                if (loc >= 0) {
+                    this.selected.splice(loc, 1);
+                } else {
+                    this.selected.push(idx);
+                }
+            });
         } else {
             this.openBook({
-                list: this.data.list.slice().reverse(),
-                index: (this.data.list.length - idx - 1),
+                list: this.data.list,
+                index: idx,
             });
         }
     }
 
-    isSelected(url) {
-        
+    isSelected(index) {
+        return this.selected.indexOf(index) >= 0;
     }
 
     onSourcePressed() {
         this.openBrowser(this.url);
+    }
+
+    onOrderSelected(value) {
+        this.setState(()=>{
+            this.data.reverse = value;
+            localStorage['reverse'] = value.toString();
+        });
+    }
+
+    isDownloaded(index) {
+        let item = this.data.list[index];
+        return DownloadManager.exist(item.link);
     }
 }
 

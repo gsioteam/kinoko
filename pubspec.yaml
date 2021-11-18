@@ -39,14 +39,15 @@ dependencies:
     path: plugins/my_scrollable_positioned_list
   flutter_material_pickers: ^3.1.2
   http: ^0.13.0
-  xml_layout: ^2.3.7
+  xml_layout: ^2.3.9
   flutter_svg_provider:
     git:
       url: https://github.com/gsioteam/flutter_svg_provider.git
       ref: b4de3f961d87d4124c5d0185e38c7285be76d5d3
 
   url_launcher: ^6.0.2
-#  path_provider_ex: ^1.0.1
+  path_provider_ex:
+    git: https://github.com/AmudAnan/flutter_path_provider_ex.git
   permission_handler: ^6.1.0
   flutter_markdown: ^0.6.8
   filesystem_picker:

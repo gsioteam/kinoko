@@ -176,4 +176,16 @@ class PluginsManager {
     }
     return null;
   }
+
+  Map<String, Plugin> _cachedPlugins = {};
+  Plugin? findPlugin(String id) {
+    if (_cachedPlugins.containsKey(id)) return _cachedPlugins[id];
+
+    File configFile = File("${_root.path}/$id/config.json");
+    if (configFile.existsSync()) {
+      Plugin plugin = Plugin(id, IOFileSystem(Directory("${_root.path}/$id")), DataLocalStorage(id));
+      _cachedPlugins[id] = plugin;
+      return plugin;
+    }
+  }
 }

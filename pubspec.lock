@@ -428,6 +428,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.2"
+  path_provider_ex:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: a2d72ba66c8b99e512977a2ff71cf418b7f49379
+      url: "https://github.com/AmudAnan/flutter_path_provider_ex.git"
+    source: git
+    version: "2.0.1"
   path_provider_linux:
     dependency: transitive
     description:
@@ -684,7 +693,7 @@ packages:
       name: xml_layout
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.3.8"
+    version: "2.3.9"
   yaml:
     dependency: "direct main"
     description:

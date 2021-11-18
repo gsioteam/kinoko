@@ -363,7 +363,7 @@ class CacheManagerState extends State<CacheManager> {
                     text: '${kt('clear')}...',
                       action: () async {
                         Set<String> cached = Set();
-                        for (var item in DownloadManager().items) {
+                        for (var item in DownloadManager().items.data) {
                           cached.add(item.cacheKey);
                         }
                         await NeoCacheManager.clearCache(without: cached);
@@ -399,7 +399,7 @@ class CacheManagerState extends State<CacheManager> {
 
   Future<void> fetchSize() async {
     Set<String> cached = Set();
-    for (var item in DownloadManager().items) {
+    for (var item in DownloadManager().items.data) {
       cached.add(item.cacheKey);
     }
     SizeResult size = await NeoCacheManager.calculateCacheSize(

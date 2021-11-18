@@ -389,6 +389,7 @@ Register register = Register(() {
       radius: node.s<BorderRadius>("radius"),
       gradient: node.s<Gradient>("gradient"),
       padding: node.s<EdgeInsets>("padding"),
+      alignment: node.s<Alignment>("alignment"),
     );
   });
   XmlLayout.register("Border", (node, key) {
@@ -529,7 +530,7 @@ Register register = Register(() {
         return element;
       } else {
         return TextSpan(
-            text: ""
+          text: ""
         );
       }
     }

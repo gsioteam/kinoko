@@ -1,8 +1,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dapp/flutter_dapp.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:kinoko/pages/libraries_page.dart';
 import 'package:decorated_icon/decorated_icon.dart';
+import 'package:kinoko/utils/book_info.dart';
+import 'package:kinoko/utils/download_manager.dart';
 import 'package:kinoko/utils/image_providers.dart';
 import 'package:kinoko/utils/plugin/plugin.dart';
 import 'package:flutter_dapp/src/controller.dart';
@@ -38,6 +41,17 @@ class KiController extends Controller {
       );
     }));
   }
+
+  addDownload(JsValue list) {
+    int length = list["length"];
+    for (int i = 0, t = length; i < t; ++i) {
+      var data = list[i];
+      DownloadManager().add(BookInfo.fromData(jsValueToDart(data)), plugin);
+    }
+    Fluttertoast.showToast(
+        msg: lc(state!.context)("added_download").replaceFirst("{0}", length.toString())
+    );
+  }
 }
 
 ClassInfo kiControllerInfo = controllerClass.inherit<KiController>(
@@ -45,6 +59,16 @@ ClassInfo kiControllerInfo = controllerClass.inherit<KiController>(
   functions: {
     "openBook": JsFunction.ins((obj, argv) => obj.openBook(argv[0])),
     "openBrowser": JsFunction.ins((obj, argv) => obj.openBrowser(argv[0])),
+    "addDownload": JsFunction.ins((obj, argv) => obj.addDownload(argv[0])),
+  }
+);
+
+ClassInfo downloadManager = ClassInfo(
+  name: "DownloadManager",
+  newInstance: (_, __) => throw Exception(),
+  functions: {
+    "exist": JsFunction.sta((argv) => DownloadManager().exist(argv[0])),
+    "remove": JsFunction.sta((argv) => DownloadManager().removeKey(argv[0])),
   }
 );
 
@@ -174,6 +198,7 @@ class _CollectionsPageState extends State<CollectionsPage> {
         classInfo: kiControllerInfo,
         controllerBuilder: (script, state) => KiController(script, plugin!)..state = state,
         onInitialize: (script) {
+          script.addClass(downloadManager);
           Configs.instance.setupJS(script, plugin!);
           // setupJS(script, plugin!);
 

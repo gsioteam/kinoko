@@ -14,6 +14,7 @@ class View extends StatelessWidget {
   final BorderRadius? radius;
   final Gradient? gradient;
   final EdgeInsets? padding;
+  final Alignment? alignment;
 
   View({
     Key? key,
@@ -28,6 +29,7 @@ class View extends StatelessWidget {
     this.radius,
     this.gradient,
     this.padding,
+    this.alignment,
   }) : super(key: key);
 
   @override
@@ -55,6 +57,7 @@ class View extends StatelessWidget {
         child: child,
         padding: padding,
         decoration: _decoration,
+        alignment: alignment,
       );
     } else {
       return Container(
@@ -64,6 +67,7 @@ class View extends StatelessWidget {
         child: child,
         padding: padding,
         decoration: _decoration,
+        alignment: alignment,
       );
     }
   }

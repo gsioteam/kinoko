@@ -1,6 +1,13 @@
 
 
 class MangaProcesser extends Processor {
+
+    // The key for cache data
+    get key() {
+        return this.data.link;
+    }
+
+    // Start load pictures
     async load(state) {
         try {
             let root_url = this.data.link;
@@ -65,6 +72,10 @@ class MangaProcesser extends Processor {
         return offset + imgs.length;
     }
 
+    // Called in `dispose`
+    unload() {
+
+    }
 }
 
 module.exports = MangaProcesser;

@@ -17,7 +17,7 @@
 "chapters": "Chapters"
 "reverse_order": "Reverse Order"
 "order": "Positive Order"
-"no_project_found": "The project is not found"
+"no_project_found": "The plugin is not found"
 "can_not_determine_the_context_type": "Can not determine the context type"
 "download_list": "Downloads"
 "delete_item": "Delete {0}({1})"
@@ -101,3 +101,5 @@ move_to_first: Move To First
 
 default: Default
 dark: Dark
+
+unkown: Unkown
