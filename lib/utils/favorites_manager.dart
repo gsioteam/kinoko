@@ -4,12 +4,16 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:glib/core/array.dart';
-import 'package:glib/core/callback.dart';
 import 'package:glib/main/collection_data.dart';
-import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
-import 'package:glib/main/project.dart';
+import 'package:kinoko/utils/book_info.dart';
+import 'package:kinoko/utils/key_value_storage.dart';
+import 'package:kinoko/utils/plugin/manga_loader.dart';
+import 'package:kinoko/utils/plugins_manager.dart';
 import '../configs.dart';
+import 'plugin/plugin.dart';
+
+const Duration _updateInterval = const Duration(minutes: 30);
 
 class FavAttachment {
   late DateTime date;
@@ -36,117 +40,107 @@ class FavAttachment {
   };
 }
 
+class LastData {
+  String name;
+  String key;
+  DateTime updateTime;
+
+  LastData({
+    required this.name,
+    required this.key,
+    required this.updateTime
+  });
+
+  LastData.fromData(Map data) :
+        name = data["name"],
+        key = data["key"],
+        updateTime = DateTime.fromMillisecondsSinceEpoch(data["update_time"] ?? 0);
+
+  Map toData() {
+    return {
+      "name": name,
+      "key": key,
+      "update_time": updateTime.millisecondsSinceEpoch,
+    };
+  }
+}
+
 class FavCheckItem extends ValueNotifier<bool> {
-  CollectionData data;
-  DataItem item;
 
-  late FavAttachment attachment;
+  final FavoritesManager manager;
+  final BookInfo info;
+  LastData last;
+  String pluginID;
+  String bookPage;
 
-  ValueNotifier<bool> newListenable = ValueNotifier(false);
+  FavCheckItem.fromData(this.manager, Map data) :
+        info = BookInfo.fromData(data["info"]),
+        last = LastData.fromData(data["last"]),
+        pluginID = data["pluginID"],
+        bookPage = data["bookPage"],
+        super(data["has_new"] == true);
 
-  static FavCheckItem? from(CollectionData? data) {
-    if (data == null) return null;
-    DataItem? item = DataItem.fromCollectionData(data);
-    if (item == null) {
-      return null;
-    }
-    return FavCheckItem(data.retain(), item.retain());
+  FavCheckItem(this.manager, this.info, {
+    required this.last,
+    required this.pluginID,
+    required this.bookPage,
+    bool hasNew = false,
+  }) : super(hasNew);
+
+  Map toData() {
+    return {
+      "info": info.toData(),
+      "last": last.toData(),
+      "has_new": value,
+      "pluginID": pluginID,
+      "bookPage": bookPage,
+    };
   }
 
-  FavCheckItem(this.data, this.item) : super(false) {
-    attachment = FavAttachment.fromData(jsonDecode(data.data));
-    _loadData();
-  }
-
-  dispose() {
-    super.dispose();
-    this.data.release();
-    newListenable.dispose();
-  }
-
-  bool get hasNew => newListenable.value;
+  // FavCheckItem(this.data, this.item) : super(false) {
+  //   attachment = FavAttachment.fromData(jsonDecode(data.data));
+  //   _loadData();
+  // }
 
   void clearNew() {
-    this.data.flag = 0;
-    this.data.save();
-    newListenable.value = false;
-  }
-
-  Future<void> _updateValue(bool first, Project project, Context context) async {
-    Completer completer = Completer();
-    context.onReloadComplete = Callback.fromFunction(() {
-      Array resultData = context.data;
-
-      if (resultData.length > 0) {
-        DataItem item = resultData[0];
-        // dynamic dataItem = context.infoData;
-        // if (dataItem is DataItem) {
-        //   item.title = dataItem.title;
-        //   item.subtitle = dataItem.subtitle;
-        // }
-        attachment.date = DateTime.now();
-        if (attachment.link != item.link && !first) {
-          data.flag = 1;
-          newListenable.value = true;
-        }
-        attachment.link = item.link;
-        attachment.last = item.title;
-        synchronize();
-      }
-
-      completer.complete();
-    });
-    context.reload();
-    return completer.future;
+    value = false;
+    manager._itemUpdate(this);
   }
 
   Future<void> checkNew(bool first) async {
     if (!first) {
-      if (attachment.date.compareTo(DateTime.now().subtract(Duration(minutes: 30))) > 0) {
+      if (last.updateTime.compareTo(DateTime.now().subtract(_updateInterval)) > 0) {
         return;
       }
     }
-    Project project = Project.allocate(item.projectKey).retain();
-    if (!project.isValidated) {
-      project.release();
-      return;
-    }
-    DataItemType type = item.type;
-    if (type == DataItemType.Data) {
-      value = true;
-      Context context = project.createCollectionContext(BOOK_INDEX, item).retain();
-      context.autoReload = true;
-      try {
-        await _updateValue(first, project, context).timeout(Duration(seconds: 10));
-      } catch (e) {
-        print("Update failed");
-      }
-      context.release();
-      value = false;
-    }
-    project.release();
-  }
+    Plugin? plugin = PluginsManager.instance.findPlugin(pluginID);
+    if (plugin == null) return;
+    Processor processor = Processor(
+        plugin: plugin,
+        data: info.data,
+    );
 
-  void _loadData() {
-    if (data.data != null && data.data.isNotEmpty) {
-      Map<String, dynamic> map = jsonDecode(data.data);
-      attachment.fill(map);
+    LastData lastData = await processor.checkNew();
+    if (first) {
+      last = lastData;
+      manager._itemUpdate(this);
+    } else {
+      if (last.key != lastData.key) {
+        last = lastData;
+        value = true;
+        manager._itemUpdate(this);
+      }
     }
-    newListenable = ValueNotifier(this.data.flag == 1);
   }
 
   bool get loading => value;
-
-  void synchronize() {
-    data.setJSONData(attachment.toData());
-    data.save();
-  }
 }
 
 class FavoritesManager {
   static FavoritesManager? _instance;
-  List<FavCheckItem> items = [];
   ChangeNotifier onState = ChangeNotifier();
+
+  late KeyValueStorage<List<FavCheckItem>> items;
 
   factory FavoritesManager() {
     if (_instance == null) {
@@ -156,123 +150,151 @@ class FavoritesManager {
   }
 
   FavoritesManager._() {
+    items = KeyValueStorage(
+        key: "favorite_items",
+        decoder: (text) {
+          if (text.isNotEmpty) {
+            List list = jsonDecode(text);
+            List<FavCheckItem> items = [];
+            for (var data in list) {
+              try {
+                items.add(FavCheckItem.fromData(this, data));
+              } catch (e) {
+
+              }
+            }
+            return items;
+          } else {
+            return [];
+          }
+        },
+        encoder: (list) {
+          return jsonEncode(list.map((e) => e.toData()).toList());
+        }
+    );
+    Set<String> index = {};
+    for (var item in items.data) {
+      index.add(item.info.key);
+    }
+
     Array data = CollectionData.all(collection_mark);
-    bool hasIndex = true;
     for (int  i = 0, t = data.length; i < t; ++i) {
       CollectionData d = data[i];
-      FavCheckItem? item = FavCheckItem.from(d);
-      if (item != null)
-        _addItem(item);
-      if (item?.attachment.index == null) {
-        hasIndex = false;
-      }
-    }
-    if (hasIndex) {
-      items.sort((item1, item2) {
-        return item1.attachment.index - item2.attachment.index;
-      });
-    } else {
-      for (int i = 0, t = items.length; i < t; ++i) {
-        var item = items[i];
-        item.attachment.index = i;
-        item.synchronize();
+      var item = DataItem.fromCollectionData(d);
+      if (item != null) {
+        if (!index.contains(item.link)) {
+          FavAttachment attachment = FavAttachment.fromData(jsonDecode(d.data));
+          items.data.add(FavCheckItem(
+            this,
+            BookInfo(
+              key: item.link,
+              title: item.title,
+              picture: item.picture,
+              link: item.link,
+              subtitle: item.subtitle,
+              data: {
+                "title": item.title,
+                "picture": item.picture,
+                "link": item.link,
+                "subtitle": item.subtitle,
+              }
+            ),
+            last: LastData(
+              name: attachment.last,
+              key: attachment.link,
+              updateTime: attachment.date,
+            ),
+            pluginID: item.projectKey,
+            bookPage: "book",
+            hasNew: d.flag == 1,
+          ));
+        }
       }
     }
     automaticCheckNew();
   }
 
   bool get hasNew {
-    for (var item in items) {
-      if (item.hasNew) return true;
+    for (var item in items.data) {
+      if (item.value) return true;
     }
     return false;
   }
 
-  void add(DataItem item) {
-    if (!item.isInCollection(collection_mark)) {
-      CollectionData data = item.saveToCollection(collection_mark, {
-        "date": DateTime.now().toString()
-      });
-      if (data != null) {
-        FavCheckItem checkItem = FavCheckItem(data.retain(), item.retain());
-        _addItem(checkItem);
-        checkItem.checkNew(true);
-      } else {
+  bool add(Plugin plugin, BookInfo bookInfo, String bookPage, [LastData? lastData]) {
+    for (var item in items.data) {
+      if (item.info.key == bookInfo.key) {
+        return false;
       }
-    } else {
-      print("${item.title} already added!");
+    }
+    if (bookPage[0] != '/')
+      bookPage = "/$bookPage";
+    var item = FavCheckItem(
+      this,
+      bookInfo,
+      last: lastData??LastData(
+        name: "...",
+        key: "",
+        updateTime: DateTime.fromMillisecondsSinceEpoch(0),
+      ),
+      pluginID: plugin.id,
+      bookPage: bookPage,
+    );
+    items.data.add(item);
+    items.update();
+    if (lastData == null)
+      item.checkNew(true);
+    return true;
+  }
+
+  void remove(String key) {
+    for (int i = 0, t = items.data.length; i < t; ++i) {
+      var item = items.data[i];
+      if (item.info.key == key) {
+        items.data.removeAt(i);
+        items.update();
+        return;
+      }
     }
   }
 
-  void remove(dynamic item) {
-    if (item is DataItem) {
-      if (item.isInCollection(collection_mark)) {
-        item.removeFromCollection(collection_mark);
-        List needRemove = [];
-        for (int i = 0, t = items.length; i < t; ++i) {
-          FavCheckItem checkItem = items[i];
-          if (checkItem.item.link == item.link) {
-            needRemove.add(checkItem);
-          }
-        }
-        needRemove.forEach((element) {
-          _removeItem(element);
-        });
-      }
-    } else if (item is FavCheckItem) {
-      if (items.contains(item)) {
-        item.item.removeFromCollection(collection_mark);
-        _removeItem(item);
+  bool exist(String key) {
+    for (int i = 0, t = items.data.length; i < t; ++i) {
+      var item = items.data[i];
+      if (item.info.key == key) {
+        return true;
       }
     }
-  }
-
-  void _itemStateUpdate() {
-    onState.notifyListeners();
-  }
-
-  void _addItem(FavCheckItem item) {
-    item.newListenable.addListener(_itemStateUpdate);
-    items.add(item);
-  }
-
-  void _removeItem(FavCheckItem item) {
-    item.newListenable.removeListener(_itemStateUpdate);
-    items.remove(item);
+    return false;
   }
 
   void automaticCheckNew() async {
-    for (int i = 0, t = items.length; i < t; ++i) {
-      FavCheckItem checkItem = items[i];
+    for (int i = 0, t = items.data.length; i < t; ++i) {
+      FavCheckItem checkItem = items.data[i];
       try {
         await checkItem.checkNew(false);
       } catch (e) {
         print("Check new failed $e");
       }
     }
-    Future.delayed(Duration(minutes: 2), automaticCheckNew);
+    Future.delayed(Duration(minutes: 20), automaticCheckNew);
   }
 
-  bool isFavorite(DataItem item) {
-    return item.isInCollection(collection_mark);
+  bool isFavorite(String key) {
+    for (int i = 0, t = items.data.length; i < t; ++i) {
+      var item = items.data[i];
+      if (item.info.key == key) return true;
+    }
+    return false;
   }
 
-  void clearNew(DataItem item) {
-    if (isFavorite(item)) {
-      for (int i = 0, t = items.length; i < t; ++i) {
-        FavCheckItem checkItem = items[i];
-        if (checkItem.item.link == item.link) {
-          checkItem.clearNew();
-        }
-      }
+  void _itemUpdate(FavCheckItem item) {
+    if (items.data.contains(item)) {
+      items.update();
     }
   }
 
   void reorder() {
-    for (int i = 0, t = items.length; i < t; ++i) {
-      var item = items[i];
-      item.attachment.index = i;
-      item.synchronize();
-    }
+    items.update();
   }
 }

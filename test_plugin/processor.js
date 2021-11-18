@@ -76,6 +76,10 @@ class MangaProcesser extends Processor {
     unload() {
 
     }
+
+    async checkNew() {
+
+    }
 }
 
 module.exports = MangaProcesser;

@@ -5,11 +5,13 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:convert/convert.dart';
+import 'package:flutter/widgets.dart';
 import 'package:glib/glib.dart';
 import 'package:glib/utils/bit64.dart';
 import 'package:kinoko/utils/local_storage.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:yaml/yaml.dart';
+import '../configs.dart';
 import 'key_value_storage.dart';
 import 'plugin/plugin.dart';
 import 'plugin/io_filesystem.dart';
@@ -51,7 +53,7 @@ const String _pluginsKey = "plugins";
 const String _lastUpdateKey = "plugins_last_update";
 const String _addedKey = "plugins_added";
 
-class PluginsManager {
+class PluginsManager extends ValueNotifier<Plugin?> {
   static late Directory _root;
 
   static PluginsManager? _instance;
@@ -83,7 +85,7 @@ class PluginsManager {
   late Future<void> _ready;
   Future<void> get ready => _ready;
 
-  PluginsManager._() {
+  PluginsManager._() : super(null) {
     _plugins = KeyValueStorage(
       key: _pluginsKey,
       decoder: (String json) {
@@ -177,6 +179,9 @@ class PluginsManager {
     return null;
   }
 
+  Plugin? get current => value;
+  set current(Plugin? v) => value = v;
+
   Map<String, Plugin> _cachedPlugins = {};
   Plugin? findPlugin(String id) {
     if (_cachedPlugins.containsKey(id)) return _cachedPlugins[id];
@@ -186,6 +191,10 @@ class PluginsManager {
       Plugin plugin = Plugin(id, IOFileSystem(Directory("${_root.path}/$id")), DataLocalStorage(id));
       _cachedPlugins[id] = plugin;
       return plugin;
+    }
+
+    if (id == current?.id) {
+      return current;
     }
   }
 }

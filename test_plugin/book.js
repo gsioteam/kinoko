@@ -110,7 +110,49 @@ class BookController extends Controller {
     }
 
     onFavoritePressed() {
-
+        this.setState(()=>{
+            if (this.isFavarite()) {
+                FavoritesManager.remove(this.url);
+            } else {
+                let last;
+    
+                /**
+                 * Add to favorites list
+                 * 
+                 * @param {String}key The unique identifier of the favorite item
+                 * @param {String}title The name of book
+                 * @param {String}subtitle The subtitle of book
+                 * @param {String}picture The cover of book.
+                 * @param {Object}data Data will be sent to book page.
+                 * @param {String}page The book page path.
+                 * 
+                 * Second argument is optional
+                 * @param {String}title The title of the last chapter
+                 * @param {String}key The unique identifier of the last chapter
+                 */
+                if (this.data.list.length > 0) {
+                    let data = this.data.list[this.data.list.length - 1];
+                    last = {
+                        title: data.title,
+                        key: data.link,
+                    };
+                }
+                this.addFavorite({
+                    key: this.url,
+                    title: this.data.title,
+                    subtitle: this.data.subtitle,
+                    picture: this.data.picture,
+                    page: 'book',
+                    data: {
+                        link: this.url,
+                        title: this.data.title,
+                        subtitle: this.data.subtitle,
+                        picture: this.data.picture,
+                        summary: this.data.summary,
+                    },
+                }, last);
+            }
+        });
     }
 
     onDownloadPressed() {
@@ -130,6 +172,17 @@ class BookController extends Controller {
         let downloads = [];
         for (let idx of this.selected) {
             var data = this.data.list[idx];
+            /**
+             * Add to download queue
+             * 
+             * @param {String}key The unique identifier of the download item
+             * @param {String}title The name of book
+             * @param {String}subtitle The subtitle of book
+             * @param {String}link The url of book, To group items with same book link.
+             * @param {String}picture The cover of book.
+             * @param {Object}data Data will be sent to processor load function.
+             * @param {String*}data.title The title of chapter. 
+             */
             downloads.push({
                 key: data.link,
                 title: this.data.title,
@@ -183,6 +236,10 @@ class BookController extends Controller {
     isDownloaded(index) {
         let item = this.data.list[index];
         return DownloadManager.exist(item.link);
+    }
+
+    isFavarite() {
+        return FavoritesManager.exist(this.url);
     }
 }
 

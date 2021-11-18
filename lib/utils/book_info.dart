@@ -10,7 +10,7 @@ class BookInfo {
   BookInfo({
     required this.key,
     required this.title,
-    required this.link,
+    this.link = "",
     required this.data,
     this.picture,
     this.subtitle,
@@ -28,7 +28,7 @@ class BookInfo {
   BookInfo.fromData(Map data) :
         key = data["key"],
         title = data["title"],
-        link = data["link"],
+        link = data["link"]??"",
         picture = data["picture"],
         subtitle = data["subtitle"],
         data = data["data"];

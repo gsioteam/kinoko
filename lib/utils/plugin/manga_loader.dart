@@ -1,6 +1,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_dapp/flutter_dapp.dart';
+import 'package:kinoko/utils/favorites_manager.dart';
 import 'package:kinoko/utils/plugin/plugin.dart';
 import 'package:kinoko/utils/plugin/utils.dart';
 import '../key_value_storage.dart';
@@ -114,6 +115,17 @@ class Processor extends ValueNotifier<List<Picture>> {
     if (ret is JsValue) {
       return ret.asFuture;
     }
+  }
+
+  Future<LastData> checkNew() async {
+    if (isDisposed) throw Exception("Disposed");
+    JsValue promise = jsProcessor.invoke("checkNew");
+    var ret = await promise.asFuture;
+    return LastData(
+      name: ret["title"],
+      key: ret["key"],
+      updateTime: DateTime.now(),
+    );
   }
 
   void reload() {

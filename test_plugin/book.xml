@@ -52,7 +52,12 @@
                 </FlexibleSpaceBar>
                 <attr:actions>
                     <button type="icon" onPressed="onFavoritePressed">
-                        <icon>favorite</icon>
+                        <if candidate="js(isFavarite)">
+                            <icon color="red">favorite</icon>
+                        </if>
+                        <else>
+                            <icon>favorite</icon>
+                        </else>
                     </button>
                 </attr:actions>
                 <attr:bottom>

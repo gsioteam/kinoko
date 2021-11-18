@@ -1,76 +1,18 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dapp/flutter_dapp.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:kinoko/pages/libraries_page.dart';
 import 'package:decorated_icon/decorated_icon.dart';
-import 'package:kinoko/utils/book_info.dart';
-import 'package:kinoko/utils/download_manager.dart';
 import 'package:kinoko/utils/image_providers.dart';
+import 'package:kinoko/utils/js_extensions.dart';
 import 'package:kinoko/utils/plugin/plugin.dart';
-import 'package:flutter_dapp/src/controller.dart';
-import 'package:kinoko/utils/plugin/utils.dart';
+import 'package:kinoko/utils/plugins_manager.dart';
 import '../localizations/localizations.dart';
 import '../configs.dart';
 import '../widgets/no_data.dart';
 import 'ext_page.dart';
-import 'picture_viewer.dart';
-import 'source_page.dart';
 
 const double _LogoSize = 24;
-
-class KiController extends Controller {
-  Plugin plugin;
-  KiController(JsScript script, this.plugin) : super(script);
-
-  openBook(JsValue data) {
-    var d = jsValueToDart(data);
-    return Navigator.of(state!.context).push(MaterialPageRoute(builder: (context) {
-      return PictureViewer(
-        plugin: plugin,
-        list: d["list"],
-        initializeIndex: d["index"],
-      );
-    }));
-  }
-
-  openBrowser(String url) {
-    return Navigator.of(state!.context).push(MaterialPageRoute(builder: (context) {
-      return SourcePage(
-        url: url,
-      );
-    }));
-  }
-
-  addDownload(JsValue list) {
-    int length = list["length"];
-    for (int i = 0, t = length; i < t; ++i) {
-      var data = list[i];
-      DownloadManager().add(BookInfo.fromData(jsValueToDart(data)), plugin);
-    }
-    Fluttertoast.showToast(
-        msg: lc(state!.context)("added_download").replaceFirst("{0}", length.toString())
-    );
-  }
-}
-
-ClassInfo kiControllerInfo = controllerClass.inherit<KiController>(
-  name: "_Controller",
-  functions: {
-    "openBook": JsFunction.ins((obj, argv) => obj.openBook(argv[0])),
-    "openBrowser": JsFunction.ins((obj, argv) => obj.openBrowser(argv[0])),
-    "addDownload": JsFunction.ins((obj, argv) => obj.addDownload(argv[0])),
-  }
-);
-
-ClassInfo downloadManager = ClassInfo(
-  name: "DownloadManager",
-  newInstance: (_, __) => throw Exception(),
-  functions: {
-    "exist": JsFunction.sta((argv) => DownloadManager().exist(argv[0])),
-    "remove": JsFunction.sta((argv) => DownloadManager().removeKey(argv[0])),
-  }
-);
 
 class CollectionsPage extends StatefulWidget {
   CollectionsPage({Key? key}) :
@@ -200,15 +142,6 @@ class _CollectionsPageState extends State<CollectionsPage> {
         onInitialize: (script) {
           script.addClass(downloadManager);
           Configs.instance.setupJS(script, plugin!);
-          // setupJS(script, plugin!);
-
-          // script.global['openVideo'] = script.function((argv) {
-          //   OpenVideoNotification(
-          //       key: argv[0],
-          //       data: jsValueToDart(argv[1]),
-          //       plugin: plugin!
-          //   ).dispatch(context);
-          // });
         },
       );
     }
@@ -274,19 +207,19 @@ class _CollectionsPageState extends State<CollectionsPage> {
   void initState() {
     super.initState();
 
-    plugin = Configs.instance.current;
-    Configs.instance.addListener(_update);
+    plugin = PluginsManager.instance.current;
+    PluginsManager.instance.addListener(_update);
   }
 
   @override
   void dispose() {
     super.dispose();
-    Configs.instance.removeListener(_update);
+    PluginsManager.instance.removeListener(_update);
   }
 
   void _update() {
     setState(() {
-      plugin = Configs.instance.current;
+      plugin = PluginsManager.instance.current;
     });
   }
 }

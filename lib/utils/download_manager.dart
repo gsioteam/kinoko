@@ -167,6 +167,12 @@ class _PictureDownloader extends ValueNotifier<_DownloaderValue> {
   void stop() {
     canceled = true;
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+    processor.dispose();
+  }
 }
 
 class DownloadPictureItem {
@@ -232,17 +238,10 @@ class DownloadItemValue {
 class DownloadQueueItem extends ValueNotifier<DownloadItemValue> {
   late NeoCacheManager cacheManager;
   Queue<DownloadPictureItem> queue = Queue();
-  bool _pictureDownloading = false;
   late String cacheKey;
   void Function()? onImageQueueClear;
 
-  bool _downloading = false;
-  bool cancel = false;
-  Context? context;
-
   static const Duration MaxDuration = Duration(days: 365 * 99999);
-
-  bool get downloading => _downloading;
 
   int get loaded => value.loaded;
   int get total => value.total;
@@ -289,25 +288,7 @@ class DownloadQueueItem extends ValueNotifier<DownloadItemValue> {
     }
   }
 
-  void destroy() {
-    context?.release();
-    context = null;
-  }
-
   DownloadState get state => value.state;
-
-  DownloadPictureItem? currentImage;
-
-  // bool contains(String url) {
-  //   for (var item in urls) {
-  //     if (item.url == url) {
-  //       return true;
-  //     }
-  //   }
-  //   return false;
-  // }
-
-
 
   void start() async {
     if (state == DownloadState.Paused) {
@@ -330,6 +311,9 @@ class DownloadQueueItem extends ValueNotifier<DownloadItemValue> {
         );
       });
       try {
+        value = value.copyWith(
+          state: DownloadState.Downloading,
+        );
         bool complete = await downloader.start();
         value = value.copyWith(
           state: complete ? DownloadState.Complete : DownloadState.Paused,
@@ -454,7 +438,7 @@ class DownloadManager {
     if (idx < items.data.length) {
       DownloadQueueItem item = items.data[idx];
       item.stop();
-      item.destroy();
+      item.dispose();
       items.data.removeAt(idx);
       items.update();
     }
@@ -464,7 +448,7 @@ class DownloadManager {
     for (var item in items.data) {
       if (item.info.key == key) {
         item.stop();
-        item.destroy();
+        item.dispose();
         items.data.remove(item);
         items.update();
         return;

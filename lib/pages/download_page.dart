@@ -192,7 +192,7 @@ class _ChapterCellState extends State<ChapterCell> {
             )
                 :
             (
-                queueItem.downloading ?
+                queueItem.state == DownloadState.Downloading ?
                 MaterialButton(
                   padding: EdgeInsets.only(left: 8, right: 8),
                   minWidth: IconSize,

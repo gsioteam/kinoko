@@ -12,6 +12,7 @@ import 'package:flutter_dapp/extensions/storage.dart' as dapp;
 import 'package:flutter_dapp/flutter_dapp.dart';
 import 'package:xml_layout/xml_layout.dart';
 import 'localizations/localizations.dart';
+import 'utils/js_extensions.dart';
 import 'utils/plugin/plugin.dart';
 
 const String env_git_url = "https://github.com/gsioteam/glib_env.git";
@@ -85,10 +86,9 @@ class PluginLocalStorage extends dapp.LocalStorage {
   }
 }
 
-class Configs with ChangeNotifier {
+class Configs {
 
   static const bool isDebug = true;
-  Plugin? _current;
 
   final Uint8List publicKey = Uint8List.fromList([2,169,116,121,28,94,121,148,224,164,101,4,129,150,179,221,230,79,31,104,57,165,189,188,150,139,234,217,84,155,201,149,10,]);
 
@@ -98,14 +98,6 @@ class Configs with ChangeNotifier {
       _instance = Configs();
     }
     return _instance!;
-  }
-
-  Plugin? get current => _current;
-  set current(Plugin? v) {
-    if (_current != v) {
-      _current = v;
-      notifyListeners();
-    }
   }
 
   JsCompiled? _storageCompiled;
@@ -158,6 +150,9 @@ class Configs with ChangeNotifier {
     PluginLocalStorage localStorage = PluginLocalStorage(plugin);
     JsValue value = script.bind(localStorage, classInfo: dapp.storageClass);
     script.global['_storage'] = value;
+
+    script.addClass(downloadManager);
+    script.addClass(favoriteManager);
 
     if (_storageCompiled != null) {
       script.loadCompiled(_storageCompiled!);

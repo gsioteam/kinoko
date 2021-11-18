@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  js_script: ^0.0.33
+  js_script: ^0.0.35
   xml_layout: ^2.3.9
   cached_network_image: ^3.1.0
   fluttertoast: ^8.0.8

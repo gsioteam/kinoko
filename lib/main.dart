@@ -220,7 +220,7 @@ class SplashScreenState extends State<SplashScreen> {
       AssetsFileSystem assetsFileSystem = AssetsFileSystem(context: context, prefix: 'test_plugin/');
       await assetsFileSystem.ready;
       String id = "test";
-      Configs.instance.current = Plugin(id, assetsFileSystem, DataLocalStorage(id));
+      PluginsManager.instance.current = Plugin(id, assetsFileSystem, DataLocalStorage(id));
     }
   }
 
@@ -377,7 +377,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    if (FavoritesManager().items.length > 0) {
+    if (FavoritesManager().items.data.length > 0) {
       _oldSelected = selected = 0;
     } else {
       _oldSelected = selected = 2;
