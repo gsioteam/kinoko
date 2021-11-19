@@ -13,6 +13,7 @@ import 'package:flutter_dapp/flutter_dapp.dart';
 import 'package:xml_layout/xml_layout.dart';
 import 'localizations/localizations.dart';
 import 'utils/js_extensions.dart';
+import 'utils/plugin/manga_loader.dart';
 import 'utils/plugin/plugin.dart';
 
 const String env_git_url = "https://github.com/gsioteam/glib_env.git";
@@ -151,6 +152,7 @@ class Configs {
     JsValue value = script.bind(localStorage, classInfo: dapp.storageClass);
     script.global['_storage'] = value;
 
+    script.addClass(processorClass);
     script.addClass(downloadManager);
     script.addClass(favoriteManager);
 

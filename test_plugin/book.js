@@ -1,5 +1,33 @@
+const bookFetch = require('./book_fetch');
 
 class BookController extends Controller {
+
+    /**
+     * 
+     * @property {String}key The unique identifier of the favorite item
+     * @property {String}title The name of book
+     * @property {String}subtitle The subtitle of book
+     * @property {String}picture The cover of book.
+     * @property {Object}data Data will be sent to book page.
+     * @property {String}page The book page path.
+     */
+    get bookInfo() {
+        return {
+            key: this.url,
+            title: this.data.title,
+            subtitle: this.data.subtitle,
+            picture: this.data.picture,
+            page: 'book',
+            data: {
+                link: this.url,
+                title: this.data.title,
+                subtitle: this.data.subtitle,
+                picture: this.data.picture,
+                summary: this.data.summary,
+            },
+        };
+    }
+
     async load(data) {
         this.data = {
             title: data.title,
@@ -14,6 +42,14 @@ class BookController extends Controller {
         this.selected = [];
 
         this.url = data.link;
+        
+        /**
+         * Add history record
+         * 
+         * Same as addFavorite with out lastData.
+         */
+        this.addHistory(this.bookInfo);
+        console.log(`Data ${JSON.stringify(this.bookInfo)}`);
         
         let cached = localStorage[`book:${this.url}`];
         if (cached) {
@@ -46,15 +82,7 @@ class BookController extends Controller {
         });
         try {
             let url = this.url + '?waring=1';
-            let res = await fetch(url, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Mobile Safari/537.36',
-                    'Accept-Language': 'en-US,en;q=0.9',
-                }
-            });
-            let text = await res.text();
-    
-            let data = this.parseData(text);
+            let data = await bookFetch(url);
     
             let now = new Date().getTime();
             data.time = now;
@@ -75,40 +103,6 @@ class BookController extends Controller {
         }
     }
 
-    parseData(text) {
-        const doc = HTMLParser.parse(text);
-        let h1 = doc.querySelector(".book-info h1");
-        let title = h1.text.trim();
-        
-        let infos = doc.querySelectorAll(".short-info p");
-        let subtitle, summary;
-
-        if (infos.length >= 2) {
-            subtitle = infos[0].text;
-        }
-        if (infos.length >= 1) {
-            summary = infos[infos.length - 1].text.trim().replace(/^Summary\:/, '').trim();
-        }
-
-        let list = [];
-        let nodes = doc.querySelectorAll('.chapter-box > li');
-        for (let node of nodes) {
-            let anode = node.querySelector('div.chapter-name.long a');
-            let name = anode.text.trim();
-            list.push({
-                title: name.replace(/new$/, ''),
-                subtitle: name.match(/new$/)?'new':null,
-                link: anode.getAttribute('href'),
-            });
-        }
-        return {
-            title: title,
-            subtitle: subtitle,
-            summary: summary,
-            list: list.reverse(),
-        };
-    }
-
     onFavoritePressed() {
         this.setState(()=>{
             if (this.isFavarite()) {
@@ -119,14 +113,9 @@ class BookController extends Controller {
                 /**
                  * Add to favorites list
                  * 
-                 * @param {String}key The unique identifier of the favorite item
-                 * @param {String}title The name of book
-                 * @param {String}subtitle The subtitle of book
-                 * @param {String}picture The cover of book.
-                 * @param {Object}data Data will be sent to book page.
-                 * @param {String}page The book page path.
+                 * The first argument see `bookinfo`
                  * 
-                 * Second argument is optional
+                 * The second argument is optional
                  * @param {String}title The title of the last chapter
                  * @param {String}key The unique identifier of the last chapter
                  */
@@ -137,20 +126,7 @@ class BookController extends Controller {
                         key: data.link,
                     };
                 }
-                this.addFavorite({
-                    key: this.url,
-                    title: this.data.title,
-                    subtitle: this.data.subtitle,
-                    picture: this.data.picture,
-                    page: 'book',
-                    data: {
-                        link: this.url,
-                        title: this.data.title,
-                        subtitle: this.data.subtitle,
-                        picture: this.data.picture,
-                        summary: this.data.summary,
-                    },
-                }, last);
+                this.addFavorite(this.bookInfo, last);
             }
         });
     }

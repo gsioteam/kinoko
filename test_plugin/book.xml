@@ -33,7 +33,7 @@
                                     minimumSize="zero"
                                     padding="ltrb(4,1,4,10)" 
                                     onPressed="onSourcePressed">
-                                <text size="6" text="loc('source')"/>
+                                <text size="6" text="loc(source)"/>
                             </button>
                         </span>
                         <if candidate="isNotNull($subtitle)"> 

@@ -90,7 +90,6 @@ class _ChapterCellState extends State<ChapterCell> {
             IconButton(
               icon: Icon(Icons.save),
               onPressed: () async {
-
                 var status = await Permission.storage.status;
                 switch (status) {
                   case PermissionStatus.granted:
@@ -258,18 +257,20 @@ class _ChapterCellState extends State<ChapterCell> {
     }
     return Column(
       children: [
-        Container(
+        Material(
           color: Colors.grey.withOpacity(0.1),
-          padding: EdgeInsets.only(left: 10, right: 10),
-          child: ListTile(
-            title: Text(title),
-            subtitle: queueItem.value.hasError ?
-            Text(errorString(queueItem.value.error),
-              style: theme.textTheme.caption?.copyWith(color: theme.errorColor),) :
-            Text("(${queueItem.loaded}/${queueItem.total})",
-              style: theme.textTheme.caption,) ,
-            trailing: extendButtons(context, queueItem),
-            onTap: widget.onTap,
+          child: Padding(
+            padding: EdgeInsets.only(left: 10, right: 10),
+            child: ListTile(
+              title: Text(title),
+              subtitle: queueItem.value.hasError ?
+              Text(errorString(queueItem.value.error),
+                style: theme.textTheme.caption?.copyWith(color: theme.errorColor),) :
+              Text("(${queueItem.loaded}/${queueItem.total})",
+                style: theme.textTheme.caption,) ,
+              trailing: extendButtons(context, queueItem),
+              onTap: widget.onTap,
+            ),
           ),
         ),
         Divider(height: 1,)
@@ -397,43 +398,45 @@ class _DownloadPageState extends State<DownloadPage> {
         return Column(
           key: _DownloadKey(cdata),
           children: <Widget>[
-            ListTile(
-              tileColor: Theme.of(context).colorScheme.surface,
-              title: Text(downloadData.bookInfo.title),
-              subtitle: Text(downloadData.bookInfo.subtitle??""),
-              leading: Image(
-                key: ObjectKey(downloadData.bookInfo.picture),
-                image: NeoImageProvider(
-                  uri: Uri.parse(downloadData.bookInfo.picture??""),
-                  cacheManager: NeoCacheManager.defaultManager
-                ),
-                fit: BoxFit.cover,
-                width: 56,
-                height: 56,
-                gaplessPlayback: true,
-                errorBuilder: (context, e, stack) {
-                  return Container(
-                    width: 56,
-                    height: 56,
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    child: Center(
-                      child: Icon(
-                        Icons.broken_image,
-                        color: Theme.of(context).colorScheme.onBackground,
+            Material(
+              color: Theme.of(context).colorScheme.surface,
+              child: ListTile(
+                title: Text(downloadData.bookInfo.title),
+                subtitle: Text(downloadData.bookInfo.subtitle??""),
+                leading: Image(
+                  key: ObjectKey(downloadData.bookInfo.picture),
+                  image: NeoImageProvider(
+                      uri: Uri.parse(downloadData.bookInfo.picture??""),
+                      cacheManager: NeoCacheManager.defaultManager
+                  ),
+                  fit: BoxFit.cover,
+                  width: 56,
+                  height: 56,
+                  gaplessPlayback: true,
+                  errorBuilder: (context, e, stack) {
+                    return Container(
+                      width: 56,
+                      height: 56,
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      child: Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          color: Theme.of(context).colorScheme.onBackground,
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  },
+                ),
+                trailing: AnimatedCrossFade(
+                    firstChild: Icon(Icons.keyboard_arrow_up),
+                    secondChild: Icon(Icons.keyboard_arrow_down),
+                    crossFadeState: cdata.extend ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+                    duration: Duration(milliseconds: 300)
+                ),
+                onTap: () {
+                  clickBookCell(index);
                 },
               ),
-              trailing: AnimatedCrossFade(
-                firstChild: Icon(Icons.keyboard_arrow_up),
-                secondChild: Icon(Icons.keyboard_arrow_down),
-                crossFadeState: cdata.extend ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-                duration: Duration(milliseconds: 300)
-              ),
-              onTap: () {
-                clickBookCell(index);
-              },
             ),
             Divider(
               height: 1,

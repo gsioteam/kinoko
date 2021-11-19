@@ -1,33 +1,18 @@
 
 
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:glib/core/callback.dart';
-import 'package:glib/core/core.dart';
 import 'package:glib/core/array.dart';
-import 'package:glib/core/gmap.dart';
 import 'package:glib/main/collection_data.dart';
-import 'package:glib/main/context.dart';
 import 'package:glib/main/data_item.dart';
-import 'package:glib/main/error.dart' as glib;
-import 'package:glib/main/project.dart';
 import 'package:kinoko/utils/key_value_storage.dart';
 import 'package:kinoko/utils/plugin/manga_loader.dart';
 import 'package:kinoko/utils/plugins_manager.dart';
 import '../configs.dart';
-import 'cached_picture_image.dart';
-import 'package:glib/utils/bit64.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'dart:math';
 import 'book_info.dart';
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
-import 'data_item_headers.dart';
 import 'neo_cache_manager.dart';
 import 'plugin/plugin.dart';
 
@@ -236,8 +221,8 @@ class DownloadItemValue {
 }
 
 class DownloadQueueItem extends ValueNotifier<DownloadItemValue> {
+  DownloadManager manager;
   late NeoCacheManager cacheManager;
-  Queue<DownloadPictureItem> queue = Queue();
   late String cacheKey;
   void Function()? onImageQueueClear;
 
@@ -251,7 +236,7 @@ class DownloadQueueItem extends ValueNotifier<DownloadItemValue> {
 
   _PictureDownloader? _downloader;
 
-  DownloadQueueItem.fromData(Map data) :
+  DownloadQueueItem.fromData(this.manager, Map data) :
         info = BookInfo.fromData(data["info"]),
         pluginID = data["pluginID"],
         super(DownloadItemValue(
@@ -261,7 +246,7 @@ class DownloadQueueItem extends ValueNotifier<DownloadItemValue> {
     _setup();
   }
 
-  DownloadQueueItem._(this.info, this.pluginID) : super(DownloadItemValue()) {
+  DownloadQueueItem._(this.manager, this.info, this.pluginID) : super(DownloadItemValue()) {
     _setup();
   }
 
@@ -285,6 +270,8 @@ class DownloadQueueItem extends ValueNotifier<DownloadItemValue> {
       value = value.copyWith(
         error: DownloaderException("no_project_found", ""),
       );
+      cacheKey = NeoCacheManager.cacheOldKey(pluginID, info);
+      cacheManager = NeoCacheManager(cacheKey);
     }
   }
 
@@ -309,6 +296,7 @@ class DownloadQueueItem extends ValueNotifier<DownloadItemValue> {
           loaded: downloader.value.loaded,
           total: downloader.value.total,
         );
+        manager._itemUpdate(this);
       });
       try {
         value = value.copyWith(
@@ -318,6 +306,7 @@ class DownloadQueueItem extends ValueNotifier<DownloadItemValue> {
         value = value.copyWith(
           state: complete ? DownloadState.Complete : DownloadState.Paused,
         );
+        manager._itemUpdate(this);
       } catch (e) {
         DownloaderException err;
         if (e is DownloaderException) {
@@ -357,7 +346,6 @@ class DownloadQueueItem extends ValueNotifier<DownloadItemValue> {
 
 class DownloadManager {
   static DownloadManager? _instance;
-  Queue<DownloadQueueItem> queue = Queue();
 
   factory DownloadManager() {
     if (_instance == null) {
@@ -366,18 +354,7 @@ class DownloadManager {
     return _instance!;
   }
 
-  KeyValueStorage<List<DownloadQueueItem>> items = KeyValueStorage(
-    key: "download_items",
-    decoder: (text) {
-      if (text.isNotEmpty) {
-        List list = jsonDecode(text);
-        return list.map((e) => DownloadQueueItem.fromData(e)).toList();
-      } else {
-        return [];
-      }
-    },
-    encoder: (list) => jsonEncode(list.map((e) => e.toData()).toList()),
-  );
+  late KeyValueStorage<List<DownloadQueueItem>> items;
 
   static void reloadAll() {
     Array data = CollectionData.all(collection_download);
@@ -391,6 +368,26 @@ class DownloadManager {
   }
 
   DownloadManager._() {
+    items = KeyValueStorage(
+      key: "download_items",
+      decoder: (text) {
+        if (text.isNotEmpty) {
+          List list = jsonDecode(text);
+          List<DownloadQueueItem> ret = [];
+          for (var data in list) {
+            try {
+              ret.add(DownloadQueueItem.fromData(this, data));
+            } catch (e) {
+            }
+          }
+          return ret;
+        } else {
+          return [];
+        }
+      },
+      encoder: (list) => jsonEncode(list.map((e) => e.toData()).toList()),
+    );
+
     Set<String> index = {};
     for (var item in items.data) {
       index.add(item.info.key);
@@ -412,11 +409,10 @@ class DownloadManager {
             data: {
               "title": item.title,
               "subtitle": item.subtitle,
-              "summary": item.summary,
-              "picture": item.picture,
+              "link": item.link,
             },
           );
-          items.data.add(DownloadQueueItem._(info, item.projectKey));
+          items.data.add(DownloadQueueItem._(this, info, item.projectKey));
         }
       }
     }
@@ -428,7 +424,7 @@ class DownloadManager {
         return null;
       }
     }
-    DownloadQueueItem item = DownloadQueueItem._(bookInfo, plugin.id);
+    DownloadQueueItem item = DownloadQueueItem._(this, bookInfo, plugin.id);
     items.data.add(item);
     items.update();
     return item;
@@ -461,5 +457,11 @@ class DownloadManager {
       if (item.info.key == key) return true;
     }
     return false;
+  }
+
+  void _itemUpdate(DownloadQueueItem item) {
+    if (items.data.contains(item)) {
+      items.update();
+    }
   }
 }

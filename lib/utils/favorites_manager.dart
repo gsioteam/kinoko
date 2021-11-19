@@ -120,17 +120,22 @@ class FavCheckItem extends ValueNotifier<bool> {
         data: info.data,
     );
 
-    LastData lastData = await processor.checkNew();
-    if (first) {
-      last = lastData;
-      manager._itemUpdate(this);
-    } else {
-      if (last.key != lastData.key) {
+    try {
+      LastData lastData = await processor.checkNew();
+      if (first) {
         last = lastData;
-        value = true;
         manager._itemUpdate(this);
+      } else {
+        if (last.key != lastData.key) {
+          last = lastData;
+          value = true;
+          manager._itemUpdate(this);
+        }
       }
+    } catch (e) {
+      print(e);
     }
+    processor.dispose();
   }
 
   bool get loading => value;

@@ -5,6 +5,7 @@ import 'package:flutter_dapp/src/controller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:kinoko/pages/picture_viewer.dart';
 import 'package:kinoko/pages/source_page.dart';
+import 'package:kinoko/utils/history_manager.dart';
 
 import 'book_info.dart';
 import 'download_manager.dart';
@@ -65,6 +66,14 @@ class KiController extends Controller {
         lastData);
   }
 
+  addHistory(JsValue data) {
+    var map = jsValueToDart(data);
+    HistoryManager().insert(
+      BookInfo.fromData(map),
+      map["page"],
+      plugin
+    );
+  }
 }
 
 ClassInfo kiControllerInfo = controllerClass.inherit<KiController>(
@@ -74,6 +83,7 @@ ClassInfo kiControllerInfo = controllerClass.inherit<KiController>(
       "openBrowser": JsFunction.ins((obj, argv) => obj.openBrowser(argv[0])),
       "addDownload": JsFunction.ins((obj, argv) => obj.addDownload(argv[0])),
       "addFavorite": JsFunction.ins((obj, argv) => obj.addFavorite(argv[0], argv[1])),
+      "addHistory": JsFunction.ins((obj, argv) => obj.addHistory(argv[0])),
     }
 );
 

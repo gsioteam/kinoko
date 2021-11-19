@@ -497,7 +497,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
   }
 
   double _clampX(double dx) {
-    Size realSize = (_imageSize ?? widget.size) * _scale;
+    Size realSize = (_imageSize == Size.zero ? widget.size : _imageSize) * _scale;
     return math.min(math.max(dx, widget.size.width - realSize.width), 0);
   }
 

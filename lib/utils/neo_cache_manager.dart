@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
+import 'package:kinoko/utils/book_info.dart';
 import 'package:kinoko/utils/plugin/manga_loader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -183,6 +184,7 @@ class NeoCacheManager {
 
   static String _generateMd5(String input) => md5.convert(utf8.encode(input)).toString();
   static String cacheKey(Processor item) => "${item.plugin.id}/${_generateMd5(item.data["link"])}";
+  static String cacheOldKey(String pluginID, BookInfo info) => "$pluginID/${_generateMd5((info.data as Map)["link"])}";
 
   static Future<SizeResult> calculateCacheSize({Set<String>? cached}) async {
     if (cached == null) cached = Set();

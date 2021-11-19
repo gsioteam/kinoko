@@ -5,55 +5,46 @@ import 'package:glib/core/array.dart';
 import 'package:glib/core/gmap.dart';
 import 'package:glib/main/collection_data.dart';
 import 'package:glib/main/data_item.dart';
+import 'package:kinoko/utils/book_info.dart';
+import 'package:kinoko/utils/key_value_storage.dart';
 import '../configs.dart';
+import 'plugin/plugin.dart';
+
+const int _MaxHistories = 200;
 
 class HistoryItem {
-  late CollectionData _collectionData;
-  late DataItem _item;
-  DataItem get item => _item;
-  late DateTime _date;
-  DateTime get date => _date;
+  final HistoryManager manager;
+  BookInfo info;
+  String pluginID;
+  DateTime date;
+  String bookPage;
 
-  CollectionData get data => _collectionData;
+  HistoryItem(this.manager, {
+    required this.info,
+    required this.pluginID,
+    required this.date,
+    required this.bookPage,
+  });
 
-  HistoryItem(CollectionData collectionData, [DataItem? item]) {
-    _collectionData = collectionData.retain();
-    if (item == null) {
-      _item = DataItem.fromCollectionData(_collectionData)?.retain();
-    } else {
-      _item = item.retain();
-    }
-    try {
-      var json = jsonDecode(_collectionData.data);
-      var time = json["time"];
-      if (time is int)
-        _date = DateTime.fromMicrosecondsSinceEpoch(time);
-      else _date = DateTime.fromMicrosecondsSinceEpoch(0);
-    } catch (e) {
-      _date = DateTime.fromMicrosecondsSinceEpoch(0);
-    }
-  }
+  HistoryItem.fromData(this.manager, Map data) :
+        info = BookInfo.fromData(data["info"]),
+        pluginID = data["pluginID"],
+        date = DateTime.fromMillisecondsSinceEpoch(data["date"]??0),
+        bookPage = data["bookPage"];
 
-  void dispose() {
-    _collectionData.release();
-    _item.release();
-  }
-
-  void update() {
-    _date = DateTime.now();
-    GMap map = GMap.allocate({
-      "time": _date.microsecondsSinceEpoch
-    });
-    _collectionData.setJSONData(map);
-    map.release();
-    _collectionData.save();
+  Map toData() {
+    return {
+      "info": info.toData(),
+      "pluginID": pluginID,
+      "date": date.millisecondsSinceEpoch,
+      "bookPage": bookPage,
+    };
   }
 }
 
 class HistoryManager {
-  void Function()? onChange;
   static HistoryManager? _instance;
-  List<HistoryItem>? _items;
+  late KeyValueStorage<List<HistoryItem>> items;
 
   factory HistoryManager() {
     if (_instance == null) {
@@ -62,57 +53,55 @@ class HistoryManager {
     return _instance!;
   }
 
-  HistoryManager._();
-
-  List<HistoryItem> get items {
-    if (_items == null) {
-      var items = CollectionData.all(history_key);
-      _items = [];
-
-      for (CollectionData data in items) {
-        _items!.add(HistoryItem(data));
+  HistoryManager._() {
+    items = KeyValueStorage<List<HistoryItem>>(
+      key: "history_items",
+      decoder: (text) {
+        List<HistoryItem> list = [];
+        try {
+          if (text.isNotEmpty) {
+            var json = jsonDecode(text);
+            for (var data in json) {
+              list.add(HistoryItem.fromData(this, data));
+            }
+          }
+        } catch (e) {
+          print("Error when parse history_items $e");
+        }
+        return list;
+      },
+      encoder: (list) {
+        return jsonEncode(list.map((e) => e.toData()).toList());
       }
-      _items!.sort((item1, item2) {
-        return item2.date.difference(item1.date).inSeconds;
-      });
-    }
-    return _items!;
+    );
   }
 
   static const int ITEM_COUNT = 60;
 
   void clear() {
-    for (var item in items) {
-      item.data.remove();
-      item.dispose();
-    }
-    items.clear();
-    onChange?.call();
+    items.data.clear();
+    items.update();
   }
 
-  void insert(DataItem dataItem) {
-    var link = dataItem.link;
-    HistoryItem? foundItem;
-    for (var item in items) {
-      if (item.item.link == link) {
-        foundItem = item;
+  void insert(BookInfo bookInfo, String bookPage, Plugin plugin) {
+    for (int i = 0, t = items.data.length; i < t; ++i) {
+      var item  = items.data[i];
+      if (item.info.key == bookInfo.key) {
+        items.data.removeAt(i);
+        break;
       }
     }
-    if (foundItem == null) {
-      CollectionData cData = dataItem.saveToCollection(history_key);
-      foundItem = HistoryItem(cData, dataItem);
-      items.insert(0, foundItem);
-      while (items.length > ITEM_COUNT) {
-        var item = items.removeLast();
-        item.data.remove();
-        item.dispose();
-      }
-    } else {
-      items.remove(foundItem);
-      items.insert(0, foundItem);
+    if (bookPage[0] != '/')
+      bookPage = "/$bookPage";
+    items.data.insert(0, HistoryItem(this,
+      info: bookInfo,
+      pluginID: plugin.id,
+      date: DateTime.now(),
+      bookPage: bookPage,
+    ));
+    while (items.data.length > _MaxHistories) {
+      items.data.removeLast();
     }
-
-    foundItem.update();
-    onChange?.call();
+    items.update();
   }
 }

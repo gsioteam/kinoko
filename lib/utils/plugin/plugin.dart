@@ -141,7 +141,6 @@ class Plugin {
             fileSystem,
           ],
       );
-      _script!.addClass(processorClass);
       Configs.instance.setupJS(_script!, this);
       // _script!.addClass(processorClass);
     }

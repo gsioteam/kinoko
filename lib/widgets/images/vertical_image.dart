@@ -73,7 +73,7 @@ class VerticalImageState extends PhotoImageState<VerticalImage> {
   }
 
   double _clampY(double dy) {
-    Size realSize = (imageSize ?? widget.size) * scale;
+    Size realSize = (imageSize == Size.zero ? widget.size : imageSize) * scale;
     return math.min(math.max(dy, widget.size.height - realSize.height), 0);
   }
 
