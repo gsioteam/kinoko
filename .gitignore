@@ -53,3 +53,4 @@ android/app/profile
 android/app/fdroid/release
 .gradle
 local.properties
+.cxx
