@@ -1,8 +1,0 @@
-Executable : /Users/gen/Library/Android/sdk/cmake/3.10.2.4988404/bin/ninja
-arguments : 
--C
-/Users/gen/Programs/kinoko_git/plugins/flutter_git/android/.cxx/cmake/debug/x86_64
-flutter_git
-git2
-jvmArgs : 
-

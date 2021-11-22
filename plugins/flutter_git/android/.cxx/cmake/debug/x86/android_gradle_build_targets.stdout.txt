@@ -1,2 +1,0 @@
-ninja: Entering directory `/Users/gen/Programs/kinoko_git/plugins/flutter_git/android/.cxx/cmake/debug/x86'
-ninja: no work to do.
