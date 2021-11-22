@@ -2,8 +2,7 @@
 import 'dart:async';
 
 import 'package:glib/core/core.dart';
-import 'package:glib/utils/git_repository.dart';
-import '../progress_dialog.dart';
+import '../widgets/progress_dialog.dart';
 
 // class GitError extends Error {
 //   final String msg;

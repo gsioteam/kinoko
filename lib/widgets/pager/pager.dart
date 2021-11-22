@@ -1,6 +1,5 @@
 
 import 'package:flutter/cupertino.dart';
-import 'package:glib/main/context.dart' as glib;
 import 'package:kinoko/utils/neo_cache_manager.dart';
 import 'package:kinoko/widgets/images/one_finger_zoom_gesture_recognizer.dart';
 

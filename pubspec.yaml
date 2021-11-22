@@ -64,6 +64,8 @@ dependencies:
     git: https://github.com/fluttercommunity/get_version.git
   flutter_dapp:
     path: ./plugins/flutter_dapp
+  flutter_git:
+    path: ./plugins/flutter_git
   glib:
     path: "./plugins/glib"
   jdenticon_dart: ^2.0.0
@@ -95,6 +97,7 @@ flutter:
     - assets/collection.xml
     - assets/languages/
     - assets/icon.png
+    - assets/cacert.pem
     - test_plugin/
 
   # An image asset can refer to one or more resolution-specific "variants", see

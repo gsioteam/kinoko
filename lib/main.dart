@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_git/flutter_git.dart';
 import 'package:glib/main/models.dart';
-import 'package:glib/main/project.dart';
 import 'package:kinoko/pages/favorites_page.dart';
 import 'package:kinoko/pages/history_page.dart';
 import 'package:kinoko/pages/main_settings_page.dart';
@@ -216,6 +216,13 @@ class SplashScreenState extends State<SplashScreen> {
     await Configs.instance.initialize(context);
     await PluginsManager.instance.ready;
 
+    File cacert = File("${dir.path}/cacert.pem");
+    if (!await cacert.exists()) {
+      var buf = await rootBundle.load("assets/cacert.pem");
+      await cacert.writeAsBytes(buf.buffer.asUint8List());
+    }
+    GitRepository.setCacertPath(cacert.path);
+
     if (Configs.isDebug) {
       AssetsFileSystem assetsFileSystem = AssetsFileSystem(context: context, prefix: 'test_plugin/');
       await assetsFileSystem.ready;
@@ -264,7 +271,7 @@ class _HomePageState extends State<HomePage> {
   void Function()? onFetch;
 
   bool hasMainProject() {
-    return Project.getMainProject() != null;
+    return PluginsManager.instance.current != null;
   }
 
   Widget? _getBody(BuildContext context) {

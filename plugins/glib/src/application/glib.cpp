@@ -8,27 +8,13 @@
 #include <core/Array.h>
 #include <core/Map.h>
 #include "utils/Platform.h"
-#include "utils/GitRepository.h"
-#include "utils/dart/DartRequest.h"
 #include "utils/database/DBMaker.h"
 #include "utils/database/SQLite.h"
-#include "models/GitLibrary.h"
-#include "utils/SharedData.h"
-#include "main/Context.h"
-#include "main/Project.h"
 #include "utils/Bit64.h"
 #include "main/DataItem.h"
-#include "utils/Request.h"
-#include "utils/Encoder.h"
-#include "utils/GumboParser.h"
-#include "utils/Error.h"
 #include "models/KeyValue.h"
-#include "utils/ScriptContext.h"
 #include "models/CollectionData.h"
-#include "main/LibraryContext.h"
-#include "main/Settings.h"
 #include "utils/dart/DartPlatform.h"
-#include "utils/dart/DartBrowser.h"
 #include "bit64/bit64.h"
 #include "secp256k1.h"
 #include <vector>
@@ -41,29 +27,12 @@ extern "C" void initGlib() {
     ClassDB::reg<gc::_Array>();
     ClassDB::reg<gc::_Callback>();
     ClassDB::reg<gc::FileData>();
-    ClassDB::reg<gs::GitRepository>();
     ClassDB::reg<gs::DartPlatform>();
-    ClassDB::reg<gs::DartRequest>();
-    ClassDB::reg<gs::GitAction>();
-    ClassDB::reg<gs::GitLibrary>();
-    ClassDB::reg<gs::Project>();
     ClassDB::reg<gs::Bit64>();
-    ClassDB::reg<gs::Context>();
-    ClassDB::reg<gs::Collection>();
     ClassDB::reg<gs::DataItem>();
-    ClassDB::reg<gs::Request>();
-    ClassDB::reg<gs::Encoder>();
-    ClassDB::reg<gs::GumboNode>();
-    ClassDB::reg<gs::Error>();
     ClassDB::reg<gs::KeyValue>();
-    ClassDB::reg<gs::ScriptContext>();
     ClassDB::reg<gs::CollectionData>();
-    ClassDB::reg<gs::LibraryContext>();
-    ClassDB::reg<gs::LibraryContext>();
-    ClassDB::reg<gs::SettingItem>();
     ClassDB::reg<gs::Platform>();
-    ClassDB::reg<gs::DartBrowser>();
-    ClassDB::reg<gs::Browser>();
 }
 
 extern "C" int dart_tokenVerify(const char *token, const char *url, const char *prev, const uint8_t *pubKey, int pubKeyLength) {
@@ -106,3 +75,10 @@ extern "C" int dart_tokenVerify(const char *token, const char *url, const char *
     return secp256k1_ecdsa_verify(secp256k1_ctx, &signature, sha256_res, &pubkey);
 }
 
+extern "C" uint8_t* dart_decodeBit64(const char *string, int *length) {
+    size_t len = strlen(string);
+    size_t buf_len = bit64_decode_size(len);
+    uint8_t *buf = (uint8_t *)malloc(buf_len);
+    *length = bit64_decode((const uint8_t *)string, len, buf);
+    return buf;
+}

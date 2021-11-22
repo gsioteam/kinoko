@@ -1,0 +1,3 @@
+# ninja log v5
+0	68	1637487672	CMakeFiles/native_main_thread.dir/src/main/cpp/main.c.o	ef3f32b23152ea95
+69	179	1637487672	/Users/gen/Programs/kinoko_git/build/native_main_thread/intermediates/cmake/debug/obj/arm64-v8a/libnative_main_thread.so	9a1ed563b9bc0f4d

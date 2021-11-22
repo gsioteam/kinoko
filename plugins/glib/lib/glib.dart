@@ -6,7 +6,6 @@ import 'dart:typed_data';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
 import 'package:glib/main/models.dart';
-import 'package:glib/main/project.dart';
 import 'core/binds.dart';
 import 'package:path_provider/path_provider.dart' as platform;
 
@@ -16,16 +15,10 @@ import 'core/core.dart';
 import 'core/array.dart';
 import 'core/gmap.dart';
 import 'core/data.dart';
-import 'main/project.dart';
-import 'main/context.dart';
 import 'main/data_item.dart';
-import 'main/error.dart';
-import 'utils/git_repository.dart';
-import 'utils/platform.dart';
 import 'utils/bit64.dart';
-import 'utils/script_context.dart';
+import 'utils/platform.dart';
 import 'main/collection_data.dart';
-import 'main/setting_item.dart';
 
 class Glib {
   static late MethodChannel channel;
@@ -42,22 +35,12 @@ class Glib {
     Array.reg();
     GMap.reg();
     Callback.reg();
-    GitRepository.reg();
-    GitAction.reg();
-    GitRepository.reg();
-    GitLibrary.reg();
-    Project.reg();
-    Bit64.reg();
-    Context.reg();
     DataItem.reg();
     Data.reg();
     BufferData.reg();
-    Error.reg();
     KeyValue.reg();
-    ScriptContext.reg();
     CollectionData.reg();
-    LibraryContext.reg();
-    SettingItem.reg();
+    Bit64.reg();
 
     Pointer<Utf8> pstr = root_path.toNativeUtf8();
     postSetup(pstr);

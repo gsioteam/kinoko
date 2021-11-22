@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_material_pickers/flutter_material_pickers.dart' as pickers;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:glib/main/models.dart';
-import 'package:glib/utils/git_repository.dart';
 import 'package:kinoko/configs.dart';
 import 'package:kinoko/utils/download_manager.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
@@ -16,7 +15,7 @@ import 'package:kinoko/widgets/list_header.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../localizations/localizations.dart';
 import '../main.dart';
-import '../progress_dialog.dart';
+import '../widgets/progress_dialog.dart';
 import '../theme_page.dart';
 import '../widgets/hint_point.dart';
 import '../widgets/picker_item.dart';
@@ -126,23 +125,27 @@ class ClearProgressItem extends ProgressItem {
 
   Future<void> Function()? action;
 
-
   ClearProgressItem({
     required String text,
     this.action
-  }) {
-    cancelable = false;
-    this.defaultText = text;
+  }) : super(ProgressValue(
+    label: text
+  )) {
     run();
   }
 
   void run() async {
-    await action?.call();
-    complete();
-  }
+    try {
+      await action?.call();
+      value = value.copyWith(
+        status: ProgressStatus.Success,
+      );
+    } catch (e) {
+      value = value.copyWith(
+        status: ProgressStatus.Failed,
+      );
+    }
 
-  @override
-  void cancel() {
   }
   
 }
@@ -359,8 +362,9 @@ class CacheManagerState extends State<CacheManager> {
               await showDialog(context: context, builder: (context) {
                 return ProgressDialog(
                   title: kt('loading'),
-                  item: ClearProgressItem(
-                    text: '${kt('clear')}...',
+                  run: () {
+                    return ClearProgressItem(
+                      text: '${kt('clear')}...',
                       action: () async {
                         Set<String> cached = Set();
                         for (var item in DownloadManager().items.data) {
@@ -369,7 +373,8 @@ class CacheManagerState extends State<CacheManager> {
                         await NeoCacheManager.clearCache(without: cached);
                         await fetchSize();
                       }
-                  ),
+                    );
+                  },
                 );
               });
             }

@@ -3,7 +3,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:glib/main/models.dart';
-import 'package:glib/utils/git_repository.dart';
 
 class GitRepositoryChecker {
   static GitRepositoryChecker? _instance;
@@ -31,27 +30,27 @@ class GitRepositoryChecker {
     }
   }
 
-  void checkout(GitRepository repository) async {
-    String key = "checkout:git:${repository.path}";
-    String value = KeyValue.get(key);
-    if (value.isNotEmpty) {
-      int time = int.parse(value);
-      if (time + 6 * 3600 * 1000 < DateTime.now().millisecondsSinceEpoch) {
-        return;
-      }
-    }
-
-    repository.retain();
-    var action = repository.checkout();
-    action.retain();
-    Completer completer = Completer();
-    action.setOnComplete(() {
-      completer.complete();
-    });
-    await completer.future;
-    KeyValue.set(key, "${DateTime.now().millisecondsSinceEpoch}");
-    trigger(repository.path);
-    action.release();
-    repository.release();
-  }
+  // void checkout(GitRepository repository) async {
+  //   String key = "checkout:git:${repository.path}";
+  //   String value = KeyValue.get(key);
+  //   if (value.isNotEmpty) {
+  //     int time = int.parse(value);
+  //     if (time + 6 * 3600 * 1000 < DateTime.now().millisecondsSinceEpoch) {
+  //       return;
+  //     }
+  //   }
+  //
+  //   repository.retain();
+  //   var action = repository.checkout();
+  //   action.retain();
+  //   Completer completer = Completer();
+  //   action.setOnComplete(() {
+  //     completer.complete();
+  //   });
+  //   await completer.future;
+  //   KeyValue.set(key, "${DateTime.now().millisecondsSinceEpoch}");
+  //   trigger(repository.path);
+  //   action.release();
+  //   repository.release();
+  // }
 }

@@ -1,5 +1,6 @@
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -8,17 +9,51 @@ import 'package:kinoko/utils/image_providers.dart';
 import 'package:kinoko/utils/plugin/plugin.dart';
 import 'package:kinoko/utils/plugins_manager.dart';
 import 'package:kinoko/widgets/no_data.dart';
+import 'package:kinoko/widgets/progress_dialog.dart';
 import 'package:kinoko/widgets/spin_itim.dart';
 import 'dart:convert';
-import '../configs.dart';
 import '../localizations/localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dapp/src/widgets/drefresh.dart';
+import 'package:flutter_git/flutter_git.dart';
 
-const LibURL = "https://api.github.com/repos/gsioteam/env/issues/2/comments?per_page={1}&page={0}";
+const LibURL = "https://api.github.com/repos/gsioteam/env/issues/3/comments?per_page={1}&page={0}";
 const int _pageLimit = 40;
 
-const String _projectKey = "main_project";
+class GitItem extends ProgressItem {
+  GitController controller;
+  GitItem(this.controller) : super(ProgressValue(label: "...")) {
+    onCancel = _onCancel;
+    controller.addListener(_update);
+    _wait();
+  }
+
+  void _onCancel() {
+    controller.cancel();
+  }
+
+  void _wait() async {
+    try {
+      await controller.completer.future;
+      value = value.copyWith(
+        status: ProgressStatus.Success,
+      );
+    } catch (e) {
+      value = value.copyWith(
+        status: ProgressStatus.Failed,
+      );
+    } finally {
+      controller.dispose();
+    }
+  }
+
+  void _update() {
+    value = ProgressValue(
+      label: "${controller.value.event} (${controller.value.content})",
+    );
+  }
+
+}
 
 class LibraryCell extends StatefulWidget {
 
@@ -39,6 +74,7 @@ class LibraryCell extends StatefulWidget {
 
 class _LibraryCellState extends State<LibraryCell> {
   Plugin? plugin;
+  late GitRepository repo;
 
   GlobalKey<SpinItemState> _spinKey = GlobalKey();
 
@@ -48,28 +84,46 @@ class _LibraryCellState extends State<LibraryCell> {
   void initState() {
     super.initState();
 
-    plugin = PluginsManager.instance.makePlugin(widget.item.src);
+    String id = PluginsManager.instance.calculatePluginID(widget.item.src);
+    plugin = PluginsManager.instance.findPlugin(id);
+
+    repo = GitRepository("${PluginsManager.instance.root.path}/$id");
+    repo.open();
   }
 
   @override
   void dispose() {
-
     super.dispose();
+    repo.dispose();
   }
 
-  void installConfirm() {
-  }
+  Future<void> clone() async {
+     Directory dir = Directory(repo.path);
+     if (await dir.exists()) {
+       await dir.delete(recursive: true);
+     }
+     await dir.create(recursive: true);
 
-  void install() async {
+     await showDialog(
+       context: context,
+       builder: (context) {
+         return ProgressDialog(
+           title: kt("clone_project"),
+           run: () {
+             GitController controller = GitController(repo);
+             repo.clone(controller,
+               url: widget.item.src,
+               branch: widget.item.branch??"master",
+             );
 
-  }
-
-  bool selectMainProject() {
-    return false;
-  }
-
-  void selectConfirm() {
-
+             return GitItem(controller);
+           },
+         );
+       }
+     );
+     setState(() {
+       this.plugin = PluginsManager.instance.findPlugin(PluginsManager.instance.calculatePluginID(widget.item.src));
+     });
   }
 
   Widget _buildCloned(BuildContext context, Plugin plugin) {
@@ -77,7 +131,7 @@ class _LibraryCellState extends State<LibraryCell> {
     List<InlineSpan> icons = [
       TextSpan(text: pluginInformation.name),
     ];
-    if (plugin.id == KeyValue.get(_projectKey)) {
+    if (plugin == PluginsManager.instance.current) {
       icons.insert(0, WidgetSpan(child: Icon(Icons.arrow_right, color: Colors.blueAccent,)));
     }
     return Material(
@@ -86,26 +140,26 @@ class _LibraryCellState extends State<LibraryCell> {
         title: Text.rich(TextSpan(
             children: icons
         )),
-        // subtitle: Text("Ver. ${repo.localID()}"),
+        subtitle: Text("Ver. ${repo.getSHA1("refs/heads/${widget.item.branch??"master"}").substring(0, 8)}"),
         leading: Container(
           child: pluginImage(
-              plugin,
-              width: 56,
-              height: 56,
-              errorBuilder: (context, e, stack) {
-                return Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: Color(0x1F999999),
-                    borderRadius: BorderRadius.all(Radius.circular(4)),
-                  ),
-                  child: Icon(
-                    Icons.broken_image,
-                    color: Colors.white,
-                  ),
-                );
-              }
+            plugin,
+            width: 56,
+            height: 56,
+            errorBuilder: (context, e, stack) {
+              return Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: Color(0x1F999999),
+                  borderRadius: BorderRadius.all(Radius.circular(4)),
+                ),
+                child: Icon(
+                  Icons.broken_image,
+                  color: Colors.white,
+                ),
+              );
+            },
           ),
           decoration: BoxDecoration(
               color: Color(0x1F999999),
@@ -117,36 +171,57 @@ class _LibraryCellState extends State<LibraryCell> {
             child: Icon(Icons.sync, color: Theme.of(context).primaryColor,),
             key: _spinKey,
           ),
-          onPressed: (){
-            // if (_spinKey.currentState?.isLoading == true) return;
-            // _spinKey.currentState?.startAnimation();
-            // GitAction action = repo.fetch();
-            // action.control();
-            // action.setOnComplete(() {
-            //   action.release();
-            //   if (action.hasError()) {
-            //     Fluttertoast.showToast(msg: action.getError(), toastLength: Toast.LENGTH_LONG);
-            //     _spinKey.currentState?.stopAnimation();
-            //     return;
-            //   }
-            //   if (repo.localID() != repo.highID()) {
-            //     GitAction action = repo.checkout().control();
-            //     action.setOnComplete(() {
-            //       action.release();
-            //       if (action.hasError()) {
-            //         Fluttertoast.showToast(msg: action.getError(), toastLength: Toast.LENGTH_LONG);
-            //       }
-            //       _spinKey.currentState?.stopAnimation();
-            //       setState(() { });
-            //     });
-            //   } else {
-            //     _spinKey.currentState?.stopAnimation();
-            //     setState(() { });
-            //   }
-            // });
+          onPressed: () async {
+            if (_spinKey.currentState?.isLoading == true) return;
+            _spinKey.currentState?.startAnimation();
+
+            GitController controller = GitController(repo);
+            try {
+              await repo.fetch(controller);
+              String branch = widget.item.branch??"master";
+              if (repo.getSHA1("refs/heads/$branch") != repo.getSHA1("refs/remotes/origin/$branch")) {
+                await repo.checkout(controller, branch: branch);
+              }
+              setState(() {
+                this.plugin = PluginsManager.instance.findPlugin(PluginsManager.instance.calculatePluginID(widget.item.src));
+              });
+            } catch (e) {
+              Fluttertoast.showToast(msg: e.toString(), toastLength: Toast.LENGTH_LONG);
+            } finally {
+              controller.dispose();
+              _spinKey.currentState?.stopAnimation();
+            }
           },
         ),
-        onTap: selectConfirm,
+        onTap: PluginsManager.instance.current == plugin ? null : () async {
+          bool? ret = await showDialog<bool>(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text(kt("confirm")),
+                content: Text(kt("select_main_project")),
+                actions: [
+                  TextButton(
+                    child: Text(kt("no")),
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                  ),
+                  TextButton(
+                    child: Text(kt("yes")),
+                    onPressed: () {
+                      Navigator.of(context).pop(true);
+                    },
+                  ),
+                ],
+              );
+            }
+          );
+
+          if (ret == true) {
+            PluginsManager.instance.current = plugin;
+          }
+        },
       ),
     );
   }
@@ -166,13 +241,41 @@ class _LibraryCellState extends State<LibraryCell> {
           width: 56,
           height: 56,
         ),
+        onTap: () async {
+          var ret = await showDialog<bool>(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text(kt("confirm")),
+                content: Text(kt("install_confirm").replaceFirst("{url}", widget.item.src)),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
+                    child: Text(kt("no")),
+                  ),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(true);
+                      },
+                      child: Text(kt("yes"))
+                  ),
+                ],
+              );
+            }
+          );
+          if (ret == true) {
+            await clone();
+          }
+        },
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (plugin?.isValidate == true) {
+    if (plugin?.isValidate == true && repo.isVisible) {
       return _buildCloned(context, plugin!);
     } else {
       return _buildPlugin(context);
@@ -197,6 +300,7 @@ class _LibrariesPageState extends State<LibrariesPage> {
   int pageIndex = 0;
   bool loading = false;
   bool _disposed = false;
+  late TokenContainer container;
 
   Future<bool> requestPage(int page) async {
     String url = LibURL.replaceAll("{0}", page.toString()).replaceAll("{1}", _pageLimit.toString());
@@ -207,9 +311,9 @@ class _LibrariesPageState extends State<LibrariesPage> {
     List json = jsonDecode(result);
 
     PluginsManager.instance.update(
-        json,
-        Configs.instance.publicKey,
-        page == 0,
+      json,
+      container,
+      page == 0,
     );
     bool hasMore = json.length >= _pageLimit;
     pageIndex = page;
@@ -222,6 +326,7 @@ class _LibrariesPageState extends State<LibrariesPage> {
     });
     int page = 0;
 
+    container = TokenContainer();
     while (await requestPage(page)) {
       page++;
     }
@@ -394,6 +499,7 @@ class _LibrariesPageState extends State<LibrariesPage> {
     super.initState();
 
     PluginsManager.instance.plugins.addListener(_update);
+    PluginsManager.instance.addListener(_update);
     if (DateTime.now().difference(PluginsManager.instance.lastUpdate).inSeconds > 3600) {
       Future.delayed(Duration.zero).then((value) => reload());
     }
@@ -404,6 +510,7 @@ class _LibrariesPageState extends State<LibrariesPage> {
     super.dispose();
 
     PluginsManager.instance.plugins.removeListener(_update);
+    PluginsManager.instance.removeListener(_update);
     _disposed = true;
   }
 

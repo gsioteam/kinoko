@@ -7,7 +7,6 @@
 
 #include <core/Ref.h>
 #include <core/Map.h>
-#include "../models/BookData.h"
 #include "../gs_define.h"
 
 namespace gs {
@@ -31,16 +30,6 @@ namespace gs {
         int type;
 
     public:
-
-        static gc::Ref<DataItem> fromData(const gc::Ref<BookData> &data);
-
-        METHOD static std::string toJSON(const gc::Array &arr);
-        METHOD static gc::Array fromJSON(const std::string &j);
-
-        void fill(const gc::Ref<BookData> &data);
-        gc::Ref<BookData> saveData(bool save) const;
-
-        METHOD gc::Array getSubItems() const;
 
         METHOD const std::string &getTitle() const {
             return title;
@@ -106,11 +95,8 @@ namespace gs {
         }
         PROPERTY(project_key, getProjectKey, setProjectKey);
 
-        METHOD gc::Ref<CollectionData> saveToCollection(const std::string &type, const gc::Variant &data);
-        METHOD static gc::Array loadCollectionItems(const std::string &type);
         METHOD bool isInCollection(const std::string &type);
         METHOD void removeFromCollection(const std::string &type);
-        METHOD gc::Ref<DataItem> fromCollectionData(const gc::Ref<CollectionData> &data);
 
     protected:
         ON_LOADED_BEGIN(cls, gc::Object)
@@ -123,14 +109,8 @@ namespace gs {
             ADD_PROPERTY(cls, "type",ADD_METHOD(cls, DataItem, getType), ADD_METHOD(cls, DataItem, setType));
             ADD_PROPERTY(cls, "project_key",ADD_METHOD(cls, DataItem, getProjectKey), ADD_METHOD(cls, DataItem, setProjectKey));
 
-            ADD_METHOD(cls, DataItem, getSubItems);
-            ADD_METHOD(cls, DataItem, saveToCollection);
-            ADD_METHOD(cls, DataItem, loadCollectionItems);
             ADD_METHOD(cls, DataItem, isInCollection);
             ADD_METHOD(cls, DataItem, removeFromCollection);
-            ADD_METHOD(cls, DataItem, fromCollectionData);
-            ADD_METHOD(cls, DataItem, toJSON);
-            ADD_METHOD(cls, DataItem, fromJSON);
         ON_LOADED_END
     CLASS_END
 }

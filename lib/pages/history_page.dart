@@ -1,14 +1,8 @@
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dapp/flutter_dapp.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:glib/core/array.dart';
-import 'package:glib/main/context.dart';
-import 'package:glib/main/data_item.dart';
-import 'package:glib/main/collection_data.dart';
-import 'package:glib/main/project.dart';
 import 'package:kinoko/utils/book_info.dart';
 import 'package:kinoko/utils/history_manager.dart';
 import 'package:kinoko/utils/js_extensions.dart';

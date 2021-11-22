@@ -5,11 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:glib/core/array.dart';
-import 'package:glib/core/callback.dart';
-import 'package:glib/core/gmap.dart';
-import 'package:glib/main/context.dart';
-import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
 import 'package:kinoko/configs.dart';
 import 'package:kinoko/utils/plugin/manga_loader.dart';
@@ -17,13 +12,8 @@ import 'package:kinoko/utils/plugin/plugin.dart';
 import 'package:kinoko/widgets/pager/horizontal_pager.dart';
 import 'package:kinoko/widgets/pager/webtoon_pager.dart';
 import 'package:kinoko/widgets/picture_hint_painter.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
-import 'package:glib/main/error.dart' as glib;
-import 'package:glib/utils/bit64.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:quds_popup_menu/quds_popup_menu.dart';
-import '../main.dart';
 import '../utils/download_manager.dart';
 import '../utils/neo_cache_manager.dart';
 import '../utils/preload_queue.dart';
@@ -32,7 +22,6 @@ import '../localizations/localizations.dart';
 import '../widgets/instructions_dialog.dart';
 import '../widgets/page_slider.dart';
 import '../widgets/pager/pager.dart';
-import '../utils/data_item_headers.dart';
 import 'dart:ui' as ui;
 import '../utils/fullscreen.dart';
 import '../widgets/pager/vertical_pager.dart';
@@ -182,13 +171,6 @@ class _PictureViewerState extends State<PictureViewer> {
     setState(() {
       loading = isLoading;
     });
-  }
-
-  void onError(glib.Error error) {
-    Fluttertoast.showToast(
-      msg: error.msg,
-      toastLength: Toast.LENGTH_SHORT,
-    );
   }
 
   void pageNext() {

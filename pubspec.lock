@@ -197,6 +197,13 @@ packages:
       relative: true
     source: path
     version: "0.0.17"
+  flutter_git:
+    dependency: "direct main"
+    description:
+      path: "plugins/flutter_git"
+      relative: true
+    source: path
+    version: "0.0.1"
   flutter_inappwebview:
     dependency: "direct main"
     description:
@@ -379,6 +386,13 @@ packages:
       relative: true
     source: path
     version: "0.1.10"
+  native_main_thread:
+    dependency: transitive
+    description:
+      path: "plugins/native_main_thread"
+      relative: true
+    source: path
+    version: "0.0.1"
   octo_image:
     dependency: transitive
     description:

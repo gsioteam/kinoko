@@ -6,10 +6,8 @@
 #include <stdio.h>
 #include <script/dart/DartScript.h>
 #include "utils/dart/DartPlatform.h"
-#include "utils/SharedData.h"
 #include "utils/database/DBMaker.h"
 #include "utils/database/SQLite.h"
-#include "utils/GitRepository.h"
 #include "utils/Platform.h"
 #include "glib.h"
 
@@ -50,16 +48,14 @@ void dart_destroyLibrary() {
 
 DART_EXPORT
 void dart_postSetup(const char *path) {
-    shared::root_path = path;
-    gs::db::setup(new_t(gs::SQLite, shared::root_path + "/db.sql"));
-    GitRepository::setup(shared::root_path);
+    std::string root_path = path;
+    gs::db::setup(new_t(gs::SQLite, root_path + "/db.sql"));
 
     gs::DartPlatform::instance();
 }
 
 DART_EXPORT
 void dart_setCacertPath(const char *path) {
-    GitRepository::setCacertPath(path);
 }
 
 DART_EXPORT
@@ -86,11 +82,3 @@ extern "C" void Java_com_qlp_glib_GlibPlugin_onDetached(JNIEnv *env, jobject thi
         flutter_channel = nullptr;
     }
 }
-
-extern "C" void Java_com_qlp_glib_GlibPlugin_setDebug(JNIEnv *env, jclass thiz, jstring debug_path) {
-    shared::is_debug_mode = true;
-    const char *chs = env->GetStringUTFChars(debug_path, NULL);
-    shared::debug_path = chs;
-    env->ReleaseStringUTFChars(debug_path, chs);
-}
-

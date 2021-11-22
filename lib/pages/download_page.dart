@@ -1,21 +1,15 @@
 
 import 'dart:io';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:glib/main/context.dart';
-import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
-import 'package:glib/main/project.dart';
 import 'package:kinoko/utils/book_info.dart';
-import 'package:kinoko/utils/cached_picture_image.dart';
 import 'package:kinoko/utils/plugin/plugin.dart';
 import 'package:kinoko/utils/plugins_manager.dart';
 import 'package:kinoko/widgets/no_data.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
 import '../configs.dart';
-import '../main.dart';
 import 'picture_viewer.dart';
 import '../utils/download_manager.dart';
 import '../localizations/localizations.dart';
@@ -25,8 +19,6 @@ import 'package:filesystem_picker/filesystem_picker.dart';
 
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'dart:math' as math;
-import 'package:path/path.dart' as path;
 
 import '../widgets/instructions_dialog.dart';
 

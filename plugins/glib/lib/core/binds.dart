@@ -76,3 +76,7 @@ void Function(Pointer<Utf8>) setCacertPath = nativeGLib.lookup<NativeFunction<Vo
 int Function(Pointer, Pointer, Pointer, Pointer, int) dartTokenVerify = nativeGLib
     .lookup<NativeFunction<Int32 Function(Pointer, Pointer, Pointer, Pointer, Int32)>>("dart_tokenVerify")
     .asFunction();
+
+Pointer<Uint8> Function(Pointer<Utf8>, Pointer<Int32>) decodeBit64 = nativeGLib
+    .lookup<NativeFunction<Pointer<Uint8> Function(Pointer<Utf8>, Pointer<Int32>)>>("dart_decodeBit64")
+    .asFunction();

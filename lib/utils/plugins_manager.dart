@@ -1,12 +1,16 @@
 
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:ffi/ffi.dart';
 import 'package:crypto/crypto.dart';
 import 'package:convert/convert.dart';
 import 'package:flutter/widgets.dart';
+import 'package:glib/core/binds.dart';
 import 'package:glib/glib.dart';
+import 'package:glib/main/models.dart';
 import 'package:glib/utils/bit64.dart';
 import 'package:kinoko/utils/local_storage.dart';
 import 'package:path_provider/path_provider.dart' as path_provider;
@@ -52,9 +56,17 @@ class PluginInfo {
 const String _pluginsKey = "plugins";
 const String _lastUpdateKey = "plugins_last_update";
 const String _addedKey = "plugins_added";
+const String _mainPluginKey = "main_plugin";
+
+class TokenContainer {
+  Uint8List? publicKey;
+
+  TokenContainer();
+}
 
 class PluginsManager extends ValueNotifier<Plugin?> {
-  static late Directory _root;
+  late Directory _root;
+  Directory get root => _root;
 
   static PluginsManager? _instance;
   static PluginsManager get instance {
@@ -105,26 +117,44 @@ class PluginsManager extends ValueNotifier<Plugin?> {
         return jsonEncode(data);
       }
     );
+    // _plugins.data.clear();
+    // _added.data.clear();
     _ready = _setup();
   }
 
   Future<void> _setup() async {
     Directory dir = await path_provider.getApplicationSupportDirectory();
-    _root = Directory("${dir.path}/plugins");
+    _root = Directory("${dir.path}/v4_plugins");
+    String mainID = KeyValue.get(_mainPluginKey);
+    value = findPlugin(mainID);
   }
 
   String _prev = "";
 
-  void update(List json, Uint8List pubKey, [bool reset = true]) {
+  void update(List json, TokenContainer container, [bool reset = true]) {
     if (reset) _prev = "";
     for (var d in json) {
       try {
         var body = d['body'];
         var bodyData = loadYaml(body);
         String token = bodyData["token"];
+        if (container.publicKey == null) {
+          if (bodyData["pub_key"] != null) {
+            String str = bodyData["pub_key"];
+            Pointer<Utf8> strPtr = str.toNativeUtf8();
+            Pointer<Int32> length = malloc.allocate(sizeOf<Int32>());
+            Pointer<Uint8> ret = decodeBit64(strPtr, length);
+            container.publicKey = ret.asTypedList(length.value).sublist(0);
+            malloc.free(strPtr);
+            malloc.free(length);
+            malloc.free(ret);
+          } else {
+            container.publicKey = Configs.instance.publicKey;
+          }
+        }
         var info = PluginInfo.fromData(bodyData);
 
-        var ret = tokenVerify(token, info.src, _prev, pubKey);
+        var ret = tokenVerify(token, info.src, _prev, container.publicKey!);
         if (ret) {
           _prev = token;
           if (_added.data.contains(info.src)) {
@@ -180,7 +210,12 @@ class PluginsManager extends ValueNotifier<Plugin?> {
   }
 
   Plugin? get current => value;
-  set current(Plugin? v) => value = v;
+  set current(Plugin? v) {
+    if (value != v) {
+      value = v;
+      KeyValue.set(_mainPluginKey, value?.id ?? "");
+    }
+  }
 
   Map<String, Plugin> _cachedPlugins = {};
   Plugin? findPlugin(String id) {
