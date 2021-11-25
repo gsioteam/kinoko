@@ -12,7 +12,7 @@ let functions = {
     removeItem(target, that, args) {
         target.remove(args[0]);
     },
-    clear() {
+    clear(target, that, args) {
         target.clear();
     }
 };
@@ -21,7 +21,9 @@ globalThis.localStorage = new Proxy({}, {
     get(target, prop, receiver) {
         let func = functions[prop];
         if (typeof func == 'function') {
-            return func;
+            return function() {
+                return func(globalThis._storage, this, arguments);
+            };
         }
         return globalThis._storage.get(prop);
     },

@@ -103,3 +103,5 @@ default: Default
 dark: Dark
 
 unkown: Unkown
+fetch: Fetch
+checkout: Checkout

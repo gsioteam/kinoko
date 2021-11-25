@@ -52,7 +52,6 @@ class GitItem extends ProgressItem {
       label: "${controller.value.event} (${controller.value.content})",
     );
   }
-
 }
 
 class LibraryCell extends StatefulWidget {
@@ -75,8 +74,6 @@ class LibraryCell extends StatefulWidget {
 class _LibraryCellState extends State<LibraryCell> {
   Plugin? plugin;
   late GitRepository repo;
-
-  GlobalKey<SpinItemState> _spinKey = GlobalKey();
 
   _LibraryCellState();
 
@@ -131,7 +128,8 @@ class _LibraryCellState extends State<LibraryCell> {
     List<InlineSpan> icons = [
       TextSpan(text: pluginInformation.name),
     ];
-    if (plugin == PluginsManager.instance.current) {
+    bool isMain = plugin == PluginsManager.instance.current;
+    if (isMain) {
       icons.insert(0, WidgetSpan(child: Icon(Icons.arrow_right, color: Colors.blueAccent,)));
     }
     return Material(
@@ -140,7 +138,7 @@ class _LibraryCellState extends State<LibraryCell> {
         title: Text.rich(TextSpan(
             children: icons
         )),
-        subtitle: Text("Ver. ${repo.getSHA1("refs/heads/${widget.item.branch??"master"}").substring(0, 8)}"),
+        subtitle: Text("Ver. ${repo.getSHA1("refs/heads/${widget.item.branch??"master"}").substring(0, 7)}"),
         leading: Container(
           child: pluginImage(
             plugin,
@@ -169,27 +167,52 @@ class _LibraryCellState extends State<LibraryCell> {
         trailing: IconButton(
           icon: SpinItem(
             child: Icon(Icons.sync, color: Theme.of(context).primaryColor,),
-            key: _spinKey,
           ),
           onPressed: () async {
-            if (_spinKey.currentState?.isLoading == true) return;
-            _spinKey.currentState?.startAnimation();
 
-            GitController controller = GitController(repo);
             try {
-              await repo.fetch(controller);
+              await showDialog(
+                context: context,
+                builder: (context) {
+                  return ProgressDialog(
+                    title: kt("fetch"),
+                    run: () {
+                      GitController controller = GitController(repo);
+                      repo.fetch(controller,);
+
+                      return GitItem(controller);
+                    },
+                  );
+                },
+              );
               String branch = widget.item.branch??"master";
               if (repo.getSHA1("refs/heads/$branch") != repo.getSHA1("refs/remotes/origin/$branch")) {
-                await repo.checkout(controller, branch: branch);
+                await showDialog(
+                    context: context,
+                    builder: (context) {
+                      return ProgressDialog(
+                        title: kt("checkout"),
+                        run: () {
+                          GitController controller = GitController(repo);
+                          repo.checkout(controller, branch: branch);
+
+                          return GitItem(controller);
+                        },
+                      );
+                    }
+                );
+                setState(() {
+                  this.plugin = PluginsManager.instance.findPlugin(
+                      PluginsManager.instance.calculatePluginID(widget.item.src),
+                      true
+                  );
+                  if (isMain)
+                    PluginsManager.instance.current = this.plugin;
+                });
               }
-              setState(() {
-                this.plugin = PluginsManager.instance.findPlugin(PluginsManager.instance.calculatePluginID(widget.item.src));
-              });
             } catch (e) {
               Fluttertoast.showToast(msg: e.toString(), toastLength: Toast.LENGTH_LONG);
             } finally {
-              controller.dispose();
-              _spinKey.currentState?.stopAnimation();
             }
           },
         ),

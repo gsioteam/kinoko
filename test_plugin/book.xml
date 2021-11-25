@@ -140,7 +140,7 @@
                 <attr:builder>
                     <Function returnType='Widget'>
                         <script>
-                            set("index", switch($reverse, ${args[1]}, minus(length(${list}), ${args[1]}, 1)))
+                            set("index", switch($reverse, minus(length(${list}), ${args[1]}, 1), ${args[1]}))
                             set("item", ${list[index]})
                         </script>
                         <list-item>

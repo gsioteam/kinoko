@@ -15,6 +15,8 @@ class View extends StatelessWidget {
   final Gradient? gradient;
   final EdgeInsets? padding;
   final Alignment? alignment;
+  final EdgeInsets? margin;
+  final double? elevation;
 
   View({
     Key? key,
@@ -30,6 +32,8 @@ class View extends StatelessWidget {
     this.gradient,
     this.padding,
     this.alignment,
+    this.margin,
+    this.elevation,
   }) : super(key: key);
 
   @override
@@ -39,12 +43,24 @@ class View extends StatelessWidget {
     if (color != null ||
         border != null ||
         radius != null ||
-        gradient != null) {
+        gradient != null ||
+        elevation != null) {
+      List<BoxShadow>? shadow;
+      if (elevation != null) {
+        shadow = [
+          BoxShadow(
+            color: Theme.of(context).shadowColor,
+            blurRadius: elevation!,
+            offset: Offset(0, 2),
+          )
+        ];
+      }
       _decoration = BoxDecoration(
         color: color,
         border: border,
         borderRadius: radius,
         gradient: gradient,
+        boxShadow: shadow,
       );
     }
 
@@ -58,6 +74,7 @@ class View extends StatelessWidget {
         padding: padding,
         decoration: _decoration,
         alignment: alignment,
+        margin: margin,
       );
     } else {
       return Container(
@@ -68,6 +85,7 @@ class View extends StatelessWidget {
         padding: padding,
         decoration: _decoration,
         alignment: alignment,
+        margin: margin,
       );
     }
   }

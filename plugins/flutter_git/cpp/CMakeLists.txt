@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(native_main_thread)
+project(flutter_git)
 
 add_subdirectory(openssl)
 set(OPENSSL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/openssl/include)
@@ -10,7 +10,6 @@ include_directories(
 )
 
 add_subdirectory(libgit2)
-
 
 add_library(
         flutter_git

@@ -23,6 +23,8 @@ import 'widgets/view.dart';
 import 'widgets/dappbar.dart';
 import 'widgets/dbutton.dart';
 import 'widgets/tab_container.dart';
+import 'widgets/dgridview.dart';
+
 typedef TestCallback = int Function();
 extension DAppNodeData on NodeData {
   T? function<T extends Function>(String name) {
@@ -238,6 +240,7 @@ Register register = Register(() {
       height: node.s<double>("height"),
       fit: node.s<BoxFit>("fit", BoxFit.contain)!,
       headers: headers,
+      gaplessPlayback: node.s<bool>("gaplessPlayback", false)!,
     );
   };
   XmlLayout.register("img", imgBuilder);
@@ -287,6 +290,9 @@ Register register = Register(() {
         horizontal: (method[0] as num).toDouble(),
         vertical: (method[1] as num).toDouble(),
       )
+  );
+  XmlLayout.registerInline(EdgeInsets, "all", false, (node, method) =>
+      EdgeInsets.all((method[0] as num).toDouble())
   );
   XmlLayout.register('tabs', (node, key) {
     var items = node.children<TabItem>();
@@ -390,6 +396,7 @@ Register register = Register(() {
       gradient: node.s<Gradient>("gradient"),
       padding: node.s<EdgeInsets>("padding"),
       alignment: node.s<Alignment>("alignment"),
+      margin: node.s<EdgeInsets>("margin"),
     );
   });
   XmlLayout.register("Border", (node, key) {
@@ -514,6 +521,11 @@ Register register = Register(() {
       centerTitle: node.s<bool>("center"),
       collapseMode: node.s<CollapseMode>("mode", CollapseMode.parallax)!,
     );
+  });XmlLayout.register("sliver-container", (node, key) {
+    return SliverToBoxAdapter(
+      key: key,
+      child: node.child<Widget>(),
+    );
   });
   XmlLayout.registerEnum(CollapseMode.values);
 
@@ -578,6 +590,8 @@ Register register = Register(() {
     );
   });
   XmlLayout.register("color", (node, key) {
+    Color? color = node.s<Color>("color");
+    if (color != null) return color;
     return node.v<Color>(node.text);
   });
   XmlLayout.registerInline(Size, "", false, (node, method) {
@@ -685,5 +699,45 @@ Register register = Register(() {
   XmlLayout.registerInline(Duration, "zero", true, (node, method) => Duration.zero);
   XmlLayout.registerInline(Duration, "", false, (node, method) {
     return Duration(milliseconds: (method[0] as num?)?.toInt()??0);
+  });
+  XmlLayout.register("grid-view", (node, key) {
+    var builder = node.s<IndexedWidgetBuilder>('builder');
+    if (builder == null) {
+      return DGridView.children(
+        key: key,
+        children: node.children<Widget>(),
+        padding: node.s<EdgeInsets>('padding', EdgeInsets.zero)!,
+        crossAxisCount: node.s<int>("crossAxisCount", 4)!,
+        childAspectRatio: node.s<double>("childAspectRatio", 1)!,
+      );
+    } else {
+      return DGridView.builder(
+        key: key,
+        builder: builder,
+        itemCount: node.s<int>('itemCount', 0)!,
+        padding: node.s<EdgeInsets>('padding', EdgeInsets.zero)!,
+        crossAxisCount: node.s<int>("crossAxisCount", 4)!,
+        childAspectRatio: node.s<double>("childAspectRatio", 1)!,
+      );
+    }
+  });
+  XmlLayout.register("sliver-grid-view", (node, key) {
+    var builder = node.s<IndexedWidgetBuilder>('builder');
+    if (builder == null) {
+      return DSliverGridView.children(
+        key: key,
+        children: node.children<Widget>(),
+        crossAxisCount: node.s<int>("crossAxisCount", 4)!,
+        childAspectRatio: node.s<double>("childAspectRatio", 1)!,
+      );
+    } else {
+      return DSliverGridView.builder(
+        key: key,
+        builder: builder,
+        itemCount: node.s<int>('itemCount', 0)!,
+        crossAxisCount: node.s<int>("crossAxisCount", 4)!,
+        childAspectRatio: node.s<double>("childAspectRatio", 1)!,
+      );
+    }
   });
 });

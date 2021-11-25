@@ -75,12 +75,14 @@ class PictureViewer extends StatefulWidget {
   final Plugin plugin;
   final List list;
   final int initializeIndex;
+  final int? page;
 
   PictureViewer({
     Key? key,
     required this.plugin,
     required this.list,
     required this.initializeIndex,
+    this.page,
   }) : super(key: key);
 
   @override
@@ -879,6 +881,9 @@ class _PictureViewerState extends State<PictureViewer> {
       );
     }
     touch();
+    if (widget.page != null) {
+      index = widget.page!;
+    }
     willDismissAppBar();
     pagerController = PagerController(
       onPage: onPage,

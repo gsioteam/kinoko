@@ -16,7 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../localizations/localizations.dart';
 import '../main.dart';
 import '../widgets/progress_dialog.dart';
-import '../theme_page.dart';
+import 'theme_page.dart';
 import '../widgets/hint_point.dart';
 import '../widgets/picker_item.dart';
 import '../widgets/settings_list.dart';
@@ -184,13 +184,16 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
         localeValue = key;
       }
     });
+    String label = KeyValue.get(theme_key);
+    if (label.isEmpty)
+      label = "default";
 
     return MainSettingsList(
       title: Text(kt('settings')),
       children: [
         SettingCell(
           title: Text(kt('theme')),
-          subtitle: Text(kt('default')),
+          subtitle: Text(kt(label)),
           trailing: Icon(Icons.keyboard_arrow_right),
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(builder: (context) {

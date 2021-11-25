@@ -7,6 +7,7 @@
 
 #include <core/Ref.h>
 #include <core/Map.h>
+#include "../models/BookData.h"
 #include "../gs_define.h"
 
 namespace gs {
@@ -26,10 +27,11 @@ namespace gs {
         std::string subtitle;
         std::string link;
         std::string project_key;
-        gc::Variant data;
+        std::string raw_data;
         int type;
 
     public:
+        static gc::Ref<DataItem> fromData(const gc::Ref<BookData> &data);
 
         METHOD const std::string &getTitle() const {
             return title;
@@ -71,13 +73,6 @@ namespace gs {
         }
         PROPERTY(link, getLink, setLink);
 
-        METHOD const gc::Variant &getData() const {
-            return data;
-        }
-        METHOD void setData(const gc::Variant &val) {
-            this->data = val;
-        }
-        PROPERTY(data, getData, setData);
 
         METHOD int getType() const {
             return type;
@@ -97,6 +92,11 @@ namespace gs {
 
         METHOD bool isInCollection(const std::string &type);
         METHOD void removeFromCollection(const std::string &type);
+        METHOD gc::Ref<DataItem> fromCollectionData(const gc::Ref<CollectionData> &data);
+
+        METHOD std::string &getRawData() {
+            return raw_data;
+        }
 
     protected:
         ON_LOADED_BEGIN(cls, gc::Object)
@@ -105,12 +105,13 @@ namespace gs {
             ADD_PROPERTY(cls, "picture", ADD_METHOD(cls, DataItem, getPicture), ADD_METHOD(cls, DataItem, setPicture));
             ADD_PROPERTY(cls, "subtitle", ADD_METHOD(cls, DataItem, getSubtitle), ADD_METHOD(cls, DataItem, setSubtitle));
             ADD_PROPERTY(cls, "link", ADD_METHOD(cls, DataItem, getLink), ADD_METHOD(cls, DataItem, setLink));
-            ADD_PROPERTY(cls, "data", ADD_METHOD(cls, DataItem, getData), ADD_METHOD(cls, DataItem, setData));
             ADD_PROPERTY(cls, "type",ADD_METHOD(cls, DataItem, getType), ADD_METHOD(cls, DataItem, setType));
             ADD_PROPERTY(cls, "project_key",ADD_METHOD(cls, DataItem, getProjectKey), ADD_METHOD(cls, DataItem, setProjectKey));
 
+            ADD_METHOD(cls, DataItem, getRawData);
             ADD_METHOD(cls, DataItem, isInCollection);
             ADD_METHOD(cls, DataItem, removeFromCollection);
+            ADD_METHOD(cls, DataItem, fromCollectionData);
         ON_LOADED_END
     CLASS_END
 }

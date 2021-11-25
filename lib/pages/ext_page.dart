@@ -2,6 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dapp/flutter_dapp.dart';
+import 'package:kinoko/utils/js_extensions.dart';
 import 'package:kinoko/utils/plugin/plugin.dart';
 
 import '../configs.dart';
@@ -25,6 +26,8 @@ class ExtPage extends StatelessWidget {
     return DApp(
         entry: entry,
         fileSystems: [plugin.fileSystem],
+        classInfo: kiControllerInfo,
+        controllerBuilder: (script, state) => KiController(script, plugin)..state = state,
         onInitialize: (script) {
           Configs.instance.setupJS(script, plugin);
           // setupJS(script, plugin);
@@ -74,7 +77,7 @@ class ExtPageRoute extends PageRoute {
   ExtPageRoute({
     required this.builder,
     required this.center,
-    this.maintainState = false,
+    this.maintainState = true,
     this.duration = const Duration(milliseconds: 300),
   });
 

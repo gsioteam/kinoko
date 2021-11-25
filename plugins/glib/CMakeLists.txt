@@ -85,6 +85,7 @@ set(GLIB_SRC
 
         src/application/models/KeyValue.cpp
         src/application/models/CollectionData.cpp
+        src/application/models/BookData.cpp
         src/application/glib.cpp
 )
 

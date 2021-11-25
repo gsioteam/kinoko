@@ -84,10 +84,10 @@ class Processor extends ValueNotifier<List<Picture>> {
     value = newList;
   }
 
-  void _save(bool complete, JsValue state) {
+  void _save(bool complete, JsValue? state) {
     storage.data = {
       "complete": complete,
-      "state": jsValueToDart(state),
+      "state": state == null ? null : jsValueToDart(state),
       "list": value.map((e) => e.toData()).toList(),
     };
   }
@@ -110,7 +110,8 @@ class Processor extends ValueNotifier<List<Picture>> {
   }
 
   Future<void> load() async {
-    if (isComplete || isDisposed || loading.value) return;
+    if (isComplete && value.length > 0) return;
+    if (isDisposed || loading.value) return;
     var ret = jsProcessor.invoke("load", [dartToJsValue(jsProcessor.script, storage.data["state"])]);
     if (ret is JsValue) {
       return ret.asFuture;

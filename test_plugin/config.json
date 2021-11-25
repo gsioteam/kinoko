@@ -5,6 +5,9 @@
   "appbar_elevation": 0,
   "processor": "processor",
   "extensions": [{
+    "icon": "settings",
+    "index": "settings"
+  }, {
     "icon": "search",
     "index": "search"
   }]

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -103,6 +104,7 @@ class Configs {
 
   JsCompiled? _storageCompiled;
   List<dapp.Extension> _extensions = [];
+  late Locale locale;
 
   Future<void> initialize(BuildContext context) async {
     JsScript script = JsScript();
@@ -144,17 +146,21 @@ class Configs {
           return theme.disabledColor;
       }
     });
+
+    locale = Localizations.localeOf(context);
   }
 
-  void setupJS(JsScript script, Plugin plugin) {
-
-    PluginLocalStorage localStorage = PluginLocalStorage(plugin);
-    JsValue value = script.bind(localStorage, classInfo: dapp.storageClass);
-    script.global['_storage'] = value;
+  void setupJS(JsScript script, [Plugin? plugin]) {
+    if (plugin != null) {
+      JsValue value = script.bind(plugin.localStorage, classInfo: dapp.storageClass);
+      script.global['_storage'] = value;
+    }
 
     script.addClass(processorClass);
     script.addClass(downloadManager);
     script.addClass(favoriteManager);
+    script.addClass(notificationCenter);
+    script.addClass(scriptContextClass);
 
     if (_storageCompiled != null) {
       script.loadCompiled(_storageCompiled!);
@@ -162,6 +168,14 @@ class Configs {
     for (var ex in _extensions) {
       ex.attachTo(script);
     }
+
+    JsValue navigator = script.newObject();
+    navigator['appCodeName'] = 'dapp';
+    navigator['appName'] = 'dapp';
+    navigator['appVersion'] = '0.0.5';
+    navigator['language'] = locale.toLanguageTag();
+    navigator['platform'] = Platform.operatingSystem;
+    script.global['navigator'] = navigator;
   }
 
 }

@@ -218,7 +218,8 @@ class PluginsManager extends ValueNotifier<Plugin?> {
   }
 
   Map<String, Plugin> _cachedPlugins = {};
-  Plugin? findPlugin(String id) {
+  Plugin? findPlugin(String id, [bool update = false]) {
+    if (update) _cachedPlugins.remove(id);
     if (_cachedPlugins.containsKey(id)) return _cachedPlugins[id];
 
     File configFile = File("${_root.path}/$id/config.json");

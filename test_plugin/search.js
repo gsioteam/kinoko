@@ -1,5 +1,5 @@
-
-const baseURL = 'https://reqres.in/api/users';
+const supportLanguages = require('./support_languages');
+const baseURL = 'https://{0}.ninemanga.com/search/?wd={1}';
 
 class SearchController extends Controller {
 
@@ -22,8 +22,20 @@ class SearchController extends Controller {
         };
     }
 
+    getLanguage() {
+        let lan = localStorage['cached_language'];
+        if (lan) return lan;
+
+        for (let name of supportLanguages) {
+            if (navigator.language.startsWith(name)) {
+                return name;
+            }
+        }
+        return 'en';
+    }
+
     makeURL(word, page) {
-        return baseURL.replace('{0}', encodeURIComponent(word)).replace('{1}', page + 1);
+        return baseURL.replace('{0}', this.getLanguage()).replace('{1}', encodeURIComponent(word));
     }
 
     onSearchClicked() {
@@ -134,26 +146,39 @@ class SearchController extends Controller {
     }
 
     async request(url) {
-        let res = await fetch(url);
+        let res = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Mobile Safari/537.36',
+                'Accept-Language': 'en-US,en;q=0.9',
+            }
+        });
         let text = await res.text();
         
-        let data = JSON.parse(text);
-        let list = data.data;
-        
-        let items = [];
-        for (let item of list) {
-            // Inflate the data 3x.
-            items.push({
-                title: `${item.first_name} ${item.last_name}` ,
-                subtitle: item.email,
-                picture: item.avatar,
-                pictureHeaders: {
-                    Referer: 'https://reqres.in/'
-                },
-            });
+        return this.parseNoPageData(text);
+    }
 
+    parseNoPageData(html) {
+        const doc = HTMLParser.parse(html);
+
+        let nodes = doc.querySelectorAll('#list_container dl');
+        let results = [];
+        for (let node of nodes) {
+            let link = node.querySelector('.book-list a');
+            let item = {
+                link: link.getAttribute('href'),
+                title: link.querySelector('b').text,
+                picture: node.querySelector('dt img').getAttribute('src')
+            };
+            let pnodes = node.querySelectorAll('.book-list p');
+            if (pnodes.length != 0) {
+                item.subtitle = pnodes[pnodes.length - 1].text;
+            } else {
+                let subnode = node.querySelector('.book-list i');
+                if (subnode) item.subtitle = subnode.text;
+            }
+            results.push(item);
         }
-        return items;
+        return results;
     }
 }
 

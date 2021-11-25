@@ -217,10 +217,10 @@ void* fetch_thread(void *arg) {
         sprintf(name, "event:%d", controller->id);
         bmt_sendEvent(name, "error:no_remote");
     } else {
-        git_clone_options ops = GIT_CLONE_OPTIONS_INIT;
+        git_fetch_options ops = GIT_FETCH_OPTIONS_INIT;
 
-        ops.fetch_opts.callbacks.transfer_progress = fetch_progress;
-        ops.fetch_opts.callbacks.payload = controller;
+        ops.callbacks.transfer_progress = fetch_progress;
+        ops.callbacks.payload = controller;
 
         if (git_remote_fetch(remote, NULL, &ops, NULL) != 0) {
             sendError(controller);
@@ -256,6 +256,10 @@ void *checkout_thread(void *arg) {
     git_repository_fetchhead_foreach(controller->repo->repo, repository_fetchhead_foreach_cb2, &ret);
     if (perform_fastforward(controller->arg_1, controller->repo->repo, &ret, 1) != 0) {
         sendError(controller);
+    } else {
+        char name[64];
+        sprintf(name, "event:%d", controller->id);
+        bmt_sendEvent(name, "complete:success");
     }
 
     return NULL;

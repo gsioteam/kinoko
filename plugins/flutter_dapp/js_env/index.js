@@ -20,3 +20,47 @@ class EventTarget extends OriginEventTarget {
 }
 globalThis.Event = Event;
 globalThis.EventTarget = EventTarget;
+
+const iconv = require('xprezzo-iconv');
+
+class TextDecoder {
+    constructor(encoding) {
+        this._encoding = encoding ?? 'utf-8';
+    }
+
+    get encoding() {
+        return this._encoding;
+    }
+
+    decode(buf) {
+        return iconv.decode(Buffer.from(buf), this.encoding);
+    }
+}
+
+class TextEncoder {
+    
+    get encoding() {
+        return "utf-8";
+    }
+
+    encode(text) {
+        return iconv.encode(text, this.encoding);
+    }
+
+    encodeInto(text, array) {
+        let buf = this.encode(text);
+        let ret = {
+            read: text.length,
+            written: buf.length,
+        };
+        if (buf.length > array.length) {
+            ret.read = parseInt(array.length / buf.length * ret.read);
+            ret.written = array.length;
+        }
+        array.set(buf, 0);
+        return ret;
+    }
+}
+
+globalThis.TextDecoder = TextDecoder;
+globalThis.TextEncoder = TextEncoder;

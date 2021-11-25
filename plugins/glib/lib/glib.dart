@@ -47,9 +47,9 @@ class Glib {
     malloc.free(pstr);
 
     File file = File(root_path + '/cacert.pem');
-    if (!file.existsSync()) {
+    if (!await file.exists()) {
       ByteData data = await rootBundle.load("packages/glib/res/cacert.pem");
-      file.writeAsBytesSync(data.buffer.asUint8List());
+      await file.writeAsBytes(data.buffer.asUint8List());
     }
     pstr = file.path.toNativeUtf8();
     setCacertPath(pstr);

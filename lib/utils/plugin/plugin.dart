@@ -1,23 +1,16 @@
 
-import 'dart:async';
-import 'dart:io';
 import 'dart:convert';
 
-import 'package:crypto/crypto.dart';
-import 'package:convert/convert.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_dapp/flutter_dapp.dart';
 import 'package:flutter_dapp/extensions/storage.dart';
 import '../../configs.dart';
 import 'manga_loader.dart';
-import 'assets_filesystem.dart';
-import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:xml_layout/status.dart';
 import 'package:xml_layout/template.dart';
 import 'package:xml_layout/xml_layout.dart';
 import 'package:xml/xml.dart' as xml;
-
-import 'io_filesystem.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class MessageException implements Exception {
   final String message;
@@ -142,6 +135,9 @@ class Plugin {
           ],
       );
       Configs.instance.setupJS(_script!, this);
+      _script!.global["showToast"] = (String msg) {
+        Fluttertoast.showToast(msg: msg);
+      };
       // _script!.addClass(processorClass);
     }
     return _script;
@@ -170,122 +166,11 @@ class Plugin {
     }
   }
 
-  // GitRepository? _gitRepository;
-  // GitRepository? getRepository(String branch) {
-  //   if (_gitRepository == null) {
-  //     if (isValidate) {
-  //       var dir = Directory("${_root.path}/$id");
-  //       _gitRepository = GitRepository.allocate(dir.path, branch)..retain();
-  //     }
-  //   }
-  //   return _gitRepository;
-  // }
-  //
-  // Future<void> delete() async {
-  //   var dir = Directory("${_root.path}/$id");
-  //   if (await dir.exists()) {
-  //     await dir.delete(recursive: true);
-  //   }
-  // }
-  //
-  // Stream<GitActionValue> clone(String remoteUrl, String branch) async* {
-  //   var dir = Directory("${_root.path}/$id");
-  //   if (await dir.exists()) {
-  //     await dir.delete(recursive: true);
-  //   }
-  //   await dir.create(recursive: true);
-  //
-  //   GitRepository repo = GitRepository.allocate(dir.path, branch)..retain();
-  //   var action = repo.cloneFromRemote(remoteUrl)..retain();
-  //
-  //   StreamController<GitActionValue> streamController = StreamController();
-  //   action.setOnProgress((String string, int loaded, int total) {
-  //     streamController.add(GitActionValue(
-  //       action: action,
-  //       label: string,
-  //       loaded: loaded,
-  //       total: total,
-  //     ));
-  //   });
-  //   action.setOnComplete(() {
-  //     streamController.close();
-  //   });
-  //
-  //   yield* streamController.stream;
-  //
-  //   if (action.hasError()) {
-  //     yield GitActionValue(
-  //       action: action,
-  //       label: "",
-  //       loaded: 0,
-  //       total: 0,
-  //       error: action.getError(),
-  //     );
-  //   }
-  //
-  //   action.release();
-  //   repo.release();
-  //
-  // }
-
-  // Stream<GitActionValue> fetchAndCheckout(String branch) async* {
-  //
-  //   if (repo?.isOpen() == true) {
-  //     var action = repo!.fetch();
-  //     StreamController<GitActionValue> streamController = StreamController();
-  //     action.setOnProgress((String string, int loaded, int total) {
-  //       streamController.add(GitActionValue(
-  //         label: string,
-  //         loaded: loaded,
-  //         total: total,
-  //       ));
-  //     });
-  //     action.setOnComplete(() {
-  //       streamController.close();
-  //     });
-  //     yield* streamController.stream;
-  //
-  //     if (action.hasError()) {
-  //       yield GitActionValue(
-  //         label: "",
-  //         loaded: 0,
-  //         total: 0,
-  //         error: action.getError(),
-  //       );
-  //       return;
-  //     }
-  //
-  //     streamController = StreamController();
-  //     action = repo.checkout();
-  //     action.setOnProgress((String string, int loaded, int total) {
-  //       streamController.add(GitActionValue(
-  //         label: string,
-  //         loaded: loaded,
-  //         total: total,
-  //       ));
-  //     });
-  //     action.setOnComplete(() {
-  //       streamController.close();
-  //     });
-  //     yield* streamController.stream;
-  //
-  //     if (action.hasError()) {
-  //       yield GitActionValue(
-  //         label: "",
-  //         loaded: 0,
-  //         total: 0,
-  //         error: action.getError(),
-  //       );
-  //       return;
-  //     }
-  //
-  //   } else {
-  //     yield GitActionValue(
-  //       label: "",
-  //       loaded: 0,
-  //       total: 0,
-  //       error: "Can not open git repository."
-  //     );
-  //   }
-  // }
+  PluginLocalStorage? _localStorage;
+  PluginLocalStorage get localStorage {
+    if (_localStorage == null) {
+      _localStorage = PluginLocalStorage(this);
+    }
+    return _localStorage!;
+  }
 }

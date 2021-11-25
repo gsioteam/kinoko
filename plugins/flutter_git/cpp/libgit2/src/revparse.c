@@ -14,7 +14,7 @@
 
 #include "git2.h"
 
-static int maybe_sha_or_abbrev(git_object** out, git_repository *repo, const char *spec, size_t speclen)
+static int maybe_sha_or_abbrev(git_object **out, git_repository *repo, const char *spec, size_t speclen)
 {
 	git_oid oid;
 
@@ -24,7 +24,7 @@ static int maybe_sha_or_abbrev(git_object** out, git_repository *repo, const cha
 	return git_object_lookup_prefix(out, repo, &oid, speclen, GIT_OBJECT_ANY);
 }
 
-static int maybe_sha(git_object** out, git_repository *repo, const char *spec)
+static int maybe_sha(git_object **out, git_repository *repo, const char *spec)
 {
 	size_t speclen = strlen(spec);
 
@@ -34,7 +34,7 @@ static int maybe_sha(git_object** out, git_repository *repo, const char *spec)
 	return maybe_sha_or_abbrev(out, repo, spec, speclen);
 }
 
-static int maybe_abbrev(git_object** out, git_repository *repo, const char *spec)
+static int maybe_abbrev(git_object **out, git_repository *repo, const char *spec)
 {
 	size_t speclen = strlen(spec);
 
@@ -310,14 +310,14 @@ cleanup:
 	return error;
 }
 
-static int handle_at_syntax(git_object **out, git_reference **ref, const char *spec, size_t identifier_len, git_repository* repo, const char *curly_braces_content)
+static int handle_at_syntax(git_object **out, git_reference **ref, const char *spec, size_t identifier_len, git_repository *repo, const char *curly_braces_content)
 {
 	bool is_numeric;
 	int parsed = 0, error = -1;
 	git_buf identifier = GIT_BUF_INIT;
 	git_time_t timestamp;
 
-	assert(*out == NULL);
+	GIT_ASSERT(*out == NULL);
 
 	if (git_buf_put(&identifier, spec, identifier_len) < 0)
 		return -1;
@@ -524,7 +524,7 @@ static int extract_curly_braces_content(git_buf *buf, const char *spec, size_t *
 {
 	git_buf_clear(buf);
 
-	assert(spec[*pos] == '^' || spec[*pos] == '@');
+	GIT_ASSERT_ARG(spec[*pos] == '^' || spec[*pos] == '@');
 
 	(*pos)++;
 
@@ -537,7 +537,8 @@ static int extract_curly_braces_content(git_buf *buf, const char *spec, size_t *
 		if (spec[*pos] == '\0')
 			return GIT_EINVALIDSPEC;
 
-		git_buf_putc(buf, spec[(*pos)++]);
+		if (git_buf_putc(buf, spec[(*pos)++]) < 0)
+			return -1;
 	}
 
 	(*pos)++;
@@ -549,7 +550,7 @@ static int extract_path(git_buf *buf, const char *spec, size_t *pos)
 {
 	git_buf_clear(buf);
 
-	assert(spec[*pos] == ':');
+	GIT_ASSERT_ARG(spec[*pos] == ':');
 
 	(*pos)++;
 
@@ -567,7 +568,7 @@ static int extract_how_many(int *n, const char *spec, size_t *pos)
 	int parsed, accumulated;
 	char kind = spec[*pos];
 
-	assert(spec[*pos] == '^' || spec[*pos] == '~');
+	GIT_ASSERT_ARG(spec[*pos] == '^' || spec[*pos] == '~');
 
 	accumulated = 0;
 
@@ -585,7 +586,7 @@ static int extract_how_many(int *n, const char *spec, size_t *pos)
 			*pos = end_ptr - spec;
 		}
 
-	} 	while (spec[(*pos)] == kind && kind == '~');
+	} while (spec[(*pos)] == kind && kind == '~');
 
 	*n = accumulated;
 
@@ -659,7 +660,7 @@ static int ensure_left_hand_identifier_is_not_known_yet(git_object *object, git_
 	return GIT_EINVALIDSPEC;
 }
 
-int revparse__ext(
+static int revparse(
 	git_object **object_out,
 	git_reference **reference_out,
 	size_t *identifier_len_out,
@@ -675,7 +676,10 @@ int revparse__ext(
 
 	bool should_return_reference = true;
 
-	assert(object_out && reference_out && repo && spec);
+	GIT_ASSERT_ARG(object_out);
+	GIT_ASSERT_ARG(reference_out);
+	GIT_ASSERT_ARG(repo);
+	GIT_ASSERT_ARG(spec);
 
 	*object_out = NULL;
 	*reference_out = NULL;
@@ -835,7 +839,7 @@ int git_revparse_ext(
 	git_object *obj = NULL;
 	git_reference *ref = NULL;
 
-	if ((error = revparse__ext(&obj, &ref, &identifier_len, repo, spec)) < 0)
+	if ((error = revparse(&obj, &ref, &identifier_len, repo, spec)) < 0)
 		goto cleanup;
 
 	*object_out = obj;
@@ -881,14 +885,16 @@ int git_revparse(
 	const char *dotdot;
 	int error = 0;
 
-	assert(revspec && repo && spec);
+	GIT_ASSERT_ARG(revspec);
+	GIT_ASSERT_ARG(repo);
+	GIT_ASSERT_ARG(spec);
 
 	memset(revspec, 0x0, sizeof(*revspec));
 
 	if ((dotdot = strstr(spec, "..")) != NULL) {
 		char *lstr;
 		const char *rstr;
-		revspec->flags = GIT_REVPARSE_RANGE;
+		revspec->flags = GIT_REVSPEC_RANGE;
 
 		/*
 		 * Following git.git, don't allow '..' because it makes command line
@@ -904,7 +910,7 @@ int git_revparse(
 		lstr = git__substrdup(spec, dotdot - spec);
 		rstr = dotdot + 2;
 		if (dotdot[2] == '.') {
-			revspec->flags |= GIT_REVPARSE_MERGE_BASE;
+			revspec->flags |= GIT_REVSPEC_MERGE_BASE;
 			rstr++;
 		}
 
@@ -922,7 +928,7 @@ int git_revparse(
 
 		git__free((void*)lstr);
 	} else {
-		revspec->flags = GIT_REVPARSE_SINGLE;
+		revspec->flags = GIT_REVSPEC_SINGLE;
 		error = git_revparse_single(&revspec->from, repo, spec);
 	}
 

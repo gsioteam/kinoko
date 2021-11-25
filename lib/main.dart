@@ -27,6 +27,7 @@ import 'utils/local_storage.dart';
 import 'widgets/hint_point.dart';
 import 'utils/plugin/plugin.dart';
 import 'utils/plugin/assets_filesystem.dart';
+import 'package:xml_layout/types/icons.dart' as icons;
 
 class AppChangedNotification extends Notification {
 }
@@ -56,6 +57,8 @@ class MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
+    if (locale != null)
+      Configs.instance.locale = locale!;
     return NotificationListener<AppChangedNotification>(
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle(
@@ -190,8 +193,8 @@ class SplashScreenState extends State<SplashScreen> {
       if (theme.title == title) {
         return theme.data;
       }
-      return themes[0].data;
     }
+    return themes[0].data;
   }
 
   Future<void> setup(BuildContext context) async {
@@ -215,6 +218,8 @@ class SplashScreenState extends State<SplashScreen> {
 
     await Configs.instance.initialize(context);
     await PluginsManager.instance.ready;
+
+    icons.register();
 
     File cacert = File("${dir.path}/cacert.pem");
     if (!await cacert.exists()) {
