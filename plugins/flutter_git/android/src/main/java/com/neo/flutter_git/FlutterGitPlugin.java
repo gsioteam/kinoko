@@ -43,6 +43,7 @@ public class FlutterGitPlugin implements FlutterPlugin, MethodCallHandler {
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
     channel.setMethodCallHandler(null);
+    setup(null);
   }
 
   native void setup(Class clazz);

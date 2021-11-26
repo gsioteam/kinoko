@@ -51,7 +51,6 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
 #        )
 add_definitions(-DCONFIG_VERSION=\"qjs_u\" -DEMSCRIPTEN -DDUMP_LEAKS -DCONFIG_BIGNUM)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "iOS") 
-set(CORE_SRC ${CORE_SRC} src/gcore/script/js_core/JSCoreScript.mm)
 endif()
 
 add_library(

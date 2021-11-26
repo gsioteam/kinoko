@@ -23,6 +23,7 @@
 using namespace gc;
 
 extern "C" void initGlib() {
+    printf("hello glib\n");
     ClassDB::reg<gc::_Map>();
     ClassDB::reg<gc::_Array>();
     ClassDB::reg<gc::_Callback>();

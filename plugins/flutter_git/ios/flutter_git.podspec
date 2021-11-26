@@ -13,10 +13,19 @@ A new Flutter plugin.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Your Company' => 'email@example.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
-  s.public_header_files = 'Classes/**/*.h'
+  s.source_files = [
+    'Classes/**/*',
+    'include/flutter_git.h',
+    'lib/libflutter_git_ios.a'
+  ]
+  s.public_header_files = [
+    'Classes/**/*.h',
+  ]
   s.dependency 'Flutter'
   s.platform = :ios, '8.0'
+  s.libraries = ['z', 'iconv']
+  s.static_framework = true
+  s.vendored_libraries = 'lib/libflutter_git_ios.a'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

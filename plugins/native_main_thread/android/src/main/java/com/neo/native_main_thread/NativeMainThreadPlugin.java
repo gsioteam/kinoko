@@ -28,7 +28,6 @@ public class NativeMainThreadPlugin implements FlutterPlugin, MethodCallHandler 
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-    Log.i("test", "Init NativeMainThreadPlugin");
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "native_main_thread");
     channel.setMethodCallHandler(this);
     handler = new Handler();

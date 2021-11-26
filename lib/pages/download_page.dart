@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glib/main/models.dart';
 import 'package:kinoko/utils/book_info.dart';
+import 'package:kinoko/utils/plugin/manga_loader.dart';
 import 'package:kinoko/utils/plugin/plugin.dart';
 import 'package:kinoko/utils/plugins_manager.dart';
 import 'package:kinoko/widgets/no_data.dart';
@@ -19,6 +20,8 @@ import 'package:filesystem_picker/filesystem_picker.dart';
 
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:math' as math;
+import 'package:path/path.dart' as path;
 
 import '../widgets/instructions_dialog.dart';
 
@@ -104,69 +107,74 @@ class _ChapterCellState extends State<ChapterCell> {
                         return FilesystemPicker(
                             rootDirectory: Directory(info.rootDir),
                             onSelect: (folderPath) async {
-                              // DownloadQueueItem queueItem = widget.item;
-                              // DataItem item = queueItem.item.retain();
-                              // String name = "${queueItem.info.title}";
-                              // if (item.title.isNotEmpty) {
-                              //   name = name + "(${item.title})";
-                              // }
-                              // TextEditingController controller = TextEditingController(text: name);
-                              // var newName = await showDialog<String>(
-                              //     context: context,
-                              //     builder: (context) {
-                              //       var theme = Theme.of(context);
-                              //       return AlertDialog(
-                              //         title: Text(kt("directory_name")),
-                              //         content: TextField(
-                              //           controller: controller,
-                              //           autofocus: true,
-                              //         ),
-                              //         actions: [
-                              //           MaterialButton(
-                              //               child: Text(kt("ok"), style: theme.textTheme.bodyText1?.copyWith(color: theme.primaryColor),),
-                              //               onPressed: () {
-                              //                 String text = controller.value.text;
-                              //                 if (text.isNotEmpty) {
-                              //                   Navigator.of(context).pop(text);
-                              //                 } else {
-                              //                   Fluttertoast.showToast(msg: kt("name_empty"), toastLength: Toast.LENGTH_SHORT);
-                              //                 }
-                              //               }
-                              //           )
-                              //         ],
-                              //       );
-                              //     }
-                              // );
-                              // if (newName != null) name = newName;
-                              // name = name.replaceAll("/", " ");
-                              // Directory dir = Directory(folderPath + "/$name");
-                              // if (!await dir.exists()) {
-                              //   dir.create();
-                              // }
-                              //
-                              // var subtimes = item.getSubItems();
-                              // List<String> urls = subtimes.map<String>((element) => element.picture).toList();
-                              // int len = math.max(urls.length.toString().length, 4);
-                              //
-                              // for (int i = 0, t = urls.length; i < t; ++i) {
-                              //   var url = urls[i];
-                              //   var file = await queueItem.cacheManager.getFileFromCache(Uri.parse(url));
-                              //   if ((await file.stat()).size > 0) {
-                              //     String index = i.toString();
-                              //     for (int j = index.length; j < len; ++j) {
-                              //       index = "0" + index;
-                              //     }
-                              //     var uri = Uri.parse(url);
-                              //     await file.copy("${dir.path}/p_$index${path.extension(uri.path)}");
-                              //   } else {
-                              //     print("No output $url");
-                              //   }
-                              // }
-                              // item.release();
-                              // Fluttertoast.showToast(
-                              //     msg: kt("output_to").replaceFirst("{0}", dir.path)
-                              // );
-                              // Navigator.of(context).pop();
+                              DownloadQueueItem queueItem = widget.item;
+                              var item = queueItem.info;
+                              String name = "${item.title}";
+                              if (item.chapterName.isNotEmpty) {
+                                name = name + "(${item.chapterName})";
+                              }
+                              TextEditingController controller = TextEditingController(text: name);
+                              var newName = await showDialog<String>(
+                                  context: context,
+                                  builder: (context) {
+                                    var theme = Theme.of(context);
+                                    return AlertDialog(
+                                      title: Text(kt("directory_name")),
+                                      content: TextField(
+                                        controller: controller,
+                                        autofocus: true,
+                                      ),
+                                      actions: [
+                                        MaterialButton(
+                                            child: Text(kt("ok"), style: theme.textTheme.bodyText1?.copyWith(color: theme.primaryColor),),
+                                            onPressed: () {
+                                              String text = controller.value.text;
+                                              if (text.isNotEmpty) {
+                                                Navigator.of(context).pop(text);
+                                              } else {
+                                                Fluttertoast.showToast(msg: kt("name_empty"), toastLength: Toast.LENGTH_SHORT);
+                                              }
+                                            }
+                                        )
+                                      ],
+                                    );
+                                  }
+                              );
+                              if (newName != null) name = newName;
+                              name = name.replaceAll("/", " ");
+                              Directory dir = Directory(folderPath + "/$name");
+                              if (!await dir.exists()) {
+                                dir.create();
+                              }
+
+                              Plugin plugin = PluginsManager.instance.findPlugin(queueItem.pluginID)!;
+                              var processor = Processor(plugin: plugin, data: item.data);
+                              if (!processor.isComplete) {
+                                Fluttertoast.showToast(msg: kt("not_complete"));
+                                return;
+                              }
+
+                              List<String> urls = processor.value.map<String>((element) => element.url!).toList();
+                              int len = math.max(urls.length.toString().length, 4);
+
+                              for (int i = 0, t = urls.length; i < t; ++i) {
+                                var url = urls[i];
+                                var file = await queueItem.cacheManager.getFileFromCache(Uri.parse(url));
+                                if ((await file.stat()).size > 0) {
+                                  String index = i.toString();
+                                  for (int j = index.length; j < len; ++j) {
+                                    index = "0" + index;
+                                  }
+                                  var uri = Uri.parse(url);
+                                  await file.copy("${dir.path}/p_$index${path.extension(uri.path)}");
+                                } else {
+                                  print("No output $url");
+                                }
+                              }
+                              Fluttertoast.showToast(
+                                  msg: kt("output_to").replaceFirst("{0}", dir.path)
+                              );
+                              Navigator.of(context).pop();
                             },
                             fsType: FilesystemType.folder,
                             fileTileSelectMode: FileTileSelectMode.checkButton

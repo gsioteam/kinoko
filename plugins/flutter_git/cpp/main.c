@@ -2,19 +2,19 @@
 // Created by gen on 11/19/21.
 //
 
-#include <malloc.h>
+#include <stdio.h>
 #include <string.h>
 #include <git2.h>
 #include <stdbool.h>
 #include <pthread.h>
 #include "bmt.h"
 
-typedef struct {
+typedef struct _GitRepository {
     const char *path;
     git_repository *repo;
 } GitRepository;
 
-typedef struct {
+typedef struct _GitController {
     int id;
     int canceled;
     char *arg_1;

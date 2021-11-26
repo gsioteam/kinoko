@@ -11,10 +11,16 @@ include_directories(
 
 add_subdirectory(libgit2)
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
+    set(LIB_TYPE SHARED)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "iOS")
+    set(LIB_TYPE STATIC)
+endif()
+
 add_library(
         flutter_git
 
-        SHARED
+        ${LIB_TYPE}
 
         main.c
         bmt.c

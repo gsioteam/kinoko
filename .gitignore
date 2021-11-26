@@ -54,3 +54,6 @@ android/app/fdroid/release
 .gradle
 local.properties
 .cxx
+plugins/flutter_git/ios/include 
+plugins/flutter_git/ios/lib
+plugins/flutter_git/cpp/.vscode
