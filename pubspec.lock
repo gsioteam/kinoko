@@ -200,10 +200,10 @@ packages:
   flutter_git:
     dependency: "direct main"
     description:
-      path: "plugins/flutter_git"
-      relative: true
-    source: path
-    version: "0.0.1"
+      name: flutter_git
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.2"
   flutter_inappwebview:
     dependency: "direct main"
     description:
@@ -389,10 +389,10 @@ packages:
   native_main_thread:
     dependency: transitive
     description:
-      path: "plugins/native_main_thread"
-      relative: true
-    source: path
-    version: "0.0.1"
+      name: native_main_thread
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.2"
   octo_image:
     dependency: transitive
     description:

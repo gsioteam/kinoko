@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/Users/gen/Programs/kinoko_git/plugins/native_main_thread/android/.cxx/cmake/release/armeabi-v7a",
-  "command": "/Users/gen/Library/Android/sdk/ndk/21.0.6113669/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang --target=armv7-none-linux-androideabi16 --gcc-toolchain=/Users/gen/Library/Android/sdk/ndk/21.0.6113669/toolchains/llvm/prebuilt/darwin-x86_64 --sysroot=/Users/gen/Library/Android/sdk/ndk/21.0.6113669/toolchains/llvm/prebuilt/darwin-x86_64/sysroot   -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security  -Oz -DNDEBUG  -fPIC   -o CMakeFiles/native_main_thread.dir/src/main/cpp/main.c.o   -c /Users/gen/Programs/kinoko_git/plugins/native_main_thread/android/src/main/cpp/main.c",
-  "file": "/Users/gen/Programs/kinoko_git/plugins/native_main_thread/android/src/main/cpp/main.c"
-}
-]
