@@ -157,7 +157,7 @@ class PluginsManager extends ValueNotifier<Plugin?> {
         var ret = tokenVerify(token, info.src, _prev, container.publicKey!);
         if (ret) {
           _prev = token;
-          if (_added.data.contains(info.src)) {
+          if (_added.data.contains(info.src) || info.ignore == true) {
             continue;
           }
           _added.data.add(info.src);
