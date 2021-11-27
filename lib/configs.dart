@@ -42,6 +42,7 @@ const String history_key = "history";
 const String viewed_key = "viewed";
 
 const String v2_key = "v2_2_setup";
+const String v3_key = "v3_setup";
 
 const String theme_key = "theme_key";
 

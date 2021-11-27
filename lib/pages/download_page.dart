@@ -527,7 +527,6 @@ class _DownloadPageState extends State<DownloadPage> {
   }
 
   final GlobalKey iconKey = GlobalKey();
-  @override
   List<Widget> buildActions(BuildContext context) {
     bool has = KeyValue.get("$viewed_key:download") == "true";
     return [
@@ -606,6 +605,8 @@ class _DownloadPageState extends State<DownloadPage> {
             }
         );
         KeyValue.set("$viewed_key:download", "true");
+        setState(() {
+        });
         // AppStatusNotification().dispatch(context);
       });
     }

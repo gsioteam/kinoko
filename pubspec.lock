@@ -203,7 +203,7 @@ packages:
       name: flutter_git
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.2"
+    version: "0.0.3"
   flutter_inappwebview:
     dependency: "direct main"
     description:
@@ -386,13 +386,6 @@ packages:
       relative: true
     source: path
     version: "0.1.10"
-  native_main_thread:
-    dependency: transitive
-    description:
-      name: native_main_thread
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.0.2"
   octo_image:
     dependency: transitive
     description:

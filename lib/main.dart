@@ -185,6 +185,8 @@ class SplashScreenState extends State<SplashScreen> {
         }
       }
       KeyValue.set(v2_key, 'true');
+    } else {
+
     }
   }
 

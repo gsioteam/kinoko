@@ -517,7 +517,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
             }
         );
          KeyValue.set("$viewed_key:fav", "true");
-         // AppStatusNotification().dispatch(context);
+         setState(() {
+         });
       });
     }
 

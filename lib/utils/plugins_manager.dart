@@ -124,7 +124,7 @@ class PluginsManager extends ValueNotifier<Plugin?> {
 
   Future<void> _setup() async {
     Directory dir = await path_provider.getApplicationSupportDirectory();
-    _root = Directory("${dir.path}/v4_plugins");
+    _root = Directory("${dir.path}/v3_plugins");
     String mainID = KeyValue.get(_mainPluginKey);
     value = findPlugin(mainID);
   }
