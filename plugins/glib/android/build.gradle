@@ -22,7 +22,7 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     defaultConfig {
         minSdkVersion 16
@@ -35,12 +35,6 @@ android {
         }
         ndk {
             stl = 'c++_shared'
-//            abiFilters = [
-//                    'arm64-v8a',
-//                    'x86_64',
-//                    'armeabi-v7a',
-//                    'x86'
-//            ]
         }
     }
     lintOptions {
@@ -52,5 +46,4 @@ android {
         }
     }
 
-    ndkVersion '21.4.7075529'
 }

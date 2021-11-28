@@ -19,14 +19,14 @@ enum ImageFit {
 
 class ZoomImage extends StatefulWidget {
   final ImageProvider imageProvider;
-  final WidgetBuilder loadingWidget;
-  final WidgetBuilder errorWidget;
+  final WidgetBuilder? loadingWidget;
+  final WidgetBuilder? errorWidget;
   final ImageFit fit;
-  final OneFingerCallback onTap;
+  final OneFingerCallback? onTap;
 
   ZoomImage({
-    Key key,
-    @required this.imageProvider,
+    Key? key,
+    required this.imageProvider,
     this.loadingWidget,
     this.errorWidget,
     this.fit = ImageFit.FitWidth,
@@ -42,15 +42,15 @@ const Duration _moveDuration = Duration(milliseconds: 200);
 
 class _ZoomImageState extends State<ZoomImage> {
 
-  ImageInfo _imageInfo;
-  ImageStreamListener _imageStreamListener;
-  ImageStream _imageStream;
+  ImageInfo? _imageInfo;
+  late ImageStreamListener _imageStreamListener;
+  ImageStream? _imageStream;
   bool _hasError = false;
 
   Offset _translation = Offset.zero;
   double _scale = 1;
 
-  Size _imageSize;
+  Size _imageSize = Size.zero;
 
   double _minScale = 1;
   double _maxScale = 4;
@@ -74,7 +74,7 @@ class _ZoomImageState extends State<ZoomImage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            widget.errorWidget?.call(context),
+            if (widget.errorWidget != null) widget.errorWidget!.call(context),
             Padding(
               padding: EdgeInsets.only(top: 5),
               child: OutlinedButton(
@@ -94,7 +94,7 @@ class _ZoomImageState extends State<ZoomImage> {
         ),
       );
     } else {
-      ui.Image image = _imageInfo?.image;
+      ui.Image? image = _imageInfo?.image;
       if (image != null) {
         double width;
         double height;
@@ -168,8 +168,8 @@ class _ZoomImageState extends State<ZoomImage> {
     }
   }
 
-  Offset _oldScalePoint;
-  double _oldScale;
+  Offset _oldScalePoint = Offset.zero;
+  double _oldScale = 1;
   void _onScaleStart(ScaleStartDetails details) {
     _oldScalePoint = details.focalPoint;
     _oldScale = 1;
@@ -274,7 +274,7 @@ class _ZoomImageState extends State<ZoomImage> {
     });
   }
 
-  void _getError(dynamic exception, StackTrace stackTrace) {
+  void _getError(dynamic exception, StackTrace? stackTrace) {
     setState(() {
       _hasError = true;
     });
@@ -287,13 +287,12 @@ class _ZoomImageState extends State<ZoomImage> {
   }
 
   void _updateImage() {
-    final ImageStream oldImageStream = _imageStream;
+    final ImageStream? oldImageStream = _imageStream;
     _imageStream = widget.imageProvider.resolve(createLocalImageConfiguration(context));
-    if (_imageStream.key != oldImageStream?.key) {
+    if (_imageStream!.key != oldImageStream?.key) {
       _hasError = false;
       oldImageStream?.removeListener(_imageStreamListener);
-      if (_imageStreamListener != null)
-        _imageStream.addListener(_imageStreamListener);
+      _imageStream!.addListener(_imageStreamListener);
     }
   }
 
@@ -320,10 +319,10 @@ class _ZoomImageState extends State<ZoomImage> {
     if (_hasError) {
       setState(() {
         _hasError = false;
-        _imageStream.removeListener(_imageStreamListener);
+        _imageStream?.removeListener(_imageStreamListener);
         widget.imageProvider.evict();
         _imageStream = widget.imageProvider.resolve(createLocalImageConfiguration(context));
-        _imageStream.addListener(_imageStreamListener);
+        _imageStream!.addListener(_imageStreamListener);
       });
     }
   }

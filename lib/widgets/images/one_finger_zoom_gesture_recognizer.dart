@@ -17,16 +17,16 @@ class OneFingerZoomGestureRecognizer extends OneSequenceGestureRecognizer {
   @override
   final String debugDescription = "one_finger_zoom";
 
-  PointerEvent startPointer;
-  Timer _timer;
+  PointerEvent? startPointer;
+  Timer? _timer;
 
   _OneFingerZoomState _state = _OneFingerZoomState.None;
   Offset _offset = Offset.zero;
 
-  OneFingerCallback onStart;
-  OneFingerCallback onUpdate;
-  OneFingerCallback onEnd;
-  OneFingerCallback onTap;
+  OneFingerCallback? onStart;
+  OneFingerCallback? onUpdate;
+  OneFingerCallback? onEnd;
+  OneFingerCallback? onTap;
 
   OneFingerZoomGestureRecognizer() {
     // this.team = _team;
@@ -81,7 +81,7 @@ class OneFingerZoomGestureRecognizer extends OneSequenceGestureRecognizer {
   void _cancel() {
     resolve(GestureDisposition.rejected);
     if (startPointer != null)
-      stopTrackingPointer(startPointer.pointer);
+      stopTrackingPointer(startPointer!.pointer);
     _timer?.cancel();
     _timer = null;
   }
@@ -90,7 +90,7 @@ class OneFingerZoomGestureRecognizer extends OneSequenceGestureRecognizer {
     _timer = null;
     resolve(GestureDisposition.accepted);
     _state = _OneFingerZoomState.Moving;
-    onStart?.call(startPointer);
+    onStart?.call(startPointer!);
   }
 
   @override

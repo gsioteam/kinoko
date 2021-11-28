@@ -5,7 +5,7 @@ author:
 homepage:
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -33,9 +33,6 @@ flutter:
   plugin:
     androidPackage: com.qlp.glib
     pluginClass: GlibPlugin
-
-  assets:
-    - res/cacert.pem
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

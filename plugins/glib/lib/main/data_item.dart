@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 import 'package:glib/core/array.dart';
 import 'package:glib/core/data.dart';
 
@@ -33,8 +35,12 @@ class DataItem extends Base {
   String get link => call("getLink");
   set link(String v) => call("setLink", argv: [v]);
 
-  dynamic get data => call("getData");
-  set data(v) => call("setData", argv: [v]);
+  dynamic get data {
+    String str = call("getRawData");
+    if (str.isNotEmpty) {
+      return jsonDecode(str);
+    }
+  }
   
   String get projectKey => call("getProjectKey");
   set projectKey(String v) => call("setProjectKey", argv: [v]);
@@ -77,7 +83,7 @@ class DataItem extends Base {
   bool isInCollection(String type) => call("isInCollection", argv: [type]);
   void removeFromCollection(String type) => call("removeFromCollection", argv: [type]);
 
-  static DataItem fromCollectionData(CollectionData data) => Base.s_call(DataItem, "fromCollectionData", argv: [data]);
+  static DataItem? fromCollectionData(CollectionData data) => Base.s_call(DataItem, "fromCollectionData", argv: [data]);
 
   static String toJSON(Array items) => Base.s_call(DataItem, "toJSON", argv: [items]);
   static Array fromJSON(String json) => Base.s_call(DataItem, "fromJSON", argv: [json]);

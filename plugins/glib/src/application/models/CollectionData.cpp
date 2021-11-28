@@ -2,9 +2,7 @@
 // Created by gen on 7/24/20.
 //
 
-#include <nlohmann/json.hpp>
 #include "CollectionData.h"
-#include "../utils/JSON.h"
 
 using namespace gs;
 
@@ -24,13 +22,4 @@ gc::Ref<CollectionData> CollectionData::find(const std::string &type, const std:
     if (arr->size())
         return arr->get(0);
     return gc::Ref<CollectionData>::null();
-}
-
-void CollectionData::setJSONData(const gc::Variant &data) {
-    if (data) {
-        nlohmann::json json = JSON::serialize(data);
-        setData(json.dump());
-    } else {
-        setData("");
-    }
 }

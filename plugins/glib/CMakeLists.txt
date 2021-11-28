@@ -23,13 +23,9 @@ endif()
 add_definitions(-DDEBUG)
 include_directories(
         src/gcore
-        thirdparties/mruby/include
-        thirdparties/include
-        thirdparties/libgit2/include
-        thirdparties/quickjs
         thirdparties/
-        thirdparties/secp256k1/include
         thirdparties/sha256
+        thirdparties/secp256k1/include
 )
 
 add_subdirectory(thirdparties/sqlite3)
@@ -40,20 +36,9 @@ set(CORE_SRC
         src/gcore/core/IMP.cpp
         src/gcore/core/script/Script.cpp
         src/gcore/script/dart/DartScript.cpp
-        src/gcore/script/ruby/RubyScript.cpp
 )
 if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
 # set(CORE_SRC ${CORE_SRC} src/gcore/script/v8/V8Script.cpp)
-set(CORE_SRC
-        ${CORE_SRC}
-        src/gcore/script/quickjs/QuickJSScript.cpp
-        src/gcore/script/quickjs/quickjs_ext.c
-        thirdparties/quickjs/libbf.c
-        thirdparties/quickjs/qjscalc.c
-        thirdparties/quickjs/libregexp.c
-        thirdparties/quickjs/libunicode.c
-        thirdparties/quickjs/cutils.c
-        )
 #set(CORE_SRC
 #
 #        ${CORE_SRC}
@@ -66,7 +51,6 @@ set(CORE_SRC
 #        )
 add_definitions(-DCONFIG_VERSION=\"qjs_u\" -DEMSCRIPTEN -DDUMP_LEAKS -DCONFIG_BIGNUM)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "iOS") 
-set(CORE_SRC ${CORE_SRC} src/gcore/script/js_core/JSCoreScript.mm)
 endif()
 
 add_library(
@@ -78,30 +62,6 @@ add_library(
         ${CORE_SRC}
 )
 
-file(GLOB_RECURSE MRUBY_SOURCES thirdparties/mruby/*.c)
-
-add_library(
-        mruby
-
-        STATIC
-
-        ${MRUBY_SOURCES}
-)
-
-target_compile_definitions(
-        mruby
-
-        PRIVATE -DHAVE_ONIGMO_H
-)
-target_include_directories(
-        mruby
-
-        PRIVATE
-
-        thirdparties/mruby/mrbgems/mruby-http/include
-        thirdparties/onigmo
-)
-
 add_library(
         bit64
 
@@ -111,54 +71,30 @@ add_library(
 
 set(GLIB_SRC
 
-        src/application/main/Collection.cpp
-        src/application/main/Context.cpp
-        src/application/main/Project.cpp
         src/application/main/DataItem.cpp
-        src/application/main/LibraryContext.cpp
-        src/application/main/Settings.cpp
 
         thirdparties/sha1/sha1.c
 
-        src/application/utils/dart/DartBrowser.cpp
-        src/application/utils/dart/DartRequest.cpp
         src/application/utils/dart/DartPlatform.cpp
-        src/application/utils/JSON.cpp
-        src/application/utils/YAML.cpp
-        src/application/utils/GitRepository.cpp
-        src/application/utils/SharedData.cpp
-        src/application/utils/Encoder.cpp
-        src/application/utils/GumboParser.cpp
 
         src/application/utils/database/SQLite.cpp
-        src/application/utils/database/Model.cpp
         src/application/utils/database/DBMaker.cpp
+        src/application/utils/database/Model.cpp
         src/application/utils/Bit64.cpp
-        src/application/utils/Error.cpp
-        src/application/utils/ScriptContext.cpp
 
-        src/application/models/GitLibrary.cpp
         src/application/models/KeyValue.cpp
-        src/application/models/BookData.cpp
         src/application/models/CollectionData.cpp
-        src/application/models/SearchData.cpp
+        src/application/models/BookData.cpp
         src/application/glib.cpp
 )
 
 set(GLIB_LIBS
 
         core
-        git2
         sqlite3
         bit64
-        iconv
-        gumbo
-        gumbo_query
         secp256k1
-        yaml
         sha256
-        mruby
-        onigmo
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
@@ -189,52 +125,6 @@ target_include_directories(
         thirdparties/sha1
 )
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
-file(GLOB ICONV_SRCLIB thirdparties/iconv/src/*.c)
-
-add_library(
-        iconv
-        STATIC
-
-        ${ICONV_SRCLIB}
-        thirdparties/iconv/src/uniwidth/width.c
-)
-target_include_directories(
-        iconv
-        PRIVATE
-        thirdparties/iconv/src
-)
-target_include_directories(
-        iconv
-        PUBLIC
-        thirdparties/iconv/include
-)
-endif()
-
-file(GLOB GUMBO_SRC thirdparties/gumbo/*.c)
-
-add_library(
-        gumbo
-        STATIC
-        ${GUMBO_SRC}
-)
-
-include_directories(
-        thirdparties/gumbo
-)
-
-file(GLOB GUMBO_QUERY_SRC thirdparties/gumbo-query/*.cpp)
-
-add_library(
-        gumbo_query
-        STATIC
-        ${GUMBO_QUERY_SRC}
-)
-
-
-
-add_subdirectory(thirdparties/openssl)
-
 #set(OPENSSL_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/thirdparties/openssl/openssl)
 #set(OPENSSL_INCLUDE_DIR ${OPENSSL_ROOT}/include)
 #if (${CMAKE_SYSTEM_NAME} MATCHES "Android")
@@ -247,10 +137,6 @@ add_subdirectory(thirdparties/openssl)
 #    set(OPENSSL_LIBRARIES ${OPENSSL_ROOT}/ios/lib)
 #    SET(GIT_USE_STAT_MTIMESPEC 1)
 #endif()
-
-set(OPENSSL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparties/openssl/include)
-
-add_subdirectory(thirdparties/libgit2)
 
 add_library(
         secp256k1
@@ -277,45 +163,6 @@ add_library(
         STATIC
 
         thirdparties/sha256/sha256.c
-)
-
-file(GLOB YAML_SRC thirdparties/libyaml/src/*.c)
-
-add_library(
-        yaml
-        STATIC
-
-        ${YAML_SRC}
-)
-
-target_include_directories(
-        yaml
-        PUBLIC
-        thirdparties/libyaml/include
-)
-
-target_compile_definitions(
-        yaml
-        PRIVATE
-        -DHAVE_CONFIG_H=1
-)
-
-file(GLOB ONIGMO_SRC thirdparties/onigmo/*.c thirdparties/onigmo/enc/*.c)
-
-add_library(
-        onigmo
-        STATIC
-        ${ONIGMO_SRC}
-)
-target_include_directories(
-        onigmo
-        PRIVATE
-        thirdparties/onigmo/
-)
-target_compile_definitions(
-        onigmo
-        PRIVATE
-        -DHAVE_CONFIG_H=1
 )
 
 target_link_libraries(

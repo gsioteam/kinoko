@@ -1,13 +1,11 @@
 
 import 'package:flutter/cupertino.dart';
-import 'package:glib/main/context.dart' as glib;
-import 'package:kinoko/layout/layout.xml_layout.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
 import 'package:kinoko/widgets/images/one_finger_zoom_gesture_recognizer.dart';
 
 class PhotoInformation {
-  String url;
-  Map<String, String> headers;
+  String? url;
+  Map<String, String>? headers;
 
   PhotoInformation(this.url, [this.headers]);
 }
@@ -19,11 +17,12 @@ enum BoundType {
 
 class PagerController {
   Key key = GlobalKey();
-  void Function(int) onPage;
-  void Function(BoundType) onOverBound;
+  void Function(int)? onPage;
+  void Function(BoundType)? onOverBound;
   int _index;
   set index(int v) => _index = v;
   int get index => _index;
+  PagerState? state;
 
   PagerController({
     int index = 0,
@@ -31,7 +30,6 @@ class PagerController {
     this.onOverBound,
   }) : _index = index;
 
-  PagerState state;
 
   void dispose() {
     state = null;
@@ -71,11 +69,11 @@ abstract class Pager extends StatefulWidget {
   final PhotoInformation Function(int index) imageUrlProvider;
 
   Pager({
-    Key key,
-    @required this.controller,
-    @required this.cacheManager,
-    @required this.itemCount,
-    @required this.imageUrlProvider,
+    Key? key,
+    required this.controller,
+    required this.cacheManager,
+    required this.itemCount,
+    required this.imageUrlProvider,
   }) : super(key: key);
 
   @override

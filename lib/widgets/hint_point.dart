@@ -6,11 +6,11 @@ const double _pointSize = 12;
 
 class HintPoint extends StatefulWidget {
 
-  final ValueNotifier<bool> controller;
+  final ValueNotifier<bool>? controller;
   final bool value;
 
   HintPoint({
-    Key key,
+    Key? key,
     this.controller,
     this.value = false,
   }) : super(key: key);

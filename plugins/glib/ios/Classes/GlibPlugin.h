@@ -2,6 +2,4 @@
 
 @interface GlibPlugin : NSObject<FlutterPlugin>
 
-+ (void)setDebugPath:(NSString *)path;
-
 @end

@@ -7,9 +7,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
-import 'package:markdown_widget/markdown_widget.dart';
 import '../localizations/localizations.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:path/path.dart' as Path;
@@ -17,8 +17,8 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 Future<void> showInstructionsDialog(BuildContext context, String path, {
-  String entry,
-  Future<Rect> Function() onPop,
+  String? entry,
+  Future<Rect> Function()? onPop,
   Color iconColor = Colors.white
 }) async {
   Completer<void> completer = Completer();
@@ -44,20 +44,20 @@ Future<void> showInstructionsDialog(BuildContext context, String path, {
           Navigator.of(context).pop();
           completer.complete();
         } : () async {
-          Rect from = key.currentState?.getContentRect();
-          ui.Image image = await key.currentState?.getContentImage();
-          if (onPop == null || from == null) {
+          Rect? from = key.currentState?.getContentRect();
+          ui.Image? image = await key.currentState?.getContentImage();
+          if (from == null) {
             Navigator.of(context).pop();
             completer.complete();
           } else {
-            GlobalKey<_AnimationWidgetState> key = await transform(Overlay.of(context),
+            GlobalKey<_AnimationWidgetState> key = await transform(Overlay.of(context)!,
               from: from,
               image: image,
               iconColor: iconColor
             );
             Navigator.of(context).pop();
             Rect to = await onPop();
-            await key.currentState.translateTo(to);
+            await key.currentState?.translateTo(to);
             completer.complete();
           }
         },
@@ -70,11 +70,11 @@ Future<void> showInstructionsDialog(BuildContext context, String path, {
 }
 
 Future<GlobalKey<_AnimationWidgetState>> transform(OverlayState overlay, {
-  Rect from,
-  ui.Image image,
-  Color iconColor
+  required Rect from,
+  ui.Image? image,
+  Color? iconColor
 }) async {
-  OverlayEntry entry;
+  OverlayEntry? entry;
   GlobalKey<_AnimationWidgetState> key = GlobalKey();
   entry = OverlayEntry(
     builder: (context) {
@@ -84,7 +84,7 @@ Future<GlobalKey<_AnimationWidgetState>> transform(OverlayState overlay, {
         image: image,
         iconColor: iconColor,
         onFinish: () {
-          entry.remove();
+          entry!.remove();
         },
       );
     }
@@ -97,13 +97,13 @@ Future<GlobalKey<_AnimationWidgetState>> transform(OverlayState overlay, {
 class _AnimationWidget extends StatefulWidget {
 
   final Rect from;
-  final ui.Image image;
-  final VoidCallback onFinish;
-  final Color iconColor;
+  final ui.Image? image;
+  final VoidCallback? onFinish;
+  final Color? iconColor;
 
   _AnimationWidget({
-    Key key,
-    this.from,
+    Key? key,
+    required this.from,
     this.image,
     this.onFinish,
     this.iconColor,
@@ -114,8 +114,8 @@ class _AnimationWidget extends StatefulWidget {
 }
 
 class _AnimationWidgetState extends State<_AnimationWidget> with SingleTickerProviderStateMixin {
-  AnimationController controller;
-  Rect to;
+  late AnimationController controller;
+  Rect? to;
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +124,7 @@ class _AnimationWidgetState extends State<_AnimationWidget> with SingleTickerPro
       builder: (context, child) {
         double value = Curves.easeInOutCubic.transform(controller.value);
         bool notMove = to == null;
-        Rect rect = notMove ? widget.from : Rect.lerp(widget.from, to, value);
+        Rect rect = notMove ? widget.from : Rect.lerp(widget.from, to, value)!;
         rect = Rect.fromLTWH(rect.left, rect.top - (math.sin(value * math.pi)) * 240, rect.width, rect.height);
         return Positioned.fromRect(
           rect: rect,
@@ -169,7 +169,7 @@ class _AnimationWidgetState extends State<_AnimationWidget> with SingleTickerPro
     super.dispose();
   }
 
-  Future<void> translateTo([Rect to]) async {
+  Future<void> translateTo([Rect? to]) async {
     this.to = to;
     await controller.forward(from: 0);
     widget.onFinish?.call();
@@ -179,12 +179,12 @@ class _AnimationWidgetState extends State<_AnimationWidget> with SingleTickerPro
 class InstructionsDialog extends StatefulWidget {
 
   final String path;
-  final String entry;
-  final VoidCallback onFinish;
+  final String? entry;
+  final VoidCallback? onFinish;
 
   InstructionsDialog({
-    Key key,
-    this.path,
+    Key? key,
+    required this.path,
     this.entry,
     this.onFinish,
   }) : super(key: key);
@@ -195,7 +195,7 @@ class InstructionsDialog extends StatefulWidget {
 
 class InstructionsDialogState extends State<InstructionsDialog> {
 
-  String content;
+  String? content;
   GlobalKey contentKey = GlobalKey();
 
   @override
@@ -222,30 +222,27 @@ class InstructionsDialogState extends State<InstructionsDialog> {
                     size: 48,
                     color: Colors.black54,
                   ),
-                ) : MarkdownWidget(
-                  data: content,
-                  styleConfig: StyleConfig(
-                    imgBuilder: (url, attributes) {
-                      var uri = Uri.parse(url);
-                      return Container(
-                        margin: EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 2
-                              )
-                            ]
-                        ),
-                        child: uri.hasScheme ? Image(
-                            image: NeoImageProvider(
-                              uri: Uri.parse(url),
-                              cacheManager: NeoCacheManager.defaultManager,
+                ) : Markdown(
+                  data: content!,
+                  imageBuilder: (uri, title, alt) {
+                    return Container(
+                      margin: EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 2
                             )
-                        ):Image.asset(Path.join(widget.path, url)),
-                      );
-                    },
-                  ),
+                          ]
+                      ),
+                      child: uri.hasScheme ? Image(
+                          image: NeoImageProvider(
+                            uri: uri,
+                            cacheManager: NeoCacheManager.defaultManager,
+                          )
+                      ):Image.asset(Path.join(widget.path, uri.path)),
+                    );
+                  },
                 ),
               ),
               Row(
@@ -283,19 +280,21 @@ class InstructionsDialogState extends State<InstructionsDialog> {
     });
   }
 
-  Rect getContentRect() {
+  Rect? getContentRect() {
     final renderObject = contentKey.currentContext?.findRenderObject();
-    var translation = renderObject?.getTransformTo(null)?.getTranslation();
-    if (translation != null && renderObject.paintBounds != null) {
-      return renderObject.paintBounds
+    var translation = renderObject?.getTransformTo(null).getTranslation();
+    if (translation != null && renderObject?.paintBounds != null) {
+      return renderObject!.paintBounds
           .shift(Offset(translation.x, translation.y));
     } else {
       return null;
     }
   }
 
-  Future<ui.Image> getContentImage() {
-    RenderRepaintBoundary boundary = contentKey.currentContext?.findRenderObject();
-    return boundary?.toImage();
+  Future<ui.Image?> getContentImage() async {
+    var boundary = contentKey.currentContext?.findRenderObject();
+    if (boundary is RenderRepaintBoundary) {
+      return boundary.toImage();
+    }
   }
 }

@@ -18,18 +18,18 @@ import 'dart:math' as math;
 class _PageScrollPhysics extends PageScrollPhysics {
   final _HorizontalPagerState state;
   _PageScrollPhysics({
-    ScrollPhysics parent,
-    @required this.state,
+    ScrollPhysics? parent,
+    required this.state,
   }) : super(parent: parent);
 
   @override
-  _PageScrollPhysics applyTo(ScrollPhysics ancestor) {
+  _PageScrollPhysics applyTo(ScrollPhysics? ancestor) {
     return _PageScrollPhysics(parent: buildParent(ancestor), state: state);
   }
 
   @override
   double applyPhysicsToUserOffset(ScrollMetrics position, double offset) {
-    var page = state.pageController.page;
+    var page = state.pageController?.page??0;
     var round = page.round();
     var controller = state.getPageController(round);
     var reverse = state.widget.reverse;
@@ -47,8 +47,8 @@ class _PageScrollPhysics extends PageScrollPhysics {
   }
 
   @override
-  Simulation createBallisticSimulation(ScrollMetrics position, double velocity) {
-    var controller = state.getPageController(state.pageController.page.round());
+  Simulation? createBallisticSimulation(ScrollMetrics position, double velocity) {
+    var controller = state.getPageController(state.pageController?.page?.round() ?? 0);
     if (velocity > 0 && !controller.arriveEnd()) {
       controller.scrollOffset(-velocity / 10, true);
       velocity = 0;
@@ -62,16 +62,16 @@ class _PageScrollPhysics extends PageScrollPhysics {
 
 class HorizontalPager extends Pager {
   final bool reverse;
-  final OneFingerCallback onTap;
+  final OneFingerCallback? onTap;
   final AxisDirection direction;
 
   HorizontalPager({
-    Key key,
+    Key? key,
     this.reverse = false,
-    NeoCacheManager cacheManager,
-    PagerController controller,
-    int itemCount,
-    PhotoInformation Function(int index) imageUrlProvider,
+    required NeoCacheManager cacheManager,
+    required PagerController controller,
+    required int itemCount,
+    required PhotoInformation Function(int index) imageUrlProvider,
     this.onTap,
     this.direction = AxisDirection.right,
   }) : super(
@@ -88,8 +88,8 @@ class HorizontalPager extends Pager {
 
 class _HorizontalPagerState extends PagerState<HorizontalPager> {
 
-  _PageScrollPhysics scrollPhysics;
-  PageController pageController;
+  late _PageScrollPhysics scrollPhysics;
+  PageController? pageController;
   Map<int, PhotoImageController> _pages = new Map();
 
   Duration _duration = const Duration(milliseconds: 300);
@@ -135,15 +135,20 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
                         color: Colors.black
                     ),
                     child: Center(
-                      child: PhotoImage(
+                      child: photoInformation.url == null ?
+                      SpinKitRing(
+                        lineWidth: 4,
+                        size: 36,
+                        color: Colors.white,
+                      ) : PhotoImage(
                         imageProvider: NeoImageProvider(
-                          uri: Uri.parse(photoInformation.url),
+                          uri: Uri.parse(photoInformation.url!),
                           cacheManager: widget.cacheManager,
                           headers: photoInformation.headers,
                         ),
                         size: media.size,
                         reverse: widget.reverse,
-                        initFromEnd: index < widget.controller.index,
+                        initFromEnd: _fromEnd(index),
                         direction: widget.direction,
                         loadingWidget: (context) {
                           return SpinKitRing(
@@ -176,13 +181,13 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
   @override
   void onNext() {
     if (pageController == null) return;
-    int index = pageController.page.round();
+    int index = pageController!.page?.round() ?? 0;
     var controller = getPageController(index);
     if (controller.arriveEnd()) {
       if (index >= widget.itemCount - 1) {
-        widget.controller.onOverBound(BoundType.End);
+        widget.controller.onOverBound?.call(BoundType.End);
       } else {
-        pageController.nextPage(duration: _duration, curve: Curves.easeInOutCubic);
+        pageController!.nextPage(duration: _duration, curve: Curves.easeInOutCubic);
       }
     } else {
       controller.next();
@@ -192,13 +197,13 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
   @override
   void onPrev() {
     if (pageController == null) return;
-    int index = pageController.page.round();
+    int index = pageController!.page?.round() ?? 0;
     var controller = getPageController(index);
     if (controller.arriveStart()) {
       if (index <= 0) {
         widget.controller.onOverBound?.call(BoundType.Start);
       } else {
-        pageController.previousPage(duration: _duration, curve: Curves.easeInOutCubic);
+        pageController!.previousPage(duration: _duration, curve: Curves.easeInOutCubic);
       }
     } else {
       controller.prev();
@@ -210,23 +215,23 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
     if (pageController == null) return;
     _listen = false;
     if (animate) {
-      await pageController.animateToPage(
+      await pageController!.animateToPage(
         page,
         duration: _duration,
         curve: Curves.easeInOutCubic,
       );
     } else {
-      pageController.jumpToPage(page);
+      pageController!.jumpToPage(page);
     }
     _listen = true;
   }
 
   PhotoImageController getPageController(int index) {
     if (_pages.containsKey(index)) {
-      return _pages[index];
+      return _pages[index]!;
     } else {
       _pages[index] = PhotoImageController();
-      return _pages[index];
+      return _pages[index]!;
     }
   }
 
@@ -251,17 +256,28 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
     _initPageController();
   }
 
+  bool _firstTimeFromEnd = false;
+  bool _fromEnd(int index) {
+    if (index < widget.controller.index) {
+      return true;
+    } else if (index == widget.controller.index && _firstTimeFromEnd) {
+      _firstTimeFromEnd = false;
+      return true;
+    }
+    return false;
+  }
   void _initPageController() {
     if (pageController == null && widget.itemCount > 0) {
       if (widget.controller.index == -1) {
         widget.controller.index = widget.itemCount - 1;
+        _firstTimeFromEnd = true;
       }
       pageController = PageController(
         initialPage: widget.controller.index,
       );
-      pageController.addListener(() {
+      pageController!.addListener(() {
         if (_listen) {
-          setPage(pageController.page.round());
+          setPage(pageController!.page?.round()??0);
         }
       });
     }

@@ -21,7 +21,7 @@ class GMap extends Base with MapMixin<String, dynamic> {
   }
 
   @override
-  dynamic operator [](Object key) {
+  dynamic operator [](Object? key) {
     return call("get", argv:[key.toString()]);
   }
 
@@ -44,7 +44,7 @@ class GMap extends Base with MapMixin<String, dynamic> {
   }
 
   @override
-  dynamic remove(Object key) {
+  dynamic remove(Object? key) {
     dynamic ret = this[key];
     call("erase", argv:[key.toString()]);
     return ret;

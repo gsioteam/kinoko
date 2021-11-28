@@ -10,14 +10,14 @@ import 'dart:ui' as ui;
 class VerticalImage extends PhotoImage {
 
   VerticalImage({
-    Key key,
-    ImageProvider imageProvider,
-    Size size,
-    WidgetBuilder loadingWidget,
-    WidgetBuilder errorWidget,
-    bool initFromEnd,
-    PhotoImageController controller,
-    OneFingerCallback onTap,
+    Key? key,
+    required ImageProvider imageProvider,
+    required Size size,
+    WidgetBuilder? loadingWidget,
+    WidgetBuilder? errorWidget,
+    bool initFromEnd = false,
+    PhotoImageController? controller,
+    OneFingerCallback? onTap,
   }) : super(
     key: key,
     imageProvider: imageProvider,
@@ -73,7 +73,7 @@ class VerticalImageState extends PhotoImageState<VerticalImage> {
   }
 
   double _clampY(double dy) {
-    Size realSize = (imageSize ?? widget.size) * scale;
+    Size realSize = (imageSize == Size.zero ? widget.size : imageSize) * scale;
     return math.min(math.max(dy, widget.size.height - realSize.height), 0);
   }
 

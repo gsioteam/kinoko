@@ -15,7 +15,7 @@ const double ImageAspect = 1.55;
 
 class PhotoImageController {
 
-  PhotoImageState state;
+  PhotoImageState? state;
 
   bool arriveStart() => state?.arriveStart() ?? true;
   bool arriveEnd() =>  state?.arriveEnd() ?? true;
@@ -30,24 +30,24 @@ class PhotoImageController {
 class PhotoImage extends StatefulWidget {
   final ImageProvider imageProvider;
   final Size size;
-  final WidgetBuilder loadingWidget;
-  final WidgetBuilder errorWidget;
+  final WidgetBuilder? loadingWidget;
+  final WidgetBuilder? errorWidget;
   final bool reverse;
   final bool initFromEnd;
   final PhotoImageController controller;
-  final OneFingerCallback onTap;
+  final OneFingerCallback? onTap;
   final AxisDirection direction;
 
   PhotoImage({
-    Key key,
-    @required this.imageProvider,
-    this.size,
+    Key? key,
+    required this.imageProvider,
+    required this.size,
     this.loadingWidget,
     this.errorWidget,
-    this.reverse,
+    this.reverse = false,
     this.initFromEnd = false,
-    PhotoImageController controller,
-    this.direction,
+    PhotoImageController? controller,
+    this.direction = AxisDirection.left,
     this.onTap,
   }) : controller = controller == null ? PhotoImageController() : controller, super(key: key);
 
@@ -60,12 +60,12 @@ const Duration _moveDuration = Duration(milliseconds: 200);
 
 class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerProviderStateMixin {
 
-  ImageInfo _imageInfo;
-  ImageStreamListener _imageStreamListener;
-  ImageStream _imageStream;
+  ImageInfo? _imageInfo;
+  late ImageStreamListener _imageStreamListener;
+  ImageStream? _imageStream;
   bool _hasError = false;
 
-  AnimationController controller;
+  late AnimationController controller;
 
   PhotoImageState() {
     _imageStreamListener = ImageStreamListener(
@@ -80,7 +80,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
   double _scale = 1;
   double get scale => _scale;
 
-  Size _imageSize;
+  Size _imageSize = Size.zero;
   Size get imageSize => _imageSize;
 
   Offset get translation => _translation;
@@ -91,8 +91,8 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
   double minScale = 1;
   double maxScale = 4;
 
-  Offset _oldScalePoint;
-  double _oldScale;
+  late Offset _oldScalePoint;
+  late double _oldScale;
 
   Duration _animationDuration = Duration.zero;
 
@@ -211,7 +211,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              widget.errorWidget?.call(context),
+              if (widget.errorWidget != null) widget.errorWidget!.call(context),
               Padding(
                 padding: EdgeInsets.only(top: 5),
                 child: OutlinedButton(
@@ -232,9 +232,9 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
         ),
       );
     } else {
-      ui.Image image = _imageInfo?.image;
+      ui.Image? image = _imageInfo?.image;
       if (image != null) {
-        if (_imageSize == null) {
+        if (_imageSize == Size.zero) {
           _imageSize = onSetupImage(image);
           clampImage();
         }
@@ -348,7 +348,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
     });
   }
 
-  void _getError(dynamic exception, StackTrace stackTrace) {
+  void _getError(dynamic exception, StackTrace? stackTrace) {
     setState(() {
       _hasError = true;
     });
@@ -382,7 +382,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
   }
 
   @override
-  void didUpdateWidget(PhotoImage oldWidget) {
+  void didUpdateWidget(covariant T oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.imageProvider != oldWidget.imageProvider) {
       _updateImage();
@@ -395,13 +395,12 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
   }
 
   void _updateImage() {
-    final ImageStream oldImageStream = _imageStream;
+    final ImageStream? oldImageStream = _imageStream;
     _imageStream = widget.imageProvider.resolve(createLocalImageConfiguration(context));
-    if (_imageStream.key != oldImageStream?.key) {
+    if (_imageStream!.key != oldImageStream?.key) {
       _hasError = false;
       oldImageStream?.removeListener(_imageStreamListener);
-      if (_imageStreamListener != null)
-        _imageStream.addListener(_imageStreamListener);
+      _imageStream!.addListener(_imageStreamListener);
     }
   }
 
@@ -464,10 +463,10 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
     if (_hasError) {
       setState(() {
         _hasError = false;
-        _imageStream.removeListener(_imageStreamListener);
+        _imageStream?.removeListener(_imageStreamListener);
         widget.imageProvider.evict();
         _imageStream = widget.imageProvider.resolve(createLocalImageConfiguration(context));
-        _imageStream.addListener(_imageStreamListener);
+        _imageStream!.addListener(_imageStreamListener);
       });
     }
   }
@@ -498,13 +497,13 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
   }
 
   double _clampX(double dx) {
-    Size realSize = (_imageSize ?? widget.size) * _scale;
+    Size realSize = (_imageSize == Size.zero ? widget.size : _imageSize) * _scale;
     return math.min(math.max(dx, widget.size.width - realSize.width), 0);
   }
 
   void _onAnimation() {
     setState(() {
-      _translation = Offset.lerp(_animateStart, _animateEnd, controller.value);
+      _translation = Offset.lerp(_animateStart, _animateEnd, controller.value)!;
     });
   }
 }

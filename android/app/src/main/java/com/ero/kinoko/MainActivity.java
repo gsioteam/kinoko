@@ -23,23 +23,12 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
 public class MainActivity extends FlutterActivity {
-    final boolean is_debug = false;
     private final String CHANNEL = "com.ero.kinoko/volume_button";
     boolean handleVolumeButton = false;
     MethodChannel channel;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        if (is_debug) {
-            File dir = getFilesDir();
-            String path = dir.getPath() + "/debug";
-            try {
-                copyDir("debug", path);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            GlibPlugin.setDebug(path);
-        }
 
 
 //        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,

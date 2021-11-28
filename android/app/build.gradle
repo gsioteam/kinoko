@@ -32,7 +32,6 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     compileSdkVersion 30
-    ndkVersion "21.4.7075529"
 
     lintOptions {
         checkReleaseBuilds false
@@ -57,6 +56,7 @@ android {
             ]
         }
     }
+
 //    signingConfigs {
 //        release {
 //            keyAlias keystoreProperties['keyAlias']
@@ -75,7 +75,7 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
             useProguard true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), '../../plugins/glib/proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 

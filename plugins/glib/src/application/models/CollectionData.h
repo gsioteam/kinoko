@@ -35,13 +35,11 @@ namespace gs {
             ADD_FILED(CollectionData, data, Data, false);
         }
 
-        METHOD void setJSONData(const gc::Variant &data);
 
         ON_LOADED_BEGIN(cls, Model)
             ADD_METHOD(cls, CollectionData, all);
             ADD_METHOD(cls, CollectionData, findBy);
             ADD_METHOD(cls, CollectionData, getData);
-            ADD_METHOD(cls, CollectionData, setJSONData);
             ADD_PROPERTY(cls, "flag", ADD_METHOD(cls, CollectionData, getFlag), ADD_METHOD(cls, CollectionData, setFlag));
         ON_LOADED_END
 

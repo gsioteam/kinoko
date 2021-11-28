@@ -2,9 +2,9 @@
 import 'package:flutter/cupertino.dart';
 
 class SpinItem extends StatefulWidget {
-  final Widget child;
+  final Widget? child;
 
-  SpinItem({Key key, this.child,}) : super(key: key);
+  SpinItem({Key? key, this.child,}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => SpinItemState();
@@ -12,7 +12,7 @@ class SpinItem extends StatefulWidget {
 
 class SpinItemState extends State<SpinItem> with SingleTickerProviderStateMixin {
 
-  AnimationController animationController;
+  late AnimationController animationController;
 
   @override
   void initState() {
@@ -34,10 +34,10 @@ class SpinItemState extends State<SpinItem> with SingleTickerProviderStateMixin 
     return AnimatedBuilder(
       animation: animationController,
       child: this.widget.child,
-      builder: (BuildContext context, Widget _widget) {
+      builder: (BuildContext context, child) {
         return Transform.rotate(
           angle: animationController.value * -6.3,
-          child: _widget,
+          child: child,
         );
       },
     );

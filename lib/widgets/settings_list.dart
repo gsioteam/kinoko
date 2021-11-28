@@ -28,10 +28,10 @@ class OptionItem {
 class SettingItem {
   SettingItemType type;
   String title;
-  String subtitle;
+  String? subtitle;
   dynamic value;
   dynamic data;
-  ValueChangedCallback onChange;
+  ValueChangedCallback? onChange;
 
   SettingItem(this.type, this.title, {this.subtitle, this.value, this.data, this.onChange});
 }
@@ -39,7 +39,7 @@ class SettingItem {
 class SettingsList extends StatefulWidget {
   final List<SettingItem> items;
 
-  SettingsList({Key key, this.items}) : super(key: key);
+  SettingsList({Key? key, this.items = const []}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _SettingsListState();
@@ -55,7 +55,7 @@ class _SettingsListState extends State<SettingsList> {
         return it.text;
       }
     }
-    return null;
+    return "";
   }
 
   int findOptionsIndex(SettingItem item, String value) {
@@ -68,7 +68,7 @@ class _SettingsListState extends State<SettingsList> {
     return 0;
   }
 
-  Widget buildStyleTrailing1(SettingItem item) {
+  Widget? buildStyleTrailing1(SettingItem item) {
     switch (item.type) {
       case SettingItemType.Options:
       case SettingItemType.Input:
@@ -105,13 +105,13 @@ class _SettingsListState extends State<SettingsList> {
     }
   }
 
-  Widget buildStyle1(SettingItem item, [GestureTapCallback onTap]) {
+  Widget buildStyle1(SettingItem item, [GestureTapCallback? onTap]) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         ListTile(
           title: Text(item.title),
-          subtitle: item.subtitle == null ? null : Text(item.subtitle),
+          subtitle: item.subtitle == null ? null : Text(item.subtitle!),
           trailing: buildStyleTrailing1(item),
           onTap: onTap,
         ),
@@ -120,7 +120,7 @@ class _SettingsListState extends State<SettingsList> {
     );
   }
 
-  Future<T> pickerValue<T>(List<PickerItem<T>> data, int index) async {
+  Future<T?> pickerValue<T>(List<PickerItem<T>> data, int index) async {
     var item = await pickers.showMaterialScrollPicker<PickerItem<T>>(
       context: context,
       selectedItem: data[index],
@@ -129,18 +129,21 @@ class _SettingsListState extends State<SettingsList> {
     return item?.value;
   }
 
-  Widget buildItem(SettingItem item) {
+  Widget? buildItem(SettingItem item) {
     switch (item.type) {
       case SettingItemType.Header: {
         return Container(
           padding: EdgeInsets.only(left: 15, right: 15, top: 5, bottom: 5),
           color: Colors.blueGrey[50],
-          child: Text(item.title, style: Theme.of(context).textTheme.bodyText1.copyWith(fontWeight: FontWeight.bold),),
+          child: Text(
+            item.title,
+            style: Theme.of(context).textTheme.bodyText1?.copyWith(fontWeight: FontWeight.bold),
+          ),
         );
       }
       case SettingItemType.Options: {
         return buildStyle1(item, () async {
-          String newValue = await pickerValue((item.data as Iterable<OptionItem>).map<PickerItem<String>>((e) {
+          String? newValue = await pickerValue((item.data as Iterable<OptionItem>).map<PickerItem<String>>((e) {
             return PickerItem<String>(e.text, e.value);
           }).toList(), findOptionsIndex(item, item.value));
           item.onChange?.call(newValue);
@@ -172,7 +175,7 @@ class _SettingsListState extends State<SettingsList> {
       physics: ClampingScrollPhysics(),
         itemBuilder: (context, index) {
           SettingItem item = widget.items[index];
-          return buildItem(item);
+          return buildItem(item) ?? Container();
         },
         itemCount: widget.items.length
     );

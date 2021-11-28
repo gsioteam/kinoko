@@ -102,3 +102,8 @@ move_to_first: Mover a abetos
 
 default: Defecto
 dark: Oscura
+
+unkown: Unkown
+fetch: Fetch
+checkout: Checkout
+not_complete: This manga is not ready to save.

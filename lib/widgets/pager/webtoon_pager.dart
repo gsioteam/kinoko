@@ -16,14 +16,14 @@ const double _PageAlignment = 0.1;
 
 class WebtoonPager extends Pager {
 
-  final OneFingerCallback onTap;
+  final OneFingerCallback? onTap;
 
   WebtoonPager({
-    Key key,
-    NeoCacheManager cacheManager,
-    PagerController controller,
-    int itemCount,
-    PhotoInformation Function(int index) imageUrlProvider,
+    Key? key,
+    required NeoCacheManager cacheManager,
+    required PagerController controller,
+    required int itemCount,
+    required PhotoInformation Function(int index) imageUrlProvider,
     this.onTap,
   }) : super(
     key: key,
@@ -39,10 +39,10 @@ class WebtoonPager extends Pager {
 
 class WebtoonPagerState extends PagerState<WebtoonPager> {
 
-  ItemScrollController controller;
-  ItemPositionsListener listener;
+  late ItemScrollController controller;
+  late ItemPositionsListener listener;
   bool _listen = true;
-  ItemPosition _current;
+  ItemPosition? _current;
 
   @override
   Widget build(BuildContext context) {
@@ -73,9 +73,14 @@ class WebtoonPagerState extends PagerState<WebtoonPager> {
       itemBuilder: (context, index) {
         PhotoInformation photoInformation = widget.imageUrlProvider(index);
 
-        return ZoomImage(
+        return photoInformation.url == null ?
+        SpinKitRing(
+          lineWidth: 4,
+          size: 36,
+          color: Colors.white,
+        ) : ZoomImage(
           imageProvider: NeoImageProvider(
-            uri: Uri.parse(photoInformation.url),
+            uri: Uri.parse(photoInformation.url!),
             cacheManager: widget.cacheManager,
             headers: photoInformation.headers,
           ),
@@ -103,16 +108,17 @@ class WebtoonPagerState extends PagerState<WebtoonPager> {
     if (_current != null) {
       int target;
       double alignment;
-      if (_current.itemTrailingEdge > 1) {
-        target = _current.index;
-        var len = _current.itemTrailingEdge - _current.itemLeadingEdge;
-        alignment = math.max(_current.itemLeadingEdge - 0.6, (1 - _PageAlignment)-len);
+      var current = _current!;
+      if (current.itemTrailingEdge > 1) {
+        target = current.index;
+        var len = current.itemTrailingEdge - current.itemLeadingEdge;
+        alignment = math.max(current.itemLeadingEdge - 0.6, (1 - _PageAlignment)-len);
       } else {
-        if (_current.index < widget.itemCount - 1) {
-          target = _current.index + 1;
+        if (current.index < widget.itemCount - 1) {
+          target = current.index + 1;
           alignment = _PageAlignment;
         } else {
-          widget.controller.onOverBound(BoundType.End);
+          widget.controller.onOverBound?.call(BoundType.End);
           return;
         }
       }
@@ -130,16 +136,17 @@ class WebtoonPagerState extends PagerState<WebtoonPager> {
     if (_current != null) {
       int target;
       double alignment;
-      if (_current.itemLeadingEdge < 0) {
-        target = _current.index;
+      var current = _current!;
+      if (current.itemLeadingEdge < 0) {
+        target = current.index;
         // var len = _current.itemTrailingEdge - _current.itemLeadingEdge;
-        alignment = math.min(_current.itemLeadingEdge + 0.6, _PageAlignment);
+        alignment = math.min(current.itemLeadingEdge + 0.6, _PageAlignment);
       } else {
-        if (_current.index > 0) {
-          target = _current.index;
+        if (current.index > 0) {
+          target = current.index;
           alignment = 1 - _PageAlignment;
         } else {
-          widget.controller.onOverBound(BoundType.Start);
+          widget.controller.onOverBound?.call(BoundType.Start);
           return;
         }
       }
@@ -194,7 +201,7 @@ class WebtoonPagerState extends PagerState<WebtoonPager> {
   void _positionUpdate() {
     if (!_listen) return;
     var list = listener.itemPositions.value;
-    ItemPosition current;
+    ItemPosition? current;
     double old = double.infinity;
     for (var position in list) {
       var middle = (position.itemTrailingEdge + position.itemLeadingEdge) / 2;

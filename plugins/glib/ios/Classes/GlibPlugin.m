@@ -62,10 +62,6 @@ FlutterMethodChannel *glibChannel = nil;
     glibChannel = nil;
 }
 
-+ (void)setDebugPath:(NSString *)path {
-    setDebugPath(path.UTF8String);
-}
-
 - (MPVolumeView *)volumeView {
     if (!_volumeView) {
         _volumeView = [[MPVolumeView alloc] initWithFrame:CGRectMake(0, 0, 120, 130)];

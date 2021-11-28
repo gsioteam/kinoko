@@ -3,10 +3,10 @@ import 'package:flutter/cupertino.dart';
 
 class ListHeader extends StatelessWidget {
 
-  final Widget child;
+  final Widget? child;
 
   ListHeader({
-    Key key,
+    Key? key,
     this.child
   }) : super(key: key);
 

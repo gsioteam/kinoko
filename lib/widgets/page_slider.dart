@@ -10,13 +10,13 @@ class PageSlider extends StatefulWidget {
 
   final int total;
   final int page;
-  final FutureOr<void> Function(int) onPage;
-  final VoidCallback onAppear;
+  final FutureOr<void> Function(int)? onPage;
+  final VoidCallback? onAppear;
 
   PageSlider({
-    Key key,
-    this.total,
-    this.page,
+    Key? key,
+    required this.total,
+    required this.page,
     this.onPage,
     this.onAppear
   }) : super(key: key);
@@ -26,8 +26,8 @@ class PageSlider extends StatefulWidget {
 }
 
 class PageSliderState extends State<PageSlider> with SingleTickerProviderStateMixin {
-  AnimationController controller;
-  int page;
+  late AnimationController controller;
+  late int page;
 
   @override
   Widget build(BuildContext context) {
