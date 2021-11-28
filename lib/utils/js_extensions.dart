@@ -43,7 +43,8 @@ class KiController extends Controller {
     int length = list["length"];
     for (int i = 0, t = length; i < t; ++i) {
       var data = list[i];
-      DownloadManager().add(BookInfo.fromData(jsValueToDart(data)), plugin);
+      var item = DownloadManager().add(BookInfo.fromData(jsValueToDart(data)), plugin);
+      item?.start();
     }
     Fluttertoast.showToast(
         msg: lc(state!.context)("added_download").replaceFirst("{0}", length.toString())
