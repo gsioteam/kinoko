@@ -2,10 +2,6 @@
 
 Awesome manga reader.
 
-## Upgrading the plug-in system
-
-I am planning to upgrade the plug-in system. Visit [plug-in(v3)](docs/plug-in_v3.md) for more information.
-
 ## Download
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
