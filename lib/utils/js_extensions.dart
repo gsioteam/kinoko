@@ -11,6 +11,7 @@ import 'package:kinoko/utils/history_manager.dart';
 import 'book_info.dart';
 import 'download_manager.dart';
 import 'favorites_manager.dart';
+import 'fullscreen.dart';
 import 'plugin/plugin.dart';
 import 'plugin/utils.dart';
 import '../localizations/localizations.dart';
@@ -19,9 +20,10 @@ class KiController extends Controller {
   Plugin plugin;
   KiController(JsScript script, this.plugin) : super(script);
 
-  openBook(JsValue data) {
+  openBook(JsValue data) async {
     var d = jsValueToDart(data);
-    return Navigator.of(state!.context).push(MaterialPageRoute(builder: (context) {
+    enterFullscreenMode();
+    await Navigator.of(state!.context).push(MaterialPageRoute(builder: (context) {
       return PictureViewer(
         plugin: plugin,
         list: d["list"],
@@ -29,6 +31,7 @@ class KiController extends Controller {
         page: d["page"],
       );
     }));
+    exitFullscreenMode();
   }
 
   openBrowser(String url) {

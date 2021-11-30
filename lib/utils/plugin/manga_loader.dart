@@ -69,6 +69,7 @@ class Processor extends ValueNotifier<List<Picture>> {
       url: map["url"],
       headers: map["headers"],
     );
+    if (isDisposed) return;
     notifyListeners();
   }
 
@@ -81,6 +82,7 @@ class Processor extends ValueNotifier<List<Picture>> {
         headers: map["headers"],
       ));
     }
+    if (isDisposed) return;
     value = newList;
   }
 

@@ -139,6 +139,25 @@ HintMatrix _hintMatrix(FlipType type) {
   }
 }
 
+class _PagerKey extends LocalKey {
+  Orientation orientation;
+  Object value;
+
+  _PagerKey(this.value, this.orientation);
+
+  @override
+  bool operator ==(Object other) {
+    if (other is _PagerKey) {
+      return other.orientation == orientation && other.value == other.value;
+    }
+    return super == other;
+  }
+
+  @override
+  int get hashCode => 0x98808000 | orientation.hashCode << 16 | value.hashCode;
+
+}
+
 class _PictureViewerState extends State<PictureViewer> {
 
   int index = 0;
@@ -229,12 +248,12 @@ class _PictureViewerState extends State<PictureViewer> {
     setAppBarDisplay(!appBarDisplay);
   }
 
-  Widget buildPager(BuildContext context) {
+  Widget buildPager(BuildContext context, Orientation orientation) {
     switch (flipType) {
       case FlipType.Horizontal:
       case FlipType.HorizontalReverse: {
         return HorizontalPager(
-          key: ValueKey(pagerController),
+          key: _PagerKey(pagerController, orientation),
           reverse: flipType == FlipType.HorizontalReverse,
           cacheManager: cacheManager,
           controller: pagerController,
@@ -250,7 +269,7 @@ class _PictureViewerState extends State<PictureViewer> {
       }
       case FlipType.RightToLeft: {
         return HorizontalPager(
-          key: ValueKey(pagerController),
+          key: _PagerKey(pagerController, orientation),
           cacheManager: cacheManager,
           controller: pagerController,
           itemCount: current.value.length,
@@ -266,7 +285,7 @@ class _PictureViewerState extends State<PictureViewer> {
       }
       case FlipType.Vertical: {
         return VerticalPager(
-          key: ValueKey(pagerController),
+          key: _PagerKey(pagerController, orientation),
           cacheManager: cacheManager,
           controller: pagerController,
           itemCount: current.value.length,
@@ -281,7 +300,7 @@ class _PictureViewerState extends State<PictureViewer> {
       }
       case FlipType.Webtoon: {
         return WebtoonPager(
-          key: ValueKey(pagerController),
+          key: _PagerKey(pagerController, orientation),
           cacheManager: cacheManager,
           controller: pagerController,
           itemCount: current.value.length,
@@ -471,7 +490,9 @@ class _PictureViewerState extends State<PictureViewer> {
     ),);
 
     var padding = MediaQuery.of(context).padding;
-    var currentBody = buildPager(context);
+    var currentBody = OrientationBuilder(builder: (context, orientation) {
+      return buildPager(context, orientation);
+    });
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
         child: Scaffold(
