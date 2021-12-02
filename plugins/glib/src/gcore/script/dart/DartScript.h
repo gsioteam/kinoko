@@ -44,8 +44,6 @@ namespace gscript {
 
     class DartScript : public gc::Script {
 
-        static DartScript   *ins;
-
         struct {
             Dart_CallClass to_class = nullptr;
             Dart_CallInstance to_instance = nullptr;
@@ -65,11 +63,7 @@ namespace gscript {
         DartScript();
         ~DartScript();
 
-        static void setup(Dart_CallClass callClass, Dart_CallInstance callInstance, Dart_CreateFromNative createFromNative);
-        static void destroy();
-        static DartScript* instance();
-
-        static bool alive();
+        void setup(Dart_CallClass callClass, Dart_CallInstance callInstance, Dart_CreateFromNative createFromNative);
 
         gc::Variant runScript(const char *script, const char *filename = nullptr) const;
 

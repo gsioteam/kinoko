@@ -75,8 +75,6 @@ set(GLIB_SRC
 
         thirdparties/sha1/sha1.c
 
-        src/application/utils/dart/DartPlatform.cpp
-
         src/application/utils/database/SQLite.cpp
         src/application/utils/database/DBMaker.cpp
         src/application/utils/database/Model.cpp

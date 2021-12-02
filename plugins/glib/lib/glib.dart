@@ -17,7 +17,6 @@ import 'core/gmap.dart';
 import 'core/data.dart';
 import 'main/data_item.dart';
 import 'utils/bit64.dart';
-import 'utils/platform.dart';
 import 'main/collection_data.dart';
 
 class Glib {
@@ -31,7 +30,6 @@ class Glib {
     channel.setMethodCallHandler(onMethod);
 
     Base.reg(Base, "gc::Object", Base).constructor = (ptr) => Base().setID(ptr);
-    Platform.reg();
     Array.reg();
     GMap.reg();
     Callback.reg();
@@ -49,10 +47,11 @@ class Glib {
   }
 
   static destroy() {
-    Platform.clearPlatform();
-    destroyLibrary();
-    Base.setuped = false;
-
+    var pointer = Base.scriptHandler;
+    if (pointer != null) {
+      destroyLibrary(pointer);
+      Base.scriptHandler = null;
+    }
   }
 
   static Future<dynamic> onMethod(MethodCall call) async {

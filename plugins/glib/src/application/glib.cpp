@@ -7,14 +7,12 @@
 #include <core/Callback.h>
 #include <core/Array.h>
 #include <core/Map.h>
-#include "utils/Platform.h"
 #include "utils/database/DBMaker.h"
 #include "utils/database/SQLite.h"
 #include "utils/Bit64.h"
 #include "main/DataItem.h"
 #include "models/KeyValue.h"
 #include "models/CollectionData.h"
-#include "utils/dart/DartPlatform.h"
 #include "bit64/bit64.h"
 #include "secp256k1.h"
 #include <vector>
@@ -28,12 +26,10 @@ extern "C" void initGlib() {
     ClassDB::reg<gc::_Array>();
     ClassDB::reg<gc::_Callback>();
     ClassDB::reg<gc::FileData>();
-    ClassDB::reg<gs::DartPlatform>();
     ClassDB::reg<gs::Bit64>();
     ClassDB::reg<gs::DataItem>();
     ClassDB::reg<gs::KeyValue>();
     ClassDB::reg<gs::CollectionData>();
-    ClassDB::reg<gs::Platform>();
 }
 
 extern "C" int dart_tokenVerify(const char *token, const char *url, const char *prev, const uint8_t *pubKey, int pubKeyLength) {

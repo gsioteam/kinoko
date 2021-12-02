@@ -8,6 +8,7 @@ import 'package:kinoko/pages/favorites_page.dart';
 import 'package:kinoko/pages/history_page.dart';
 import 'package:kinoko/pages/main_settings_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:kinoko/utils/background_task.dart';
 import 'package:kinoko/utils/plugins_manager.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
 import 'pages/collections_page.dart';
@@ -229,6 +230,7 @@ class SplashScreenState extends State<SplashScreen> {
       await cacert.writeAsBytes(buf.buffer.asUint8List());
     }
     GitRepository.setCacertPath(cacert.path);
+    await GitRepository.initialize();
 
     if (Configs.isDebug) {
       AssetsFileSystem assetsFileSystem = AssetsFileSystem(context: context, prefix: 'test_plugin/');
@@ -236,6 +238,7 @@ class SplashScreenState extends State<SplashScreen> {
       String id = "test";
       PluginsManager.instance.current = Plugin(id, assetsFileSystem, DataLocalStorage(id));
     }
+    await BackgroundTask.setup();
   }
 
   Future<void> showDisclaimer(BuildContext context) async {

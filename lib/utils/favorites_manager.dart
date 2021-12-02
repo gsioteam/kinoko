@@ -182,37 +182,39 @@ class FavoritesManager {
       index.add(item.info.key);
     }
 
-    Array data = CollectionData.all(collection_mark);
-    for (int  i = 0, t = data.length; i < t; ++i) {
-      CollectionData d = data[i];
-      var item = DataItem.fromCollectionData(d);
-      if (item != null) {
-        if (!index.contains(item.link)) {
-          FavAttachment attachment = FavAttachment.fromData(jsonDecode(d.data));
-          items.data.add(FavCheckItem(
-            this,
-            BookInfo(
-              key: item.link,
-              title: item.title,
-              picture: item.picture,
-              link: item.link,
-              subtitle: item.subtitle,
-              data: {
-                "title": item.title,
-                "picture": item.picture,
-                "link": item.link,
-                "subtitle": item.subtitle,
-              }
-            ),
-            last: LastData(
-              name: attachment.last,
-              key: attachment.link,
-              updateTime: attachment.date,
-            ),
-            pluginID: item.projectKey,
-            bookPage: "book",
-            hasNew: d.flag == 1,
-          ));
+    Array? data = CollectionData.all(collection_mark);
+    if (data != null) {
+      for (int  i = 0, t = data.length; i < t; ++i) {
+        CollectionData d = data[i];
+        var item = DataItem.fromCollectionData(d);
+        if (item != null) {
+          if (!index.contains(item.link)) {
+            FavAttachment attachment = FavAttachment.fromData(jsonDecode(d.data));
+            items.data.add(FavCheckItem(
+              this,
+              BookInfo(
+                  key: item.link,
+                  title: item.title,
+                  picture: item.picture,
+                  link: item.link,
+                  subtitle: item.subtitle,
+                  data: {
+                    "title": item.title,
+                    "picture": item.picture,
+                    "link": item.link,
+                    "subtitle": item.subtitle,
+                  }
+              ),
+              last: LastData(
+                name: attachment.last,
+                key: attachment.link,
+                updateTime: attachment.date,
+              ),
+              pluginID: item.projectKey,
+              bookPage: "book",
+              hasNew: d.flag == 1,
+            ));
+          }
         }
       }
     }

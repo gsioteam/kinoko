@@ -7,7 +7,6 @@
 //
 
 #include "Model.h"
-#include "../Platform.h"
 
 using namespace gs;
 using namespace gc;
@@ -47,8 +46,8 @@ void Database::exce(const std::string &statement, variant_vector *params, const 
 void Database::queueExce(const std::string &statement, variant_vector *params, const Callback &callback) {
     mtx.lock();
     queue.push_back(new QueueItem(statement, params, callback));
-    onCheckAction();
     mtx.unlock();
+    checkQueue();
 }
 
 void Database::checkQueue() {
@@ -65,14 +64,6 @@ void Database::checkQueue() {
         end();
     }
     mtx.unlock();
-}
-
-void Database::onCheckAction() {
-    if (!wait_action) {
-        wait_action = true;
-        function<void()> fn = bind(&Database::checkQueue, this);
-        Platform::startTimer(C(fn), 0, false);
-    }
 }
 
 Database::~Database() {

@@ -35,8 +35,8 @@ class NativeTarget extends Struct {
 void Function() runOnMainThread = nativeGLib
     .lookup<NativeFunction<Void Function()>>("dart_runOnMainThread").asFunction();
 
-Pointer Function(Pointer<Utf8>) bindClass = nativeGLib
-    .lookup<NativeFunction<Pointer Function(Pointer<Utf8>)>>("dart_bindClass")
+Pointer Function(Pointer, Pointer<Utf8>) bindClass = nativeGLib
+    .lookup<NativeFunction<Pointer Function(Pointer, Pointer<Utf8>)>>("dart_bindClass")
     .asFunction();
 
 Pointer Function(Pointer, Pointer<NativeTarget>, int) createObject = nativeGLib
@@ -62,11 +62,11 @@ void Function(Pointer<NativeTarget>) freePointer = nativeGLib
 typedef CallHandler = Void Function(Pointer, Pointer<Utf8>, Pointer<NativeTarget>, Int32, Pointer<NativeTarget>);
 typedef CreateNative = Int32 Function(Pointer type, Pointer target);
 
-void Function(Pointer<NativeFunction<CallHandler>>, Pointer<NativeFunction<CallHandler>>, Pointer<NativeFunction<CreateNative>>) setupLibrary = nativeGLib
-    .lookup<NativeFunction<Void Function(Pointer<NativeFunction<CallHandler>>, Pointer<NativeFunction<CallHandler>>, Pointer<NativeFunction<CreateNative>>)>>("dart_setupLibrary")
+Pointer Function(Pointer<NativeFunction<CallHandler>>, Pointer<NativeFunction<CallHandler>>, Pointer<NativeFunction<CreateNative>>) setupLibrary = nativeGLib
+    .lookup<NativeFunction<Pointer Function(Pointer<NativeFunction<CallHandler>>, Pointer<NativeFunction<CallHandler>>, Pointer<NativeFunction<CreateNative>>)>>("dart_setupLibrary")
     .asFunction();
 
-void Function() destroyLibrary = nativeGLib.lookup<NativeFunction<Void Function()>>("dart_destroyLibrary").asFunction();
+void Function(Pointer) destroyLibrary = nativeGLib.lookup<NativeFunction<Void Function(Pointer)>>("dart_destroyLibrary").asFunction();
 
 void Function(Pointer<Utf8>) postSetup = nativeGLib.lookup<NativeFunction<Void Function(Pointer<Utf8>)>>("dart_postSetup").asFunction();
 

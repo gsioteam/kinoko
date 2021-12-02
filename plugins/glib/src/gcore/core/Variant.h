@@ -115,7 +115,7 @@ namespace gc {
         template <typename T>
         static Variant memoryVar(const T *target) {
             Variant v;
-            v.retain(u_value{v_pointer: (void*)target}, T::getClass(), TypeMemory);
+            v.retain(u_value{.v_pointer =  (void*)target}, T::getClass(), TypeMemory);
             return v;
         }
 

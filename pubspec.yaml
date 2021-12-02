@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 4.0.1+67
+version: 4.0.2+68
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -63,10 +63,12 @@ dependencies:
   get_version:
     git: https://github.com/fluttercommunity/get_version.git
   flutter_dapp: ^0.0.18
-  flutter_git: ^0.0.3
+  flutter_git: ^0.0.7
   glib:
     path: "./plugins/glib"
   jdenticon_dart: ^2.0.0
+  android_alarm_manager: ^2.0.2
+  flutter_local_notifications: ^9.1.4
 
 dev_dependencies:
 #  flutter_test:

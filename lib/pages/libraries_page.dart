@@ -132,6 +132,9 @@ class _LibraryCellState extends State<LibraryCell> {
     if (isMain) {
       icons.insert(0, WidgetSpan(child: Icon(Icons.arrow_right, color: Colors.blueAccent,)));
     }
+    String branch = widget.item.branch ?? "master";
+    bool hasNew = repo.getSHA1("refs/heads/$branch") != repo.getSHA1("refs/remotes/origin/$branch");
+
     return Material(
       color: Theme.of(context).canvasColor,
       child: ListTile(
@@ -164,57 +167,67 @@ class _LibraryCellState extends State<LibraryCell> {
               borderRadius: BorderRadius.all(Radius.circular(4))
           ),
         ),
-        trailing: IconButton(
-          icon: SpinItem(
-            child: Icon(Icons.sync, color: Theme.of(context).primaryColor,),
-          ),
-          onPressed: () async {
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasNew) Icon(
+              Icons.upgrade,
+              color: Colors.red,
+              size: 18,
+            ),
+            IconButton(
+              icon: SpinItem(
+                child: Icon(Icons.sync, color: Theme.of(context).primaryColor,),
+              ),
+              onPressed: () async {
 
-            try {
-              await showDialog(
-                context: context,
-                builder: (context) {
-                  return ProgressDialog(
-                    title: kt("fetch"),
-                    run: () {
-                      GitController controller = GitController(repo);
-                      repo.fetch(controller,);
-
-                      return GitItem(controller);
-                    },
-                  );
-                },
-              );
-              String branch = widget.item.branch??"master";
-              if (repo.getSHA1("refs/heads/$branch") != repo.getSHA1("refs/remotes/origin/$branch")) {
-                await showDialog(
+                try {
+                  await showDialog(
                     context: context,
                     builder: (context) {
                       return ProgressDialog(
-                        title: kt("checkout"),
+                        title: kt("fetch"),
                         run: () {
                           GitController controller = GitController(repo);
-                          repo.checkout(controller, branch: branch);
+                          repo.fetch(controller,);
 
                           return GitItem(controller);
                         },
                       );
-                    }
-                );
-                setState(() {
-                  this.plugin = PluginsManager.instance.findPlugin(
-                      PluginsManager.instance.calculatePluginID(widget.item.src),
-                      true
+                    },
                   );
-                  if (isMain)
-                    PluginsManager.instance.current = this.plugin;
-                });
-              }
-            } catch (e) {
-              Fluttertoast.showToast(msg: e.toString(), toastLength: Toast.LENGTH_LONG);
-            } finally {
-            }
-          },
+                  String branch = widget.item.branch??"master";
+                  if (repo.getSHA1("refs/heads/$branch") != repo.getSHA1("refs/remotes/origin/$branch")) {
+                    await showDialog(
+                        context: context,
+                        builder: (context) {
+                          return ProgressDialog(
+                            title: kt("checkout"),
+                            run: () {
+                              GitController controller = GitController(repo);
+                              repo.checkout(controller, branch: branch);
+
+                              return GitItem(controller);
+                            },
+                          );
+                        }
+                    );
+                    setState(() {
+                      this.plugin = PluginsManager.instance.findPlugin(
+                          PluginsManager.instance.calculatePluginID(widget.item.src),
+                          true
+                      );
+                      if (isMain)
+                        PluginsManager.instance.current = this.plugin;
+                    });
+                  }
+                } catch (e) {
+                  Fluttertoast.showToast(msg: e.toString(), toastLength: Toast.LENGTH_LONG);
+                } finally {
+                }
+              },
+            )
+          ],
         ),
         onTap: PluginsManager.instance.current == plugin ? null : () async {
           bool? ret = await showDialog<bool>(
@@ -353,6 +366,7 @@ class _LibrariesPageState extends State<LibrariesPage> {
     while (await requestPage(page)) {
       page++;
     }
+    PluginsManager.instance.lastUpdate = DateTime.now();
     if (_disposed) return;
     setState(() {
       loading = false;

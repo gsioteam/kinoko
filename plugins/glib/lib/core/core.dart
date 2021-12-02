@@ -205,6 +205,8 @@ class Base with AutoRelease {
   Pointer? _id;
   TypeInfo? _type;
 
+  static Pointer? scriptHandler;
+
   dynamic call(String name, { argv: const <dynamic>[]}) {
     if (isDestroyed) {
       throw new Exception("This object($runtimeType) is destroyed.");
@@ -281,10 +283,8 @@ class Base with AutoRelease {
     return this;
   }
 
-  static bool setuped = false;
-
   void allocate(List<dynamic> argv) {
-    if (!setuped) {
+    if (scriptHandler == null) {
       throw new Exception("Can not create ${this.runtimeType} because glib is destroyed.");
     }
     Pointer<NativeTarget> argvPtr = _makeArgv(argv);
@@ -294,12 +294,11 @@ class Base with AutoRelease {
   }
 
   static TypeInfo reg(Type type, String name, Type superType) {
-    if (!setuped) {
-      setuped = true;
-      setupLibrary(callClassPointer, callInstancePointer, createNativeTarget);
+    if (scriptHandler == null) {
+      scriptHandler = setupLibrary(callClassPointer, callInstancePointer, createNativeTarget);
     }
     Pointer<Utf8> pname = name.toNativeUtf8();
-    Pointer handler = bindClass(pname);
+    Pointer handler = bindClass(scriptHandler!, pname);
     if (handler.address != 0) {
       TypeInfo info = TypeInfo(type, handler, superType);
       _classDB[handler] = info;
@@ -312,7 +311,7 @@ class Base with AutoRelease {
   }
 
   void destroy() {
-    if (_id != null) {
+    if (_id != null && scriptHandler != null) {
       freeObject(_id!);
       _objectDB.remove(_id);
       _id = null;

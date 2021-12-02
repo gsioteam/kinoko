@@ -10,8 +10,6 @@ using namespace gscript;
 using namespace gc;
 using namespace std;
 
-DartScript *DartScript::ins = nullptr;
-
 namespace gscript {
 
     enum NativeType{
@@ -77,7 +75,7 @@ namespace gscript {
         return Variant::null();
     }
 
-    void dart_toDart(const Variant &variant, NativeTarget *target) {
+    void dart_toDart(const DartScript* script, const Variant &variant, NativeTarget *target) {
         switch (variant.getType()) {
             case Variant::TypeBool: {
                 target->type = TypeBoolean;
@@ -126,7 +124,7 @@ namespace gscript {
                         target->pointer_value = ins;
                     } else {
                         const Class *cls = obj->getInstanceClass();
-                        ins = (DartInstance *)DartScript::instance()->find(cls)->create(obj);
+                        ins = (DartInstance *)script->find(cls)->create(obj);
                         if (ins) {
                             target->type = TypeObject;
                             target->pointer_value = ins;
@@ -155,29 +153,9 @@ DartScript::~DartScript() {
 void DartScript::setup(gscript::Dart_CallClass call_class,
                        gscript::Dart_CallInstance call_instance,
                        Dart_CreateFromNative from_native) {
-    if (ins) {
-        LOG(e, "dart engine already running!");
-        return;
-    }
-    ins = new DartScript();
-    ins->handlers.to_class = call_class;
-    ins->handlers.to_instance = call_instance;
-    ins->handlers.from_native = from_native;
-}
-
-void DartScript::destroy() {
-    if (ins) {
-        delete ins;
-        ins = nullptr;
-    }
-}
-
-bool DartScript::alive() {
-    return ins;
-}
-
-DartScript* DartScript::instance() {
-    return ins;
+    handlers.to_class = call_class;
+    handlers.to_instance = call_instance;
+    handlers.from_native = from_native;
 }
 
 gc::Variant DartScript::runScript(const char *script, const char *filename) const {
@@ -205,11 +183,10 @@ gc::ScriptInstance* DartClass::create(gc::Object *target) const {
 }
 
 Variant DartClass::apply(const gc::StringName &name, const gc::Variant **argv, int length) const {
-    if (!DartScript::alive()) return Variant::null();
     vector<NativeTarget> pargv(length);
     pargv.resize(length);
     for (int i = 0; i < length; ++i) {
-        dart_toDart(*argv[i], &pargv.at(i));
+        dart_toDart((const DartScript *)getScript(), *argv[i], &pargv.at(i));
     }
 
     DartScript *script = (DartScript *)getScript();
@@ -221,11 +198,10 @@ Variant DartClass::apply(const gc::StringName &name, const gc::Variant **argv, i
 }
 
 Variant DartInstance::apply(const gc::StringName &name, const gc::Variant **argv, int length) {
-    if (!DartScript::alive()) return Variant::null();
     vector<NativeTarget> pargv(length);
     pargv.resize(length);
     for (int i = 0; i < length; ++i) {
-        dart_toDart(*argv[i], &pargv.at(i));
+        dart_toDart((const DartScript *)getScript(), *argv[i], &pargv.at(i));
     }
 
     DartScript *script = (DartScript *)getScript();
@@ -238,8 +214,8 @@ Variant DartInstance::apply(const gc::StringName &name, const gc::Variant **argv
 
 
 DART_EXPORT
-DartClass *dart_bindClass(const char *name) {
-    return (DartClass*)DartScript::instance()->regClass(nullptr, name);
+DartClass *dart_bindClass(DartScript *script, const char *name) {
+    return (DartClass *)script->regClass(nullptr, name);
 }
 
 DART_EXPORT
@@ -257,8 +233,7 @@ DartInstance* dart_createObject(DartClass *type, NativeTarget *argv, int32_t len
 
 DART_EXPORT
 void dart_freeObject(DartInstance* instance) {
-    if (DartScript::instance())
-        delete instance;
+    delete instance;
 }
 
 DART_EXPORT
@@ -278,7 +253,7 @@ NativeTarget *dart_callObject(DartInstance* instance, const char *method, Native
         var->call(method, &res, (const Variant **)params.data(), length);
     }
     NativeTarget *result = new NativeTarget();
-    dart_toDart(res, result);
+    dart_toDart((DartScript*)instance->getScript(), res, result);
     return result;
 }
 
@@ -297,7 +272,7 @@ NativeTarget *dart_callClass(DartClass* dartcls, const char *method, NativeTarge
     const Class *cls = dartcls->getNativeClass();
     res = cls->call(method, nullptr, (const Variant **)params.data(), length);
     NativeTarget *result = new NativeTarget();
-    dart_toDart(res, result);
+    dart_toDart((DartScript*)dartcls->getScript(), res, result);
     return result;
 }
 

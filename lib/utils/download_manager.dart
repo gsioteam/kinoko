@@ -357,11 +357,13 @@ class DownloadManager {
   late KeyValueStorage<List<DownloadQueueItem>> items;
 
   static void reloadAll() {
-    Array data = CollectionData.all(collection_download);
-    for (CollectionData item in data) {
-      if (item.flag == 2) {
-        item.flag = 1;
-        item.save();
+    Array? data = CollectionData.all(collection_download);
+    if (data != null) {
+      for (CollectionData item in data) {
+        if (item.flag == 2) {
+          item.flag = 1;
+          item.save();
+        }
       }
     }
     _instance = null;
@@ -394,25 +396,27 @@ class DownloadManager {
     }
 
     var data = CollectionData.all(collection_download);
-    for (int  i = 0, t = data.length; i < t; ++i) {
-      CollectionData collectionData = data[i];
-      DataItem? item = DataItem.fromCollectionData(collectionData);
-      if (item != null) {
-        if (!index.contains(item.link)) {
-          Map<String, dynamic> map = jsonDecode(collectionData.data);
-          var info = BookInfo(
-            key: item.link,
-            title: map["title"],
-            picture: map["picture"],
-            link: map["link"],
-            subtitle: map["subtitle"],
-            data: {
-              "title": item.title,
-              "subtitle": item.subtitle,
-              "link": item.link,
-            },
-          );
-          items.data.add(DownloadQueueItem._(this, info, item.projectKey));
+    if (data != null) {
+      for (int  i = 0, t = data.length; i < t; ++i) {
+        CollectionData collectionData = data[i];
+        DataItem? item = DataItem.fromCollectionData(collectionData);
+        if (item != null) {
+          if (!index.contains(item.link)) {
+            Map<String, dynamic> map = jsonDecode(collectionData.data);
+            var info = BookInfo(
+              key: item.link,
+              title: map["title"],
+              picture: map["picture"],
+              link: map["link"],
+              subtitle: map["subtitle"],
+              data: {
+                "title": item.title,
+                "subtitle": item.subtitle,
+                "link": item.link,
+              },
+            );
+            items.data.add(DownloadQueueItem._(this, info, item.projectKey));
+          }
         }
       }
     }
