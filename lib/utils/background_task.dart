@@ -65,6 +65,9 @@ class BackgroundTask {
 
   static Future<void> _fetchPlugins(FlutterLocalNotificationsPlugin notification,
       NotificationDetails platformChannelSpecifics) async {
+    await GitRepository.initialize();
+    await PluginsManager.instance.ready;
+
     List<String> updates = [];
 
     var list = PluginsManager.instance.plugins.data;
@@ -74,15 +77,21 @@ class BackgroundTask {
       if (plugin != null) {
         String path = "${PluginsManager.instance.root.path}/$id";
         GitRepository repo = GitRepository(path);
-        GitController controller = GitController(repo);
-        await repo.fetch(controller);
 
-        String branch = info.branch ?? "master";
-        if (repo.getSHA1("refs/heads/$branch") != repo.getSHA1("refs/remotes/origin/$branch")) {
-          updates.add(info.title);
+        if (repo.open()) {
+          String branch = info.branch ?? "master";
+
+          if (repo.getSHA1("refs/heads/$branch") == repo.getSHA1("refs/remotes/origin/$branch")) {
+            GitController controller = GitController(repo);
+            await repo.fetch(controller);
+
+            if (repo.getSHA1("refs/heads/$branch") != repo.getSHA1("refs/remotes/origin/$branch")) {
+              updates.add(info.title);
+            }
+            controller.dispose();
+          }
         }
 
-        controller.dispose();
         repo.dispose();
       }
     }
@@ -119,7 +128,7 @@ class BackgroundTask {
   static Future<void> setup() async {
     if (Platform.isAndroid) {
       await AndroidAlarmManager.initialize();
-      await AndroidAlarmManager.periodic(const Duration(hours: 6), _id, _callback);
+      await AndroidAlarmManager.periodic(const Duration(seconds: 10), _id, _callback);
     }
   }
 }
