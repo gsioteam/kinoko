@@ -68,7 +68,7 @@ dependencies:
     path: "./plugins/glib"
   jdenticon_dart: ^2.0.0
   android_alarm_manager: ^2.0.2
-  flutter_local_notifications: ^8.2.0
+  flutter_local_notifications: ^9.1.4
 
 dev_dependencies:
 #  flutter_test:
