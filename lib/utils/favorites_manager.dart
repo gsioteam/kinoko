@@ -304,4 +304,14 @@ class FavoritesManager {
   void reorder() {
     items.update();
   }
+
+  void clearNew(String key) {
+    for (int i = 0, t = items.data.length; i < t; ++i) {
+      var item = items.data[i];
+      if (item.info.key == key) {
+        item.clearNew();
+        return;
+      }
+    }
+  }
 }

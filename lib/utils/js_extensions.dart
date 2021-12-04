@@ -80,6 +80,7 @@ class KiController extends Controller {
       plugin
     );
   }
+
 }
 
 ClassInfo kiControllerInfo = controllerClass.inherit<KiController>(
@@ -108,6 +109,7 @@ ClassInfo favoriteManager = ClassInfo(
     functions: {
       "exist": JsFunction.sta((argv) => FavoritesManager().exist(argv[0])),
       "remove": JsFunction.sta((argv) => FavoritesManager().remove(argv[0])),
+      "clearNew": JsFunction.sta((argv) => FavoritesManager().clearNew(argv[0])),
     }
 );
 

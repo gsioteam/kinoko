@@ -1,5 +1,5 @@
 -keepclassmembers class com.neo.flutter_git.FlutterGitPlugin {
-    public void sendEvent(java.lang.String, java.lang.String);
+    public static void sendEvent(int, java.lang.String, java.lang.String);
 }
 -keepclassmembers class com.qlp.glib.GlibPlugin {
     public void sendSignal();

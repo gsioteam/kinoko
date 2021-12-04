@@ -196,7 +196,7 @@ class PluginsManager extends ValueNotifier<Plugin?> {
   }
 
   String calculatePluginID(String src) {
-    return Bit64.encodeString(src);
+    return Bit64.encodeString(src) ?? "";
   }
 
   Plugin? makePlugin(String src) {
