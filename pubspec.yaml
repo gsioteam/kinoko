@@ -62,7 +62,7 @@ dependencies:
   flutter_staggered_animations: ^1.0.0
   get_version:
     git: https://github.com/fluttercommunity/get_version.git
-  flutter_dapp: ^0.0.18
+  flutter_dapp: ^0.0.19
   flutter_git: ^0.0.7
   glib:
     path: "./plugins/glib"

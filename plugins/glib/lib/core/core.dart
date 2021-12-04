@@ -225,6 +225,7 @@ class Base with AutoRelease {
   }
 
   static dynamic s_call(Type type, String name, {argv: const <dynamic>[]}) {
+    if (Base.scriptHandler == null) return;
     TypeInfo? typeInfo = _classRef[type];
     if (typeInfo != null) {
       Pointer<NativeTarget> argvPtr = _makeArgv(argv);
