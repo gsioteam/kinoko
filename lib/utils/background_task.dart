@@ -17,7 +17,7 @@ import 'plugins_manager.dart';
 class BackgroundTask {
   static const int _id = 0x3990;
 
-  static _onSelectNotification(String? payload) {
+  static Future _onSelectNotification(String? payload) async {
     print("Payload $payload");
   }
 
@@ -111,7 +111,7 @@ class BackgroundTask {
 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
     AndroidNotificationDetails('kinoko_bg_checking', 'kinoko',
-        channelDescription: 'Background checking',
+        'Background checking',
         importance: Importance.max,
         priority: Priority.high,
         ticker: 'ticker');
