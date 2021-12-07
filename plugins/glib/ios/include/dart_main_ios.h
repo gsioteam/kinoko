@@ -11,8 +11,8 @@ typedef void (*CallInstance)(DartPtr cls, const char *name, DartPtr params, int 
 typedef int (*CreateFromNative)(DartPtr cls, DartPtr ins);
 typedef void (*OnSendSignal)(void);
 
-void setupLibrary(CallClass call_class, CallInstance call_instance, CreateFromNative from_native, OnSendSignal on_send_signal);
-void destroyLibrary(void);
+void* setupLibrary(CallClass call_class, CallInstance call_instance, CreateFromNative from_native, OnSendSignal on_send_signal);
+void destroyLibrary(void *script);
 void postSetup(const char *path);
 void setCacertPath(const char *path);
 void runOnMainThread(void);

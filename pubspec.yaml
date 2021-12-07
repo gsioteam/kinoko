@@ -63,7 +63,7 @@ dependencies:
   get_version:
     git: https://github.com/fluttercommunity/get_version.git
   flutter_dapp: ^0.0.19
-  flutter_git: ^0.0.7
+  flutter_git: ^0.0.9
   glib:
     path: "./plugins/glib"
   jdenticon_dart: ^2.0.0

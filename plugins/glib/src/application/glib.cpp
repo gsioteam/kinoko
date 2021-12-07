@@ -20,18 +20,6 @@
 
 using namespace gc;
 
-extern "C" void initGlib() {
-    printf("hello glib\n");
-    ClassDB::reg<gc::_Map>();
-    ClassDB::reg<gc::_Array>();
-    ClassDB::reg<gc::_Callback>();
-    ClassDB::reg<gc::FileData>();
-    ClassDB::reg<gs::Bit64>();
-    ClassDB::reg<gs::DataItem>();
-    ClassDB::reg<gs::KeyValue>();
-    ClassDB::reg<gs::CollectionData>();
-}
-
 extern "C" int dart_tokenVerify(const char *token, const char *url, const char *prev, const uint8_t *pubKey, int pubKeyLength) {
     sha256_context sha256_ctx;
     sha256_init(&sha256_ctx);
@@ -78,4 +66,22 @@ extern "C" uint8_t* dart_decodeBit64(const char *string, int *length) {
     uint8_t *buf = (uint8_t *)malloc(buf_len);
     *length = bit64_decode((const uint8_t *)string, len, buf);
     return buf;
+}
+
+
+extern "C" void initGlib() {
+    printf("hello glib\n");
+    ClassDB::reg<gc::_Map>();
+    ClassDB::reg<gc::_Array>();
+    ClassDB::reg<gc::_Callback>();
+    ClassDB::reg<gc::FileData>();
+    ClassDB::reg<gs::Bit64>();
+    ClassDB::reg<gs::DataItem>();
+    ClassDB::reg<gs::KeyValue>();
+    ClassDB::reg<gs::CollectionData>();
+    
+    unsigned long p = 0;
+    p = p | (unsigned long)&dart_tokenVerify;
+    p = p | (unsigned long)&dart_decodeBit64;
+    printf("%lu", p);
 }

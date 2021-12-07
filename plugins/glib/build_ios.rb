@@ -60,9 +60,9 @@ def main
 
     `cmake -G Xcode -B "#{dir}/build/ios" -DCMAKE_SYSTEM_NAME=iOS "#{dir}"`
     
-    `xcodebuild IPHONEOS_DEPLOYMENT_TARGET=8.0 -project "#{dir}/build/ios/glib.xcodeproj" -scheme glib -sdk iphoneos -configuration #{configuration} -UseModernBuildSystem=NO clean build CONFIGURATION_BUILD_DIR="#{dir}/build/lib/iphoneos"`
+    `xcodebuild IPHONEOS_DEPLOYMENT_TARGET=9.0 -project "#{dir}/build/ios/glib.xcodeproj" -scheme glib -sdk iphoneos -configuration #{configuration} -UseModernBuildSystem=NO clean build CONFIGURATION_BUILD_DIR="#{dir}/build/lib/iphoneos"`
     
-    `xcodebuild IPHONEOS_DEPLOYMENT_TARGET=8.0 -project "#{dir}/build/ios/glib.xcodeproj" -scheme glib -sdk iphonesimulator -configuration #{configuration} -UseModernBuildSystem=NO clean build CONFIGURATION_BUILD_DIR="#{dir}/build/lib/iphonesimulator"`
+    `xcodebuild IPHONEOS_DEPLOYMENT_TARGET=9.0 -project "#{dir}/build/ios/glib.xcodeproj" -scheme glib -sdk iphonesimulator -configuration #{configuration} -UseModernBuildSystem=NO clean build CONFIGURATION_BUILD_DIR="#{dir}/build/lib/iphonesimulator"`
     
     iphoneos_dir = "#{dir}/build/lib/iphoneos" 
     iphonesimulator_dir = "#{dir}/build/lib/iphonesimulator" 

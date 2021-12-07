@@ -110,13 +110,13 @@ void onGlibSignal() {
 }
 
 DART_EXPORT
-void dart_setupLibrary(CallClass call_class, CallInstance call_instance, CreateFromNative from_native) {
-    setupLibrary(call_class, call_instance, from_native, onGlibSignal);
+void * dart_setupLibrary(CallClass call_class, CallInstance call_instance, CreateFromNative from_native) {
+    return setupLibrary(call_class, call_instance, from_native, onGlibSignal);
 }
 
 DART_EXPORT
-void dart_destroyLibrary() {
-    destroyLibrary();
+void dart_destroyLibrary(void *script) {
+    destroyLibrary(script);
 }
 
 DART_EXPORT

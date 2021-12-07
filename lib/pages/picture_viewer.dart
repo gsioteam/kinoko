@@ -1,5 +1,6 @@
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -669,7 +670,7 @@ class _PictureViewerState extends State<PictureViewer> {
                     duration: Duration(milliseconds: 300)
                 ),
                 right: 10 + padding.right,
-                bottom: 0,
+                bottom: Platform.isIOS ? padding.bottom : 0,
               ),
 
               Positioned(
@@ -689,7 +690,7 @@ class _PictureViewerState extends State<PictureViewer> {
                   },
                 ),
                 right: 26 + padding.right,
-                bottom: 6,
+                bottom: (Platform.isIOS ? padding.bottom : 0) + 6,
                 left: 10 + padding.left,
                 height: 40,
               ),
