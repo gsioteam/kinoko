@@ -111,7 +111,7 @@ class BackgroundTask {
 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
     AndroidNotificationDetails('kinoko_bg_checking', 'kinoko',
-        'Background checking',
+        channelDescription: 'Background checking',
         importance: Importance.max,
         priority: Priority.high,
         ticker: 'ticker');

@@ -141,15 +141,15 @@ HintMatrix _hintMatrix(FlipType type) {
 }
 
 class _PagerKey extends LocalKey {
-  Orientation orientation;
-  Object value;
+  final Orientation orientation;
+  final Object value;
 
   _PagerKey(this.value, this.orientation);
 
   @override
   bool operator ==(Object other) {
     if (other is _PagerKey) {
-      return other.orientation == orientation && other.value == other.value;
+      return other.orientation == orientation && other.value == value;
     }
     return super == other;
   }

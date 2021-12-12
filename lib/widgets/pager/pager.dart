@@ -59,6 +59,7 @@ class PagerController {
       onPage?.call(page);
     }
   }
+
 }
 
 abstract class Pager extends StatefulWidget {
