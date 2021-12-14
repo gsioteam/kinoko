@@ -121,6 +121,9 @@ class _LibraryCellState extends State<LibraryCell> {
      setState(() {
        this.plugin = PluginsManager.instance.findPlugin(PluginsManager.instance.calculatePluginID(widget.item.src));
      });
+     if (PluginsManager.instance.current == null) {
+       await selectAsMainPlugin();
+     }
   }
 
   Widget _buildCloned(BuildContext context, Plugin plugin) {
@@ -229,37 +232,39 @@ class _LibraryCellState extends State<LibraryCell> {
             )
           ],
         ),
-        onTap: PluginsManager.instance.current == plugin ? null : () async {
-          bool? ret = await showDialog<bool>(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: Text(kt("confirm")),
-                content: Text(kt("select_main_project")),
-                actions: [
-                  TextButton(
-                    child: Text(kt("no")),
-                    onPressed: () {
-                      Navigator.of(context).pop(false);
-                    },
-                  ),
-                  TextButton(
-                    child: Text(kt("yes")),
-                    onPressed: () {
-                      Navigator.of(context).pop(true);
-                    },
-                  ),
-                ],
-              );
-            }
-          );
-
-          if (ret == true) {
-            PluginsManager.instance.current = plugin;
-          }
-        },
+        onTap: PluginsManager.instance.current == plugin ? null : selectAsMainPlugin,
       ),
     );
+  }
+
+  Future<void> selectAsMainPlugin() async {
+    bool? ret = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(kt("confirm")),
+            content: Text(kt("select_main_project")),
+            actions: [
+              TextButton(
+                child: Text(kt("no")),
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+              ),
+              TextButton(
+                child: Text(kt("yes")),
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+              ),
+            ],
+          );
+        }
+    );
+
+    if (ret == true) {
+      PluginsManager.instance.current = plugin;
+    }
   }
 
   Widget _buildPlugin(BuildContext context) {

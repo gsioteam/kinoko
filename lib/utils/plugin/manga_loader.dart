@@ -36,6 +36,9 @@ class Processor extends ValueNotifier<List<Picture>> {
 
   late KeyValueStorage<Map> storage;
 
+  String? _key;
+  String get key => _key ?? "";
+
   Processor({
     required this.plugin,
     required Object data,
@@ -45,7 +48,8 @@ class Processor extends ValueNotifier<List<Picture>> {
     this.data = dartToJsValue(script, data);
     this.data.retain();
 
-    storage = KeyValueStorage(key: "processor:${jsProcessor["key"]}");
+    _key = jsProcessor["key"];
+    storage = KeyValueStorage(key: "processor:$_key");
 
     var list = storage.data["list"];
     if (list is List) {
@@ -135,6 +139,13 @@ class Processor extends ValueNotifier<List<Picture>> {
     storage.data = {};
     value = [];
     load();
+  }
+
+  String get title {
+    if (data is Map) {
+      return data["title"] ?? "-";
+    }
+    return "-";
   }
 }
 

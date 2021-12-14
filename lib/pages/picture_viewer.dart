@@ -77,12 +77,14 @@ class PictureViewer extends StatefulWidget {
   final List list;
   final int initializeIndex;
   final int? page;
+  final String? bookKey;
 
   PictureViewer({
     Key? key,
     required this.plugin,
     required this.list,
     required this.initializeIndex,
+    this.bookKey,
     this.page,
   }) : super(key: key);
 
@@ -240,7 +242,6 @@ class _PictureViewerState extends State<PictureViewer> {
         _hintDisplay = false;
       }
     });
-
   }
 
   void onTapScreen() {
@@ -810,6 +811,9 @@ class _PictureViewerState extends State<PictureViewer> {
         next?.dispose();
         next = current;
         current = prev!;
+        if (widget.bookKey != null) {
+          widget.plugin.storage.set("book:last:${widget.bookKey}", current.key);
+        }
         chapterIndex--;
         if (chapterIndex > 0) {
           prev = Processor(plugin: widget.plugin, data: widget.list[chapterIndex - 1]);
@@ -845,6 +849,9 @@ class _PictureViewerState extends State<PictureViewer> {
         prev?.dispose();
         prev = current;
         current = next!;
+        if (widget.bookKey != null) {
+          widget.plugin.storage.set("book:last:${widget.bookKey}", current.key);
+        }
         chapterIndex++;
         if (chapterIndex < widget.list.length - 1) {
           next = Processor(plugin: widget.plugin, data: widget.list[chapterIndex + 1]);
@@ -890,6 +897,10 @@ class _PictureViewerState extends State<PictureViewer> {
       plugin: widget.plugin,
       data: widget.list[chapterIndex]
     );
+    if (widget.bookKey != null) {
+      widget.plugin.storage.set("book:last:${widget.bookKey}", current.key);
+    }
+
     if (chapterIndex < widget.list.length - 1) {
       next = Processor(
         plugin: widget.plugin,

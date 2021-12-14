@@ -26,6 +26,7 @@ class KiController extends Controller {
     await Navigator.of(state!.context).push(MaterialPageRoute(builder: (context) {
       return PictureViewer(
         plugin: plugin,
+        bookKey: d["key"],
         list: d["list"],
         initializeIndex: d["index"],
         page: d["page"],
@@ -50,7 +51,7 @@ class KiController extends Controller {
       item?.start();
     }
     Fluttertoast.showToast(
-        msg: lc(state!.context)("added_download").replaceFirst("{0}", length.toString())
+      msg: lc(state!.context)("added_download").replaceFirst("{0}", length.toString())
     );
   }
 
@@ -81,6 +82,9 @@ class KiController extends Controller {
     );
   }
 
+  getLastKey(String bookKey) {
+    return plugin.storage.get("book:last:$bookKey");
+  }
 }
 
 ClassInfo kiControllerInfo = controllerClass.inherit<KiController>(
@@ -91,6 +95,7 @@ ClassInfo kiControllerInfo = controllerClass.inherit<KiController>(
       "addDownload": JsFunction.ins((obj, argv) => obj.addDownload(argv[0])),
       "addFavorite": JsFunction.ins((obj, argv) => obj.addFavorite(argv[0], argv[1])),
       "addHistory": JsFunction.ins((obj, argv) => obj.addHistory(argv[0])),
+      "getLastKey": JsFunction.ins((obj, argv) => obj.getLastKey(argv[0])),
     }
 );
 
