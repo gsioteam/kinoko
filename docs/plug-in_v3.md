@@ -95,8 +95,8 @@ index.xml
 ```js
 // processor.js
 // Processor will be used in two satuations
-//   1. Load the manga pictures.
-//   2. Check if a manga has new chapter.  
+//   1. Load manga pictures.
+//   2. Detect if a manga has new chapter.  
 class MangaProcesser extends Processor {
     // The unique identifier for detecting which manga chapter is processing on.
     get key();
