@@ -123,8 +123,7 @@ class MangaProcesser extends Processor {
     /**
      * Check for new chapter, need override
      * 
-     * @return Promise<Object> 
-     *    {title, key} The information of last chapter 
+     * @return Promise<{title, key}> The information of last chapter 
      */
     checkNew();
 }
