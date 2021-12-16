@@ -27,3 +27,11 @@ Features:
 ![History](screenshots/history.png)
 ![Favorites](screenshots/favorites.png)
 ![Picture](screenshots/picture.png)
+
+## The Default Plugins List
+
+All the plugins are list in [gitissue](https://github.com/gsioteam/env/issues/3)
+
+## Making Plugin
+
+Please check [plugin document](docs/plug-in_v3.md)

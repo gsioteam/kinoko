@@ -89,3 +89,42 @@ index.xml
     }]
 }
 ```
+
+```js
+// processor.js
+// Processor will be used in two satuations
+//   1. Load the manga pictures.
+//   2. Check if a manga has new chapter.  
+class MangaProcesser extends Processor {
+    // The unique identifier for detecting which manga chapter is processing on.
+    get key();
+
+    /**
+     * Save the loading state, could be called in `load` method.
+     *
+     * @param {bool} complete, determie the loading complete or not.
+     * @param {*} state, for `load` restart. 
+     */
+    save(complete, state);
+
+    /**
+     * Start load pictures, need override
+     * 
+     * @param {*} state The saved state.
+     * @return Promise 
+     */
+    load(state);
+
+     // Called in `dispose`, need override
+    unload();
+
+    /**
+     * Check for new chapter, need override
+     * 
+     * @return Promise<Object> 
+     *    {title, key} The information of last chapter 
+     */
+    checkNew();
+}
+module.exports = MangaProcesser;
+```

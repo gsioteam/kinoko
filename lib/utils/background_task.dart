@@ -40,7 +40,7 @@ class BackgroundTask {
     return flutterLocalNotificationsPlugin;
   }
 
-  static Future<void> _checkFavorites(
+  static Future<bool> _checkFavorites(
       FlutterLocalNotificationsPlugin notification,
       NotificationDetails platformChannelSpecifics) async {
     List<FavCheckItem> list = [];
@@ -60,10 +60,13 @@ class BackgroundTask {
       }
       await notification.show(
           0, 'New chapter', '${strs.join(',')}${list.length > 3 ? "..." : ''}', platformChannelSpecifics);
+      return true;
+    } else {
+      return false;
     }
   }
 
-  static Future<void> _fetchPlugins(FlutterLocalNotificationsPlugin notification,
+  static Future<bool> _fetchPlugins(FlutterLocalNotificationsPlugin notification,
       NotificationDetails platformChannelSpecifics) async {
     await GitRepository.initialize();
     await PluginsManager.instance.ready;
@@ -99,7 +102,9 @@ class BackgroundTask {
     if (updates.isNotEmpty) {
       await notification.show(
           0, 'New version', '${updates.length} plugins can be updated', platformChannelSpecifics);
+      return true;
     }
+    return false;
   }
 
   static _callback() async {
@@ -119,8 +124,13 @@ class BackgroundTask {
     const NotificationDetails platformChannelSpecifics =
     NotificationDetails(android: androidPlatformChannelSpecifics);
 
-    await _checkFavorites(notification, platformChannelSpecifics);
-    await _fetchPlugins(notification, platformChannelSpecifics);
+    bool hasNot = false;
+    hasNot = await _checkFavorites(notification, platformChannelSpecifics);
+    hasNot = await _fetchPlugins(notification, platformChannelSpecifics) || hasNot;
+    if (!hasNot) {
+      // await notification.show(
+      //     0, 'Kinoko', 'No update', platformChannelSpecifics);
+    }
 
     Glib.destroy();
   }
@@ -128,7 +138,7 @@ class BackgroundTask {
   static Future<void> setup() async {
     if (Platform.isAndroid) {
       await AndroidAlarmManager.initialize();
-      await AndroidAlarmManager.periodic(const Duration(hours: 6), _id, _callback);
+      await AndroidAlarmManager.periodic(const Duration(hours: 4), _id, _callback);
     }
   }
 }
