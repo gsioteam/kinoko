@@ -70,17 +70,17 @@ index.xml
 
 ```js
 {
-    // require, The plug-in name
+    // required, The plug-in name
     "name": "Demo",
-    // option, Thie plug-in icon
+    // optional, Thie plug-in icon
     "icon": "icon.png",
-    // require, The entry point of plug-in
+    // required, The entry point of plug-in
     "index": "index",
-    // option, The elevation of AppBar
+    // optional, The elevation of AppBar
     "appbar_elevation": 0,
-    // require, A logic script with out UI， which is used to perform special functions.
+    // required, A logic script with out UI， which is used to perform special functions.
     "processor": "processor",
-    // option, The icons will be displayed on the right of AppBar.
+    // optional, The icons will be displayed on the right of AppBar.
     // And navigate to the page write in index attribute by pressing
     // the icon.
     "extensions": [{
