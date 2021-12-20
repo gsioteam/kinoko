@@ -165,3 +165,29 @@ module.exports = MangaProcesser;
     - `eval(script)` 
     - `postMessage(data)`
     - `onmessage` member field. Receive message from the js context.
+
+## How to debug my local plugin?
+
+1. Put your plugin files to `kinoko_path/test_plugin/`.
+
+```
+kinoko_path
+└─── test_plugin
+    ├── config.json
+    ├── main.js
+    └── ...
+```
+
+2. Find `kinoko_path/lib/configs.dart`, turn on the `isDebug` flag.
+
+```dart
+class Configs {
+
+  // The plugin in `test_plugin` will be set as main plugin, when `isDebug` is true.
+  static const bool isDebug = true;
+  
+  //...
+}
+```
+
+Now, the your local plugin will be set as the main plugin.
