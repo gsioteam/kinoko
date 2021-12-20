@@ -129,3 +129,39 @@ class MangaProcesser extends Processor {
 }
 module.exports = MangaProcesser;
 ```
+
+## Built-in Functions
+
+- `Controller` menber functions
+    - `openBook(data)` Open the picture viewer page to view the specific manga.
+        - `data.key` *String* The unique key of manga.
+        - `data.list` *List* All the chapter data.
+        - `data.index` *int* Current chapter index.
+        - `data.page` *int* optional, Initial page number.
+    - `openBrowser(url: String)` Open a webview page.
+    - `addDownload(list)` Add to download list, and start download.
+    - `addFavorite(data, last)` Add to favorite list.
+        - `data` Information of the manga.
+            - `data.page` *String* The template path of details page in plugin folder.
+        - `last` Optional, Infomation of last chapter.
+            - `last.key` *String* The unique key of last chapter.
+            - `last.title` *String* The title of last chapter.
+    - `addHistory(data)` Add to history list.
+        - `data` Information of the manga.
+            - `data.page` *String* The template path of details page in plugin folder.
+    - `getLastKey(mangaKey)` Get the last key of manga
+- `DownloadManager` static functions
+    - `DownloadManager.exist(chapterKey)` Return true when the chapter is already in download list, otherwise false.
+    - `DownloadManager.removeKey(chapterKey)` Remove the chapter from the download list.
+- `FavoritesManager` static functions
+    - `FavoritesManager.exist(mangaKey)` Return true when the manga is already in favorite list, otherwise false.
+    - `FavoritesManager.remove(mangaKey)` Remove the manga from the favorite list.
+    - `FavoritesManager.clearNew(mangaKey)` Make as readed. Clear the red dot in favorites page.
+- `NotificationCenter` static functions. A global notification center, the event can cross each js context, such as send event from `processor.js` to `main.js`.
+    - `NotificationCenter.addObserver(event, func)` 
+    - `NotificationCenter.removeObserver(event, func)`
+    - `NotificationCenter.trigger(event, data)`
+- `ScriptContext` Generate a new js context. `let ctx = new ScriptContext();`
+    - `eval(script)` 
+    - `postMessage(data)`
+    - `onmessage` member field. Receive message from the js context.
