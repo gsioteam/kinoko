@@ -126,6 +126,16 @@ class MangaProcesser extends Processor {
      * @return Promise<{title, key}> The information of last chapter 
      */
     checkNew();
+
+    /**
+     * After getting the picture information, set the picture data than
+     * it will be shown. 
+     * @param data.url {String} The picture url
+     * @param data.headers {Object} Optional, The picture http headers.
+     * @param list {List} A list ot picture information.
+     */ 
+    setDataAt(data);
+    setData(list);
 }
 module.exports = MangaProcesser;
 ```
@@ -150,6 +160,7 @@ module.exports = MangaProcesser;
         - `data` Information of the manga.
             - `data.page` *String* The template path of details page in plugin folder.
     - `getLastKey(mangaKey)` Get the last key of manga
+    - `setData(data)` 
 - `DownloadManager` static functions
     - `DownloadManager.exist(chapterKey)` Return true when the chapter is already in download list, otherwise false.
     - `DownloadManager.removeKey(chapterKey)` Remove the chapter from the download list.
@@ -165,6 +176,75 @@ module.exports = MangaProcesser;
     - `eval(script)` 
     - `postMessage(data)`
     - `onmessage` member field. Receive message from the js context.
+
+## WebView
+
+*v4.1.0* available.
+
+- `HeadlessWebView`
+    - `consturctor(options?)` 
+        - `options.resourceReplacements` Replace the resource on the web site.
+    - `load(url)` load web url.
+    - `static getCookies(url)` Get cookies
+    - `eval(script)` Eval script
+    - `onmessage` Event, The callback from web site.
+    - `onloadstart` The begin loading callback.
+    - `onloadend` The end loading callback.
+    - `onfail` The loading failed callback.
+    
+```js
+// Hold the reference otherwise the webview will be released before loading complete.
+this.webview = new HeadlessWebView({
+    resourceReplacements: [{
+        // `test` will be compile to a ExgEx.
+        test:'jwplayer\.js',
+        resource: this.loadString('my_jwplayer.js'),
+        mimeType: 'text/javascript',
+    }]
+});
+this.webview.onloadstart = (url) => {
+    console.log(`[HeadlessWebView] loadStart ${url}`);
+};
+this.webview.onloadend = async (url) => {
+    console.log(`[HeadlessWebView] loadEnd ${url}`);
+    console.log(await this.webview.eval("document.querySelector('html').outerHTML"));
+};
+this.webview.onfail = (url, error) => {
+    console.log(`[HeadlessWebView] loadFailed ${url} ${error}`);
+};
+/**
+ * Invoke when the web site call `messenger.send('message', data)`
+ */
+this.webview.onmessage = (data) => {
+    console.log(`[HeadlessWebView] onMessage ${data}`);
+};
+this.webview.load("https://www.google.com");
+```
+   
+- `<webview />` A webview widget.
+    - attributes:
+        - `src` *String*, Initialize url
+        - `onMessage` *void Function(data)* 
+        - `onLoadStart` *void Function(url)*
+        - `onLoadEnd` *void Function(url)*
+        - `onFail` *void Function(url, error)*
+        - `replacements` *List* same as `resourceReplacements` in `HeadlessWebView`
+    - methods:
+        - `eval(script)` return `Promise<*>`
+        - `getCookies(url)` return `Promise<Object>`
+
+```xml
+<webview id="webview" src="https://www.google.com" onLoadEnd="loadEnd" />
+```
+
+```js
+async loadEnd(url) {
+    const webview = this.findElement('webview');
+    console.log(`loadEnd ${url}`);
+    console.log(await webview.eval("document.querySelector('html').outerHTML"));
+    console.log(JSON.stringify(await webview.getCookies("https://www.google.com")));
+}
+```
 
 ## How to debug my local plugin?
 

@@ -51,7 +51,8 @@ class ProgressDialog extends StatefulWidget {
 enum ProgressStatus {
   Running,
   Success,
-  Failed
+  Failed,
+  Canceled,
 }
 
 class _ProgressDialogState extends State<ProgressDialog> {
@@ -113,6 +114,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
         }
         break;
       }
+      case ProgressStatus.Canceled:
       case ProgressStatus.Success: {
         return Container();
       }
@@ -221,7 +223,8 @@ class _ProgressDialogState extends State<ProgressDialog> {
   }
 
   _update() {
-    if (currentItem?.value.status == ProgressStatus.Success) {
+    if (currentItem?.value.status == ProgressStatus.Success ||
+        currentItem?.value.status == ProgressStatus.Canceled) {
       Future.delayed(Duration(seconds: 2)).then((value) {
         Navigator.of(context).pop(ProgressStatus.Success);
       });

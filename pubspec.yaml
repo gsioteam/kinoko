@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 4.0.8+74
+version: 4.1.0+75
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -54,7 +54,8 @@ dependencies:
     git:
       url: https://github.com/gsioteam/filesystem_picker.git
       path: package
-  flutter_inappwebview: ^5.3.2
+  browser_webview:
+    path: ./plugins/browser_webview
   flutter_windowmanager: ^0.2.0
   quds_popup_menu: ^0.0.1+1
   yaml: ^3.1.0
@@ -62,7 +63,7 @@ dependencies:
   flutter_staggered_animations: ^1.0.0
   get_version:
     git: https://github.com/fluttercommunity/get_version.git
-  flutter_dapp: ^0.0.20
+  flutter_dapp: ^0.0.21
   flutter_git: ^0.0.9
   glib:
     path: "./plugins/glib"

@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:browser_webview/browser_webview.dart';
 import '../localizations/localizations.dart';
 import 'package:url_launcher/url_launcher.dart' as UrlLauncher;
 
@@ -18,7 +18,7 @@ class SourcePage extends StatefulWidget {
 }
 
 class SourcePageState extends State<SourcePage> {
-  late InAppWebViewController controller;
+  late BrowserWebViewController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +29,7 @@ class SourcePageState extends State<SourcePage> {
           IconButton(
             icon: Icon(Icons.open_in_new),
             onPressed: () async {
-              if (controller == null) {
-                UrlLauncher.launch(widget.url);
-              } else {
-                UrlLauncher.launch((await controller.getUrl()).toString());
-              }
+              UrlLauncher.launch(controller.url.value);
             }
           )
         ],
@@ -50,17 +46,21 @@ class SourcePageState extends State<SourcePage> {
           //   child: Text(kt('source_description')),
           // ),
           Expanded(
-            child: InAppWebView(
-              initialUrlRequest: URLRequest(
-                url: Uri.parse(widget.url)
-              ),
-              onWebViewCreated: (controller) {
-                this.controller = controller;
-              },
-            )
+            child: BrowserWebView(
+              controller: controller,
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = BrowserWebViewController(
+      initializeUrl: widget.url,
     );
   }
 }

@@ -30,6 +30,9 @@ class GitItem extends ProgressItem {
 
   void _onCancel() {
     controller.cancel();
+    value = value.copyWith(
+      status: ProgressStatus.Canceled,
+    );
   }
 
   void _wait() async {
@@ -39,11 +42,11 @@ class GitItem extends ProgressItem {
         status: ProgressStatus.Success,
       );
     } catch (e) {
-      value = value.copyWith(
-        status: ProgressStatus.Failed,
-      );
-    } finally {
-      controller.dispose();
+      if (value.status == ProgressStatus.Running) {
+        value = value.copyWith(
+          status: ProgressStatus.Failed,
+        );
+      }
     }
   }
 
@@ -52,6 +55,78 @@ class GitItem extends ProgressItem {
       label: "${controller.value.event} (${controller.value.content})",
     );
   }
+}
+
+class _GitRepo {
+  int ref = 0;
+  late GitRepository repo;
+
+  String get path => repo.path;
+
+  _GitRepo(String path) {
+    repo = GitRepository(path);
+    repo.open();
+    ref++;
+  }
+
+  void release() {
+    if (ref > 0) {
+      --ref;
+      if (ref == 0) {
+        repo.dispose();
+      }
+    }
+  }
+
+  void retain() {
+    if (ref > 0)
+      ++ref;
+  }
+
+  GitController clone({
+    required String url,
+    String branch = "master",
+  }) {
+    GitController controller = GitController(repo);
+    repo.clone(
+      controller,
+      url: url,
+      branch: branch);
+    _wait(controller.completer.future);
+    return controller;
+  }
+
+  GitController fetch({
+    String remote = "origin",
+  }) {
+    GitController controller = GitController(repo);
+    repo.fetch(controller,
+      remote: remote
+    );
+    _wait(controller.completer.future);
+    return controller;
+  }
+
+  GitController checkout({
+    String branch = "master"
+  }) {
+    GitController controller = GitController(repo);
+    repo.checkout(controller, branch: branch);
+    _wait(controller.completer.future);
+    return controller;
+  }
+
+  void _wait(Future<void> future) async {
+    try {
+      retain();
+      await future;
+    } finally {
+      release();
+    }
+  }
+
+  String getSHA1(String path) => repo.getSHA1(path);
+  bool get isVisible => repo.isVisible;
 }
 
 class LibraryCell extends StatefulWidget {
@@ -73,7 +148,7 @@ class LibraryCell extends StatefulWidget {
 
 class _LibraryCellState extends State<LibraryCell> {
   Plugin? plugin;
-  late GitRepository repo;
+  late _GitRepo repo;
 
   _LibraryCellState();
 
@@ -84,14 +159,13 @@ class _LibraryCellState extends State<LibraryCell> {
     String id = PluginsManager.instance.calculatePluginID(widget.item.src);
     plugin = PluginsManager.instance.findPlugin(id);
 
-    repo = GitRepository("${PluginsManager.instance.root.path}/$id");
-    repo.open();
+    repo = _GitRepo("${PluginsManager.instance.root.path}/$id");
   }
 
   @override
   void dispose() {
     super.dispose();
-    repo.dispose();
+    repo.release();
   }
 
   Future<void> clone() async {
@@ -107,8 +181,7 @@ class _LibraryCellState extends State<LibraryCell> {
          return ProgressDialog(
            title: kt("clone_project"),
            run: () {
-             GitController controller = GitController(repo);
-             repo.clone(controller,
+             GitController controller = repo.clone(
                url: widget.item.src,
                branch: widget.item.branch??"master",
              );
@@ -191,8 +264,7 @@ class _LibraryCellState extends State<LibraryCell> {
                       return ProgressDialog(
                         title: kt("fetch"),
                         run: () {
-                          GitController controller = GitController(repo);
-                          repo.fetch(controller,);
+                          GitController controller = repo.fetch();
 
                           return GitItem(controller);
                         },
@@ -207,8 +279,7 @@ class _LibraryCellState extends State<LibraryCell> {
                           return ProgressDialog(
                             title: kt("checkout"),
                             run: () {
-                              GitController controller = GitController(repo);
-                              repo.checkout(controller, branch: branch);
+                              GitController controller = repo.checkout(branch: branch);
 
                               return GitItem(controller);
                             },

@@ -16,6 +16,8 @@ import 'localizations/localizations.dart';
 import 'utils/js_extensions.dart';
 import 'utils/plugin/manga_loader.dart';
 import 'utils/plugin/plugin.dart';
+import 'widgets/webview.dart';
+import 'package:flutter_dapp/src/template.dart';
 
 const String env_git_url = "https://github.com/gsioteam/glib_env.git";
 const String project_link = 'https://github.com/gsioteam/kinoko';
@@ -91,7 +93,7 @@ class PluginLocalStorage extends dapp.LocalStorage {
 
 class Configs {
 
-  static const bool isDebug = false;
+  static const bool isDebug = true;
 
   final Uint8List publicKey = Uint8List.fromList([2,169,116,121,28,94,121,148,224,164,101,4,129,150,179,221,230,79,31,104,57,165,189,188,150,139,234,217,84,155,201,149,10,]);
 
@@ -148,6 +150,18 @@ class Configs {
       }
     });
 
+    XmlLayout.register("webview", (node, key) {
+      return WebView(
+        key: key,
+        url: node.s<String>("src"),
+        onLoadStart: node.function<WebViewUrlCallback>("onLoadStart"),
+        onLoadEnd: node.function<WebViewUrlCallback>("onLoadEnd"),
+        onFail: node.function<WebViewErrorCallback>("onFail"),
+        onMessage: node.function<WebViewMessageCallback>("onMessage"),
+        replacements: node.s<List>("replacements"),
+      );
+    });
+
     locale = Localizations.localeOf(context);
   }
 
@@ -162,6 +176,7 @@ class Configs {
     script.addClass(favoriteManager);
     script.addClass(notificationCenter);
     script.addClass(scriptContextClass);
+    script.addClass(headlessWebViewClass);
 
     if (_storageCompiled != null) {
       script.loadCompiled(_storageCompiled!);

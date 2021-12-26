@@ -1,4 +1,5 @@
 
+import 'package:browser_webview/browser_webview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dapp/flutter_dapp.dart';
 import 'package:flutter_dapp/src/controller.dart';
@@ -214,5 +215,138 @@ ClassInfo scriptContextClass = ClassInfo<ScriptContext>(
         set: (obj, val) => obj.onEvent = val,
         get: (obj) => obj.onEvent,
       )
+    }
+);
+
+
+class HeadlessWebView implements JsDispose {
+
+  late BrowserWebViewController controller;
+  JsValue? _onMessage;
+  JsValue? _onLoadStart;
+  JsValue? _onLoadEnd;
+  JsValue? _onLoadError;
+
+  JsValue? get onMessage => _onMessage;
+  set onMessage(JsValue? val) {
+    _onMessage?.release();
+    _onMessage = val?..retain();
+  }
+
+  JsValue? get onLoadStart => _onLoadStart;
+  set onLoadStart(JsValue? val) {
+    _onLoadStart?.release();
+    _onLoadStart = val?..retain();
+  }
+
+  JsValue? get onLoadEnd => _onLoadEnd;
+  set onLoadEnd(JsValue? val) {
+    _onLoadEnd?.release();
+    _onLoadEnd = val?..retain();
+  }
+
+  JsValue? get onLoadError => _onLoadError;
+  set onLoadError(JsValue? val) {
+    _onLoadError?.release();
+    _onLoadError = val?..retain();
+  }
+
+  HeadlessWebView(JsValue? options) {
+    List<ResourceReplacement>? replacements;
+    JsValue? rr = options?["resourceReplacements"];
+    if (rr != null && rr.isArray == true) {
+      replacements = [];
+      for (int i = 0, t = rr["length"]; i < t; ++i) {
+        var replacement = rr[i];
+        replacements.add(ResourceReplacement(
+          replacement["test"],
+          replacement["resource"],
+          replacement["mimeType"],
+        ));
+      }
+    }
+
+    controller = BrowserWebViewController(
+      resourceReplacements: replacements,
+    );
+    controller.addEventHandler("message", (data) {
+      if (_onMessage != null) {
+        _onMessage?.call([dartToJsValue(_onMessage!.script, data)]);
+      }
+    });
+    controller.onLoadStart.addListener(_loadStart);
+    controller.onLoadEnd.addListener(_loadEnd);
+    controller.onLoadError.addListener(_loadError);
+  }
+
+  void load(String url) => controller.loadUrl(url: url);
+
+  @override
+  void dispose() {
+    controller.onLoadStart.removeListener(_loadStart);
+    controller.onLoadEnd.removeListener(_loadEnd);
+    controller.onLoadError.removeListener(_loadError);
+    _onMessage?.release();
+    _onLoadStart?.release();
+    _onLoadEnd?.release();
+    _onLoadError?.release();
+    controller.dispose();
+  }
+
+  static Future<Map<String, List<String>>> getCookies(String url) async {
+    var cookies = await BrowserWebViewController.getCookies(url);
+    Map<String, List<String>> retults = {};
+    for (var cookie in cookies) {
+      List<String>? list = retults[cookie.name];
+      if (list == null) {
+        list = retults[cookie.name] = [];
+      }
+      list.add(cookie.value);
+    }
+    return retults;
+  }
+
+  void _loadStart() {
+    _onLoadStart?.call([controller.onLoadStart.value]);
+  }
+
+  void _loadEnd() {
+    _onLoadEnd?.call([controller.onLoadEnd.value]);
+  }
+
+  void _loadError() {
+    var val = controller.onLoadError.value;
+    _onLoadError?.call([val.first, val.second]);
+  }
+
+  dynamic eval(String script) {
+    return controller.eval(script);
+  }
+}
+
+ClassInfo headlessWebViewClass = ClassInfo<HeadlessWebView>(
+    newInstance: (_, argv) => HeadlessWebView(argv.length > 0 ? argv[0] : null),
+    functions: {
+      "load": JsFunction.ins((obj, argv) => obj.load(argv[0])),
+      "getCookies": JsFunction.sta((argv) => HeadlessWebView.getCookies(argv[0])),
+      "eval": JsFunction.ins((obj, argv) => obj.eval(argv[0])),
+    },
+    fields: {
+      "onmessage": JsField.ins(
+        get: (obj) => obj.onMessage,
+        set: (obj, val) => obj.onMessage = val,
+      ),
+      "onloadstart": JsField.ins(
+        get: (obj) => obj.onLoadStart,
+        set: (obj, val) => obj.onLoadStart = val,
+      ),
+      "onloadend": JsField.ins(
+        get: (obj) => obj.onLoadEnd,
+        set: (obj, val) => obj.onLoadEnd = val,
+      ),
+      "onfail": JsField.ins(
+        get: (obj) => obj.onLoadError,
+        set: (obj, val) => obj.onLoadError = val,
+      ),
     }
 );
