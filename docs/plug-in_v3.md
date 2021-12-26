@@ -196,7 +196,7 @@ module.exports = MangaProcesser;
 // Hold the reference otherwise the webview will be released before loading complete.
 this.webview = new HeadlessWebView({
     resourceReplacements: [{
-        // `test` will be compile to a ExgEx.
+        // `test` will be compiled to a ExgEx.
         test:'jwplayer\.js',
         resource: this.loadString('my_jwplayer.js'),
         mimeType: 'text/javascript',
