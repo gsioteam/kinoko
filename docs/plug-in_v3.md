@@ -270,4 +270,4 @@ class Configs {
 }
 ```
 
-Now, the your local plugin will be set as the main plugin.
+Now, your local plugin will be set as the main plugin.
