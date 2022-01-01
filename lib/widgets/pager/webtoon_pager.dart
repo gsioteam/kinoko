@@ -202,11 +202,11 @@ class WebtoonPagerState extends PagerState<WebtoonPager> {
     if (!_listen) return;
     var list = listener.itemPositions.value;
     ItemPosition? current;
-    double old = double.infinity;
+    double space = 0;
     for (var position in list) {
-      var middle = (position.itemTrailingEdge + position.itemLeadingEdge) / 2;
-      if (middle > 0 && middle < old) {
-        old = middle;
+      var size = math.min(1.0, position.itemTrailingEdge) - math.max(0.0, position.itemLeadingEdge);
+      if (size > space) {
+        space = size;
         current = position;
       }
     }
