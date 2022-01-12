@@ -10,6 +10,7 @@ import 'package:glib/main/models.dart';
 import 'package:kinoko/configs.dart';
 import 'package:kinoko/utils/plugin/manga_loader.dart';
 import 'package:kinoko/utils/plugin/plugin.dart';
+import 'package:kinoko/widgets/pager/flip_pager.dart';
 import 'package:kinoko/widgets/pager/horizontal_pager.dart';
 import 'package:kinoko/widgets/pager/webtoon_pager.dart';
 import 'package:kinoko/widgets/picture_hint_painter.dart';
@@ -100,6 +101,7 @@ enum FlipType {
   RightToLeft,
   Vertical,
   Webtoon,
+  Flip
 }
 
 enum PagerTransitionDirection {
@@ -110,6 +112,7 @@ enum PagerTransitionDirection {
 
 HintMatrix _hintMatrix(FlipType type) {
   switch (type) {
+    case FlipType.Flip:
     case FlipType.Horizontal: {
       return HintMatrix([
         -1, 0, 1,
@@ -315,6 +318,21 @@ class _PictureViewerState extends State<PictureViewer> {
           },
         );
       }
+      case FlipType.Flip: {
+        return FlipPager(
+          key: _PagerKey(pagerController, orientation),
+          cacheManager: cacheManager,
+          controller: pagerController,
+          itemCount: current.value.length,
+          imageUrlProvider: (int index) {
+            var item = current.value[index];
+            return PhotoInformation(item.url, item.headersMap);
+          },
+          onTap: (event) {
+            tapAt(event.position);
+          },
+        );
+      }
       default: {
         return Container();
       }
@@ -425,6 +443,22 @@ class _PictureViewerState extends State<PictureViewer> {
                   });
                   displayHint();
                   KeyValue.set(_directionKey, "webtoon");
+                }
+              },
+            ),
+
+            QudsPopupMenuItem(
+              leading: Icon(Icons.web_asset_sharp),
+              title: Text(kt('flip')),
+              trailing: flipType == FlipType.Flip ?
+              Icon(Icons.check) : null,
+              onPressed: () {
+                if (flipType != FlipType.Flip) {
+                  setState(() {
+                    flipType = FlipType.Flip;
+                  });
+                  displayHint();
+                  KeyValue.set(_directionKey, "flip");
                 }
               },
             ),
@@ -789,6 +823,10 @@ class _PictureViewerState extends State<PictureViewer> {
       }
       case 'webtoon': {
         flipType = FlipType.Webtoon;
+        break;
+      }
+      case 'flip': {
+        flipType = FlipType.Flip;
         break;
       }
       default: {

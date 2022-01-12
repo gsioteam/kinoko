@@ -185,6 +185,13 @@ packages:
       url: "https://github.com/gsioteam/filesystem_picker.git"
     source: git
     version: "2.0.0-nullsafety.0"
+  flip_widget:
+    dependency: "direct main"
+    description:
+      name: flip_widget
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -337,6 +344,13 @@ packages:
       url: "https://github.com/fluttercommunity/get_version.git"
     source: git
     version: "0.2.2"
+  gl_canvas:
+    dependency: transitive
+    description:
+      name: gl_canvas
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.1"
   glib:
     dependency: "direct main"
     description:
@@ -435,6 +449,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.1"
+  opengl_es_bindings:
+    dependency: transitive
+    description:
+      name: opengl_es_bindings
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0-pre.1"
   package_config:
     dependency: transitive
     description:

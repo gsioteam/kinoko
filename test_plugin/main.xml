@@ -1,0 +1,49 @@
+<refresh loading="$loading">
+    <attr:onRefresh>
+        <callback function="onRefresh"/>
+    </attr:onRefresh>
+    <if candidate="$hasMore">
+        <attr:onLoadMore>
+            <callback function="onLoadMore"/>
+        </attr:onLoadMore>
+    </if>
+    <list-view itemCount="length(${list})" padding="ltrb(0,0,0,56)">
+        <attr:builder>
+            <Function returnType='Widget'>
+                <script>
+                    set("item", ${list[args[1]]})
+                </script>
+                <if candidate="${item.header}">
+                    <list-item dense="true" color="color(canvas)">
+                        <if candidate="isNotNull(${item.picture})">
+                            <attr:leading>
+                                <img src="${item.picture}" headers="${item.pictureHeaders}" width="48" height="48" fit="cover"/>
+                            </attr:leading>
+                        </if>
+                        <attr:title>
+                            <text>${item.title}</text>
+                        </attr:title>
+                    </list-item>
+                </if>
+                <else>
+                    <list-item color="color(canvas)">
+                        <attr:onTap>
+                            <callback function="onPressed" args="array(${args[1]})"/>
+                        </attr:onTap>
+                        <attr:leading>
+                            <img src="${item.picture}" headers="${item.pictureHeaders}" width="48" height="48" fit="cover"/>
+                        </attr:leading>
+                        <attr:title>
+                            <text>${item.title}</text>
+                        </attr:title>
+                        <if candidate="isNotNull(${item.subtitle})">
+                            <attr:subtitle>
+                                <text>${item.subtitle}</text>
+                            </attr:subtitle>
+                        </if>
+                    </list-item>
+                </else>
+            </Function>
+        </attr:builder>
+    </list-view>
+</refresh>

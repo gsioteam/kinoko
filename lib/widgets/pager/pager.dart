@@ -62,12 +62,14 @@ class PagerController {
 
 }
 
+typedef ImageFetcher = PhotoInformation Function(int index);
+
 abstract class Pager extends StatefulWidget {
 
   final PagerController controller;
   final NeoCacheManager cacheManager;
   final int itemCount;
-  final PhotoInformation Function(int index) imageUrlProvider;
+  final ImageFetcher imageUrlProvider;
 
   Pager({
     Key? key,

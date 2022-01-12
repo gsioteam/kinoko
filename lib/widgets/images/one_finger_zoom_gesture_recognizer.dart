@@ -11,8 +11,6 @@ enum _OneFingerZoomState {
 
 typedef OneFingerCallback = void Function(PointerEvent event);
 
-GestureArenaTeam _team = GestureArenaTeam();
-
 class OneFingerZoomGestureRecognizer extends OneSequenceGestureRecognizer {
   @override
   final String debugDescription = "one_finger_zoom";

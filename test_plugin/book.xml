@@ -1,0 +1,189 @@
+<scaffold>
+    <refresh onRefresh="onRefresh" loading="$loading">
+        <slivers>
+            <sliver-appbar expandedHeight="288"
+                        color="white" 
+                        floating="true" 
+                        pinned="true">
+                <FlexibleSpaceBar padding="ltrb(20,0,0,64)">
+                    <attr:background>
+                        <stack>
+                            <img src="$picture" fit="cover" width="infinity()" height="infinity()"/>
+                            <filter filter="blur(4, 4)">
+                                <view color="hex(#0000)"/>
+                            </filter>
+                            <view width="infinity()" height="infinity()" >
+                                <attr:gradient>
+                                    <LinearGradient begin="topCenter" end="bottomCenter">
+                                        <attr:colors>
+                                            <color>hex(#0007)</color>
+                                            <color>hex(#0000)</color>
+                                            <color>hex(#0007)</color>
+                                        </attr:colors>
+                                    </LinearGradient>
+                                </attr:gradient>
+                            </view>
+                        </stack>
+                    </attr:background>
+                    <text lines="4" overflow="ellipsis">
+                        <span size="14">$title</span>
+                        <span alignment="middle">
+                            <button type="text" 
+                                    tapTargetSize="shrinkWrap" 
+                                    minimumSize="zero"
+                                    padding="ltrb(4,1,4,10)" 
+                                    onPressed="onSourcePressed">
+                                <text size="6" text="loc(source)"/>
+                            </button>
+                        </span>
+                        <if candidate="isNotNull($subtitle)"> 
+                            <span>
+                                <view padding="ltrb(0,5,0,0)"/>
+                            </span>
+                            <span size="8">$subtitle</span>
+                        </if>
+                        <if candidate="isNotNull($summary)"> 
+                            <span>
+                                <view padding="ltrb(0,5,0,0)"/>
+                            </span>
+                            <span size="8">$summary</span>
+                        </if>
+                    </text>
+                </FlexibleSpaceBar>
+                <attr:actions>
+                    <button type="icon" onPressed="onFavoritePressed">
+                        <if candidate="js(isFavarite)">
+                            <icon color="red">favorite</icon>
+                        </if>
+                        <else>
+                            <icon>favorite</icon>
+                        </else>
+                    </button>
+                </attr:actions>
+                <attr:bottom>
+                    <PreferredSize size="(infinity(), 48)">
+                        <view color="color(canvas)" height="48" padding="ltrb(10,0,10,0)">
+                            <row>
+                                <icon color="color(primary)">bookmark</icon>
+                                <text text="loc(chapters)"/>
+                                <if candidate="isNotNull($last)">
+                                    <button type="text" onPressed="onLastPressed">
+                                        <text text="str(&quot;[&quot;,${last},&quot;]&quot;)"/>
+                                    </button>
+                                </if>
+                                <expanded/>
+                                <menu-button onSelected="onOrderSelected">
+                                    <attr:icon>
+                                        <icon color="color(primary)">sort</icon>
+                                    </attr:icon>
+                                    <attr:items>
+                                        <menu-item value="true">
+                                            <text>
+                                                <view width="36">
+                                                    <if candidate="$reverse">
+                                                        <icon color="color(primary)">check</icon>
+                                                    </if>
+                                                </view>
+                                                <span text="loc(reverse_order)"/>
+                                            </text>
+                                        </menu-item>
+                                        <menu-item value="false">
+                                            <text>
+                                                <view width="36">
+                                                    <if candidate="not($reverse)">
+                                                        <icon color="color(primary)">check</icon>
+                                                    </if>
+                                                </view>
+                                                <span text="loc(order)"/>
+                                            </text>
+                                        </menu-item>
+                                    </attr:items>
+                                </menu-button>
+                                <divider type="vertical"/>
+                                <switch axis="horizontal">
+                                    <if candidate="$editing">
+                                        <button id="clear-button" 
+                                                padding="ltrb(8,13,8,8)" 
+                                                type="icon" 
+                                                color="color(primary)" 
+                                                onPressed="onClearPressed">
+                                            <icon>clear</icon>
+                                        </button>
+                                    </if>
+                                    <else> <view/> </else>
+                                </switch>
+                                <switch axis="horizontal">
+                                    <if candidate="$editing">
+                                        <button id="check-button" 
+                                                padding="ltrb(8,13,8,8)" 
+                                                type="icon" 
+                                                color="color(primary)" 
+                                                onPressed="onCheckPressed">
+                                            <icon>check</icon>
+                                        </button>
+                                    </if>
+                                    <else> <view/> </else>
+                                </switch>
+                                <switch axis="horizontal">
+                                    <if candidate="not($editing)">
+                                        <button id="download-button" 
+                                                padding="ltrb(8,13,8,8)"
+                                                type="icon" 
+                                                color="color(primary)" 
+                                                onPressed="onDownloadPressed">
+                                            <icon>file_download</icon>
+                                        </button>
+                                    </if>
+                                    <else> <view/> </else>
+                                </switch>
+                            </row>
+                        </view>
+                    </PreferredSize>
+                </attr:bottom>
+            </sliver-appbar>
+            <sliver-list-view itemCount="length(${list})">
+                <attr:builder>
+                    <Function returnType='Widget'>
+                        <script>
+                            set("index", switch($reverse, minus(length(${list}), ${args[1]}, 1), ${args[1]}))
+                            set("item", ${list[index]})
+                        </script>
+                        <list-item>
+                            <attr:onTap>
+                                <callback function="onPressed" args="array($index)"/>
+                            </attr:onTap>
+                            <attr:title>
+                                <text>${item.title}</text>
+                            </attr:title>
+                            <if candidate="isNotNull(${item.subtitle})">
+                                <attr:subtitle>
+                                    <text>${item.subtitle}</text>
+                                </attr:subtitle>
+                            </if>
+                            <attr:trailing>
+                                <view width="26" height="26" alignment="center">
+                                    <switch>
+                                        <if candidate="$editing">
+                                            <if candidate="js(isSelected, $index)">
+                                                <icon color='color("primary")'>radio_button_checked</icon>
+                                            </if>
+                                            <else candidate="js(isDownloaded, $index)">
+                                                <icon>check</icon>
+                                            </else>
+                                            <else>
+                                                <icon>radio_button_unchecked</icon>
+                                            </else>
+                                        </if>
+                                        <else>
+                                            <view/>
+                                        </else>
+                                    </switch>
+                                </view>
+                            </attr:trailing>
+                        </list-item>
+                    </Function>
+                </attr:builder>
+            </sliver-list-view>
+        </slivers>
+    </refresh>
+</scaffold>

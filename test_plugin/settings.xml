@@ -1,0 +1,40 @@
+
+<scaffold>
+    <attr:appbar>
+        <appbar>
+            <text text="loc(settings)"/>
+        </appbar>
+    </attr:appbar>
+    <attr:body>
+        <list-view>
+            <list-item dense="true">
+                <attr:title>
+                    <text text="loc(language)"/>
+                </attr:title>
+            </list-item>
+            <for array="$languages"> 
+                <list-item color="color(canvas)">
+                    <attr:onTap>
+                        <callback function="onPressed" args="array($item)"/>
+                    </attr:onTap>
+                    <attr:leading>
+                        <icon>
+                            <attr:color>
+                                <if candidate="equal($current, $item)">
+                                    <color color="color(primary)"></color>
+                                </if>
+                                <else>
+                                    <color>hex(0000)</color>
+                                </else>
+                            </attr:color>
+                            arrow_right
+                        </icon>
+                    </attr:leading>
+                    <attr:title>
+                        <text>${map[item]}</text>
+                    </attr:title>
+                </list-item>
+            </for>
+        </list-view>
+    </attr:body>
+</scaffold>

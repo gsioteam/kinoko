@@ -38,13 +38,13 @@ class VerticalImageState extends PhotoImageState<VerticalImage> {
 
   @override
   bool arriveStart() {
-    if (imageSize == null) return true;
+    if (imageSize == Size.zero) return true;
     return translation.dy >= -0.01;
   }
 
   @override
   bool arriveEnd() {
-    if (imageSize == null) return true;
+    if (imageSize == Size.zero) return true;
     Size realSize = imageSize * scale;
     return translation.dy <= (widget.size.height - realSize.height + 0.01);
   }
