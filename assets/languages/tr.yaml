@@ -50,7 +50,7 @@
 "general": "Genel"
 "credits": "Jenerik"
 "credits_content": >
-  Liah(Icon) https://liah0227.itch.io/
+  Liah(Simge) https://liah0227.itch.io/
 "can_not_open": "{0} Açılamıyor"
 "no_main_project": "Yok"
 "remove_project": "Projeyi Sil"
@@ -86,8 +86,8 @@ click_to_select: Birini seçmek için tıklayın
 version: Ver.
 framework_version: Yapı
 cache_manager: Önbellek
-about_description: "Bu açık kaynaklı bir yazılımdır, ziyaret edin "
-about_description_end: " daha fazla bilgi edinmek, hataları bildirmek veya yeni bir özellik önermek için."
+about_description: "Bu açık kaynaklı bir yazılımdır"
+about_description_end: " adresini daha fazla bilgi edinmek, hataları bildirmek veya yeni bir özellik önermek için ziyaret edin."
 about: Hakkında
 fetch_framework: Yapıyı Getir...
 loading: Yükleniyor...
@@ -102,7 +102,7 @@ move_to_first: Başa Taşı
 default: Varsayılan
 dark: Karanlık
 
-unkown: Unkown
-fetch: Fetch
-checkout: Checkout
-not_complete: This manga is not ready to save.
+unkown: Bilinmeyen
+fetch: Getir
+checkout: Ayır
+not_complete: Bu manga kaydetmeye hazır değil.
