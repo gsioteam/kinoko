@@ -37,6 +37,7 @@ class PhotoImage extends StatefulWidget {
   final PhotoImageController controller;
   final OneFingerCallback? onTap;
   final AxisDirection direction;
+  final Color backgroundColor;
 
   PhotoImage({
     Key? key,
@@ -49,6 +50,7 @@ class PhotoImage extends StatefulWidget {
     PhotoImageController? controller,
     this.direction = AxisDirection.left,
     this.onTap,
+    this.backgroundColor = Colors.black
   }) : controller = controller == null ? PhotoImageController() : controller, super(key: key);
 
   @override
@@ -84,7 +86,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
   Size get imageSize => _imageSize;
 
   Offset get translation => _translation;
- set translation(v) => _translation = v;
+  set translation(v) => _translation = v;
 
   GlobalKey _key = GlobalKey();
 
@@ -268,7 +270,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
           width: widget.size.width,
           height: widget.size.height,
           decoration: BoxDecoration(
-            color: Colors.black,
+            color: widget.backgroundColor,
           ),
           clipBehavior: Clip.antiAlias,
           child: buildGestureDetector(OverflowBox(
@@ -282,7 +284,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
               transform: Matrix4.translation(m64.Vector3(_translation.dx, _translation.dy, 0))
                 ..scale(_scale, _scale),
               child: Container(
-                color: Colors.black,
+                color: widget.backgroundColor,
                 width: _imageSize.width,
                 height: _imageSize.height,
                 padding: const EdgeInsets.all(1),
@@ -418,7 +420,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
   }
 
   bool arriveEnd() {
-    if (_imageSize == null) return true;
+    if (_imageSize == Size.zero) return true;
     bool check = widget.reverse;
     if (widget.direction == AxisDirection.left)
       check = !check;

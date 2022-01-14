@@ -353,6 +353,12 @@ class OverDragState extends State<OverDrag> {
     );
   }
 
+  void onOverDrag(OverDragType type, double delta) {
+    _isTouching = true;
+    this.type = type;
+    _dragUpdate(delta);
+  }
+
   void _dragUpdate(double delta) {
     EdgeInsets padding = MediaQuery.of(context).padding;
     switch (type) {
@@ -399,5 +405,4 @@ class OverDragState extends State<OverDrag> {
       default:
     }
   }
-
 }

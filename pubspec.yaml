@@ -70,7 +70,7 @@ dependencies:
   jdenticon_dart: ^2.0.0
   android_alarm_manager: ^2.0.2
   flutter_local_notifications: ^9.1.5
-  flip_widget: ^0.1.0
+  flip_widget: ^0.1.1
 
 dev_dependencies:
 #  flutter_test:

@@ -526,9 +526,12 @@ class _PictureViewerState extends State<PictureViewer> {
     ),);
 
     var padding = MediaQuery.of(context).padding;
-    var currentBody = OrientationBuilder(builder: (context, orientation) {
-      return buildPager(context, orientation);
-    });
+    var currentBody = OrientationBuilder(
+      key: ValueKey(pagerController),
+      builder: (context, orientation) {
+        return buildPager(context, orientation);
+      }
+    );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
         child: Scaffold(
