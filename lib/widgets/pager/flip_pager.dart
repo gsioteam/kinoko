@@ -70,6 +70,7 @@ class _FlipPageState extends State<FlipPage> with SingleTickerProviderStateMixin
         child: FlipWidget(
           key: _flipKey,
           child: buildImage(context),
+          textureSize: size,
         ),
       );
     } else {
@@ -316,9 +317,9 @@ class FlipPagerState extends PagerState<FlipPager> {
     int cur = widget.controller.index;
     if (off.dx <= 0) {
       if (cur < _keys.length - 1) {
-        double percent = math.max(0, -off.dx / size.width);
+        double percent = math.max(0, -off.dx / size.width / 1.2);
         percent *= 1.2;
-        double tilt = math.max(0.3, math.min(9.0, 3.0 + off.dy / 50));
+        double tilt = math.max(0.3, math.min(9.0, 3.0 + off.dy / 100));
         percent = percent - math.max(0, percent / 2 * (1-1/tilt));
 
         _keys[cur].currentState?.flip(percent, tilt);
@@ -336,7 +337,7 @@ class FlipPagerState extends PagerState<FlipPager> {
       if (cur > 0) {
         double percent = 1 - math.min(1, off.dx / size.width);
         percent *= 1.2;
-        double tilt = math.max(0.3, math.min(8.0, 3.0 + off.dy / 50));
+        double tilt = math.max(0.3, math.min(8.0, 3.0 + off.dy / 100));
         percent = percent - math.max(0, percent / 2 * (1-1/tilt));
 
         _keys[cur-1].currentState?.flip(percent, tilt);
@@ -371,15 +372,22 @@ class FlipPagerState extends PagerState<FlipPager> {
         to = 1;
       }
     } else {
+      double spacePercent() {
+        var size = MediaQuery.of(context).size;
+        var width = size.width * _lastPercent * 2;
+        var space = width * width * _lastTilt / 2;
+        var totalSpace = size.width * size.height;
+        return space / totalSpace;
+      }
       if (_activeIndex < widget.controller.index) {
-        if (_lastPercent < 0.7) {
+        if (spacePercent() < 0.7) {
           to = 1;
           _dash = -1;
         } else {
           to = 0;
         }
       } else {
-        if (_lastPercent > 0.3) {
+        if (spacePercent() > 0.3) {
           to = 0;
           _dash = 1;
         } else {
