@@ -5,9 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:glib/main/models.dart';
 import 'package:kinoko/utils/book_info.dart';
+import 'package:kinoko/utils/file_loader.dart';
+import 'package:kinoko/utils/import_manager.dart';
+import 'package:kinoko/utils/picture_data.dart';
 import 'package:kinoko/utils/plugin/manga_loader.dart';
 import 'package:kinoko/utils/plugin/plugin.dart';
 import 'package:kinoko/utils/plugins_manager.dart';
+import 'package:kinoko/widgets/import_cell.dart';
 import 'package:kinoko/widgets/no_data.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
 import '../configs.dart';
@@ -35,7 +39,9 @@ class BookData {
 
 enum _CellType {
   Book,
-  Chapter
+  Chapter,
+  ImportHeader,
+  Import,
 }
 
 class CellData {
@@ -171,6 +177,7 @@ class _ChapterCellState extends State<ChapterCell> {
                                   print("No output $url");
                                 }
                               }
+
                               Fluttertoast.showToast(
                                   msg: kt("output_to").replaceFirst("{0}", dir.path)
                               );
@@ -368,17 +375,71 @@ class _DownloadPageState extends State<DownloadPage> {
           enterFullscreenMode();
           await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
             return PictureViewer(
-              plugin: plugin!,
-              list: [
-                queueItem.info.data,
-              ],
-              initializeIndex: 0,
+              data: RemotePictureData(
+                plugin: plugin!,
+                list: [
+                  queueItem.info.data,
+                ],
+                initializeIndex: 0,
+              ),
             );
           }));
           exitFullscreenMode();
         } else {
           Fluttertoast.showToast(msg: kt("no_project_found"));
         }
+        break;
+      }
+      case _CellType.ImportHeader: {
+        if (cdata.extend) {
+          for (int i = 1; i < data.length; ++i) {
+            CellData ndata = data[i];
+            if (ndata.type != _CellType.Import) {
+              break;
+            }
+            data.removeAt(i);
+            _listKey.currentState?.removeItem(i, (context, animation) {
+              ImportedItem item = ndata.data;
+              return SizeTransition(
+                sizeFactor: animation,
+                child: ImportCell(
+                  item: item,
+                ),
+              );
+            });
+          }
+        } else {
+          List items = cdata.data;
+          if (items.length > 0) {
+            List<CellData> list = [];
+            for (int i = 0, t = items.length; i < t; ++i) {
+              list.add(CellData(
+                  type: _CellType.Import,
+                  data: items[i]
+              ));
+            }
+            data.insertAll(index + 1, list);
+            for (int offset = 0; offset < list.length; offset++) {
+              _listKey.currentState?.insertItem(index + 1 + offset);
+            }
+          }
+        }
+        cdata.extend = !cdata.extend;
+        break;
+      }
+      case _CellType.Import: {
+        ImportedItem item = cdata.data;
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) {
+            return PictureViewer(
+              data: LocalPictureData(
+                path: item.path,
+                title: item.title,
+              ),
+            );
+          }
+        ));
+        print("Import");
         break;
       }
     }
@@ -516,6 +577,90 @@ class _DownloadPageState extends State<DownloadPage> {
             },
           );
         }
+      case _CellType.ImportHeader: {
+        return Column(
+          key: _DownloadKey(cdata),
+          children: <Widget>[
+            Material(
+              color: Theme.of(context).colorScheme.surface,
+              child: ListTile(
+                title: Text(kt('imported')),
+                subtitle: Text(kt('imported_subtitle').replaceFirst('{0}', ImportManager.instance.items.data.length.toString())),
+                leading: CircleAvatar(
+                  child: Icon(Icons.import_contacts),
+                  radius: 56 / 2,
+                ),
+                trailing: AnimatedCrossFade(
+                    firstChild: Icon(Icons.keyboard_arrow_up),
+                    secondChild: Icon(Icons.keyboard_arrow_down),
+                    crossFadeState: cdata.extend ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+                    duration: Duration(milliseconds: 300)
+                ),
+                onTap: () {
+                  clickBookCell(index);
+                },
+              ),
+            ),
+            Divider(
+              height: 1,
+            )
+          ],
+        );
+      }
+      case _CellType.Import: {
+        ImportedItem item = cdata.data;
+        return Dismissible(
+          key: _DownloadKey(cdata),
+          child: ImportCell(
+            item: cdata.data,
+            onTap: () {
+              clickBookCell(index);
+            },
+          ),
+          confirmDismiss: (DismissDirection direction) {
+            return showDialog<bool>(
+                context: context,
+                builder: (context) {
+                  String title = item.title;
+                  return AlertDialog(
+                    title: Text(kt("confirm")),
+                    content: Text(
+                        kt("delete_item_2")
+                            .replaceAll("{0}", title)
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text(kt('no')),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(true);
+                        },
+                        child: Text(kt('yes')),
+                      ),
+                    ],
+                  );
+                }
+            );
+          },
+          onDismissed: (_) {
+            CellData mainData = data[0];
+            List list = mainData.data;
+            list.remove(item);
+            data.removeAt(index);
+            ImportManager.instance.remove(item);
+            _listKey.currentState?.removeItem(index, (context, animation) {
+              return SizeTransition(
+                sizeFactor: animation,
+                child: Container(),
+              );
+            });
+          },
+        );
+      }
     }
   }
 
@@ -540,6 +685,106 @@ class _DownloadPageState extends State<DownloadPage> {
         icon: Icon(Icons.help_outline),
         color: has ? Theme.of(context).appBarTheme.iconTheme?.color : Colors.transparent,
       ),
+      IconButton(
+        onPressed: () async {
+          var lists = await PathProviderEx.getStorageInfo();
+          if (lists.length > 0) {
+            var info = lists.last;
+            var res = await Navigator.of(context).push<String>(MaterialPageRoute(
+                builder: (context) {
+                  return FilesystemPicker(
+                    rootDirectory: Directory(info.rootDir),
+                    fileTileSelectMode: FileTileSelectMode.checkButton,
+                    onSelect: (path) {
+                      Navigator.of(context).pop(path);
+                    },
+                  );
+                }
+            ));
+            if (res != null) {
+              FileLoader? loader = await FileLoader.create(res);
+              if (loader != null) {
+                var pictures = loader.getPictures();
+                var list = await pictures.toList();
+                if (list.isEmpty) {
+                  Fluttertoast.showToast(msg: kt('no_picture_found'));
+                } else {
+                  TextEditingController textController = TextEditingController(
+                    text: path.basenameWithoutExtension(res)
+                  );
+                  var name = await showDialog<String>(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text(kt('import_title')),
+                          content: Column(
+                            children: [
+                              Text(kt('import_details').replaceFirst('{0}', list.length.toString())),
+                              TextField(
+                                controller: textController,
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(kt('cancel'))
+                            ),
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(textController.text);
+                                },
+                                child: Text(kt('confirm'))
+                            ),
+                          ],
+                        );
+                      }
+                  );
+                  Future.delayed(Duration(seconds: 1)).then((value) => textController.dispose());
+                  if (name != null) {
+                    var item = ImportedItem(
+                        title: name,
+                        path: res);
+                    ImportManager.instance.add(item);
+                    if (data.isEmpty || data[0].type != _CellType.ImportHeader) {
+                      setState(() {
+                        data.insert(0, CellData(
+                          type: _CellType.ImportHeader,
+                          data: [item]
+                        ));
+                      });
+                    } else {
+                      List list = data[0].data;
+                      list.add(item);
+                      if (data[0].extend) {
+                        int index = -1;
+                        for (int i = 1; i < data.length; ++i) {
+                          if (data[i].type != _CellType.Import) {
+                            index = i;
+                            break;
+                          }
+                        }
+                        if (index == -1) index = data.length;
+                        data.insert(index, CellData(
+                          type: _CellType.Import,
+                          data: item,
+                        ));
+                        _listKey.currentState?.insertItem(index);
+                      }
+                    }
+                  }
+                }
+              } else {
+                Fluttertoast.showToast(msg: kt('unsupport_file'));
+              }
+            }
+          }
+
+        },
+        icon: Icon(Icons.add),
+      )
     ];
   }
 
@@ -564,6 +809,14 @@ class _DownloadPageState extends State<DownloadPage> {
   void initState() {
 
     data = [];
+    var imported = ImportManager.instance.items.data;
+    if (imported.length > 0) {
+      data.add(CellData(
+        type: _CellType.ImportHeader,
+        data: imported,
+      ));
+    }
+
     List<DownloadQueueItem> items = DownloadManager().items.data;
     Map<String, BookData> cache = Map();
     for (int i = 0, t = items.length; i < t; ++i) {
@@ -584,8 +837,10 @@ class _DownloadPageState extends State<DownloadPage> {
     }
     for (int i = 0, t = data.length; i < t; ++i) {
       CellData cdata = data[i];
-      BookData downloadItem = cdata.data;
-      downloadItem.items.sort((item1, item2) => item1.info.chapterName.compareTo(item2.info.chapterName));
+      if (cdata.type == _CellType.Book) {
+        BookData downloadItem = cdata.data;
+        downloadItem.items.sort((item1, item2) => item1.info.chapterName.compareTo(item2.info.chapterName));
+      }
     }
 
     super.initState();

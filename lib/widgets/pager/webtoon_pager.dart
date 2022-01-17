@@ -20,7 +20,7 @@ class WebtoonPager extends Pager {
 
   WebtoonPager({
     Key? key,
-    required NeoCacheManager cacheManager,
+    NeoCacheManager? cacheManager,
     required PagerController controller,
     required int itemCount,
     required PhotoInformation Function(int index) imageUrlProvider,
@@ -73,17 +73,13 @@ class WebtoonPagerState extends PagerState<WebtoonPager> {
       itemBuilder: (context, index) {
         PhotoInformation photoInformation = widget.imageUrlProvider(index);
 
-        return photoInformation.url == null ?
+        return !photoInformation.hasData ?
         SpinKitRing(
           lineWidth: 4,
           size: 36,
           color: Colors.white,
         ) : ZoomImage(
-          imageProvider: NeoImageProvider(
-            uri: Uri.parse(photoInformation.url!),
-            cacheManager: widget.cacheManager,
-            headers: photoInformation.headers,
-          ),
+          imageProvider: photoInformation.getImageProvider(widget.cacheManager),
           loadingWidget: (context) {
             return SpinKitRing(
               lineWidth: 4,

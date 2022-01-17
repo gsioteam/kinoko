@@ -68,7 +68,7 @@ class HorizontalPager extends Pager {
   HorizontalPager({
     Key? key,
     this.reverse = false,
-    required NeoCacheManager cacheManager,
+    NeoCacheManager? cacheManager,
     required PagerController controller,
     required int itemCount,
     required PhotoInformation Function(int index) imageUrlProvider,
@@ -135,17 +135,13 @@ class _HorizontalPagerState extends PagerState<HorizontalPager> {
                         color: Colors.black
                     ),
                     child: Center(
-                      child: photoInformation.url == null ?
+                      child: !photoInformation.hasData ?
                       SpinKitRing(
                         lineWidth: 4,
                         size: 36,
                         color: Colors.white,
                       ) : PhotoImage(
-                        imageProvider: NeoImageProvider(
-                          uri: Uri.parse(photoInformation.url!),
-                          cacheManager: widget.cacheManager,
-                          headers: photoInformation.headers,
-                        ),
+                        imageProvider: photoInformation.getImageProvider(widget.cacheManager),
                         size: media.size,
                         reverse: widget.reverse,
                         initFromEnd: _fromEnd(index),

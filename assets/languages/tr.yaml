@@ -108,3 +108,11 @@ checkout: Ayır
 not_complete: Bu manga kaydetmeye hazır değil.
 
 flip: çevir
+
+unsupport_file: Dosya türü belirlenemiyor.
+no_picture_found: Resim bulunamadı.
+import_title: Mangayı içe aktar
+import_details: "{0} ithal edilecek, manga adı:"
+imported: Ithal Manga
+imported_subtitle: "{0} ithal"
+n_pages: "{0} sayfa"

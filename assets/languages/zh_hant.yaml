@@ -108,3 +108,11 @@ checkout: Checkout
 not_complete: This manga is not ready to save.
 
 flip: 翻頁
+
+unsupport_file: 不能判斷文件類型
+no_picture_found: 沒有發現圖片
+import_title: 導入漫畫
+import_details: "{0}頁漫畫被導入, 名稱是:"
+imported: 導入的漫畫
+imported_subtitle: "{0}本"
+n_pages: "{0}頁"

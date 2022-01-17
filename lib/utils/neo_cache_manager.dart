@@ -62,7 +62,9 @@ class NeoCacheManager {
 
   static Map<String, NeoCacheManager> _managers = {};
 
-  NeoCacheManager._(String key) {
+  final String key;
+
+  NeoCacheManager._(String key) : key = key {
     _directory = _getDirectory(key);
   }
 

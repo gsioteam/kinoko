@@ -38,6 +38,7 @@ class PhotoImage extends StatefulWidget {
   final OneFingerCallback? onTap;
   final AxisDirection direction;
   final Color backgroundColor;
+  final Color foregroundColor;
 
   PhotoImage({
     Key? key,
@@ -50,7 +51,8 @@ class PhotoImage extends StatefulWidget {
     PhotoImageController? controller,
     this.direction = AxisDirection.left,
     this.onTap,
-    this.backgroundColor = Colors.black
+    this.backgroundColor = Colors.black,
+    this.foregroundColor = Colors.white,
   }) : controller = controller == null ? PhotoImageController() : controller, super(key: key);
 
   @override
@@ -222,9 +224,9 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
                   },
                   child: Text(kt("reload")),
                   style: OutlinedButton.styleFrom(
-                      primary: Colors.white,
+                      primary: widget.foregroundColor,
                       side: BorderSide(
-                        color: Colors.white,
+                        color: widget.foregroundColor,
                       )
                   ),
                 ),

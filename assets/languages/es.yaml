@@ -109,3 +109,11 @@ checkout: Checkout
 not_complete: This manga is not ready to save.
 
 flip: Voltear
+
+unsupport_file: No se puede determinar el tipo de archivo.
+no_picture_found: No se encontró ninguna imagen.
+import_title: Importar manga
+import_details: "{0} será importado, el nombre del manga es:"
+imported: Manga Importado
+imported_subtitle: "{0} importado"
+n_pages: "{0} páginas"

@@ -27,6 +27,7 @@ import '../widgets/pager/pager.dart';
 import 'dart:ui' as ui;
 import '../utils/fullscreen.dart';
 import '../widgets/pager/vertical_pager.dart';
+import '../utils/picture_data.dart';
 
 enum PictureFlipType {
   Next,
@@ -72,20 +73,15 @@ class HorizontalIconPainter extends CustomPainter {
   }
 }
 
+
 class PictureViewer extends StatefulWidget {
 
-  final Plugin plugin;
-  final List list;
-  final int initializeIndex;
+  final PictureData data;
   final int? page;
-  final String? bookKey;
 
   PictureViewer({
     Key? key,
-    required this.plugin,
-    required this.list,
-    required this.initializeIndex,
-    this.bookKey,
+    required this.data,
     this.page,
   }) : super(key: key);
 
@@ -170,25 +166,20 @@ class _PictureViewerState extends State<PictureViewer> {
   int touchState = 0;
   bool appBarDisplay = true;
   static MethodChannel _channel = MethodChannel("com.ero.kinoko/volume_button");
-  late String cacheKey;
-  late PreloadQueue preloadQueue;
   bool loading = false;
   Timer? _timer;
-  NeoCacheManager? _cacheManager;
   late PagerController pagerController;
   FlipType flipType = FlipType.Horizontal;
   bool isLandscape = false;
 
   GlobalKey iconKey = GlobalKey();
 
+  late PictureController dataController;
+
   late String _directionKey;
   late String _deviceKey;
   late String _pageKey;
   bool _hintDisplay = false;
-
-  late Processor current;
-  Processor? next;
-  Processor? prev;
 
   GlobalKey<PageSliderState> _sliderKey = GlobalKey();
 
@@ -224,14 +215,6 @@ class _PictureViewerState extends State<PictureViewer> {
     }
   }
 
-  NeoCacheManager get cacheManager {
-    if (_cacheManager == null) {
-      // DataItem item = widget.context.infoData;
-      _cacheManager = NeoCacheManager(cacheKey);
-    }
-    return _cacheManager!;
-  }
-
   void setAppBarDisplay(display) {
     setState(() {
       appBarDisplay = display;
@@ -260,12 +243,11 @@ class _PictureViewerState extends State<PictureViewer> {
         return HorizontalPager(
           key: _PagerKey(pagerController, orientation),
           reverse: flipType == FlipType.HorizontalReverse,
-          cacheManager: cacheManager,
+          cacheManager: dataController.cacheManager,
           controller: pagerController,
-          itemCount: current.value.length,
+          itemCount: dataController.length,
           imageUrlProvider: (int index) {
-            var item = current.value[index];
-            return PhotoInformation(item.url, item.headersMap);
+            return dataController.getPicture(index);
           },
           onTap: (event) {
             tapAt(event.position);
@@ -275,12 +257,11 @@ class _PictureViewerState extends State<PictureViewer> {
       case FlipType.RightToLeft: {
         return HorizontalPager(
           key: _PagerKey(pagerController, orientation),
-          cacheManager: cacheManager,
+          cacheManager: dataController.cacheManager,
           controller: pagerController,
-          itemCount: current.value.length,
+          itemCount: dataController.length,
           imageUrlProvider: (int index) {
-            var item = current.value[index];
-            return PhotoInformation(item.url, item.headersMap);
+            return dataController.getPicture(index);
           },
           onTap: (event) {
             tapAt(event.position);
@@ -291,12 +272,11 @@ class _PictureViewerState extends State<PictureViewer> {
       case FlipType.Vertical: {
         return VerticalPager(
           key: _PagerKey(pagerController, orientation),
-          cacheManager: cacheManager,
+          cacheManager: dataController.cacheManager,
           controller: pagerController,
-          itemCount: current.value.length,
+          itemCount: dataController.length,
           imageUrlProvider: (int index) {
-            var item = current.value[index];
-            return PhotoInformation(item.url, item.headersMap);
+            return dataController.getPicture(index);
           },
           onTap: (event) {
             tapAt(event.position);
@@ -306,12 +286,11 @@ class _PictureViewerState extends State<PictureViewer> {
       case FlipType.Webtoon: {
         return WebtoonPager(
           key: _PagerKey(pagerController, orientation),
-          cacheManager: cacheManager,
+          cacheManager: dataController.cacheManager,
           controller: pagerController,
-          itemCount: current.value.length,
+          itemCount: dataController.length,
           imageUrlProvider: (int index) {
-            var item = current.value[index];
-            return PhotoInformation(item.url, item.headersMap);
+            return dataController.getPicture(index);
           },
           onTap: (event) {
             tapAt(event.position);
@@ -321,12 +300,11 @@ class _PictureViewerState extends State<PictureViewer> {
       case FlipType.Flip: {
         return FlipPager(
           key: _PagerKey(pagerController, orientation),
-          cacheManager: cacheManager,
+          cacheManager: dataController.cacheManager,
           controller: pagerController,
-          itemCount: current.value.length,
+          itemCount: dataController.length,
           imageUrlProvider: (int index) {
-            var item = current.value[index];
-            return PhotoInformation(item.url, item.headersMap);
+            return dataController.getPicture(index);
           },
           onTap: (event) {
             tapAt(event.position);
@@ -379,7 +357,9 @@ class _PictureViewerState extends State<PictureViewer> {
                   width: size,
                   height: size,
                   child: CustomPaint(
-                    painter: HorizontalIconPainter(Colors.black87),
+                    painter: HorizontalIconPainter(
+                        Theme.of(context).iconTheme.color??Colors.black87,
+                    ),
                     size: Size(size, size),
                   ),
                 ),
@@ -546,7 +526,7 @@ class _PictureViewerState extends State<PictureViewer> {
                   child: Stack(
                     children: [
                       Positioned.fill(
-                        child: current.value.length == 0 ?
+                        child: dataController.length == 0 ?
                         Center(
                           child: SpinKitRing(
                             lineWidth: 4,
@@ -635,8 +615,11 @@ class _PictureViewerState extends State<PictureViewer> {
                       ),
                       Expanded(
                         child: Text(
-                          current.data["title"] ?? "",
+                          dataController.title,
                           style: Theme.of(context).textTheme.headline6?.copyWith(color: Colors.white),
+                          maxLines: 1,
+                          softWrap: true,
+                          overflow: TextOverflow.ellipsis,
                         )
                       ),
                       QudsPopupButton(
@@ -676,7 +659,7 @@ class _PictureViewerState extends State<PictureViewer> {
                                   alignment: PlaceholderAlignment.middle
                               ),
                               TextSpan(
-                                text: current.value.length > 0 ? "${index == -1 ? current.value.length : (index + 1)}/${current.value.length}" : "",
+                                text: dataController.length > 0 ? "${index == -1 ? dataController.length : (index + 1)}/${dataController.length}" : "",
                                 style: Theme.of(context).textTheme.bodyText1?.copyWith(color: Colors.white),
                               ),
                               WidgetSpan(child: Container(padding: EdgeInsets.only(left: 5),)),
@@ -714,7 +697,7 @@ class _PictureViewerState extends State<PictureViewer> {
               Positioned(
                 child: index == -1 ? Container() : PageSlider(
                   key: _sliderKey,
-                  total: current.value.length,
+                  total: dataController.length,
                   page: index,
                   onPage: (page) {
                     setState(() {
@@ -744,38 +727,10 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   void touch() {
-    cacheKey = NeoCacheManager.cacheKey(current);
-    _cacheManager = NeoCacheManager(cacheKey);
-    preloadQueue = PreloadQueue();
-
-    current.addListener(_update);
-    _loadAll();
-
     loadSavedData();
   }
 
-  void untouch() {
-    current.removeListener(_update);
-    preloadQueue.stop();
-    loading = false;
-  }
-
-  Future<void> _loadAll() async {
-    await current.load();
-    await next?.load();
-    await prev?.load();
-  }
-
   void _update() {
-    for (int i = 0 ,t = current.value.length; i < t; ++i) {
-      Picture item = current.value[i];
-      if (item.url != null)
-        preloadQueue.set(i, DownloadPictureItem(
-            item.url!,
-            cacheManager,
-            headers: item.headersMap
-        ));
-    }
     setState(() {
     });
   }
@@ -784,7 +739,7 @@ class _PictureViewerState extends State<PictureViewer> {
     setState(() {
       this.index = index;
     });
-    preloadQueue.offset = index;
+    dataController.onPage(index);
     KeyValue.set(_pageKey, index.toString());
   }
 
@@ -802,10 +757,10 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   void loadSavedData() {
-    String key = widget.plugin.id;
+    String key = widget.data.key;
     _directionKey = "$direction_key:$key";
     _deviceKey = "$device_key:$key";
-    _pageKey = "$page_key:$cacheKey";
+    _pageKey = "$page_key:${dataController.cacheManager?.key}";
     String direction = KeyValue.get(_directionKey);
     switch (direction) {
       case 'vertical': {
@@ -847,20 +802,8 @@ class _PictureViewerState extends State<PictureViewer> {
 
   void onOverBound(BoundType type) {
     if (type == BoundType.Start) {
-      if (prev != null) {
-        untouch();
-        next?.dispose();
-        next = current;
-        current = prev!;
-        if (widget.bookKey != null) {
-          widget.plugin.storage.set("book:last:${widget.bookKey}", current.key);
-        }
-        chapterIndex--;
-        if (chapterIndex > 0) {
-          prev = Processor(plugin: widget.plugin, data: widget.list[chapterIndex - 1]);
-        } else {
-          prev = null;
-        }
+      if (dataController.hasPrev) {
+        dataController.goPrev();
         touch();
         setState(() {
           index = - 1;
@@ -885,20 +828,8 @@ class _PictureViewerState extends State<PictureViewer> {
         Future.delayed(Duration(seconds: 3)).then((value) => _toastCoolDown = true);
       }
     } else if (!loading) {
-      if (next != null) {
-        untouch();
-        prev?.dispose();
-        prev = current;
-        current = next!;
-        if (widget.bookKey != null) {
-          widget.plugin.storage.set("book:last:${widget.bookKey}", current.key);
-        }
-        chapterIndex++;
-        if (chapterIndex < widget.list.length - 1) {
-          next = Processor(plugin: widget.plugin, data: widget.list[chapterIndex + 1]);
-        } else {
-          next = null;
-        }
+      if (dataController.hasNext) {
+        dataController.goNext();
         touch();
         setState(() {
           index = 0;
@@ -930,30 +861,15 @@ class _PictureViewerState extends State<PictureViewer> {
     });
   }
 
-  late int chapterIndex;
   @override
   initState() {
-    chapterIndex = widget.initializeIndex;
-    current = Processor(
-      plugin: widget.plugin,
-      data: widget.list[chapterIndex]
-    );
-    if (widget.bookKey != null) {
-      widget.plugin.storage.set("book:last:${widget.bookKey}", current.key);
-    }
+    dataController = widget.data.createController();
+    dataController.addListener(_update);
+    loading = dataController.loading.value;
+    dataController.addListener(() {
+      onLoadingStatus(dataController.loading.value);
+    });
 
-    if (chapterIndex < widget.list.length - 1) {
-      next = Processor(
-        plugin: widget.plugin,
-        data: widget.list[chapterIndex+1]
-      );
-    }
-    if (chapterIndex > 0) {
-      prev = Processor(
-        plugin: widget.plugin,
-        data: widget.list[chapterIndex-1]
-      );
-    }
     touch();
     if (widget.page != null) {
       index = widget.page!;
@@ -999,14 +915,11 @@ class _PictureViewerState extends State<PictureViewer> {
     _timer?.cancel();
     _timer = null;
     pagerController.dispose();
-    untouch();
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
     _channel.invokeMethod("stop");
-    current.dispose();
-    next?.dispose();
-    prev?.dispose();
+    dataController.dispose();
     super.dispose();
   }
 

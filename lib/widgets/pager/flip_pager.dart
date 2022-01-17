@@ -16,6 +16,17 @@ import 'dart:math' as math;
 
 import 'pager.dart';
 
+const double _MinNumber = 0.008;
+double _clampMin(double v) {
+  if (v < _MinNumber && v > -_MinNumber) {
+    if (v >= 0) {
+      v = _MinNumber;
+    } else {
+      v = -_MinNumber;
+    }
+  }
+  return v;
+}
 
 class FlipPage extends StatefulWidget {
 
@@ -64,13 +75,14 @@ class _FlipPageState extends State<FlipPage> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     if (_active) {
-      Size size = MediaQuery.of(context).size;
+      var media = MediaQuery.of(context);
+      Size size = media.size;
       return Transform.translate(
         offset: Offset(_hidden && !_effectLayer ? -size.width:0, 0),
         child: FlipWidget(
           key: _flipKey,
           child: buildImage(context),
-          textureSize: size,
+          textureSize: size * media.devicePixelRatio,
         ),
       );
     } else {
@@ -87,17 +99,13 @@ class _FlipPageState extends State<FlipPage> with SingleTickerProviderStateMixin
       height: media.size.height,
       child: FittedBox(
         fit: BoxFit.contain,
-        child: photoInformation.url == null ?
+        child: !photoInformation.hasData ?
         SpinKitRing(
           lineWidth: 4,
           size: 36,
           color: Colors.black87,
         ) : ContainImage(
-          imageProvider: NeoImageProvider(
-            uri: Uri.parse(photoInformation.url!),
-            cacheManager: widget.cacheManager,
-            headers: photoInformation.headers,
-          ),
+          imageProvider: photoInformation.getImageProvider(widget.cacheManager),
           size: media.size,
           loadingWidget: (context) {
             return SpinKitRing(
@@ -115,6 +123,7 @@ class _FlipPageState extends State<FlipPage> with SingleTickerProviderStateMixin
           onTap: widget.onTap,
           controller: controller,
           backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
         ),
       ),
     );
@@ -202,9 +211,9 @@ class _FlipPageState extends State<FlipPage> with SingleTickerProviderStateMixin
       await _startFlip();
     }
     _fromPercent = _currentPercent;
-    _fromTilt = _currentTilt;
+    _fromTilt = 1/_currentTilt;
     _toPercent = (1 - to) * _maxSize;
-    _toTilt = (1 - to) * 6 + 3;
+    _toTilt = 1/((1 - to) * 6 + 3);
     _animationController.forward(from: 0).whenComplete(() {
       _hidden = to == 0;
       if (stop) {
@@ -218,8 +227,8 @@ class _FlipPageState extends State<FlipPage> with SingleTickerProviderStateMixin
     double percent = _fromPercent * (1 - value) + _toPercent * value;
     double tilt = _fromTilt * (1 - value) + _toTilt * value;
     _currentPercent = percent;
-    _currentTilt = tilt;
-    _flipKey.currentState?.flip(percent, tilt);
+    _currentTilt = 1/_clampMin(tilt);
+    _flipKey.currentState?.flip(percent, _currentTilt);
   }
 
   bool get hidden => _hidden;
@@ -238,7 +247,7 @@ class FlipPager extends Pager {
 
   FlipPager({
     Key? key,
-    required NeoCacheManager cacheManager,
+    NeoCacheManager? cacheManager,
     required PagerController controller,
     required int itemCount,
     required ImageFetcher imageUrlProvider,
@@ -319,8 +328,9 @@ class FlipPagerState extends PagerState<FlipPager> {
       if (cur < _keys.length - 1) {
         double percent = math.max(0, -off.dx / size.width / 1.2);
         percent *= 1.2;
-        double tilt = math.max(0.3, math.min(9.0, 3.0 + off.dy / 100));
-        percent = percent - math.max(0, percent / 2 * (1-1/tilt));
+        double tilt = (-off.dy + 20) / 100;
+        tilt = 1/_clampMin(tilt);
+        percent = percent - math.min(0.4, percent / 2 * (1-1/tilt));
 
         _keys[cur].currentState?.flip(percent, tilt);
         if (_activeIndex != cur && _activeIndex != -1) {
@@ -335,10 +345,11 @@ class FlipPagerState extends PagerState<FlipPager> {
       }
     } else {
       if (cur > 0) {
-        double percent = 1 - math.min(1, off.dx / size.width);
+        double percent = 1.4 - math.min(1, off.dx / size.width);
         percent *= 1.2;
-        double tilt = math.max(0.3, math.min(8.0, 3.0 + off.dy / 100));
-        percent = percent - math.max(0, percent / 2 * (1-1/tilt));
+        double tilt = (-off.dy + 20) / 100;
+        tilt = 1/_clampMin(tilt);
+        percent = percent - math.min(0.4, percent / 2 * (1-1/tilt));
 
         _keys[cur-1].currentState?.flip(percent, tilt);
         if (_activeIndex != cur-1 && _activeIndex != -1) {
@@ -372,22 +383,25 @@ class FlipPagerState extends PagerState<FlipPager> {
         to = 1;
       }
     } else {
-      double spacePercent() {
+      double centerPercent() {
         var size = MediaQuery.of(context).size;
-        var width = size.width * _lastPercent * 2;
-        var space = width * width * _lastTilt / 2;
-        var totalSpace = size.width * size.height;
-        return space / totalSpace;
+        var width = size.width * _lastPercent;
+        var height = width * _lastTilt;
+        if (height < 0 || height > size.height) {
+          height = size.height;
+        }
+        var w = height / _lastTilt / 2;
+        return (width - w) / size.width;
       }
       if (_activeIndex < widget.controller.index) {
-        if (spacePercent() < 0.7) {
+        if (centerPercent() < 0.8) {
           to = 1;
           _dash = -1;
         } else {
           to = 0;
         }
       } else {
-        if (spacePercent() > 0.3) {
+        if (centerPercent() > 0.2) {
           to = 0;
           _dash = 1;
         } else {

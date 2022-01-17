@@ -107,3 +107,11 @@ checkout: Checkout
 not_complete: This manga is not ready to save.
 
 flip: 翻页
+
+unsupport_file: 不能判断文件类型
+no_picture_found: 没有发现图片
+import_title: 导入漫画
+import_details: "{0}页漫画被导入, 名称是:"
+imported: 导入的漫画
+imported_subtitle: "{0}本"
+n_pages: "{0}页"

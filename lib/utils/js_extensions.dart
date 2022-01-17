@@ -8,6 +8,7 @@ import 'package:kinoko/configs.dart';
 import 'package:kinoko/pages/picture_viewer.dart';
 import 'package:kinoko/pages/source_page.dart';
 import 'package:kinoko/utils/history_manager.dart';
+import 'package:kinoko/utils/picture_data.dart';
 
 import 'book_info.dart';
 import 'download_manager.dart';
@@ -26,11 +27,12 @@ class KiController extends Controller {
     enterFullscreenMode();
     await Navigator.of(state!.context).push(MaterialPageRoute(builder: (context) {
       return PictureViewer(
-        plugin: plugin,
-        bookKey: d["key"],
-        list: d["list"],
-        initializeIndex: d["index"],
-        page: d["page"],
+        data: RemotePictureData(
+          plugin: plugin,
+          bookKey: d["key"],
+          list: d["list"],
+          initializeIndex: d["index"],
+        ),
       );
     }));
     exitFullscreenMode();

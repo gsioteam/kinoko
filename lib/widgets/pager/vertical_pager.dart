@@ -68,7 +68,7 @@ class VerticalPager extends Pager {
 
   VerticalPager({
     Key? key,
-    required NeoCacheManager cacheManager,
+    NeoCacheManager? cacheManager,
     required PagerController controller,
     required int itemCount,
     required PhotoInformation Function(int index) imageUrlProvider,
@@ -134,17 +134,13 @@ class _VerticalPagerState extends PagerState<VerticalPager> {
                         color: Colors.black
                     ),
                     child: Center(
-                      child: photoInformation.url == null ?
+                      child: !photoInformation.hasData ?
                       SpinKitRing(
                         lineWidth: 4,
                         size: 36,
                         color: Colors.white,
                       ) : VerticalImage(
-                        imageProvider: NeoImageProvider(
-                          uri: Uri.parse(photoInformation.url!),
-                          cacheManager: widget.cacheManager,
-                          headers: photoInformation.headers,
-                        ),
+                        imageProvider: photoInformation.getImageProvider(widget.cacheManager),
                         size: media.size,
                         initFromEnd: _fromEnd(index),
                         loadingWidget: (context) {

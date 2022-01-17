@@ -17,6 +17,7 @@ class ContainImage extends PhotoImage {
     PhotoImageController? controller,
     OneFingerCallback? onTap,
     Color backgroundColor = Colors.black,
+    Color foregroundColor = Colors.white,
   }) : super(
     key: key,
     imageProvider: imageProvider,
@@ -28,6 +29,7 @@ class ContainImage extends PhotoImage {
     reverse: false,
     onTap: onTap,
     backgroundColor: backgroundColor,
+    foregroundColor: foregroundColor,
   );
 
 
