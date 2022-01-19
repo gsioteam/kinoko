@@ -760,7 +760,7 @@ class _PictureViewerState extends State<PictureViewer> {
     String key = widget.data.key;
     _directionKey = "$direction_key:$key";
     _deviceKey = "$device_key:$key";
-    _pageKey = "$page_key:${dataController.cacheManager?.key}";
+    _pageKey = "$page_key:${dataController.cacheManager?.key ?? key}";
     String direction = KeyValue.get(_directionKey);
     switch (direction) {
       case 'vertical': {

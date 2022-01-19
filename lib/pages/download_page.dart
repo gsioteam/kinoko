@@ -392,13 +392,13 @@ class _DownloadPageState extends State<DownloadPage> {
       }
       case _CellType.ImportHeader: {
         if (cdata.extend) {
-          for (int i = 1; i < data.length; ++i) {
-            CellData ndata = data[i];
+          for (int i = 1, t = data.length; i < t; ++i) {
+            CellData ndata = data[1];
             if (ndata.type != _CellType.Import) {
               break;
             }
-            data.removeAt(i);
-            _listKey.currentState?.removeItem(i, (context, animation) {
+            data.removeAt(1);
+            _listKey.currentState?.removeItem(1, (context, animation) {
               ImportedItem item = ndata.data;
               return SizeTransition(
                 sizeFactor: animation,
@@ -408,6 +408,7 @@ class _DownloadPageState extends State<DownloadPage> {
               );
             });
           }
+          print(data);
         } else {
           List items = cdata.data;
           if (items.length > 0) {

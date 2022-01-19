@@ -28,6 +28,18 @@ double _clampMin(double v) {
   return v;
 }
 
+double _percentFix(double percent, double tilt, Size size) {
+  if (tilt >= 0) {
+    return percent + math.min(percent * size.width * tilt, size.height / 2) / tilt / size.width;
+  } else {
+    return percent - math.min((1 - percent) * size.width * -tilt, size.height/2) / -tilt / size.width;
+  }
+}
+
+double _tiltFix(double percent, double tilt) {
+  return _clampMin((1-percent) * tilt);
+}
+
 class FlipPage extends StatefulWidget {
 
   final ImageFetcher imageFetcher;
@@ -213,7 +225,7 @@ class _FlipPageState extends State<FlipPage> with SingleTickerProviderStateMixin
     _fromPercent = _currentPercent;
     _fromTilt = 1/_currentTilt;
     _toPercent = (1 - to) * _maxSize;
-    _toTilt = 1/((1 - to) * 6 + 3);
+    _toTilt = 1/((1 - to) * 100 + 3);
     _animationController.forward(from: 0).whenComplete(() {
       _hidden = to == 0;
       if (stop) {
@@ -329,8 +341,8 @@ class FlipPagerState extends PagerState<FlipPager> {
         double percent = math.max(0, -off.dx / size.width / 1.2);
         percent *= 1.2;
         double tilt = (-off.dy + 20) / 100;
-        tilt = 1/_clampMin(tilt);
-        percent = percent - math.min(0.4, percent / 2 * (1-1/tilt));
+        tilt = 1/_tiltFix(percent, tilt);
+        percent = _percentFix(percent, tilt, size);
 
         _keys[cur].currentState?.flip(percent, tilt);
         if (_activeIndex != cur && _activeIndex != -1) {
@@ -345,11 +357,10 @@ class FlipPagerState extends PagerState<FlipPager> {
       }
     } else {
       if (cur > 0) {
-        double percent = 1.4 - math.min(1, off.dx / size.width);
-        percent *= 1.2;
-        double tilt = (-off.dy + 20) / 100;
-        tilt = 1/_clampMin(tilt);
-        percent = percent - math.min(0.4, percent / 2 * (1-1/tilt));
+        double percent = 1.0 - off.dx / size.width * 1.2;
+        double tilt = (-off.dy) / 100;
+        tilt = 1/_tiltFix(percent, tilt);
+        percent = _percentFix(percent, tilt, size);
 
         _keys[cur-1].currentState?.flip(percent, tilt);
         if (_activeIndex != cur-1 && _activeIndex != -1) {

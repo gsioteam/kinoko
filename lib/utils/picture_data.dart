@@ -225,6 +225,9 @@ class LocalPictureController extends PictureController {
       await for (var path in loader!.getPictures()) {
         pictures.add(path);
       }
+      pictures.sort((path1, path2) {
+        return path1.compareTo(path2);
+      });
       notifyListeners();
     }
   }

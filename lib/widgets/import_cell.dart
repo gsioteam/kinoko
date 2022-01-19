@@ -91,7 +91,7 @@ class _ImportCellState extends State<ImportCell> {
                     subtitle: buildContent(),
                     trailing: Icon(Icons.keyboard_arrow_right),
                     onTap: () {
-                      if (data != null && data.error != null) {
+                      if (data != null && data.error == null) {
                         widget.onTap?.call();
                       }
                     },
@@ -113,6 +113,9 @@ class _ImportCellState extends State<ImportCell> {
       );
     } else {
       var list = await loader.getPictures().toList();
+      list.sort((path1, path2) {
+        return path1.compareTo(path2);
+      });
       if (list.isEmpty) {
         return _ImportState(
             error: kt('no_picture_found')

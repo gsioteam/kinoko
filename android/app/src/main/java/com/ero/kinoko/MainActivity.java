@@ -29,8 +29,6 @@ public class MainActivity extends FlutterActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-
-
 //        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
 //                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
