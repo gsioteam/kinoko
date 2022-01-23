@@ -430,7 +430,7 @@ class _DownloadPageState extends State<DownloadPage> {
       }
       case _CellType.Import: {
         ImportedItem item = cdata.data;
-        Navigator.of(context).push(MaterialPageRoute(
+        await Navigator.of(context).push(MaterialPageRoute(
           builder: (context) {
             return PictureViewer(
               data: LocalPictureData(
@@ -440,7 +440,7 @@ class _DownloadPageState extends State<DownloadPage> {
             );
           }
         ));
-        print("Import");
+        exitFullscreenMode();
         break;
       }
     }
@@ -688,6 +688,20 @@ class _DownloadPageState extends State<DownloadPage> {
       ),
       IconButton(
         onPressed: () async {
+          var status = await Permission.storage.status;
+          switch (status) {
+            case PermissionStatus.granted:
+              break;
+            default: {
+              var status = await Permission.storage.request();
+              if (status != PermissionStatus.granted) {
+                Fluttertoast.showToast(
+                    msg: kt("no_permission")
+                );
+                return;
+              }
+            }
+          }
           var lists = await PathProviderEx.getStorageInfo();
           if (lists.length > 0) {
             var info = lists.last;
@@ -719,6 +733,7 @@ class _DownloadPageState extends State<DownloadPage> {
                         return AlertDialog(
                           title: Text(kt('import_title')),
                           content: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(kt('import_details').replaceFirst('{0}', list.length.toString())),
                               TextField(

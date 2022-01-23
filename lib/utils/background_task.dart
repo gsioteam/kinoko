@@ -138,7 +138,7 @@ class BackgroundTask {
   static Future<void> setup() async {
     if (Platform.isAndroid) {
       await AndroidAlarmManager.initialize();
-      await AndroidAlarmManager.periodic(const Duration(hours: 4), _id, _callback);
+      await AndroidAlarmManager.periodic(const Duration(hours: 2), _id, _callback);
     }
   }
 }
