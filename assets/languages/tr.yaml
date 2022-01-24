@@ -116,3 +116,5 @@ import_details: "{0} ithal edilecek, manga adı:"
 imported: Ithal Manga
 imported_subtitle: "{0} ithal"
 n_pages: "{0} sayfa"
+
+theme: Tema

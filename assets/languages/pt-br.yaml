@@ -1,0 +1,121 @@
+"app_title": "Kinoko"
+"confirm": "Confirm"
+"install_confirm": "Clone project from {url}"
+"yes": "Sim"
+"no": "Não"
+"add": "Adicionar"
+"clone_project": "Clonar..."
+"not_installed": "Não clonado"
+"select_main_project": " Fazer como plugin principal"
+"new_project": "Novo projeto Git"
+"new_project_hint": "URL(Git://...)"
+"add_project_failed": "Não é possível adicionar，Talvez já tenha sido adicionado?"
+"manage_projects": "Gerenciar projetos"
+"manga_home": "Mangá"
+"favorites": "Favoritos"
+"history": "Histórico"
+"chapters": "Capítulos"
+"reverse_order": "Ordem reversa"
+"order": "Ordem positiva"
+"no_project_found": "O plug-in não foi encontrado"
+"can_not_determine_the_context_type": "Não é possível determinar o tipo de contexto"
+"download_list": "Downloads"
+"delete_item": "Excluir {0}({1})"
+"undo": "Desfazer"
+"search": "Pesquisar"
+"horizontal_flip": "Virar na  horizontal"
+"horizontal_reverse": "Modo do botão"
+"vertical_flip": "Virar na vertical"
+"portrait": "Retrato"
+"landscape": "Paisagem"
+"download": "Baixar"
+"no_prev_chapter": "Nenhum capítulo anterior"
+"no_next_chapter": "Sem próximo capítulo"
+"n_page": "p{0}"
+"delete_item_2": "Excluir item {0}"
+"select_main_project_first": "Selecione um plug-in principal primeiro"
+"bootstart": "Inicialização"
+"cancel": "Cancelar"
+"retry": "Repetir"
+"settings": "Configurações"
+"framework": "Estrutura"
+"disclaimer": "Isenção de responsabilidade"
+"disclaimer_content": >
+  Este software é um software que carrega um projeto de plug-in fornecido pelo desenvolvedor para carregar recursos de rede e navegar facilmente pelos quadrinhos.  O texto do recurso de imagem que aparece no software é fornecido pelo projeto de plug-in e pelo site do recurso.
+  
+  O software em si não fornece serviços de quadrinhos, siga as leis e regulamentos relevantes ao usar recursos de quadrinhos.
+
+  Os direitos autorais dos recursos de quadrinhos para download fornecidos por este software pertencem ao autor original.  É apenas para fins de aprendizagem e comunicação.  Copie e baixe os arquivos de acordo com as leis e regulamentos nacionais relevantes e não os use para outros fins sem a autorização do proprietário dos direitos autorais;  se surgirem disputas devido ao uso ilegal, todas as consequências serão suportadas pelo usuário.
+"ok": "Aceitar"
+"language": "Idioma"
+"general": "Em geral"
+"credits": "Créditos"
+"credits_content": >
+  Liah(Icon) https://liah0227.itch.io/
+"can_not_open": "Não é possível abrir {0}"
+"no_main_project": "Nenhum"
+"remove_project": "Remover projeto"
+"would_remove_project": "Deseja remover o plug-in({0})?"
+"no_card_found": "Nenhum cartão SD encontrado"
+"no_permission": "Sem permissão"
+"output_to": "Exportar para: {0}"
+"directory_name": "Nome do diretório"
+"name_empty": "O diretório não pode estar vazio"
+"clear_history": "Você gostaria de limpar o histórico?"
+"download_size": "Tamanho do download"
+"cached_size": "Tamanho em cache"
+"clear_cache": "Deseja limpar o cache?"
+"clear": "Limpar Cache"
+"libraries_hit": "Clone e selecione um como plugin principal e aproveite o mangá!"
+"instructions": "Instruções"
+"download_instructions": ""
+"lang": "pt-br"
+"source": "Fonte"
+"source_description": "A página de origem, copie e baixe os arquivos de acordo com as leis e regulamentos nacionais relevantes."
+"v2_title": "Kinoko v2"
+"v2_content": "Kinoko atualizado!  Se \"Sim\" for clicado, todos os plugins antigos e os mangás baixados serão removidos."
+"added_download": "Adicionados {0} itens à fila de download."
+page_mode: Modo de página
+orientation: Orientação do dispositivo
+prev: Anterior
+menu: Menu
+next: Próximo
+
+no_data: Sem dados
+select_project: Sem plug-in
+click_to_select: Clique para selecionar um
+version: Ver.
+framework_version: Framework
+cache_manager: Cache
+about_description: "Este é um software de código aberto, visite "
+about_description_end: " para obter mais informações ou relatar bugs ou sugerir um novo recurso."
+about: Cerca de
+fetch_framework: Buscar framework...
+loading: Carregando...
+webtoon: Webtoon
+
+new_project_branch: "Branch(default:master)"
+
+right_to_left: Direita para esquerda
+remove: Remover
+move_to_first: Mover para primeiro
+
+default: Padrão
+dark: Escuro
+
+unkown: Desconhecido
+fetch: Buscar
+checkout: Confira
+not_complete: Este mangá não está pronto para salvar.
+
+flip: Virar
+
+unsupport_file: Não é possível determinar o tipo de arquivo.
+no_picture_found: Nenhuma imagem encontrada.
+import_title: Importar mangá
+import_details: "{0} será importado, o nome do mangá é:"
+imported: Mangá Importado
+imported_subtitle: "{0} importado"
+n_pages: "{0} páginas"
+
+theme: Tema

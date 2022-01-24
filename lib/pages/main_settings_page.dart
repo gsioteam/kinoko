@@ -150,27 +150,13 @@ class ClearProgressItem extends ProgressItem {
   
 }
 
-class _LanguageInfo {
-  final String code;
-  final String name;
-
-  const _LanguageInfo(this.code, this.name);
-}
-
-const List<_LanguageInfo> _languageList = [
-  _LanguageInfo('en', 'English'),
-  _LanguageInfo('zh-hant', '中文(繁體)'),
-  _LanguageInfo('zh-hans', '中文(简体)'),
-  _LanguageInfo('es', 'Español'),
-  _LanguageInfo('tr', 'Türkçe'),
-];
-
 const Map<String, String> _languageMap = {
   'en': 'English',
   'zh-hant': '中文(繁體)',
   'zh-hans': '中文(简体)',
   'es': 'Español',
   'tr': 'Türkçe',
+  'pt-br': 'Portuguese - Brazil'
 };
 
 class _MainSettingsPageState extends State<MainSettingsPage> {

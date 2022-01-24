@@ -115,3 +115,5 @@ import_details: "{0}页漫画被导入, 名称是:"
 imported: 导入的漫画
 imported_subtitle: "{0}本"
 n_pages: "{0}页"
+
+theme: 主题

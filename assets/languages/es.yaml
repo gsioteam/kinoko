@@ -117,3 +117,5 @@ import_details: "{0} será importado, el nombre del manga es:"
 imported: Manga Importado
 imported_subtitle: "{0} importado"
 n_pages: "{0} páginas"
+
+theme: Tema
