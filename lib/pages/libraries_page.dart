@@ -309,6 +309,8 @@ class _LibraryCellState extends State<LibraryCell> {
   }
 
   Future<void> selectAsMainPlugin() async {
+    if (plugin?.isValidate != true)
+      return;
     bool? ret = await showDialog<bool>(
         context: context,
         builder: (context) {
