@@ -192,7 +192,7 @@ class _LibraryCellState extends State<LibraryCell> {
        }
      );
      setState(() {
-       this.plugin = PluginsManager.instance.findPlugin(PluginsManager.instance.calculatePluginID(widget.item.src));
+       this.plugin = PluginsManager.instance.findPlugin(PluginsManager.instance.calculatePluginID(widget.item.src), true);
      });
      if (PluginsManager.instance.current == null) {
        await selectAsMainPlugin();
