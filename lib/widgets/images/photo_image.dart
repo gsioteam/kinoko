@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:kinoko/utils/neo_cache_manager.dart';
 import 'package:kinoko/widgets/over_drag.dart';
 import 'package:vector_math/vector_math_64.dart' as m64;
 

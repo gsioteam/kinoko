@@ -214,7 +214,7 @@ class WebtoonPagerState extends PagerState<WebtoonPager> {
 
   void _initPosition() {
     if (widget.controller.index == -1 && widget.itemCount > 0) {
-      widget.controller.index = widget.itemCount - 1;
+      setPage(widget.itemCount - 1);
       if (controller.isAttached) {
         controller.jumpTo(
           index: widget.itemCount - 1,

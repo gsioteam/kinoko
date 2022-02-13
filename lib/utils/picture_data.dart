@@ -81,7 +81,7 @@ class RemotePictureController extends PictureController {
       );
     }
     if (prev == null && hasPrev) {
-      next = Processor(
+      prev = Processor(
         plugin: data.plugin,
         data: data.list[currentIndex - 1],
       );
@@ -123,7 +123,7 @@ class RemotePictureController extends PictureController {
     next = current;
     current.removeListener(_update);
     current.loading.removeListener(_onLoadingUpdate);
-    prev = current;
+    current = prev!;
     loading.value = current.loading.value;
     current.addListener(_update);
     current.loading.addListener(_onLoadingUpdate);

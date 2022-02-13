@@ -263,7 +263,7 @@ class _VerticalPagerState extends PagerState<VerticalPager> {
   void _initPageController() {
     if (pageController == null && widget.itemCount > 0) {
       if (widget.controller.index == -1) {
-        widget.controller.index = widget.itemCount - 1;
+        setPage(widget.itemCount - 1);
         _firstTimeFromEnd = true;
       }
       pageController = PageController(

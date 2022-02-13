@@ -288,6 +288,7 @@ class NeoImageProvider extends ImageProvider<NeoImageProvider> {
 class _ImageFrameDecoder {
   final NeoImageStreamCompleter _streamCompleter;
   bool validate = true;
+  ui.FrameInfo? currentFrame;
 
   _ImageFrameDecoder(this._streamCompleter);
 
@@ -298,12 +299,14 @@ class _ImageFrameDecoder {
       while (true) {
         if (!validate) return;
         var image = await codec.getNextFrame();
+        currentFrame = image;
         if (!validate) return;
         _streamCompleter._emitImage(ImageInfo(image: image.image));
         await Future.delayed(image.duration);
       }
     } else {
       var image = await codec.getNextFrame();
+      currentFrame = image;
       if (!validate) return;
       _streamCompleter._emitImage(ImageInfo(
         image: image.image
@@ -416,14 +419,22 @@ class NeoImageStreamCompleter extends ImageStreamCompleter {
     if (_frameDecoder == null) {
       _frameDecoder = _ImageFrameDecoder(this);
       _frameDecoder!.run();
+    } else {
+      if (_frameDecoder?.currentFrame != null) {
+        listener.onImage(ImageInfo(
+          image: _frameDecoder!.currentFrame!.image
+        ), true);
+      }
     }
   }
 
   @override
   void removeListener(ImageStreamListener listener) {
     super.removeListener(listener);
-    _frameDecoder?.stop();
-    _frameDecoder = null;
+    if (!hasListeners) {
+      _frameDecoder?.stop();
+      _frameDecoder = null;
+    }
   }
 
   void _emitImage(ImageInfo image) => setImage(image);

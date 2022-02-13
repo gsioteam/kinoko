@@ -736,9 +736,13 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   void onPage(index) {
-    setState(() {
+    try {
+      setState(() {
+        this.index = index;
+      });
+    } catch (e) {
       this.index = index;
-    });
+    }
     dataController.onPage(index);
     KeyValue.set(_pageKey, index.toString());
   }
