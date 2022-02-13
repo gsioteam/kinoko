@@ -215,11 +215,9 @@ class _FlipPageState extends State<FlipPage> with SingleTickerProviderStateMixin
   double _toTilt = 1;
   Future<void> animate(double to, bool stop) async {
     _animationController.stop(canceled: true);
-    if (_currentPercent == -99) {
+    if (!_flipping) {
       _currentPercent = _hidden ? _maxSize : 0;
       _currentTilt = _hidden ? 9 : 3;
-    }
-    if (!_flipping) {
       await _startFlip();
     }
     _fromPercent = _currentPercent;
