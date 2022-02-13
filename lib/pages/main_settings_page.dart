@@ -156,7 +156,8 @@ const Map<String, String> _languageMap = {
   'zh-hans': '中文(简体)',
   'es': 'Español',
   'tr': 'Türkçe',
-  'pt-br': 'Portuguese - Brazil'
+  'pt-br': 'Portuguese - Brazil',
+  'ru': 'русский',
 };
 
 class _MainSettingsPageState extends State<MainSettingsPage> {
