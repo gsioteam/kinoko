@@ -50,7 +50,7 @@ class _DefaultThemeDesc extends ThemeDesc {
           color: Colors.grey,
         ),
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Colors.white,
+          statusBarColor: Colors.white.withOpacity(0.3),
           statusBarBrightness: Brightness.dark,
           statusBarIconBrightness: Brightness.dark,
           systemNavigationBarColor: Colors.white,
@@ -104,20 +104,23 @@ class _DarkThemeDesc extends ThemeDesc {
         color: Colors.black,
         foregroundColor: Colors.white,
         // shadowColor: Color(0xff888888),
-        textTheme: TextTheme(
-          headline6: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+        toolbarTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+        titleTextStyle: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
         ),
         iconTheme: IconThemeData(
           color: Colors.grey,
         ),
         systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Colors.white,
-          statusBarBrightness: Brightness.dark,
-          statusBarIconBrightness: Brightness.dark,
+          statusBarColor: Colors.black.withOpacity(0.3),
+          statusBarBrightness: Brightness.light,
+          statusBarIconBrightness: Brightness.light,
           systemNavigationBarColor: Colors.black,
           systemNavigationBarDividerColor: Colors.black,
           systemNavigationBarIconBrightness: Brightness.dark,

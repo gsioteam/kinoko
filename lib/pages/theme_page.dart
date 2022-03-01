@@ -1,6 +1,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:glib/main/models.dart';
 import 'package:kinoko/main.dart';
 import 'package:kinoko/themes/them_desc.dart';
@@ -289,34 +290,41 @@ class _ThemePageState extends State<ThemePage> {
   @override
   Widget build(BuildContext context) {
     int current = themeIndex();
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(kt('theme')),
-      ),
-      body: GridView.builder(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-        ),
-        itemCount: themes.length,
-        itemBuilder: (context, index) {
-          var theme = themes[index];
-          return ThemeWidget(
-            theme: theme,
-            selected: index == current,
-            onTap: () {
-              if (index != current) {
+    var style = Theme.of(context).appBarTheme.systemOverlayStyle!;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(kt('theme')),
+          ),
+          body: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+              ),
+              itemCount: themes.length,
+              itemBuilder: (context, index) {
                 var theme = themes[index];
-                setState(() {
-                  KeyValue.set(theme_key, theme.title);
-                });
-                ThemeChangedNotification(theme.data).dispatch(context);
+                return ThemeWidget(
+                  theme: theme,
+                  selected: index == current,
+                  onTap: () {
+                    if (index != current) {
+                      var theme = themes[index];
+                      setState(() {
+                        KeyValue.set(theme_key, theme.title);
+                      });
+                      ThemeChangedNotification(theme.data).dispatch(context);
+                    }
+                    // MemoryData().themeName = theme.name;
+                    // PrettyThemeNotification(theme).dispatch(context);
+                  },
+                );
               }
-              // MemoryData().themeName = theme.name;
-              // PrettyThemeNotification(theme).dispatch(context);
-            },
-          );
-        }
-      ),
+          ),
+        ),
+        value: SystemUiOverlayStyle(
+          systemNavigationBarColor: style.systemNavigationBarColor,
+          systemNavigationBarIconBrightness: style.systemNavigationBarIconBrightness,
+        ),
     );
   }
 }

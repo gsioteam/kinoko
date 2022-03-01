@@ -129,24 +129,27 @@ class SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     EdgeInsets padding = MediaQuery.of(context).padding;
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        toolbarHeight: 0,
-        elevation: 0,
-      ),
-      extendBody: true,
-      body: Container(
-        transform: Matrix4.translationValues(0, (padding.bottom - padding.top) / 2, 0),
-        color: Colors.white,
-        child: Center(
-          child: Image(
-            image: AssetImage("assets/logo.png"),
-            width: 160,
-            height: 60,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          toolbarHeight: 0,
+          elevation: 0,
+        ),
+        extendBody: true,
+        body: Container(
+          transform: Matrix4.translationValues(0, (padding.bottom - padding.top) / 2, 0),
+          color: Colors.white,
+          child: Center(
+            child: Image(
+              image: AssetImage("assets/logo.png"),
+              width: 160,
+              height: 60,
+            ),
           ),
         ),
       ),
+      value: SystemUiOverlayStyle.light,
     );
   }
 
@@ -328,78 +331,85 @@ class _HomePageState extends State<HomePage> {
     Widget? body = _getBody(context);
     var size = MediaQuery.of(context).size;
 
-    return Scaffold(
-      body: AnimatedSwitcher(
-        duration: Duration(milliseconds: 300),
-        child: body,
-        transitionBuilder: (child, animation) {
-          return AnimatedBuilder(
-            animation: animation,
-            builder: (context, child) {
-              int nav = 1;
-              if (child != body) nav = -1;
-              if (selected < _oldSelected) nav *= -1;
-              return Transform.translate(
-                offset: Offset(size.width * (1-animation.value) * nav, 0),
-                child: child,
-              );
-            },
-            child: child,
-          );
-        },
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: selected,
-        items: [
-          BottomNavigationBarItem(
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(Icons.favorite),
-                Positioned(
-                  right: -2,
-                  top: -2,
-                  child: HintPoint(
-                    controller: favoritesController,
+    var style = Theme.of(context).appBarTheme.systemOverlayStyle!;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      child: Scaffold(
+        body: AnimatedSwitcher(
+          duration: Duration(milliseconds: 300),
+          child: body,
+          transitionBuilder: (child, animation) {
+            return AnimatedBuilder(
+              animation: animation,
+              builder: (context, child) {
+                int nav = 1;
+                if (child != body) nav = -1;
+                if (selected < _oldSelected) nav *= -1;
+                return Transform.translate(
+                  offset: Offset(size.width * (1-animation.value) * nav, 0),
+                  child: child,
+                );
+              },
+              child: child,
+            );
+          },
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: selected,
+          items: [
+            BottomNavigationBarItem(
+              icon: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(Icons.favorite),
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: HintPoint(
+                      controller: favoritesController,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+              label: kt("favorites"),
             ),
-            label: kt("favorites"),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.file_download),
-            label: kt("download_list"),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled),
-            label: kt("manga_home"),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: kt("history"),
-          ),
-          BottomNavigationBarItem(
-            label: kt("settings"),
-            icon: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(Icons.settings),
-                // Positioned(
-                //   right: -2,
-                //   top: -2,
-                //   child: HintPoint(
-                //     controller: newEnv,
-                //   ),
-                // ),
-              ],
+            BottomNavigationBarItem(
+              icon: Icon(Icons.file_download),
+              label: kt("download_list"),
             ),
-          ),
-        ],
-        onTap: (index) {
-          switchTo(index);
-        },
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_filled),
+              label: kt("manga_home"),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history),
+              label: kt("history"),
+            ),
+            BottomNavigationBarItem(
+              label: kt("settings"),
+              icon: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(Icons.settings),
+                  // Positioned(
+                  //   right: -2,
+                  //   top: -2,
+                  //   child: HintPoint(
+                  //     controller: newEnv,
+                  //   ),
+                  // ),
+                ],
+              ),
+            ),
+          ],
+          onTap: (index) {
+            switchTo(index);
+          },
+        ),
+      ),
+      value: SystemUiOverlayStyle(
+        systemNavigationBarColor: style.systemNavigationBarColor,
+        systemNavigationBarIconBrightness: style.systemNavigationBarIconBrightness,
       ),
     );
   }
