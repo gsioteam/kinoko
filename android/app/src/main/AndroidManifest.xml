@@ -30,6 +30,7 @@
             android:hardwareAccelerated="true"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"
+            android:exported="false"
             android:showWhenLocked="true"
             android:turnScreenOn="true">
             <!-- Specifies an Android theme to apply to this Activity as soon as
@@ -45,10 +46,6 @@
                  screen fades out. A splash screen is useful to avoid any visual
                  gap between the end of Android's launch screen and the painting of
                  Flutter's first frame. -->
-            <meta-data
-              android:name="io.flutter.embedding.android.SplashScreenDrawable"
-              android:resource="@drawable/launch_background"
-              />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -69,7 +66,8 @@
             android:exported="false"/>
         <receiver
             android:name="io.flutter.plugins.androidalarmmanager.RebootBroadcastReceiver"
-            android:enabled="false">
+            android:enabled="false"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
