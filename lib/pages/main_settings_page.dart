@@ -20,7 +20,7 @@ import 'theme_page.dart';
 import '../widgets/hint_point.dart';
 import '../widgets/picker_item.dart';
 import '../widgets/settings_list.dart';
-import 'package:get_version/get_version.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingCell extends StatelessWidget {
 
@@ -243,10 +243,11 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
           trailing: Icon(Icons.keyboard_arrow_right),
           onTap: () async {
             var theme = Theme.of(context);
+            PackageInfo packageInfo = await PackageInfo.fromPlatform();
             showAboutDialog(
               context: context,
-              applicationName: await GetVersion.appName,
-              applicationVersion: await GetVersion.projectVersion,
+              applicationName: packageInfo.appName,
+              applicationVersion: packageInfo.version,
               applicationIcon: Image.asset(
                 'assets/icon.png',
                 width: 32,

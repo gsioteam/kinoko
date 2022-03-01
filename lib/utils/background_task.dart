@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'dart:math' as math;
 
-import 'package:android_alarm_manager/android_alarm_manager.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter_git/flutter_git.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';

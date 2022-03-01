@@ -13,6 +13,7 @@ import 'package:kinoko/utils/plugins_manager.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
 import 'pages/collections_page.dart';
 import 'configs.dart';
+import 'pages/fav_home_page.dart';
 import 'pages/libraries_page.dart';
 
 import 'package:path_provider/path_provider.dart' as platform;
@@ -70,26 +71,19 @@ class MainAppState extends State<MainApp> {
     if (locale != null)
       Configs.instance.locale = locale!;
     return NotificationListener<AppChangedNotification>(
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
-          systemNavigationBarColor: theme.bottomNavigationBarTheme.backgroundColor,
-          systemNavigationBarDividerColor: theme.bottomNavigationBarTheme.backgroundColor,
-          systemNavigationBarIconBrightness: Brightness.dark,
-        ),
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          localizationsDelegates: [
-            const KinokoLocalizationsDelegate(),
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          locale: locale,
-          supportedLocales: KinokoLocalizationsDelegate.supports.values,
-          title: 'Kinoko',
-          theme: theme,
-          home: SplashScreen(),
-        ),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: [
+          const KinokoLocalizationsDelegate(),
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        locale: locale,
+        supportedLocales: KinokoLocalizationsDelegate.supports.values,
+        title: 'Kinoko',
+        theme: theme,
+        home: SplashScreen(),
       ),
       onNotification: (n) {
         if (n is LocaleChangedNotification) {
@@ -134,13 +128,23 @@ class SplashScreen extends StatefulWidget {
 class SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Center(
-        child: Image(
-          image: AssetImage("assets/logo.png"),
-          width: 160,
-          height: 60,
+    EdgeInsets padding = MediaQuery.of(context).padding;
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        toolbarHeight: 0,
+        elevation: 0,
+      ),
+      extendBody: true,
+      body: Container(
+        transform: Matrix4.translationValues(0, (padding.bottom - padding.top) / 2, 0),
+        color: Colors.white,
+        child: Center(
+          child: Image(
+            image: AssetImage("assets/logo.png"),
+            width: 160,
+            height: 60,
+          ),
         ),
       ),
     );
@@ -296,7 +300,7 @@ class _HomePageState extends State<HomePage> {
   Widget? _getBody(BuildContext context) {
     switch (selected) {
       case 0: {
-        return FavoritesPage(key: ValueKey(selected),);
+        return FavHomePage(key: ValueKey(selected),);
       }
       case 1: {
         return DownloadPage(key: ValueKey(selected),);

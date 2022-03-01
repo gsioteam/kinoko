@@ -33,12 +33,15 @@ class _DefaultThemeDesc extends ThemeDesc {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         shadowColor: Color(0xff888888),
-        textTheme: TextTheme(
-          headline6: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+        toolbarTextStyle: TextStyle(
+          color: Colors.black,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+        titleTextStyle: TextStyle(
+          color: Colors.black,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
         ),
         iconTheme: IconThemeData(
           color: Colors.grey,
@@ -47,7 +50,12 @@ class _DefaultThemeDesc extends ThemeDesc {
           color: Colors.grey,
         ),
         systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: Colors.white
+          statusBarColor: Colors.white,
+          statusBarBrightness: Brightness.dark,
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarColor: Colors.white,
+          systemNavigationBarDividerColor: Colors.white,
+          systemNavigationBarIconBrightness: Brightness.dark,
         ),
       ),
       tabBarTheme: TabBarTheme(
@@ -71,6 +79,10 @@ class _DefaultThemeDesc extends ThemeDesc {
         primary: primaryColor,
         background: Color(0xffb0e8d3),
         onBackground: Colors.white,
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
       )
     );
   }
@@ -103,7 +115,12 @@ class _DarkThemeDesc extends ThemeDesc {
           color: Colors.grey,
         ),
         systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: Colors.white
+          statusBarColor: Colors.white,
+          statusBarBrightness: Brightness.dark,
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarColor: Colors.black,
+          systemNavigationBarDividerColor: Colors.black,
+          systemNavigationBarIconBrightness: Brightness.dark,
         ),
       ),
       tabBarTheme: TabBarTheme(

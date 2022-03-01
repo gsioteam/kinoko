@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 4.1.7+83
+version: 4.2.0+84
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -39,7 +39,7 @@ dependencies:
     path: plugins/my_scrollable_positioned_list
   flutter_material_pickers: ^3.1.2
   http: ^0.13.0
-  xml_layout: ^2.3.11
+  xml_layout: ^2.3.12
   flutter_svg_provider:
     git:
       url: https://github.com/gsioteam/flutter_svg_provider.git
@@ -48,7 +48,7 @@ dependencies:
   url_launcher: ^6.0.2
   path_provider_ex:
     git: https://github.com/AmudAnan/flutter_path_provider_ex.git
-  permission_handler: ^6.1.0
+  permission_handler: ^9.2.0
   flutter_markdown: ^0.6.8
   filesystem_picker:
     git:
@@ -61,14 +61,13 @@ dependencies:
   yaml: ^3.1.0
   decorated_icon: ^1.2.1
   flutter_staggered_animations: ^1.0.0
-  get_version:
-    git: https://github.com/fluttercommunity/get_version.git
+  package_info_plus: ^1.4.0
   flutter_dapp: ^0.0.21
   flutter_git: ^0.0.9
   glib:
     path: "./plugins/glib"
   jdenticon_dart: ^2.0.0
-  android_alarm_manager: ^2.0.2
+  android_alarm_manager_plus: ^2.0.5
   flutter_local_notifications: ^9.1.5
   flip_widget: ^0.1.5
   archive: ^3.1.8
