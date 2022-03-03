@@ -113,7 +113,7 @@ unsupport_file: Неподдерживаемый формат файла
 no_picture_found: Изображение не найдено
 import_title: Импортировать мангу
 import_details: "{0} Импортировано, название манги:"
-imported: Им портированная манга
+imported: Импортированная манга
 imported_subtitle: "{0} импортировано"
 n_pages: "{0} Страниц"
 
