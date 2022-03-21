@@ -237,6 +237,7 @@ class _PictureViewerState extends State<PictureViewer> {
   }
 
   Widget buildPager(BuildContext context, Orientation orientation) {
+    var controller = dataController;
     switch (flipType) {
       case FlipType.Horizontal:
       case FlipType.HorizontalReverse: {
@@ -247,7 +248,7 @@ class _PictureViewerState extends State<PictureViewer> {
           controller: pagerController,
           itemCount: dataController.length,
           imageUrlProvider: (int index) {
-            return dataController.getPicture(index);
+            return controller.getPicture(index);
           },
           onTap: (event) {
             tapAt(event.position);

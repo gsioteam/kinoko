@@ -154,8 +154,12 @@ class RemotePictureController extends PictureController {
 
   @override
   PhotoInformation getPicture(int index) {
-    var item = current.value[index];
-    return UrlPhotoInformation(item.url, item.headersMap);
+    try {
+      var item = current.value[index];
+      return UrlPhotoInformation(item.url, item.headersMap);
+    } catch (e) {
+      return UrlPhotoInformation(null, null);
+    }
   }
 
   void _update() {

@@ -33,6 +33,7 @@ class KiController extends Controller {
           list: d["list"],
           initializeIndex: d["index"],
         ),
+        page: d["page"],
       );
     }));
     exitFullscreenMode();
