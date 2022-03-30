@@ -202,7 +202,7 @@ class InstructionsDialogState extends State<InstructionsDialog> {
   Widget build(BuildContext context) {
     double height = math.min(MediaQuery.of(context).size.height * 0.6, 420);
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).canvasColor,
       child: WillPopScope(
         child: RepaintBoundary(
           key: contentKey,
