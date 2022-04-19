@@ -326,6 +326,6 @@ class _ImportedPageState extends State<ImportedPage> {
           );
         }
     ));
-    exitFullscreenMode();
+    exitFullscreenMode(context);
   }
 }

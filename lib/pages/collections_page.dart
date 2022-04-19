@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dapp/flutter_dapp.dart';
 import 'package:kinoko/pages/libraries_page.dart';
 import 'package:decorated_icon/decorated_icon.dart';
@@ -134,6 +135,7 @@ class _CollectionsPageState extends State<CollectionsPage> {
       if (index[0] != '/') {
         index = '/' + index;
       }
+      var systemOverlayStyle = Theme.of(context).appBarTheme.systemOverlayStyle;
       return DApp(
         entry: index,
         fileSystems: [plugin!.fileSystem],
@@ -142,6 +144,22 @@ class _CollectionsPageState extends State<CollectionsPage> {
         onInitialize: (script) {
           script.addClass(downloadManager);
           Configs.instance.setupJS(script, plugin!);
+        },
+        onNavigateTo: ({
+          JsScript? script,
+          String? file,
+          dynamic initializeData,
+          DAppCustomer? customerMethods,
+        }) {
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            child: DWidget(
+              script: script!,
+              file: file!,
+              initializeData: initializeData,
+              customerMethods: customerMethods!,
+            ),
+            value: systemOverlayStyle!,
+          );
         },
       );
     }

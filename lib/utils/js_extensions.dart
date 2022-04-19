@@ -24,7 +24,7 @@ class KiController extends Controller {
 
   openBook(JsValue data) async {
     var d = jsValueToDart(data);
-    enterFullscreenMode();
+    enterFullscreenMode(state!.context);
     await Navigator.of(state!.context).push(MaterialPageRoute(builder: (context) {
       return PictureViewer(
         data: RemotePictureData(
@@ -36,7 +36,7 @@ class KiController extends Controller {
         page: d["page"],
       );
     }));
-    exitFullscreenMode();
+    exitFullscreenMode(state!.context);
   }
 
   openBrowser(String url) {

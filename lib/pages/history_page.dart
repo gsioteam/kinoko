@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dapp/flutter_dapp.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -121,16 +122,20 @@ class _HistoryPageState extends State<HistoryPage> {
     Plugin? plugin = PluginsManager.instance.findPlugin(historyItem.pluginID);
     if (plugin?.isValidate == true) {
       await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-        return DApp(
-          entry: historyItem.bookPage,
-          fileSystems: [plugin!.fileSystem],
-          classInfo: kiControllerInfo,
-          controllerBuilder: (script, state) => KiController(script, plugin)..state = state,
-          initializeData: historyItem.info.data,
-          onInitialize: (script) {
-            script.addClass(downloadManager);
-            Configs.instance.setupJS(script, plugin);
-          },
+        var theme = Theme.of(context).appBarTheme.systemOverlayStyle;
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          child: DApp(
+            entry: historyItem.bookPage,
+            fileSystems: [plugin!.fileSystem],
+            classInfo: kiControllerInfo,
+            controllerBuilder: (script, state) => KiController(script, plugin)..state = state,
+            initializeData: historyItem.info.data,
+            onInitialize: (script) {
+              script.addClass(downloadManager);
+              Configs.instance.setupJS(script, plugin);
+            },
+          ),
+          value: theme!,
         );
       }));
     } else {

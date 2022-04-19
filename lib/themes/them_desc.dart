@@ -49,10 +49,10 @@ class _DefaultThemeDesc extends ThemeDesc {
         actionsIconTheme: IconThemeData(
           color: Colors.grey,
         ),
-        systemOverlayStyle: SystemUiOverlayStyle(
+        systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(
           statusBarColor: Colors.white.withOpacity(0.3),
-          statusBarBrightness: Brightness.dark,
           statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
           systemNavigationBarColor: Colors.white,
           systemNavigationBarDividerColor: Colors.white,
           systemNavigationBarIconBrightness: Brightness.dark,
@@ -117,7 +117,7 @@ class _DarkThemeDesc extends ThemeDesc {
         iconTheme: IconThemeData(
           color: Colors.grey,
         ),
-        systemOverlayStyle: SystemUiOverlayStyle(
+        systemOverlayStyle: SystemUiOverlayStyle.dark.copyWith(
           statusBarColor: Colors.black.withOpacity(0.3),
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.light,

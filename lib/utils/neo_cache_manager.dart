@@ -4,9 +4,11 @@ import 'dart:io' as io;
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file/src/interface/file.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:glib/main/data_item.dart';
 import 'package:glib/main/models.dart';
 import 'package:kinoko/utils/book_info.dart';
@@ -262,10 +264,79 @@ class NeoImageProvider extends ImageProvider<NeoImageProvider> {
   }
 
   @override
-  ImageStreamCompleter load(NeoImageProvider key, decode) => NeoImageStreamCompleter(key, decode);
+  ImageStreamCompleter load(NeoImageProvider key, decode) {
+    final chunkEvents = StreamController<ImageChunkEvent>();
+    return MultiImageStreamCompleter(
+      codec: _loadAsync(key, chunkEvents, decode),
+      chunkEvents: chunkEvents.stream,
+      scale: 1.0,
+      informationCollector: () sync* {
+        yield DiagnosticsProperty<ImageProvider>(
+          'Image provider: $this \n Image key: $key',
+          this,
+          style: DiagnosticsTreeStyle.errorProperty,
+        );
+      },
+    );
+  }
 
   @override
   Future<NeoImageProvider> obtainKey(ImageConfiguration configuration) => SynchronousFuture(this);
+
+  Stream<ui.Codec> _loadAsync(
+      NeoImageProvider key,
+      StreamController<ImageChunkEvent> chunkEvents,
+      DecoderCallback decode,
+      ) async* {
+    var dir = await cacheManager._directory;
+    File file = dir.childFile(filename);
+
+    if (await file.exists()) {
+      var bytes = await file.readAsBytes();
+      var decoded = await decode(bytes);
+      yield decoded;
+    } else {
+      Dio dio = Dio(
+        BaseOptions(
+          method: "GET",
+          responseType: ResponseType.stream,
+          connectTimeout: 5000,
+          receiveTimeout: 15000,
+          sendTimeout: 5000,
+        ),
+      );
+      (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client) {
+        client.badCertificateCallback =
+            (io.X509Certificate cert, String host, int port) => true;
+        return client;
+      };
+      Response<ResponseBody> response = await dio.requestUri(
+        key.uri,
+        options: Options(
+            headers: key.headers
+        ),
+      );
+      if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
+        io.BytesBuilder builder = io.BytesBuilder();
+        await for (var chunk in response.data!.stream) {
+          builder.add(chunk);
+          chunkEvents.add(ImageChunkEvent(
+              cumulativeBytesLoaded: builder.length,
+              expectedTotalBytes: int.tryParse(response.headers.value(Headers.contentLengthHeader) ?? "0") ?? 0
+          ));
+        }
+        var bytes = builder.toBytes();
+        if (!await dir.exists()) {
+          await dir.create(recursive: true);
+        }
+        await file.writeAsBytes(bytes);
+        var decoded = await decode(bytes);
+        yield decoded;
+      } else {
+        throw NeoError("Status code ${response.statusCode}");
+      }
+    }
+  }
 
   static String getFilename(Uri uri) {
     String ext = p.extension(uri.path);
@@ -283,159 +354,4 @@ class NeoImageProvider extends ImageProvider<NeoImageProvider> {
 
   @override
   int get hashCode => 0x928300 | uri.hashCode | cacheManager.hashCode;
-}
-
-class _ImageFrameDecoder {
-  final NeoImageStreamCompleter _streamCompleter;
-  bool validate = true;
-  ui.FrameInfo? currentFrame;
-
-  _ImageFrameDecoder(this._streamCompleter);
-
-  void run() async {
-    ui.Codec codec = await _streamCompleter.getCodec();
-    if (!validate || codec == null) return;
-    if (codec.frameCount > 1) {
-      while (true) {
-        if (!validate) return;
-        var image = await codec.getNextFrame();
-        currentFrame = image;
-        if (!validate) return;
-        _streamCompleter._emitImage(ImageInfo(image: image.image));
-        await Future.delayed(image.duration);
-      }
-    } else {
-      var image = await codec.getNextFrame();
-      currentFrame = image;
-      if (!validate) return;
-      _streamCompleter._emitImage(ImageInfo(
-        image: image.image
-      ));
-    }
-  }
-
-  void stop() => validate = false;
-}
-
-class NeoImageStreamCompleter extends ImageStreamCompleter {
-
-  final NeoImageProvider provider;
-  final DecoderCallback decoder;
-
-  static Map<NeoImageProvider, Future<Uint8List>> fetching = {};
-
-  NeoImageStreamCompleter(this.provider, this.decoder);
-
-  void run() {
-    getCodec();
-  }
-
-  Future<Uint8List> fetch(Dio dio) async {
-    Response<ResponseBody> response = await dio.requestUri(
-      provider.uri,
-      options: Options(
-        headers: provider.headers
-      ),
-    );
-    if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
-      io.BytesBuilder builder = io.BytesBuilder();
-      await for (var chunk in response.data!.stream) {
-        builder.add(chunk);
-        reportImageChunkEvent(ImageChunkEvent(
-            cumulativeBytesLoaded: builder.length,
-            expectedTotalBytes: int.tryParse(response.headers.value(Headers.contentLengthHeader) ?? "0") ?? 0
-        ));
-      }
-      var bytes = builder.toBytes();
-      if (bytes.length == 0) {
-        throw NeoError("Empty body");
-      } else {
-        return bytes;
-      }
-    } else {
-      throw NeoError("Status code ${response.statusCode}");
-    }
-  }
-
-  Future<Uint8List> startFetch() {
-    Dio dio = Dio(
-      BaseOptions(
-        method: "GET",
-        responseType: ResponseType.stream,
-        connectTimeout: 5000,
-        receiveTimeout: 15000,
-        sendTimeout: 5000,
-      ),
-    );
-    (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client) {
-      client.badCertificateCallback =
-          (io.X509Certificate cert, String host, int port) => true;
-      return client;
-    };
-    var async = fetch(dio).timeout(provider.timeout);
-    fetching[provider] = async;
-    void _wait() async {
-      try {
-        await async;
-      }
-      catch (e) {
-        reportError(exception: e);
-      }
-      finally {
-        fetching.remove(provider);
-        dio.close(force: true);
-      }
-    }
-    _wait();
-    return async;
-  }
-
-  Future<ui.Codec> getCodec() async {
-    var dir = await provider.cacheManager._directory;
-    File file = dir.childFile(provider.filename);
-    if ((await file.stat()).size > 0) {
-      return decoder(await file.readAsBytes());
-    } else {
-      Future<Uint8List> asyncBytes;
-      if (fetching.containsKey(provider)) {
-        asyncBytes = fetching[provider]!;
-      } else {
-        asyncBytes = startFetch();
-      }
-
-      var bytes = await asyncBytes;
-      var parent = file.parent;
-      if (!await parent.exists())
-        await parent.create(recursive: true);
-      await file.writeAsBytes(bytes);
-      return decoder(bytes);
-    }
-  }
-
-  _ImageFrameDecoder? _frameDecoder;
-  @override
-  void addListener(ImageStreamListener listener) {
-    super.addListener(listener);
-    if (_frameDecoder == null) {
-      _frameDecoder = _ImageFrameDecoder(this);
-      _frameDecoder!.run();
-    } else {
-      if (_frameDecoder?.currentFrame != null) {
-        listener.onImage(ImageInfo(
-          image: _frameDecoder!.currentFrame!.image
-        ), true);
-      }
-    }
-  }
-
-  @override
-  void removeListener(ImageStreamListener listener) {
-    super.removeListener(listener);
-    if (!hasListeners) {
-      _frameDecoder?.stop();
-      _frameDecoder = null;
-    }
-  }
-
-  void _emitImage(ImageInfo image) => setImage(image);
 }

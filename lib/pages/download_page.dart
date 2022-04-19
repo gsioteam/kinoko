@@ -372,7 +372,7 @@ class _DownloadPageState extends State<DownloadPage> {
         DownloadQueueItem queueItem = cdata.data;
         Plugin? plugin = PluginsManager.instance.findPlugin(queueItem.pluginID);
         if (plugin?.isValidate == true) {
-          enterFullscreenMode();
+          enterFullscreenMode(context);
           await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
             return PictureViewer(
               data: RemotePictureData(
@@ -384,7 +384,7 @@ class _DownloadPageState extends State<DownloadPage> {
               ),
             );
           }));
-          exitFullscreenMode();
+          exitFullscreenMode(context);
         } else {
           Fluttertoast.showToast(msg: kt("no_project_found"));
         }

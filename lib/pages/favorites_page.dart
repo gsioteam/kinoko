@@ -78,16 +78,20 @@ class _FavoritesPageState extends State<FavoritesPage> {
     Plugin? plugin = PluginsManager.instance.findPlugin(checkItem.pluginID);
     if (plugin?.isValidate == true) {
       await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-        return DApp(
-          entry: checkItem.bookPage,
-          fileSystems: [plugin!.fileSystem],
-          classInfo: kiControllerInfo,
-          controllerBuilder: (script, state) => KiController(script, plugin)..state = state,
-          initializeData: checkItem.info.data,
-          onInitialize: (script) {
-            script.addClass(downloadManager);
-            Configs.instance.setupJS(script, plugin);
-          },
+        var theme = Theme.of(context).appBarTheme.systemOverlayStyle;
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          child: DApp(
+            entry: checkItem.bookPage,
+            fileSystems: [plugin!.fileSystem],
+            classInfo: kiControllerInfo,
+            controllerBuilder: (script, state) => KiController(script, plugin)..state = state,
+            initializeData: checkItem.info.data,
+            onInitialize: (script) {
+              script.addClass(downloadManager);
+              Configs.instance.setupJS(script, plugin);
+            },
+          ),
+          value: theme!,
         );
       }));
     } else {

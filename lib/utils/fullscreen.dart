@@ -17,15 +17,16 @@ void exitFullscreen() {
   ]);
 }
 
-void enterFullscreenMode() {
+void enterFullscreenMode(BuildContext context) {
   // FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_LAYOUT_NO_LIMITS);
   // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
   //   systemNavigationBarDividerColor: Colors.black,
   // ));
 }
 
-void exitFullscreenMode() {
+void exitFullscreenMode(BuildContext context) {
+  var style = Theme.of(context).appBarTheme.systemOverlayStyle;
   // FlutterWindowManager.clearFlags(FlutterWindowManager.FLAG_LAYOUT_NO_LIMITS);
-  // SystemChrome.setSystemUIOverlayStyle(defaultStyle);
+  SystemChrome.setSystemUIOverlayStyle(style!);
   exitFullscreen();
 }

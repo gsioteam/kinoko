@@ -185,6 +185,8 @@ class _PictureViewerState extends State<PictureViewer> {
 
   GlobalKey _canvasKey = GlobalKey();
 
+  late ValueNotifier<SystemUiOverlayStyle> _uiOverlayStyle;
+
   void onLoadingStatus(bool isLoading) {
     setState(() {
       loading = isLoading;
@@ -514,7 +516,8 @@ class _PictureViewerState extends State<PictureViewer> {
       }
     );
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
+    return WillPopScope(
+      child: ValueListenableBuilder<SystemUiOverlayStyle>(
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           backgroundColor: Colors.black,
@@ -523,79 +526,79 @@ class _PictureViewerState extends State<PictureViewer> {
               GestureDetector(
                 key: _canvasKey,
                 child: Container(
-                  color: Colors.black,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: dataController.length == 0 ?
-                        Center(
-                          child: SpinKitRing(
-                            lineWidth: 4,
-                            size: 36,
-                            color: Colors.white,
-                          ),
-                        ):
-                        AnimatedSwitcher(
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeOutCubic,
-                          duration: Duration(milliseconds: 300),
-                          child: currentBody,
-                          transitionBuilder: (child, animation) {
-                            switch (_pageDirection) {
-                              case PagerTransitionDirection.None:
-                                return child;
-                              default: {
-                                var size = MediaQuery.of(context).size;
-                                Offset from;
-                                int sign = 1;
-                                if (child != currentBody)
-                                  sign *= -1;
-                                if (_pageDirection == PagerTransitionDirection.Prev)
-                                  sign *= -1;
-                                if (flipType == FlipType.Vertical || flipType == FlipType.Webtoon) {
-                                  from = Offset(0,
-                                      sign * size.height
-                                  );
-                                } else if (flipType == FlipType.RightToLeft) {
-                                  from = Offset(sign * -size.width, 0);
-                                } else {
-                                  from = Offset(sign * size.width, 0);
-                                }
-                                return AnimatedBuilder(
-                                  animation: animation,
-                                  builder: (context, child) {
-                                    return Transform.translate(
-                                      offset: Offset.lerp(from, Offset.zero, animation.value)!,
-                                      child: child,
-                                    );
-                                  },
-                                  child: child,
-                                );
-                              }
-                            }
-                          },
-                        ),
-                      ),
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: AnimatedOpacity(
-                            opacity: _hintDisplay ? 1 : 0,
-                            duration: Duration(
-                              milliseconds: 300,
+                    color: Colors.black,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: dataController.length == 0 ?
+                          Center(
+                            child: SpinKitRing(
+                              lineWidth: 4,
+                              size: 36,
+                              color: Colors.white,
                             ),
-                            child: CustomPaint(
-                              painter: PictureHintPainter(
-                                matrix: _hintMatrix(flipType),
-                                prevText: kt("prev"),
-                                menuText: kt("menu"),
-                                nextText: kt("next")
+                          ):
+                          AnimatedSwitcher(
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeOutCubic,
+                            duration: Duration(milliseconds: 300),
+                            child: currentBody,
+                            transitionBuilder: (child, animation) {
+                              switch (_pageDirection) {
+                                case PagerTransitionDirection.None:
+                                  return child;
+                                default: {
+                                  var size = MediaQuery.of(context).size;
+                                  Offset from;
+                                  int sign = 1;
+                                  if (child != currentBody)
+                                    sign *= -1;
+                                  if (_pageDirection == PagerTransitionDirection.Prev)
+                                    sign *= -1;
+                                  if (flipType == FlipType.Vertical || flipType == FlipType.Webtoon) {
+                                    from = Offset(0,
+                                        sign * size.height
+                                    );
+                                  } else if (flipType == FlipType.RightToLeft) {
+                                    from = Offset(sign * -size.width, 0);
+                                  } else {
+                                    from = Offset(sign * size.width, 0);
+                                  }
+                                  return AnimatedBuilder(
+                                    animation: animation,
+                                    builder: (context, child) {
+                                      return Transform.translate(
+                                        offset: Offset.lerp(from, Offset.zero, animation.value)!,
+                                        child: child,
+                                      );
+                                    },
+                                    child: child,
+                                  );
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: AnimatedOpacity(
+                              opacity: _hintDisplay ? 1 : 0,
+                              duration: Duration(
+                                milliseconds: 300,
+                              ),
+                              child: CustomPaint(
+                                painter: PictureHintPainter(
+                                    matrix: _hintMatrix(flipType),
+                                    prevText: kt("prev"),
+                                    menuText: kt("menu"),
+                                    nextText: kt("next")
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  )
+                      ],
+                    )
                 ),
                 onTapUp: (event) {
                   tapAt(event.localPosition);
@@ -610,18 +613,20 @@ class _PictureViewerState extends State<PictureViewer> {
                       IconButton(
                           icon: Icon(Icons.arrow_back),
                           color: Colors.white,
-                          onPressed: () {
+                          onPressed: () async {
+                            _uiOverlayStyle.value = Theme.of(context).appBarTheme.systemOverlayStyle!;
+                            await Future.delayed(Duration(milliseconds: 20));
                             Navigator.of(context).pop();
                           }
                       ),
                       Expanded(
-                        child: Text(
-                          dataController.title,
-                          style: Theme.of(context).textTheme.headline6?.copyWith(color: Colors.white),
-                          maxLines: 1,
-                          softWrap: true,
-                          overflow: TextOverflow.ellipsis,
-                        )
+                          child: Text(
+                            dataController.title,
+                            style: Theme.of(context).textTheme.headline6?.copyWith(color: Colors.white),
+                            maxLines: 1,
+                            softWrap: true,
+                            overflow: TextOverflow.ellipsis,
+                          )
                       ),
                       QudsPopupButton(
                         child: Padding(
@@ -719,11 +724,19 @@ class _PictureViewerState extends State<PictureViewer> {
             ],
           ),
         ),
-        value: SystemUiOverlayStyle.dark.copyWith(
-          systemNavigationBarDividerColor: Colors.black,
-          statusBarIconBrightness: Brightness.light,
-          statusBarColor: Colors.black26,
-        ),
+        builder: (context, value, child) {
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            child: child!,
+            value: value,
+          );
+        },
+        valueListenable: _uiOverlayStyle,
+      ),
+      onWillPop: () async {
+        _uiOverlayStyle.value = Theme.of(context).appBarTheme.systemOverlayStyle!;
+        await Future.delayed(Duration(milliseconds: 20));
+        return true;
+      }
     );
   }
 
@@ -875,6 +888,12 @@ class _PictureViewerState extends State<PictureViewer> {
       onLoadingStatus(dataController.loading.value);
     });
 
+    _uiOverlayStyle = ValueNotifier(SystemUiOverlayStyle.dark.copyWith(
+      systemNavigationBarDividerColor: Colors.black,
+      statusBarIconBrightness: Brightness.light,
+      statusBarColor: Colors.black26,
+    ));
+
     touch();
     if (widget.page != null) {
       index = widget.page!;
@@ -917,6 +936,7 @@ class _PictureViewerState extends State<PictureViewer> {
 
   @override
   dispose() {
+    _uiOverlayStyle.dispose();
     _timer?.cancel();
     _timer = null;
     pagerController.dispose();
