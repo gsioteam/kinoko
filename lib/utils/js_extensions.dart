@@ -221,14 +221,94 @@ ClassInfo scriptContextClass = ClassInfo<ScriptContext>(
     }
 );
 
+class _OverlayStack extends StatefulWidget {
+
+  _OverlayStack({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _OverlayStackState();
+}
+
+class _OverlayStackState extends State<_OverlayStack> {
+  List<Widget> children = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: children,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  void add(Widget child) {
+    setState(() {
+      children.add(child);
+    });
+  }
+
+  void remove(Widget child) {
+    setState(() {
+      children.remove(child);
+    });
+  }
+
+  void removeWithKey(Key key) {
+    setState(() {
+      children.removeWhere((element) => element.key == key);
+    });
+  }
+}
+
+class _HeadlessWebViewOverlay {
+  late OverlayEntry overlayEntry;
+  GlobalKey<_OverlayStackState> _globalKey = GlobalKey();
+
+  _HeadlessWebViewOverlay() {
+    overlayEntry = OverlayEntry(
+      builder: (context) {
+        return _OverlayStack(
+          key: _globalKey,
+        );
+      }
+    );
+  }
+
+  void add(Widget child) {
+    _globalKey.currentState?.add(child);
+  }
+
+  void remove(Widget child) {
+    _globalKey.currentState?.remove(child);
+  }
+
+  void removeWidthKey(Key key) {
+
+  }
+}
+
+_HeadlessWebViewOverlay? _overlay;
 
 class HeadlessWebView implements JsDispose {
+
+  static void setup(BuildContext context) {
+    if (_overlay == null) {
+      _overlay = _HeadlessWebViewOverlay();
+      Overlay.of(context)!.insert(_overlay!.overlayEntry);
+    }
+  }
 
   late BrowserWebViewController controller;
   JsValue? _onMessage;
   JsValue? _onLoadStart;
   JsValue? _onLoadEnd;
   JsValue? _onLoadError;
+  Key _viewKey = UniqueKey();
 
   JsValue? get onMessage => _onMessage;
   set onMessage(JsValue? val) {
@@ -280,12 +360,28 @@ class HeadlessWebView implements JsDispose {
     controller.onLoadStart.addListener(_loadStart);
     controller.onLoadEnd.addListener(_loadEnd);
     controller.onLoadError.addListener(_loadError);
+
+    if (_overlay != null) {
+      Future.delayed(Duration(milliseconds: 100)).then((value) {
+        _overlay!.add(Positioned(
+            key: _viewKey,
+            width: 1,
+            height: 1,
+            child: BrowserWebView(
+                controller: controller
+            )
+        ));
+      });
+    }
   }
 
-  void load(String url) => controller.loadUrl(url: url);
+  void load(String url) {
+    controller.loadUrl(url: url);
+  }
 
   @override
   void dispose() {
+    _overlay!.removeWidthKey(_viewKey);
     controller.onLoadStart.removeListener(_loadStart);
     controller.onLoadEnd.removeListener(_loadEnd);
     controller.onLoadError.removeListener(_loadError);

@@ -137,6 +137,7 @@ class Plugin {
       Configs.instance.setupJS(_script!, this);
       _script!.global["showToast"] = (String msg) {
         Fluttertoast.showToast(msg: msg);
+        print("[JS Toast]:\n$msg");
       };
       // _script!.addClass(processorClass);
     }

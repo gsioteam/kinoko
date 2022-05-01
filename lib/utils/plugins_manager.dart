@@ -20,12 +20,36 @@ import 'key_value_storage.dart';
 import 'plugin/plugin.dart';
 import 'plugin/io_filesystem.dart';
 
+class Author {
+  String name;
+  String url;
+
+  Author({
+    required this.name,
+    required this.url
+  });
+
+  static Author? fromData(Map? data) {
+    if (data != null) {
+      return Author(name: data["name"], url: data["url"]);
+    }
+  }
+
+  Map toData() {
+    return {
+      "name": this.name,
+      "url": this.url,
+    };
+  }
+}
+
 class PluginInfo {
   String title;
   String? icon;
   String src;
   String? branch;
   bool? ignore;
+  Author? author;
 
   PluginInfo({
     required this.title,
@@ -33,6 +57,7 @@ class PluginInfo {
     required this.src,
     this.branch,
     this.ignore,
+    this.author,
   });
 
   PluginInfo.fromData(Map data) :
@@ -40,7 +65,8 @@ class PluginInfo {
       icon = data["icon"],
       src = data["src"],
       branch = data["branch"],
-      ignore = data["ignore"];
+      ignore = data["ignore"],
+      author = Author.fromData(data["author"]);
 
   Map toData() {
     return {
@@ -49,6 +75,7 @@ class PluginInfo {
       "src": src,
       "branch": branch,
       "ignore": ignore,
+      "author": author?.toData(),
     };
   }
 }
@@ -158,7 +185,18 @@ class PluginsManager extends ValueNotifier<Plugin?> {
         if (ret) {
           _prev = token;
           if (_added.data.contains(info.src) || info.ignore == true) {
+            if (info.ignore != true) {
+              _updateAuthor(info.src, d);
+            }
             continue;
+          }
+
+          var user = d['user'];
+          if (user is Map) {
+            info.author = Author(
+              name: user['login'],
+              url: user['url'],
+            );
           }
           _added.data.add(info.src);
           _added.update();
@@ -176,6 +214,21 @@ class PluginsManager extends ValueNotifier<Plugin?> {
   void remove(PluginInfo pluginInfo) {
     _plugins.data.removeWhere((el) => el.src == pluginInfo.src);
     _plugins.update();
+  }
+
+  void _updateAuthor(String src, Map d) {
+    for (var item in _plugins.data) {
+      if (item.src == src) {
+        var user = d['user'];
+        if (user is Map) {
+          item.author = Author(
+            name: user['login'],
+            url: user['url'],
+          );
+          _plugins.update();
+        }
+      }
+    }
   }
 
   bool add(PluginInfo pluginInfo) {

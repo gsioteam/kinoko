@@ -129,6 +129,43 @@ class _GitRepo {
   bool get isVisible => repo.isVisible;
 }
 
+class AuthorWidget extends StatelessWidget {
+  final Author author;
+
+  AuthorWidget({
+    Key? key,
+    required this.author,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    var theme = Theme.of(context);
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: 4,
+        top: 4
+      ),
+      child: Row(
+        children: [
+          Text("${kt(context, "author")}: "),
+          InkWell(
+            child: Text(
+              author.name,
+              style: TextStyle(
+                color: theme.primaryColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            onTap: () {
+
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class LibraryCell extends StatefulWidget {
 
   final PluginInfo item;

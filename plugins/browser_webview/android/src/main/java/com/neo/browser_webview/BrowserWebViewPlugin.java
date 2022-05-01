@@ -287,6 +287,8 @@ public class BrowserWebViewPlugin implements FlutterPlugin,
     } else if ("setScrollEnabled".equals(call.method)) {
       // To be implemented
       result.notImplemented();
+    } else if ("setEnablePullDown".equals(call.method)) {
+      result.success(null);
     } else {
       result.notImplemented();
     }

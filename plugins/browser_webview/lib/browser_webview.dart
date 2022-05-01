@@ -372,9 +372,11 @@ class BrowserWebViewController {
       "url": url,
     });
     for (var cData in data['cookies']) {
+      String name = cData['name'];
+      String value = cData['value'];
       list.add(Cookie(
-          name: cData['name'],
-          value: cData['value'],
+          name: name.trim(),
+          value: value.trim(),
       ));
     }
     return list;

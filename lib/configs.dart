@@ -95,6 +95,7 @@ class Configs {
 
   static const bool isDebug = false;
 
+  static const String RuntimeVersion = '0.0.6';
   final Uint8List publicKey = Uint8List.fromList([2,169,116,121,28,94,121,148,224,164,101,4,129,150,179,221,230,79,31,104,57,165,189,188,150,139,234,217,84,155,201,149,10,]);
 
   static Configs? _instance;
@@ -188,7 +189,7 @@ class Configs {
     JsValue navigator = script.newObject();
     navigator['appCodeName'] = 'dapp';
     navigator['appName'] = 'dapp';
-    navigator['appVersion'] = '0.0.5';
+    navigator['appVersion'] = RuntimeVersion;
     navigator['language'] = locale.toLanguageTag();
     navigator['platform'] = Platform.operatingSystem;
     script.global['navigator'] = navigator;

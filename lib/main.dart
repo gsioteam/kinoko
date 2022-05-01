@@ -9,6 +9,7 @@ import 'package:kinoko/pages/history_page.dart';
 import 'package:kinoko/pages/main_settings_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kinoko/utils/background_task.dart';
+import 'package:kinoko/utils/js_extensions.dart';
 import 'package:kinoko/utils/plugins_manager.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
 import 'pages/collections_page.dart';
@@ -218,6 +219,7 @@ class SplashScreenState extends State<SplashScreen> {
 
   Future<void> setup(BuildContext context) async {
     Directory dir = await platform.getApplicationSupportDirectory();
+    HeadlessWebView.setup(context);
     share_cache["root_path"] = dir.path;
 
     await _loadTemplates();
@@ -446,4 +448,8 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
 }
