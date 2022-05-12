@@ -10,8 +10,10 @@ import 'package:glib/main/models.dart';
 import 'package:kinoko/configs.dart';
 import 'package:kinoko/utils/download_manager.dart';
 import 'package:kinoko/utils/neo_cache_manager.dart';
+import 'package:kinoko/utils/notice_manager.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
 import 'package:kinoko/widgets/list_header.dart';
+import 'package:kinoko/widgets/markdown_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../localizations/localizations.dart';
 import '../main.dart';
@@ -175,9 +177,27 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
     if (label.isEmpty)
       label = "default";
 
+    var noticeData = NoticeManager.instance().displayData();
+
     return MainSettingsList(
       title: Text(kt('settings')),
       children: [
+        if (noticeData != null)
+          SettingCell(
+            title: Text(noticeData.title),
+            trailing: Icon(Icons.keyboard_arrow_right),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return MarkdownDialog(
+                    uri: noticeData.uri,
+                    markdown: noticeData.markdown
+                  );
+                }
+              );
+            },
+          ),
         SettingCell(
           title: Text(kt('theme')),
           subtitle: Text(kt(label)),

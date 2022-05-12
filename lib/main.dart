@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_git/flutter_git.dart';
+import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:glib/main/models.dart';
 import 'package:kinoko/pages/favorites_page.dart';
 import 'package:kinoko/pages/history_page.dart';
@@ -10,6 +11,7 @@ import 'package:kinoko/pages/main_settings_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:kinoko/utils/background_task.dart';
 import 'package:kinoko/utils/js_extensions.dart';
+import 'package:kinoko/utils/notice_manager.dart';
 import 'package:kinoko/utils/plugins_manager.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
 import 'pages/collections_page.dart';
@@ -75,6 +77,7 @@ class MainAppState extends State<MainApp> {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         localizationsDelegates: [
+          LocaleNamesLocalizationsDelegate(),
           const KinokoLocalizationsDelegate(),
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
@@ -257,6 +260,8 @@ class SplashScreenState extends State<SplashScreen> {
       PluginsManager.instance.current = Plugin(id, assetsFileSystem, DataLocalStorage(id));
     }
     await BackgroundTask.setup();
+
+    NoticeManager.instance().check(context);
   }
 
   Future<void> showDisclaimer(BuildContext context) async {
@@ -327,6 +332,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   late ValueNotifier<bool> favoritesController;
+  late ValueNotifier<bool> newOthersController;
 
   @override
   Widget build(BuildContext context) {
@@ -393,13 +399,13 @@ class _HomePageState extends State<HomePage> {
                 clipBehavior: Clip.none,
                 children: [
                   Icon(Icons.settings),
-                  // Positioned(
-                  //   right: -2,
-                  //   top: -2,
-                  //   child: HintPoint(
-                  //     controller: newEnv,
-                  //   ),
-                  // ),
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: HintPoint(
+                      controller: newOthersController,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -426,17 +432,25 @@ class _HomePageState extends State<HomePage> {
     }
     favoritesController = ValueNotifier(FavoritesManager().hasNew);
     FavoritesManager().onState.addListener(_favoritesUpdate);
+
+    newOthersController = ValueNotifier(NoticeManager.instance().value.newContent);
+    NoticeManager.instance().addListener(_noticeUpdate);
   }
 
   @override
   void dispose() {
     super.dispose();
     FavoritesManager().onState.removeListener(_favoritesUpdate);
+    NoticeManager.instance().removeListener(_noticeUpdate);
     favoritesController.dispose();
   }
 
   void _favoritesUpdate() {
     favoritesController.value = FavoritesManager().hasNew;
+  }
+
+  void _noticeUpdate() {
+    newOthersController.value = NoticeManager.instance().value.newContent;
   }
 
   void switchTo(int index) {

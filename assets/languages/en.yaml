@@ -118,3 +118,7 @@ imported_subtitle: "{0} imported"
 n_pages: "{0} pages"
 
 theme: Theme
+
+author: Author
+sup_languages: Languages
+git: Git

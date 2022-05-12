@@ -9,6 +9,7 @@ import 'package:kinoko/utils/image_providers.dart';
 import 'package:kinoko/utils/plugin/plugin.dart';
 import 'package:kinoko/utils/plugins_manager.dart';
 import 'package:kinoko/widgets/no_data.dart';
+import 'package:kinoko/widgets/plugin_dialog.dart';
 import 'package:kinoko/widgets/progress_dialog.dart';
 import 'package:kinoko/widgets/spin_itim.dart';
 import 'dart:convert';
@@ -351,7 +352,8 @@ class _LibraryCellState extends State<LibraryCell> {
     bool? ret = await showDialog<bool>(
         context: context,
         builder: (context) {
-          return AlertDialog(
+          return PluginDialog(
+            pluginInfo: widget.item,
             title: Text(kt("confirm")),
             content: Text(kt("select_main_project")),
             actions: [
@@ -396,7 +398,8 @@ class _LibraryCellState extends State<LibraryCell> {
           var ret = await showDialog<bool>(
             context: context,
             builder: (context) {
-              return AlertDialog(
+              return PluginDialog(
+                pluginInfo: widget.item,
                 title: Text(kt("confirm")),
                 content: Text(kt("install_confirm").replaceFirst("{url}", widget.item.src)),
                 actions: [
@@ -602,7 +605,8 @@ class _LibrariesPageState extends State<LibrariesPage> {
                 bool? result = await showDialog<bool>(
                     context: context,
                     builder: (context) {
-                      return AlertDialog(
+                      return PluginDialog(
+                        pluginInfo: item,
                         title: Text(kt("remove_project")),
                         content: Text(kt("would_remove_project").replaceFirst("{0}", item.src)),
                         actions: [
