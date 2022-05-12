@@ -164,6 +164,8 @@ const Map<String, String> _languageMap = {
 
 class _MainSettingsPageState extends State<MainSettingsPage> {
 
+  late ValueNotifier<bool> newNoticeListener;
+
   @override
   Widget build(BuildContext context) {
     Locale locale = Localizations.localeOf(context);
@@ -182,22 +184,6 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
     return MainSettingsList(
       title: Text(kt('settings')),
       children: [
-        if (noticeData != null)
-          SettingCell(
-            title: Text(noticeData.title),
-            trailing: Icon(Icons.keyboard_arrow_right),
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return MarkdownDialog(
-                    uri: noticeData.uri,
-                    markdown: noticeData.markdown
-                  );
-                }
-              );
-            },
-          ),
         SettingCell(
           title: Text(kt('theme')),
           subtitle: Text(kt(label)),
@@ -304,6 +290,36 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
             );
           },
         ),
+        ListHeader(),
+        if (noticeData != null)
+          SettingCell(
+            title: Text(noticeData.title),
+            trailing: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(Icons.keyboard_arrow_right),
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: HintPoint(
+                    controller: newNoticeListener,
+                  ),
+                ),
+              ],
+            ),
+            onTap: () {
+              NoticeManager.instance().clearNew();
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return MarkdownDialog(
+                        uri: noticeData.uri,
+                        markdown: noticeData.markdown
+                    );
+                  }
+              );
+            },
+          ),
       ],
     );
   }
@@ -311,10 +327,18 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
   @override
   void initState() {
     super.initState();
+
+    newNoticeListener = ValueNotifier(NoticeManager.instance().value.newContent);
+    NoticeManager.instance().addListener(_noticeUpdate);
+  }
+
+  _noticeUpdate() {
+    newNoticeListener.value = NoticeManager.instance().value.newContent;
   }
 
   void dispose() {
     super.dispose();
+    NoticeManager.instance().removeListener(_noticeUpdate);
   }
 
 }

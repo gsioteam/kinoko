@@ -31,6 +31,17 @@ class NoticeValue {
     };
   }
 
+  NoticeValue clone({
+    bool? newContent,
+    String? content,
+    String? url,
+  }) {
+    return NoticeValue(
+        newContent: newContent??this.newContent,
+        content: content??this.content,
+        url: url??this.url
+    );
+  }
 }
 
 class NoticeData {
@@ -81,6 +92,7 @@ class NoticeManager extends ChangeNotifier {
         content: "",
         url: url
       );
+      _mapStorage.data = value.toData();
       notifyListeners();
     } else {
       if (value.content != content) {
@@ -89,9 +101,16 @@ class NoticeManager extends ChangeNotifier {
           content: content,
           url: url
         );
+        _mapStorage.data = value.toData();
         notifyListeners();
       }
     }
+  }
+
+  clearNew() {
+    value = value.clone(newContent: false);
+    _mapStorage.data = value.toData();
+    notifyListeners();
   }
 
   Future<String?> fetch(String url) async {
@@ -102,7 +121,7 @@ class NoticeManager extends ChangeNotifier {
         return await res.stream.bytesToString();
       }
     } catch (e) {
-
+      print("What up $e");
     }
     return null;
   }
