@@ -38,4 +38,4 @@ Please check [plugin document](docs/plug-in_v3.md)
 
 ## Please Support the CDIM
 
-[CDIM](docs/notice/en.md) ([中文版](docs/notice/zh.md))
+[CDIM](docs/notice/en.md) ([独立宣言运动](docs/notice/zh.md))
