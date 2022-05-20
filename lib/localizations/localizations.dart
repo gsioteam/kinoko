@@ -66,7 +66,8 @@ class KinokoLocalizationsDelegate extends LocalizationsDelegate<KinokoLocalizati
 
   Future<KinokoLocalizations> get(String name) async {
     var data = loadYaml(await rootBundle.loadString("assets/languages/$name"));
-    return SynchronousFuture<KinokoLocalizations>(KinokoLocalizations(data, data));
+    var total = loadYaml(await rootBundle.loadString("assets/languages/en.yaml"));
+    return SynchronousFuture<KinokoLocalizations>(KinokoLocalizations(data, total));
   }
 
   @override

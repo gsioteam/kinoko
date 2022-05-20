@@ -275,6 +275,11 @@ class FavoritesManager {
     return false;
   }
 
+  void clear() {
+    items.data = [];
+    items.update();
+  }
+
   void automaticCheckNew() async {
     for (int i = 0, t = items.data.length; i < t; ++i) {
       FavCheckItem checkItem = items.data[i];

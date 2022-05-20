@@ -118,3 +118,17 @@ imported_subtitle: "{0}本"
 n_pages: "{0}頁"
 
 theme: 主題
+
+author: 作者
+sup_languages: 支持語言
+git: Git
+export_list: 導出列表
+import_list: 導入列表
+clear_list: 清空列表
+export_failed: 導出失敗
+empty_list: 列表是空的.
+file_name: 文件名
+file_exist: 是否覆蓋已經存在的文件?
+import_failed: 導入失敗
+import_des: "{0} 個項目將會被導入, {1} 個已經存在."
+exist: 已存在

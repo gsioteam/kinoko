@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:kinoko/localizations/localizations.dart';
+import 'package:kinoko/utils/file_utils.dart';
 import 'package:kinoko/utils/import_manager.dart';
 import 'package:kinoko/widgets/no_data.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
@@ -182,95 +183,67 @@ class _ImportedPageState extends State<ImportedPage> {
   }
 
   void importBook() async {
-    var status = await Permission.storage.status;
-    switch (status) {
-      case PermissionStatus.granted:
-        break;
-      default: {
-        var status = await Permission.storage.request();
-        if (status != PermissionStatus.granted) {
-          Fluttertoast.showToast(
-              msg: kt("no_permission")
+    var res = await FileUtils.openDir(context);
+    if (res != null) {
+      FileLoader? loader = await FileLoader.create(res);
+      if (loader != null) {
+        var pictures = loader.getPictures();
+        var list = await pictures.toList();
+        if (list.isEmpty) {
+          Fluttertoast.showToast(msg: kt('no_picture_found'));
+        } else {
+          TextEditingController textController = TextEditingController(
+              text: path.basenameWithoutExtension(res)
           );
-          return;
-        }
-      }
-    }
-    var lists = await PathProviderEx.getStorageInfo();
-    if (lists.length > 0) {
-      var info = lists.last;
-      var res = await Navigator.of(context).push<String>(MaterialPageRoute(
-          builder: (context) {
-            return FilesystemPicker(
-              rootDirectory: Directory(info.rootDir),
-              fileTileSelectMode: FileTileSelectMode.checkButton,
-              onSelect: (path) {
-                Navigator.of(context).pop(path);
-              },
-            );
-          }
-      ));
-      if (res != null) {
-        FileLoader? loader = await FileLoader.create(res);
-        if (loader != null) {
-          var pictures = loader.getPictures();
-          var list = await pictures.toList();
-          if (list.isEmpty) {
-            Fluttertoast.showToast(msg: kt('no_picture_found'));
-          } else {
-            TextEditingController textController = TextEditingController(
-                text: path.basenameWithoutExtension(res)
-            );
-            var name = await showDialog<String>(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text(kt('import_title')),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(kt('import_details').replaceFirst('{0}', list.length.toString())),
-                        TextField(
-                          controller: textController,
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text(kt('cancel'))
-                      ),
-                      TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(textController.text);
-                          },
-                          child: Text(kt('confirm'))
+          var name = await showDialog<String>(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text(kt('import_title')),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(kt('import_details').replaceFirst('{0}', list.length.toString())),
+                      TextField(
+                        controller: textController,
                       ),
                     ],
-                  );
-                }
-            );
-            Future.delayed(Duration(seconds: 1)).then((value) => textController.dispose());
-            if (name != null) {
-              var item = ImportedItem(
-                  title: name,
-                  path: res);
-              var index = ImportManager.instance.items.data.length;
-              ImportManager.instance.add(item);
-
-              if (_listKey.currentState == null) {
-                setState(() {
-                });
-              } else {
-                _listKey.currentState?.insertItem(index);
+                  ),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text(kt('cancel'))
+                    ),
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(textController.text);
+                        },
+                        child: Text(kt('yes'))
+                    ),
+                  ],
+                );
               }
+          );
+          Future.delayed(Duration(seconds: 1)).then((value) => textController.dispose());
+          if (name != null) {
+            var item = ImportedItem(
+                title: name,
+                path: res);
+            var index = ImportManager.instance.items.data.length;
+            ImportManager.instance.add(item);
+
+            if (_listKey.currentState == null) {
+              setState(() {
+              });
+            } else {
+              _listKey.currentState?.insertItem(index);
             }
           }
-        } else {
-          Fluttertoast.showToast(msg: kt('unsupport_file'));
         }
+      } else {
+        Fluttertoast.showToast(msg: kt('unsupport_file'));
       }
     }
   }

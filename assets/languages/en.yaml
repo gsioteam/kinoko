@@ -122,3 +122,13 @@ theme: Theme
 author: Author
 sup_languages: Languages
 git: Git
+export_list: Export List
+import_list: Import List
+clear_list: Clear List
+export_failed: Export Failed
+empty_list: It is a empty list.
+file_name: File name
+file_exist: Whether to replace the existing file?
+import_failed: Import Failed
+import_des: "{0} items will be imported, {1} already exist."
+exist: Exist

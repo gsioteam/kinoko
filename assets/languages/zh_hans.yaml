@@ -117,3 +117,17 @@ imported_subtitle: "{0}本"
 n_pages: "{0}页"
 
 theme: 主题
+
+author: 作者
+sup_languages: 支持语言
+git: Git
+export_list: 导出列表
+import_list: 导入列表
+clear_list: 清空列表
+export_failed: 导出失败
+empty_list: 列表是空的.
+file_name: 文件名
+file_exist: 是否覆盖已经存在的文件?
+import_failed: 导入失败
+import_des: "{0} 个项目将会被导入, {1} 个已经存在."
+exist: 已存在
