@@ -288,6 +288,7 @@ class FavoritesManager {
       } catch (e) {
         print("Check new failed $e");
       }
+      await Future.delayed(Duration(seconds: 10));
     }
     Future.delayed(Duration(minutes: 20), automaticCheckNew);
   }
