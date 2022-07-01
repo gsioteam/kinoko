@@ -80,6 +80,7 @@ class WebtoonPagerState extends PagerState<WebtoonPager> {
           color: Colors.white,
         ) : ZoomImage(
           imageProvider: photoInformation.getImageProvider(widget.cacheManager),
+          padding: EdgeInsets.zero,
           loadingWidget: (context) {
             return SpinKitRing(
               lineWidth: 4,

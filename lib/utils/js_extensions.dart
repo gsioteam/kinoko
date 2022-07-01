@@ -385,10 +385,12 @@ class HeadlessWebView implements JsDispose {
     controller.onLoadStart.removeListener(_loadStart);
     controller.onLoadEnd.removeListener(_loadEnd);
     controller.onLoadError.removeListener(_loadError);
-    _onMessage?.release();
-    _onLoadStart?.release();
-    _onLoadEnd?.release();
-    _onLoadError?.release();
+    Future.delayed(Duration.zero).then((value) {
+      _onMessage?.release();
+      _onLoadStart?.release();
+      _onLoadEnd?.release();
+      _onLoadError?.release();
+    });
     controller.dispose();
   }
 

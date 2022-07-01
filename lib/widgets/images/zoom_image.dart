@@ -23,6 +23,7 @@ class ZoomImage extends StatefulWidget {
   final WidgetBuilder? errorWidget;
   final ImageFit fit;
   final OneFingerCallback? onTap;
+  final EdgeInsets padding;
 
   ZoomImage({
     Key? key,
@@ -31,6 +32,7 @@ class ZoomImage extends StatefulWidget {
     this.errorWidget,
     this.fit = ImageFit.FitWidth,
     this.onTap,
+    this.padding = const EdgeInsets.all(1),
   }) : super(key: key);
 
   @override
@@ -146,7 +148,7 @@ class _ZoomImageState extends State<ZoomImage> {
               color: Colors.black,
               width: width,
               height: height,
-              padding: EdgeInsets.all(1),
+              padding: widget.padding,
               child: RawImage(
                 image: image,
                 width: width - 2,

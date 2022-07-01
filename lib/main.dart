@@ -238,7 +238,7 @@ class SplashScreenState extends State<SplashScreen> {
 
     await _v2Setup(dir.path);
     await showDisclaimer(context);
-    WidgetsBinding.instance?.addObserver(_LifecycleEventHandler());
+    WidgetsBinding.instance.addObserver(_LifecycleEventHandler());
 
     await Configs.instance.initialize(context);
     await PluginsManager.instance.ready;
