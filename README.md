@@ -35,7 +35,3 @@ All the plugins are list in [gitissue](https://github.com/gsioteam/env/issues/3)
 ## Making Plugin
 
 Please check [plugin document](docs/plug-in_v3.md)
-
-## Please Support the CDIM
-
-[CDIM](docs/notice/en.md) ([独立宣言运动](docs/notice/zh.md))
