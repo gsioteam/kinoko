@@ -133,4 +133,4 @@ import_failed: Import Failed
 import_des: "{0} items will be imported, {1} already exist."
 exist: Exist
 
-ink_screen: Ink Screen
+ink_screen: E-ink
