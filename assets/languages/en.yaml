@@ -132,3 +132,5 @@ file_exist: Whether to replace the existing file?
 import_failed: Import Failed
 import_des: "{0} items will be imported, {1} already exist."
 exist: Exist
+
+ink_screen: Ink Screen

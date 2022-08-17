@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../localizations/localizations.dart';
+import '../widgets/navigator.dart';
 
 class FileUtils {
   static Future<String?> openDir(BuildContext context) async {
@@ -35,7 +36,7 @@ class FileUtils {
     } catch (e) {
       rootDir = '/';
     }
-    return Navigator.of(context).push<String>(MaterialPageRoute(
+    return Navigator.of(context).push<String>(SwitchMaterialPageRoute(
         builder: (context) {
           return FilesystemPicker(
             fsType: FilesystemType.folder,
@@ -74,7 +75,7 @@ class FileUtils {
     } catch (e) {
       rootDir = '/';
     }
-    return Navigator.of(context).push<String>(MaterialPageRoute(
+    return Navigator.of(context).push<String>(SwitchMaterialPageRoute(
         builder: (context) {
           return FilesystemPicker(
             fsType: FilesystemType.file,

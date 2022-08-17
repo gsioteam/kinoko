@@ -5,6 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as m;
 
+import 'package:kinoko/widgets/navigator.dart';
+
 
 class PageSlider extends StatefulWidget {
 
@@ -119,7 +121,7 @@ class PageSliderState extends State<PageSlider> with SingleTickerProviderStateMi
     controller = AnimationController(
       vsync: this,
       value: 0,
-      duration: Duration(milliseconds: 300)
+      duration: NavigatorConfig.duration,
     );
     page = widget.page;
   }

@@ -14,6 +14,7 @@ import 'package:kinoko/utils/notice_manager.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
 import 'package:kinoko/widgets/list_header.dart';
 import 'package:kinoko/widgets/markdown_dialog.dart';
+import 'package:kinoko/widgets/navigator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../localizations/localizations.dart';
 import '../main.dart';
@@ -189,7 +190,7 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
           subtitle: Text(kt(label)),
           trailing: Icon(Icons.keyboard_arrow_right),
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+            Navigator.of(context).push(SwitchMaterialPageRoute(builder: (context) {
               return ThemePage();
             }));
           },
@@ -232,9 +233,24 @@ class _MainSettingsPageState extends State<MainSettingsPage> {
           title: Text(kt('cache_manager')),
           trailing: Icon(Icons.keyboard_arrow_right),
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) =>
+            Navigator.of(context).push(SwitchMaterialPageRoute(builder: (context) =>
                 CacheManager()));
           },
+        ),
+        SettingCell(
+          title: Text(kt('ink_screen')),
+          trailing: Switch(
+              value: NavigatorConfig.navigatorType == NavigatorType.InkScreen,
+              onChanged: (value) {
+                setState(() {
+                  if (value) {
+                    NavigatorConfig.navigatorType = NavigatorType.InkScreen;
+                  } else {
+                    NavigatorConfig.navigatorType = NavigatorType.Normal;
+                  }
+                });
+              }
+          ),
         ),
         ListHeader(),
         SettingCell(

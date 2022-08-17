@@ -14,6 +14,7 @@ import 'package:kinoko/utils/js_extensions.dart';
 import 'package:kinoko/utils/notice_manager.dart';
 import 'package:kinoko/utils/plugins_manager.dart';
 import 'package:kinoko/widgets/credits_dialog.dart';
+import 'package:kinoko/widgets/navigator.dart';
 import 'pages/collections_page.dart';
 import 'configs.dart';
 import 'pages/fav_home_page.dart';
@@ -281,7 +282,7 @@ class SplashScreenState extends State<SplashScreen> {
     super.initState();
     Future<void> future = setup(context);
     future.then((value) {
-      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
+      Navigator.of(context).pushAndRemoveUntil(SwitchMaterialPageRoute(
           settings: RouteSettings(name: home_page_name),
           builder: (BuildContext context)=>HomePage()
       ), (route) => route.isCurrent);
@@ -343,7 +344,7 @@ class _HomePageState extends State<HomePage> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       child: Scaffold(
         body: AnimatedSwitcher(
-          duration: Duration(milliseconds: 300),
+          duration: NavigatorConfig.duration,
           child: body,
           transitionBuilder: (child, animation) {
             return AnimatedBuilder(

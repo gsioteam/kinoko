@@ -48,6 +48,8 @@ const String v3_key = "v3_setup";
 
 const String theme_key = "theme_key";
 
+const String navigator_type_key = "navigator_type";
+
 const int BOOK_INDEX = 0;
 const int CHAPTER_INDEX = 1;
 

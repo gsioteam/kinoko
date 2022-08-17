@@ -40,6 +40,7 @@ class PhotoImage extends StatefulWidget {
   final AxisDirection direction;
   final Color backgroundColor;
   final Color foregroundColor;
+  final Duration animationDuration;
 
   PhotoImage({
     Key? key,
@@ -54,6 +55,7 @@ class PhotoImage extends StatefulWidget {
     this.onTap,
     this.backgroundColor = Colors.black,
     this.foregroundColor = Colors.white,
+    this.animationDuration = const Duration(milliseconds: 300),
   }) : controller = controller == null ? PhotoImageController() : controller, super(key: key);
 
   @override
@@ -370,7 +372,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
     widget.controller.state = this;
     controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 300),
+      duration: widget.animationDuration,
     );
 
     controller.value = widget.initFromEnd ? 1 : 0;

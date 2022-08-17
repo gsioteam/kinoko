@@ -13,6 +13,7 @@ import 'package:kinoko/widgets/no_data.dart';
 import '../configs.dart';
 import '../localizations/localizations.dart';
 
+import '../widgets/navigator.dart';
 import 'picture_viewer.dart';
 import '../utils/neo_cache_manager.dart';
 
@@ -121,7 +122,7 @@ class _HistoryPageState extends State<HistoryPage> {
   void enterPage(HistoryItem historyItem) async {
     Plugin? plugin = PluginsManager.instance.findPlugin(historyItem.pluginID);
     if (plugin?.isValidate == true) {
-      await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+      await Navigator.of(context).push(SwitchMaterialPageRoute(builder: (context) {
         var theme = Theme.of(context).appBarTheme.systemOverlayStyle;
         return AnnotatedRegion<SystemUiOverlayStyle>(
           child: DApp(

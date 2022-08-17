@@ -12,6 +12,7 @@ import 'package:kinoko/utils/plugin/manga_loader.dart';
 import 'package:kinoko/utils/plugin/plugin.dart';
 import 'package:kinoko/widgets/pager/flip_pager.dart';
 import 'package:kinoko/widgets/pager/horizontal_pager.dart';
+import 'package:kinoko/widgets/pager/ink_screen_pager.dart';
 import 'package:kinoko/widgets/pager/webtoon_pager.dart';
 import 'package:kinoko/widgets/picture_hint_painter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -22,6 +23,7 @@ import '../utils/preload_queue.dart';
 import 'dart:math' as math;
 import '../localizations/localizations.dart';
 import '../widgets/instructions_dialog.dart';
+import '../widgets/navigator.dart';
 import '../widgets/page_slider.dart';
 import '../widgets/pager/pager.dart';
 import 'dart:ui' as ui;
@@ -97,7 +99,8 @@ enum FlipType {
   RightToLeft,
   Vertical,
   Webtoon,
-  Flip
+  Flip,
+  InkScreen,
 }
 
 enum PagerTransitionDirection {
@@ -109,6 +112,7 @@ enum PagerTransitionDirection {
 HintMatrix _hintMatrix(FlipType type) {
   switch (type) {
     case FlipType.Flip:
+    case FlipType.InkScreen:
     case FlipType.Horizontal: {
       return HintMatrix([
         -1, 0, 1,
@@ -314,6 +318,20 @@ class _PictureViewerState extends State<PictureViewer> {
           },
         );
       }
+      case FlipType.InkScreen: {
+        return InkScreenPager(
+          key: _PagerKey(pagerController, orientation),
+          cacheManager: dataController.cacheManager,
+          controller: pagerController,
+          itemCount: dataController.length,
+          imageUrlProvider: (int index) {
+            return dataController.getPicture(index);
+          },
+          onTap: (event) {
+            tapAt(event.position);
+          },
+        );
+      }
       default: {
         return Container();
       }
@@ -333,6 +351,16 @@ class _PictureViewerState extends State<PictureViewer> {
   Widget build(BuildContext context) {
     double size = IconTheme.of(context).size ?? 36;
 
+    void setFlipType(FlipType type, String name) {
+      if (flipType != type && NavigatorConfig.navigatorType != NavigatorType.InkScreen) {
+        setState(() {
+          flipType = FlipType.Horizontal;
+        });
+        displayHint();
+        KeyValue.set(_directionKey, "horizontal");
+      }
+    }
+
     List<QudsPopupMenuBase> menuItems = [
       QudsPopupMenuSection(
           titleText: kt("page_mode"),
@@ -346,13 +374,7 @@ class _PictureViewerState extends State<PictureViewer> {
                 trailing: flipType == FlipType.Horizontal ?
                 Icon(Icons.check) : null,
                 onPressed: () {
-                  if (flipType != FlipType.Horizontal) {
-                    setState(() {
-                      flipType = FlipType.Horizontal;
-                    });
-                    displayHint();
-                    KeyValue.set(_directionKey, "horizontal");
-                  }
+                  setFlipType(FlipType.Horizontal, 'horizontal');
                 },
             ),
             QudsPopupMenuItem(
@@ -370,13 +392,7 @@ class _PictureViewerState extends State<PictureViewer> {
                 trailing: flipType == FlipType.HorizontalReverse ?
                 Icon(Icons.check) : null,
                 onPressed: () {
-                  if (flipType != FlipType.HorizontalReverse) {
-                    setState(() {
-                      flipType = FlipType.HorizontalReverse;
-                    });
-                    displayHint();
-                    KeyValue.set(_directionKey, "horizontal_reverse");
-                  }
+                  setFlipType(FlipType.HorizontalReverse, 'horizontal_reverse');
                 },
             ),
             QudsPopupMenuItem(
@@ -389,13 +405,7 @@ class _PictureViewerState extends State<PictureViewer> {
               trailing: flipType == FlipType.RightToLeft ?
               Icon(Icons.check) : null,
               onPressed: () {
-                if (flipType != FlipType.RightToLeft) {
-                  setState(() {
-                    flipType = FlipType.RightToLeft;
-                  });
-                  displayHint();
-                  KeyValue.set(_directionKey, "right_to_left");
-                }
+                setFlipType(FlipType.RightToLeft, 'right_to_left');
               },
             ),
             QudsPopupMenuItem(
@@ -404,13 +414,7 @@ class _PictureViewerState extends State<PictureViewer> {
                 trailing: flipType == FlipType.Vertical ?
                 Icon(Icons.check) : null,
                 onPressed: () {
-                  if (flipType != FlipType.Vertical) {
-                    setState(() {
-                      flipType = FlipType.Vertical;
-                    });
-                    displayHint();
-                    KeyValue.set(_directionKey, "vertical");
-                  }
+                  setFlipType(FlipType.Vertical, 'vertical');
                 },
             ),
 
@@ -420,13 +424,7 @@ class _PictureViewerState extends State<PictureViewer> {
               trailing: flipType == FlipType.Webtoon ?
               Icon(Icons.check) : null,
               onPressed: () {
-                if (flipType != FlipType.Webtoon) {
-                  setState(() {
-                    flipType = FlipType.Webtoon;
-                  });
-                  displayHint();
-                  KeyValue.set(_directionKey, "webtoon");
-                }
+                setFlipType(FlipType.Webtoon, 'webtoon');
               },
             ),
 
@@ -436,13 +434,7 @@ class _PictureViewerState extends State<PictureViewer> {
               trailing: flipType == FlipType.Flip ?
               Icon(Icons.check) : null,
               onPressed: () {
-                if (flipType != FlipType.Flip) {
-                  setState(() {
-                    flipType = FlipType.Flip;
-                  });
-                  displayHint();
-                  KeyValue.set(_directionKey, "flip");
-                }
+                setFlipType(FlipType.Flip, 'flip');
               },
             ),
           ]
@@ -541,7 +533,7 @@ class _PictureViewerState extends State<PictureViewer> {
                           AnimatedSwitcher(
                             switchInCurve: Curves.easeOutCubic,
                             switchOutCurve: Curves.easeOutCubic,
-                            duration: Duration(milliseconds: 300),
+                            duration: NavigatorConfig.duration,
                             child: currentBody,
                             transitionBuilder: (child, animation) {
                               switch (_pageDirection) {
@@ -583,9 +575,7 @@ class _PictureViewerState extends State<PictureViewer> {
                           child: IgnorePointer(
                             child: AnimatedOpacity(
                               opacity: _hintDisplay ? 1 : 0,
-                              duration: Duration(
-                                milliseconds: 300,
-                              ),
+                              duration: NavigatorConfig.duration,
                               child: CustomPaint(
                                 painter: PictureHintPainter(
                                     matrix: _hintMatrix(flipType),
@@ -647,7 +637,7 @@ class _PictureViewerState extends State<PictureViewer> {
                 left: padding.left,
                 right: padding.right,
                 height: 44,
-                duration: Duration(milliseconds: 300),
+                duration: NavigatorConfig.duration,
               ),
 
               Positioned(
@@ -672,7 +662,7 @@ class _PictureViewerState extends State<PictureViewer> {
                               WidgetSpan(
                                   child: AnimatedOpacity(
                                     opacity: loading ? 1 : 0,
-                                    duration: Duration(milliseconds: 300),
+                                    duration: NavigatorConfig.duration,
                                     child: SpinKitFoldingCube(
                                       size: 12,
                                       color: Colors.white,
@@ -694,7 +684,7 @@ class _PictureViewerState extends State<PictureViewer> {
                       ),
                     ),
                     opacity: appBarDisplay ? 1 : 0,
-                    duration: Duration(milliseconds: 300)
+                    duration: NavigatorConfig.duration
                 ),
                 right: 10 + padding.right,
                 bottom: Platform.isIOS ? padding.bottom : 0,
@@ -779,34 +769,38 @@ class _PictureViewerState extends State<PictureViewer> {
     _directionKey = "$direction_key:$key";
     _deviceKey = "$device_key:$key";
     _pageKey = "$page_key:${dataController.cacheManager?.key ?? key}";
-    String direction = KeyValue.get(_directionKey);
-    switch (direction) {
-      case 'vertical': {
-        flipType = FlipType.Vertical;
-        break;
-      }
-      case 'horizontal': {
-        flipType = FlipType.Horizontal;
-        break;
-      }
-      case 'horizontal_reverse': {
-        flipType = FlipType.HorizontalReverse;
-        break;
-      }
-      case 'right_to_left': {
-        flipType = FlipType.RightToLeft;
-        break;
-      }
-      case 'webtoon': {
-        flipType = FlipType.Webtoon;
-        break;
-      }
-      case 'flip': {
-        flipType = FlipType.Flip;
-        break;
-      }
-      default: {
-        flipType = FlipType.Horizontal;
+    if (NavigatorConfig.navigatorType == NavigatorType.InkScreen) {
+      flipType = FlipType.InkScreen;
+    } else {
+      String direction = KeyValue.get(_directionKey);
+      switch (direction) {
+        case 'vertical': {
+          flipType = FlipType.Vertical;
+          break;
+        }
+        case 'horizontal': {
+          flipType = FlipType.Horizontal;
+          break;
+        }
+        case 'horizontal_reverse': {
+          flipType = FlipType.HorizontalReverse;
+          break;
+        }
+        case 'right_to_left': {
+          flipType = FlipType.RightToLeft;
+          break;
+        }
+        case 'webtoon': {
+          flipType = FlipType.Webtoon;
+          break;
+        }
+        case 'flip': {
+          flipType = FlipType.Flip;
+          break;
+        }
+        default: {
+          flipType = FlipType.Horizontal;
+        }
       }
     }
     String device = KeyValue.get(_deviceKey);

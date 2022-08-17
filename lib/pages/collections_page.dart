@@ -10,6 +10,7 @@ import 'package:kinoko/utils/plugin/plugin.dart';
 import 'package:kinoko/utils/plugins_manager.dart';
 import '../localizations/localizations.dart';
 import '../configs.dart';
+import '../widgets/navigator.dart';
 import '../widgets/no_data.dart';
 import 'ext_page.dart';
 
@@ -214,7 +215,7 @@ class _CollectionsPageState extends State<CollectionsPage> {
         ),
       ),
       onTap: () async {
-        await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+        await Navigator.of(context).push(SwitchMaterialPageRoute(builder: (context) {
           return LibrariesPage();
         }));
       },

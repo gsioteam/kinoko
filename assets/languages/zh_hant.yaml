@@ -132,3 +132,5 @@ file_exist: 是否覆蓋已經存在的文件?
 import_failed: 導入失敗
 import_des: "{0} 個項目將會被導入, {1} 個已經存在."
 exist: 已存在
+
+ink_screen: 墨水屏

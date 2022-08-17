@@ -18,6 +18,7 @@ import '../utils/file_loader.dart';
 import '../utils/fullscreen.dart';
 import '../utils/picture_data.dart';
 import '../widgets/favorite_item.dart';
+import '../widgets/navigator.dart';
 import '../widgets/pager/pager.dart';
 import 'picture_viewer.dart';
 
@@ -289,7 +290,7 @@ class _ImportedPageState extends State<ImportedPage> {
 
   itemClicked(ImportedData data) async {
     ImportedItem item = data.item;
-    await Navigator.of(context).push(MaterialPageRoute(
+    await Navigator.of(context).push(SwitchMaterialPageRoute(
         builder: (context) {
           return PictureViewer(
             data: LocalPictureData(

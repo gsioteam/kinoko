@@ -25,6 +25,7 @@ import '../utils/favorites_manager.dart';
 import '../widgets/instructions_dialog.dart';
 import '../widgets/favorite_item.dart';
 
+import '../widgets/navigator.dart';
 import '../widgets/no_data.dart';
 
 class _FavData extends FavoriteItemData {
@@ -84,7 +85,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     FavCheckItem checkItem = items[idx];
     Plugin? plugin = PluginsManager.instance.findPlugin(checkItem.pluginID);
     if (plugin?.isValidate == true) {
-      await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+      await Navigator.of(context).push(SwitchMaterialPageRoute(builder: (context) {
         var theme = Theme.of(context).appBarTheme.systemOverlayStyle;
         return AnnotatedRegion<SystemUiOverlayStyle>(
           child: DApp(
@@ -173,7 +174,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           FavCheckItem item = items[index];
           return AnimationConfiguration.staggeredList(
             position: index,
-            duration: const Duration(milliseconds: 375),
+            duration: NavigatorConfig.duration,
             child: SlideAnimation(
               verticalOffset: 50.0,
               child: FadeInAnimation(

@@ -15,6 +15,7 @@ import 'package:kinoko/widgets/import_cell.dart';
 import 'package:kinoko/widgets/no_data.dart';
 import 'package:path_provider_ex/path_provider_ex.dart';
 import '../configs.dart';
+import '../widgets/navigator.dart';
 import 'picture_viewer.dart';
 import '../utils/download_manager.dart';
 import '../localizations/localizations.dart';
@@ -108,7 +109,7 @@ class _ChapterCellState extends State<ChapterCell> {
                 var lists = await PathProviderEx.getStorageInfo();
                 if (lists.length > 0) {
                   var info = lists.last;
-                  Navigator.of(context).push(MaterialPageRoute(
+                  Navigator.of(context).push(SwitchMaterialPageRoute(
                       builder: (context) {
                         return FilesystemPicker(
                             rootDirectory: Directory(info.rootDir),
@@ -373,7 +374,7 @@ class _DownloadPageState extends State<DownloadPage> {
         Plugin? plugin = PluginsManager.instance.findPlugin(queueItem.pluginID);
         if (plugin?.isValidate == true) {
           enterFullscreenMode(context);
-          await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+          await Navigator.of(context).push(SwitchMaterialPageRoute(builder: (context) {
             return PictureViewer(
               data: RemotePictureData(
                 plugin: plugin!,

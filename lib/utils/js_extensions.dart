@@ -10,6 +10,7 @@ import 'package:kinoko/pages/source_page.dart';
 import 'package:kinoko/utils/history_manager.dart';
 import 'package:kinoko/utils/picture_data.dart';
 
+import '../widgets/navigator.dart';
 import 'book_info.dart';
 import 'download_manager.dart';
 import 'favorites_manager.dart';
@@ -25,7 +26,7 @@ class KiController extends Controller {
   openBook(JsValue data) async {
     var d = jsValueToDart(data);
     enterFullscreenMode(state!.context);
-    await Navigator.of(state!.context).push(MaterialPageRoute(builder: (context) {
+    await Navigator.of(state!.context).push(SwitchMaterialPageRoute(builder: (context) {
       return PictureViewer(
         data: RemotePictureData(
           plugin: plugin,
@@ -40,7 +41,7 @@ class KiController extends Controller {
   }
 
   openBrowser(String url) {
-    return Navigator.of(state!.context).push(MaterialPageRoute(builder: (context) {
+    return Navigator.of(state!.context).push(SwitchMaterialPageRoute(builder: (context) {
       return SourcePage(
         url: url,
       );

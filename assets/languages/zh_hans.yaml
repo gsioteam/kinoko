@@ -131,3 +131,5 @@ file_exist: 是否覆盖已经存在的文件?
 import_failed: 导入失败
 import_des: "{0} 个项目将会被导入, {1} 个已经存在."
 exist: 已存在
+
+ink_screen: 墨水屏
