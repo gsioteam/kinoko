@@ -1,5 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter/src/scheduler/ticker.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../../utils/neo_cache_manager.dart';
 import '../images/one_finger_zoom_gesture_recognizer.dart';
@@ -30,7 +32,16 @@ class InkScreenPager extends Pager {
 
 }
 
-class InkScreenPagerState extends PagerState<InkScreenPager> {
+mixin FixTickerProvider implements TickerProvider {
+  @override
+  Ticker createTicker(TickerCallback onTick) {
+    return Ticker((time) {
+
+    });
+  }
+}
+
+class InkScreenPagerState extends PagerState<InkScreenPager> with FixTickerProvider {
 
   Map<int, PhotoImageController> _pages = new Map();
   int index = 0;
@@ -54,7 +65,17 @@ class InkScreenPagerState extends PagerState<InkScreenPager> {
             size: media.size,
             animationDuration: Duration.zero,
             loadingWidget: (context) {
-              return Container();
+              var controller = AnimationController(
+                vsync: this,
+                duration: Duration(seconds: 1)
+              );
+              controller.value = 0.6;
+              return SpinKitRing(
+                lineWidth: 4,
+                size: 36,
+                color: Colors.white,
+                controller: controller,
+              );
             },
             errorWidget: (context) {
               return Icon(
@@ -97,6 +118,7 @@ class InkScreenPagerState extends PagerState<InkScreenPager> {
       } else {
         setState(() {
           index += 1;
+          setPage(index);
         });
       }
     } else {
@@ -113,6 +135,7 @@ class InkScreenPagerState extends PagerState<InkScreenPager> {
       } else {
         setState(() {
           index -= 1;
+          setPage(index);
         });
       }
     } else {
@@ -127,4 +150,14 @@ class InkScreenPagerState extends PagerState<InkScreenPager> {
     });
   }
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.itemCount > 0) {
+      if (widget.controller.index == -1) {
+        setPage(widget.itemCount - 1);
+      }
+      index = widget.controller.index;
+    }
+  }
 }

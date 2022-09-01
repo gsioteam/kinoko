@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dapp/flutter_dapp.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:glib/main/models.dart';
 import 'package:kinoko/utils/file_utils.dart';
@@ -301,15 +302,32 @@ class _FavoritesPageState extends State<FavoritesPage> {
     var res = await FileUtils.openDir(context);
     if (res != null) {
       TextEditingController textEditingController = TextEditingController(
-        text: 'kinoko_book_list.json'
+        text: 'kinoko_book_list.json.png'
       );
       var check = await showDialog<bool>(
           context: context,
           builder: (context) {
+            var theme = Theme.of(context);
             return AlertDialog(
               title: Text(kt('file_name')),
-              content: TextField(
-                controller: textEditingController,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: textEditingController,
+                  ),
+                  Padding(padding: EdgeInsets.only(
+                    top: 4
+                  )),
+                  Text(
+                    kt("why_png"),
+                    style: TextStyle(
+                      color: theme.disabledColor,
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
               ),
               actions: [
                 TextButton(

@@ -134,3 +134,5 @@ import_des: "{0} items will be imported, {1} already exist."
 exist: Exist
 
 ink_screen: E-ink
+
+why_png: "Why `.png`? In Android 11 app no longer have the ability to gain access to non-media files, unless obtain new authorization(ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION). But I don't want to confuse users about the new authorization, so it is a media suffix."

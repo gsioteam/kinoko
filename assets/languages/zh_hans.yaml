@@ -133,3 +133,5 @@ import_des: "{0} 个项目将会被导入, {1} 个已经存在."
 exist: 已存在
 
 ink_screen: 墨水屏
+
+why_png: "为何是`.png`?在Android11中应用不再能访问到非媒体文件除非获得额外的授权(ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION).但是我不想让用户为这个新的授权感到困惑，所以使用一个媒体后缀。"

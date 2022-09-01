@@ -240,6 +240,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
       );
     } else {
       ui.Image? image = _imageInfo?.image;
+      print("Image ${image.hashCode}");
       if (image != null) {
         if (_imageSize == Size.zero) {
           _imageSize = onSetupImage(image);
@@ -406,13 +407,15 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
     _imageStream = widget.imageProvider.resolve(createLocalImageConfiguration(context));
     if (_imageStream!.key != oldImageStream?.key) {
       _hasError = false;
+      _imageInfo = null;
+      _imageSize = Size.zero;
       oldImageStream?.removeListener(_imageStreamListener);
       _imageStream!.addListener(_imageStreamListener);
     }
   }
 
   bool arriveStart() {
-    if (_imageSize == null) return true;
+    if (_imageSize == Size.zero) return true;
     bool check = widget.reverse;
     if (widget.direction == AxisDirection.left)
       check = !check;
