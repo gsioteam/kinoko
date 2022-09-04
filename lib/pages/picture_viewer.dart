@@ -354,10 +354,10 @@ class _PictureViewerState extends State<PictureViewer> {
     void setFlipType(FlipType type, String name) {
       if (flipType != type && NavigatorConfig.navigatorType != NavigatorType.InkScreen) {
         setState(() {
-          flipType = FlipType.Horizontal;
+          flipType = type;
         });
         displayHint();
-        KeyValue.set(_directionKey, "horizontal");
+        KeyValue.set(_directionKey, name);
       }
     }
 

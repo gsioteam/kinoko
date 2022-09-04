@@ -240,7 +240,6 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
       );
     } else {
       ui.Image? image = _imageInfo?.image;
-      print("Image ${image.hashCode}");
       if (image != null) {
         if (_imageSize == Size.zero) {
           _imageSize = onSetupImage(image);
