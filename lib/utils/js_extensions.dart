@@ -289,11 +289,96 @@ class _HeadlessWebViewOverlay {
   }
 
   void removeWidthKey(Key key) {
-
+    if (_globalKey.currentState != null) {
+      for (Widget child in _globalKey.currentState!.children) {
+        if (child.key == key) {
+          _globalKey.currentState?.remove(child);
+          break;
+        }
+      }
+    }
   }
 }
 
 _HeadlessWebViewOverlay? _overlay;
+
+class WebViewContainer extends StatefulWidget {
+
+  final BrowserWebViewController controller;
+  final VoidCallback? onClose;
+  final bool display;
+
+  WebViewContainer({
+    Key? key,
+    required this.controller,
+    this.onClose,
+    this.display = false,
+  }):super(key: key);
+
+  @override
+  State<StatefulWidget> createState() {
+    return WebViewContainerState();
+  }
+
+}
+
+class WebViewContainerState extends State<WebViewContainer> {
+  bool _display = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    return Positioned(
+        child: Visibility(
+          visible: _display,
+          child: Container(
+            width: size.width,
+            height: size.height,
+            color: Colors.black38,
+            child: Center(
+              child: Container(
+                width: size.width * 0.8,
+                height: size.height * 0.8,
+                child: Stack(
+                  children: [
+                    BrowserWebView(
+                        controller: widget.controller
+                    ),
+                    Positioned(
+                        width: 36,
+                        height: 36,
+                        right: 18,
+                        top: 18,
+                        child: TextButton(
+                          child: Text("X"),
+                          onPressed: widget.onClose,
+                        )
+                    )
+                  ],
+                ),
+              ),
+            ),
+          )
+        )
+    );
+  }
+
+  void initState() {
+    super.initState();
+    _display = widget.display;
+  }
+
+  set display(v) {
+    if (_display != v) {
+      _display = v;
+      setState(() { });
+    }
+  }
+
+  get display {
+    return _display;
+  }
+}
 
 class HeadlessWebView implements JsDispose {
 
@@ -309,7 +394,8 @@ class HeadlessWebView implements JsDispose {
   JsValue? _onLoadStart;
   JsValue? _onLoadEnd;
   JsValue? _onLoadError;
-  Key _viewKey = UniqueKey();
+  GlobalKey _viewKey = GlobalKey();
+  bool _display = false;
 
   JsValue? get onMessage => _onMessage;
   set onMessage(JsValue? val) {
@@ -364,13 +450,13 @@ class HeadlessWebView implements JsDispose {
 
     if (_overlay != null) {
       Future.delayed(Duration(milliseconds: 100)).then((value) {
-        _overlay!.add(Positioned(
-            key: _viewKey,
-            width: 1,
-            height: 1,
-            child: BrowserWebView(
-                controller: controller
-            )
+        _overlay!.add(WebViewContainer(
+          key: _viewKey,
+          controller: controller,
+          display: _display,
+          onClose: () {
+            setDisplay(false);
+          },
         ));
       });
     }
@@ -424,6 +510,17 @@ class HeadlessWebView implements JsDispose {
   dynamic eval(String script) {
     return controller.eval(script);
   }
+  
+  void setDisplay(bool display) {
+    if (_display != display) {
+      _display = display;
+      var state = _viewKey.currentState;
+      if (state is WebViewContainerState) {
+        state.display = display;
+      }
+    }
+  }
+
 }
 
 ClassInfo headlessWebViewClass = ClassInfo<HeadlessWebView>(
@@ -432,6 +529,7 @@ ClassInfo headlessWebViewClass = ClassInfo<HeadlessWebView>(
       "load": JsFunction.ins((obj, argv) => obj.load(argv[0])),
       "getCookies": JsFunction.sta((argv) => HeadlessWebView.getCookies(argv[0])),
       "eval": JsFunction.ins((obj, argv) => obj.eval(argv[0])),
+      "display": JsFunction.ins((obj, argv) => obj.setDisplay(argv[0])),
     },
     fields: {
       "onmessage": JsField.ins(
