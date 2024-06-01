@@ -5,14 +5,15 @@ import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import '../configs.dart';
 
 void enterFullscreen() {
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack, overlays: [
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
+    // SystemUiOverlay.bottom,
   ]);
 }
 
 void exitFullscreen() {
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack, overlays: [
-    SystemUiOverlay.top,
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [
     SystemUiOverlay.bottom,
+    SystemUiOverlay.top,
   ]);
 }
 
