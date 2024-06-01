@@ -265,7 +265,7 @@ class NeoImageProvider extends ImageProvider<NeoImageProvider> {
   }
 
   @override
-  ImageStreamCompleter load(NeoImageProvider key, decode) {
+  ImageStreamCompleter loadImage(NeoImageProvider key, ImageDecoderCallback decode) {
     final chunkEvents = StreamController<ImageChunkEvent>();
     return MultiImageStreamCompleter(
       codec: _loadAsync(key, chunkEvents, decode),
@@ -311,12 +311,14 @@ class NeoImageProvider extends ImageProvider<NeoImageProvider> {
             (io.X509Certificate cert, String host, int port) => true;
         return client;
       };
+      print("Req:${key.uri}: ${key.headers}");
       Response<ResponseBody> response = await dio.requestUri(
         key.uri,
         options: Options(
-            headers: key.headers
+            headers: key.headers,
         ),
       );
+      print("Over:${key.uri} ${response.statusCode}");
       if (response.statusCode != null && response.statusCode! >= 200 && response.statusCode! < 300) {
         io.BytesBuilder builder = io.BytesBuilder();
         await for (var chunk in response.data!.stream) {
