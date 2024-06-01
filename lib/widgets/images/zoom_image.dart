@@ -85,7 +85,7 @@ class _ZoomImageState extends State<ZoomImage> {
                 },
                 child: Text(kt("reload")),
                 style: OutlinedButton.styleFrom(
-                    primary: Colors.white,
+                    foregroundColor: Colors.white,
                     side: BorderSide(
                       color: Colors.white,
                     )

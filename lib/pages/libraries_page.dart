@@ -393,6 +393,13 @@ class _LibraryCellState extends State<LibraryCell> {
           image: networkImageProvider(widget.item.icon!),
           width: 56,
           height: 56,
+          errorBuilder: (context, error, stack) {
+            return buildIdenticon(
+              widget.item.src,
+              width: 56,
+              height: 56,
+            );
+          },
         ),
         onTap: () async {
           var ret = await showDialog<bool>(

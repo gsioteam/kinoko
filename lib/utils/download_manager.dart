@@ -22,7 +22,7 @@ enum DownloadState {
   Complete,
 }
 
-class DownloaderException with Exception {
+class DownloaderException implements Exception {
   final String label;
   final String reason;
 

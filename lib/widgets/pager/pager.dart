@@ -64,18 +64,18 @@ class _FutureMemoryImage extends ImageProvider<_FutureMemoryImage> {
   }
 
   @override
-  ImageStreamCompleter load(_FutureMemoryImage key, DecoderCallback decode) {
+  ImageStreamCompleter loadImage(_FutureMemoryImage key, ImageDecoderCallback decode) {
     return MultiFrameImageStreamCompleter(
       codec: _loadAsync(key, decode),
       scale: key.scale,
     );
   }
 
-  Future<ui.Codec> _loadAsync(_FutureMemoryImage key, DecoderCallback decode) async {
+  Future<ui.Codec> _loadAsync(_FutureMemoryImage key, ImageDecoderCallback decode) async {
     assert(key == this);
 
     Uint8List bytes = await future;
-    return decode(bytes);
+    return decode(await ui.ImmutableBuffer.fromUint8List(bytes));
   }
 
   @override

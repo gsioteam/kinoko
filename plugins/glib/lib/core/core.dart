@@ -207,7 +207,7 @@ class Base with AutoRelease {
 
   static Pointer? scriptHandler;
 
-  dynamic call(String name, { argv: const <dynamic>[]}) {
+  dynamic call(String name, { argv = const <dynamic>[]}) {
     if (isDestroyed) {
       throw new Exception("This object($runtimeType) is destroyed.");
     }
@@ -224,7 +224,7 @@ class Base with AutoRelease {
     return obj;
   }
 
-  static dynamic s_call(Type type, String name, {argv: const <dynamic>[]}) {
+  static dynamic s_call(Type type, String name, {argv = const <dynamic>[]}) {
     if (Base.scriptHandler == null) return;
     TypeInfo? typeInfo = _classRef[type];
     if (typeInfo != null) {

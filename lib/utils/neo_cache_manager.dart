@@ -23,6 +23,7 @@ import 'package:file/file.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/adapter.dart';
 
+
 class SizeResult {
   int cached = 0;
   int other = 0;
@@ -286,14 +287,14 @@ class NeoImageProvider extends ImageProvider<NeoImageProvider> {
   Stream<ui.Codec> _loadAsync(
       NeoImageProvider key,
       StreamController<ImageChunkEvent> chunkEvents,
-      DecoderCallback decode,
+      ImageDecoderCallback decode,
       ) async* {
     var dir = await cacheManager._directory;
     File file = dir.childFile(filename);
 
     if (await file.exists()) {
       var bytes = await file.readAsBytes();
-      var decoded = await decode(bytes);
+      var decoded = await decode(await ui.ImmutableBuffer.fromUint8List(bytes));
       yield decoded;
     } else {
       Dio dio = Dio(
@@ -330,7 +331,7 @@ class NeoImageProvider extends ImageProvider<NeoImageProvider> {
           await dir.create(recursive: true);
         }
         await file.writeAsBytes(bytes);
-        var decoded = await decode(bytes);
+        var decoded = await decode(await ui.ImmutableBuffer.fromUint8List(bytes));
         yield decoded;
       } else {
         throw NeoError("Status code ${response.statusCode}");

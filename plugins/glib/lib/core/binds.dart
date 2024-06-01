@@ -15,7 +15,7 @@ const int TypeString = 4;
 const int TypeBoolean = 5;
 const int TypePointer = 6;
 
-class NativeTarget extends Struct {
+base class NativeTarget extends Struct {
   @Int8()
   external int type;
 

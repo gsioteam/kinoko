@@ -227,7 +227,7 @@ class PhotoImageState<T extends PhotoImage> extends State<T> with SingleTickerPr
                   },
                   child: Text(kt("reload")),
                   style: OutlinedButton.styleFrom(
-                      primary: widget.foregroundColor,
+                      foregroundColor: widget.foregroundColor,
                       side: BorderSide(
                         color: widget.foregroundColor,
                       )

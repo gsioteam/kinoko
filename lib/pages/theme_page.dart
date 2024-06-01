@@ -221,7 +221,7 @@ class ThemeWidget extends StatelessWidget {
           color: themeData.canvasColor,
           shape: RoundedRectangleBorder(
               side: selected ? BorderSide(
-                color: themeData.colorScheme.secondaryVariant,
+                color: themeData.colorScheme.onSecondary,
                 width: 3,
               ) : BorderSide.none,
               borderRadius: BorderRadius.circular(6)
