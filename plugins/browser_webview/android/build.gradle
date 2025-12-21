@@ -23,6 +23,7 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 30
+    namespace "com.gen.browser_webview"
 
     defaultConfig {
         minSdkVersion 17
@@ -31,4 +32,5 @@ android {
 
 dependencies {
     implementation 'org.jsoup:jsoup:1.14.2'
+    implementation 'com.google.guava:guava:33.5.0-android'
 }

@@ -37,49 +37,42 @@ dependencies:
   cached_network_image: ^3.1.0
   my_scrollable_positioned_list:
     path: plugins/my_scrollable_positioned_list
-  flutter_material_pickers: ^3.6.0
+  flutter_material_pickers:
+    git: https://github.com/codegrue/flutter_material_pickers.git
   http: ^0.13.0
   xml_layout:
     git: https://github.com/gsioteam/xml_layout.git
   flutter_svg_provider:
-    git:
-      url: https://github.com/gsioteam/flutter_svg_provider.git
+    path: plugins/flutter_svg_provider
 
   url_launcher: ^6.0.2
   path_provider_ex:
     git: https://github.com/AmudAnan/flutter_path_provider_ex.git
-  permission_handler: ^9.2.0
+  permission_handler: ^11.4.0
   flutter_markdown: ^0.6.8
   filesystem_picker:
-    git:
-      url: https://github.com/gsioteam/filesystem_picker.git
-      path: package
-      ref: ca59a2fae11740dce482de735c253fa9c9ce3530
+    path: plugins/filesystem_picker/package
   browser_webview:
     path: ./plugins/browser_webview
-  flutter_windowmanager: ^0.2.0
   quds_popup_menu: ^0.0.1+1
   yaml: ^3.1.0
   decorated_icon: ^1.2.1
   flutter_staggered_animations: ^1.0.0
   package_info_plus: ^4.2.0
   flutter_dapp:
-    git:
-      url: https://github.com/gsioteam/flutter_dapp.git
-      ref: 63e60237e1f6f0eac2e344020c57c56ac1ed8563
+    path: plugins/flutter_dapp
   flutter_git:
-    git: https://github.com/gsioteam/flutter_git.git
+    path: plugins/flutter_git
   glib:
     path: "./plugins/glib"
   jdenticon_dart: ^2.0.0
-  android_alarm_manager_plus: ^2.0.5
-  flutter_local_notifications: ^9.1.5
+  android_alarm_manager_plus: ^4.0.7
+  flutter_local_notifications: ^18.0.1
   flip_widget:
-    git:
-      url: https://github.com/gsioteam/flip_widget.git
-      ref: 0528a3737ab71d2c09cfc79cc3c477c5c849169e
+    path: plugins/flip_widget
   archive: ^3.1.8
-  flutter_localized_locales: ^2.0.3
+  flutter_localized_locales: ^2.0.5
+  cloudflare_turnstile: ^3.6.0
 
 dev_dependencies:
 #  flutter_test:

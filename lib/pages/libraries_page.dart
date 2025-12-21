@@ -601,7 +601,7 @@ class _LibrariesPageState extends State<LibrariesPage> {
             var item = data[idx];
             return Dismissible(
               key: ValueKey(item.src),
-              background: Container(color: Theme.of(context).errorColor,),
+              background: Container(color: Theme.of(context).colorScheme.error,),
               child: LibraryCell(
                 item: item,
                 onSelect: () {

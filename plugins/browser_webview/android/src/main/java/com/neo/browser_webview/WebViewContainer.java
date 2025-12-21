@@ -38,6 +38,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.google.common.io.ByteStreams;
+
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
@@ -57,6 +59,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -72,6 +75,10 @@ public class WebViewContainer {
 
     public interface CallbackInterface {
         void onCreateSubWindow(WebViewContainer container, WebViewContainer subContainer);
+    }
+
+    public interface RequestOverCallback {
+        void onComplete(Map response);
     }
 
     class ResourceReplacement {
@@ -91,6 +98,8 @@ public class WebViewContainer {
 
     WebView webView;
     Object id;
+    String requestAddress;
+    RequestOverCallback requestCallback;
 
     WebChromeClient webChromeClient = new WebChromeClient() {
         @Override
@@ -221,13 +230,17 @@ public class WebViewContainer {
             if (response != null) return response;
 
             String ext = findExtension(request.getUrl());
-            if (ext == null || getIntercepts().contains(ext)) {
+            boolean waitRequest = request.getUrl().toString().equals(requestAddress);
+            if (waitRequest) {
+                requestAddress = null;
+            }
+            if (ext == null || getIntercepts().contains(ext) || waitRequest) {
                 try {
                     HttpURLConnection connection = requestUrl(
                             request.getUrl().toString(),
                             request.getMethod(),
                             request.getRequestHeaders());
-                    return loadResponse(connection);
+                    return loadResponse(connection, waitRequest);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -242,10 +255,14 @@ public class WebViewContainer {
             if (response != null) return response;
 
             String ext = findExtension(Uri.parse(url));
-            if (ext == null || getIntercepts().contains(ext)) {
+            boolean waitRequest = url.equals(requestAddress);
+            if (waitRequest) {
+                requestAddress = null;
+            }
+            if (ext == null || getIntercepts().contains(ext) || waitRequest) {
                 try {
                     HttpURLConnection connection = requestUrl(url, "GET", null);
-                    return loadResponse(connection);
+                    return loadResponse(connection, waitRequest);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -253,12 +270,12 @@ public class WebViewContainer {
             return super.shouldInterceptRequest(view, url);
         }
 
-        WebResourceResponse loadResponse(HttpURLConnection connection) throws IOException {
+        WebResourceResponse loadResponse(HttpURLConnection connection, boolean isRequest) throws IOException {
             String type = connection.getHeaderField("content-type");
             if (type == null) {
                 type = connection.getHeaderField("Content-Type");
             }
-//            Log.i("loadResponse", connection.getURL() + " : " + type);
+            Log.i("loadResponse", connection.getURL() + " : " + type);
             String url = connection.getURL().toString();
             int statusCode = connection.getResponseCode();
             String encoding = connection.getContentEncoding();
@@ -275,22 +292,40 @@ public class WebViewContainer {
             if (encoding == null) {
                 encoding = "UTF-8";
             }
-            if (type == null || statusCode >= 300) return null;
-            if (type.toLowerCase().contains("text/html")) {
-                InputStream stream = connection.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(stream, encoding));
-                StringBuilder stringBuilder = new StringBuilder();
-                char[] buf = new char[1024];
-                int readed;
-                while ((readed = reader.read(buf)) >= 0) {
-                    if (readed > 0) {
-                        stringBuilder.append(buf, 0, readed);
-                    }
+            if (isRequest) {
+                InputStream stream;
+                if (statusCode >= 200 && statusCode < 300) {
+                    stream = connection.getInputStream();
+                } else {
+                    stream = connection.getErrorStream();
                 }
-                stream.close();
-                reader.close();
+                byte[] buffer = stream != null ? ByteStreams.toByteArray(stream) : null;
 
-                String raw = stringBuilder.toString();
+                if (requestCallback != null) {
+                    requestCallback.onComplete(Map.of(
+                            "text", buffer != null ? new String(buffer, encoding) : "",
+                            "status", statusCode
+                    ));
+                    requestCallback = null;
+                }
+                byte[] bytes = "null".getBytes(encoding);
+                return new WebResourceResponse(
+                        "text/html",
+                        encoding,
+                        new ByteArrayInputStream(bytes)
+                );
+            }
+            if (type == null) return null;
+            if (type.toLowerCase().contains("text/html")) {
+                InputStream stream;
+                if (statusCode >= 200 && statusCode < 300) {
+                    stream = connection.getInputStream();
+                } else {
+                    stream = connection.getErrorStream();
+                }
+                byte[] buffer = stream != null ? ByteStreams.toByteArray(stream) : null;
+
+                String raw = new String(buffer, encoding);
                 if (!raw.trim().startsWith("<!DOCTYPE html>")) return null;
                 Document doc = Jsoup.parse(raw);
                 {
@@ -618,6 +653,12 @@ public class WebViewContainer {
                 channel.invokeMethod("onEvent", arguments);
             }
         });
+    }
+
+    public void request(String url, RequestOverCallback callback) {
+        requestAddress = url;
+        requestCallback = callback;
+        webView.loadUrl(url);
     }
 
     HttpURLConnection requestUrl(String url, String method, Map<String, String> headers) throws Exception {

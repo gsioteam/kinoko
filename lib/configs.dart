@@ -145,7 +145,7 @@ class Configs {
         case 'canvas':
           return theme.canvasColor;
         case 'background':
-          return theme.backgroundColor;
+          return theme.colorScheme.background;
         case 'scaffold':
           return theme.scaffoldBackgroundColor;
         case 'disabled':

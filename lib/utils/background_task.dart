@@ -17,8 +17,8 @@ import 'plugins_manager.dart';
 class BackgroundTask {
   static const int _id = 0x3990;
 
-  static Future _onSelectNotification(String? payload) async {
-    print("Payload $payload");
+  static Future _onSelectNotification(NotificationResponse details) async {
+    print("Payload ${details.payload}");
   }
 
   static Future<FlutterLocalNotificationsPlugin> _initNotification() async {
@@ -26,16 +26,14 @@ class BackgroundTask {
     FlutterLocalNotificationsPlugin();
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('noti_icon');
-    final IOSInitializationSettings initializationSettingsIOS =
-    IOSInitializationSettings();
-    final MacOSInitializationSettings initializationSettingsMacOS =
-    MacOSInitializationSettings();
+    final DarwinInitializationSettings initializationSettingsIOS =
+    DarwinInitializationSettings();
     final InitializationSettings initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid,
         iOS: initializationSettingsIOS,
-        macOS: initializationSettingsMacOS);
+        macOS: initializationSettingsIOS);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: _onSelectNotification);
+        onDidReceiveNotificationResponse: _onSelectNotification);
 
     return flutterLocalNotificationsPlugin;
   }

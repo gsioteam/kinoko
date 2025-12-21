@@ -123,6 +123,7 @@ class Plugin {
 
       _information = PluginInformation.fromData(json);
     } catch (e) {
+      print("What $e");
     }
   }
 

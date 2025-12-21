@@ -67,14 +67,14 @@ Future<bool?> showCreditsDialog(BuildContext context) async {
                           children: [
                             Container(
                               width: double.infinity,
-                              child: Text(kt("disclaimer"), style: Theme.of(context).textTheme.headline6,),
+                              child: Text(kt("disclaimer"), style: Theme.of(context).textTheme.headlineMedium,),
                             ),
                             Padding(padding: EdgeInsets.only(top: 10)),
-                            Text(kt("disclaimer_content"), style: Theme.of(context).textTheme.bodyText1,),
+                            Text(kt("disclaimer_content"), style: Theme.of(context).textTheme.bodyMedium,),
                             Padding(padding: EdgeInsets.only(top: 10)),
                             Container(
                               width: double.infinity,
-                              child: Text(kt("credits"), style: Theme.of(context).textTheme.headline6,),
+                              child: Text(kt("credits"), style: Theme.of(context).textTheme.headlineMedium,),
                             ),
                             Padding(padding: EdgeInsets.only(top: 10)),
                             Container(

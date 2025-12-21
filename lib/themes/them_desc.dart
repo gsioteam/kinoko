@@ -58,7 +58,7 @@ class _DefaultThemeDesc extends ThemeDesc {
           systemNavigationBarIconBrightness: Brightness.dark,
         ),
       ),
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         labelColor: primaryColor,
         unselectedLabelColor: Colors.grey,
         indicator: BoxDecoration(
@@ -126,7 +126,7 @@ class _DarkThemeDesc extends ThemeDesc {
           systemNavigationBarIconBrightness: Brightness.dark,
         ),
       ),
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         labelColor: primaryColor,
         unselectedLabelColor: Colors.grey,
         indicator: BoxDecoration(

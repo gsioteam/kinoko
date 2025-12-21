@@ -87,7 +87,7 @@ class ThemeImage extends StatelessWidget {
                         horizontal: 8
                       ),
                       decoration: BoxDecoration(
-                        color: theme.data.textTheme.headline6?.color,
+                        color: theme.data.textTheme.headlineMedium?.color,
                         borderRadius: BorderRadius.circular(9),
                       ),
                       height: 12,
@@ -99,7 +99,7 @@ class ThemeImage extends StatelessWidget {
                           horizontal: 8
                       ),
                       decoration: BoxDecoration(
-                        color: theme.data.textTheme.bodyText1?.color,
+                        color: theme.data.textTheme.bodyMedium?.color,
                         borderRadius: BorderRadius.circular(9),
                       ),
                       height: 8,
@@ -111,7 +111,7 @@ class ThemeImage extends StatelessWidget {
                           horizontal: 8
                       ),
                       decoration: BoxDecoration(
-                        color: theme.data.textTheme.bodyText1?.color,
+                        color: theme.data.textTheme.bodyMedium?.color,
                         borderRadius: BorderRadius.circular(9),
                       ),
                       height: 8,
@@ -123,7 +123,7 @@ class ThemeImage extends StatelessWidget {
                           horizontal: 8
                       ),
                       decoration: BoxDecoration(
-                        color: theme.data.textTheme.bodyText1?.color,
+                        color: theme.data.textTheme.bodyMedium?.color,
                         borderRadius: BorderRadius.circular(9),
                       ),
                       height: 8,
@@ -135,7 +135,7 @@ class ThemeImage extends StatelessWidget {
                           horizontal: 8
                       ),
                       decoration: BoxDecoration(
-                        color: theme.data.textTheme.bodyText1?.color,
+                        color: theme.data.textTheme.bodyMedium?.color,
                         borderRadius: BorderRadius.circular(9),
                       ),
                       height: 8,
@@ -147,7 +147,7 @@ class ThemeImage extends StatelessWidget {
                           horizontal: 8
                       ),
                       decoration: BoxDecoration(
-                        color: theme.data.textTheme.bodyText1?.color,
+                        color: theme.data.textTheme.bodyMedium?.color,
                         borderRadius: BorderRadius.circular(9),
                       ),
                       height: 8,

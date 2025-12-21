@@ -289,6 +289,22 @@ public class BrowserWebViewPlugin implements FlutterPlugin,
       result.notImplemented();
     } else if ("setEnablePullDown".equals(call.method)) {
       result.success(null);
+    } else if ("request".equals(call.method)) {
+        Object id = call.argument("id");
+        if (id != null) {
+            WebViewContainer container = containers.get(id);
+            container.request(call.argument("url"), new WebViewContainer.RequestOverCallback() {
+                @Override
+                public void onComplete(Map res) {
+                    result.success(Map.of("content", res));
+                }
+            });
+
+        } else {
+            Map<String, Object> res = new HashMap<>();
+            res.put("error", "no id");
+            result.success(res);
+        }
     } else {
       result.notImplemented();
     }

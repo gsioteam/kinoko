@@ -137,7 +137,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
       case ProgressStatus.Failed: {
         return Icon(
           Icons.error_outline,
-          color: Theme.of(context).errorColor,
+          color: Theme.of(context).colorScheme.error,
           size: 36,
         );
       }
@@ -174,7 +174,7 @@ class _ProgressDialogState extends State<ProgressDialog> {
                   padding: EdgeInsets.only(bottom: 8),
                   child: Text(
                     this.widget.title,
-                    style: Theme.of(context).textTheme.headline6,
+                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
                 ),
                 Row(

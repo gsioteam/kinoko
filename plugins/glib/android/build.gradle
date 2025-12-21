@@ -23,15 +23,16 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 30
+    namespace "com.gen.glib"
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
-            cmake {
-                cppFlags "-std=c++11"
-                arguments "-DANDROID_STL=c++_shared"
-            }
+//            cmake {
+//                cppFlags "-std=c++11"
+//                arguments "-DANDROID_STL=c++_shared"
+//            }
         }
         ndk {
             stl = 'c++_shared'

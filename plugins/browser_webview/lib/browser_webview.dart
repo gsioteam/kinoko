@@ -235,6 +235,16 @@ class BrowserWebViewController {
       "url": url,
     });
   }
+
+  Future<Map> request({
+    required String url,
+  }) async {
+    var result = await _invoke("request", {
+      "id": _id,
+      "url": url,
+    });
+    return result["content"];
+  }
   
   Future<List<HistoryItem>> getHistoryList() async {
     dynamic result = await _invoke("getHistoryList", {

@@ -385,7 +385,7 @@ class HeadlessWebView implements JsDispose {
   static void setup(BuildContext context) {
     if (_overlay == null) {
       _overlay = _HeadlessWebViewOverlay();
-      Overlay.of(context)!.insert(_overlay!.overlayEntry);
+      Overlay.of(context).insert(_overlay!.overlayEntry);
     }
   }
 
@@ -466,6 +466,10 @@ class HeadlessWebView implements JsDispose {
     controller.loadUrl(url: url);
   }
 
+  Future<Map> request(String url) async {
+    return controller.request(url: url);
+  }
+
   @override
   void dispose() {
     _overlay!.removeWidthKey(_viewKey);
@@ -530,6 +534,7 @@ ClassInfo headlessWebViewClass = ClassInfo<HeadlessWebView>(
       "getCookies": JsFunction.sta((argv) => HeadlessWebView.getCookies(argv[0])),
       "eval": JsFunction.ins((obj, argv) => obj.eval(argv[0])),
       "display": JsFunction.ins((obj, argv) => obj.setDisplay(argv[0])),
+      "request": JsFunction.ins((obj, argv) => obj.request(argv[0])),
     },
     fields: {
       "onmessage": JsField.ins(

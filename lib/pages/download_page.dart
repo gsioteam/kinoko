@@ -133,7 +133,7 @@ class _ChapterCellState extends State<ChapterCell> {
                                       ),
                                       actions: [
                                         MaterialButton(
-                                            child: Text(kt("ok"), style: theme.textTheme.bodyText1?.copyWith(color: theme.primaryColor),),
+                                            child: Text(kt("ok"), style: theme.textTheme.bodyMedium?.copyWith(color: theme.primaryColor),),
                                             onPressed: () {
                                               String text = controller.value.text;
                                               if (text.isNotEmpty) {
@@ -273,9 +273,9 @@ class _ChapterCellState extends State<ChapterCell> {
               title: Text(title),
               subtitle: queueItem.value.hasError ?
               Text(errorString(queueItem.value.error),
-                style: theme.textTheme.caption?.copyWith(color: theme.errorColor),) :
+                style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.error),) :
               Text("(${queueItem.loaded}/${queueItem.total})",
-                style: theme.textTheme.caption,) ,
+                style: theme.textTheme.labelMedium,) ,
               trailing: extendButtons(context, queueItem),
               onTap: widget.onTap,
             ),

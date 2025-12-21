@@ -612,7 +612,7 @@ class _PictureViewerState extends State<PictureViewer> {
                       Expanded(
                           child: Text(
                             dataController.title,
-                            style: Theme.of(context).textTheme.headline6?.copyWith(color: Colors.white),
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white),
                             maxLines: 1,
                             softWrap: true,
                             overflow: TextOverflow.ellipsis,
@@ -656,7 +656,7 @@ class _PictureViewerState extends State<PictureViewer> {
                               ),
                               TextSpan(
                                 text: dataController.length > 0 ? "${index == -1 ? dataController.length : (index + 1)}/${dataController.length}" : "",
-                                style: Theme.of(context).textTheme.bodyText1?.copyWith(color: Colors.white),
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
                               ),
                               WidgetSpan(child: Container(padding: EdgeInsets.only(left: 5),)),
                               WidgetSpan(

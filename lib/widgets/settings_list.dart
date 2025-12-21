@@ -137,7 +137,7 @@ class _SettingsListState extends State<SettingsList> {
           color: Colors.blueGrey[50],
           child: Text(
             item.title,
-            style: Theme.of(context).textTheme.bodyText1?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
         );
       }
